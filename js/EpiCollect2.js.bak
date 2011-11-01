@@ -1,0 +1,1350 @@
+var map;
+
+function getID()
+{
+	var dat = new Date;
+	if(!uid) uid = 'web';
+	return uid + "_" +dat.getTime();
+}
+
+function createHandler(obj, func)
+{
+	return (function(e, f){obj[func](e, f);})
+}
+
+var MapPanel = Ext.extend(Ext.Panel, {
+	lat : 0.0,
+	lng : 0.0,
+	alt : 0.0,
+	acc : -1.0,
+	src : 'html5',
+	mapC: false,
+	marker : false,
+	accCircle: false,
+	updateMarker : function()
+	{
+		
+		if(this.acc < 0 || !this.mapC) return;
+		if(!this.marker)
+		{
+			this.marker = new google.maps.Marker({
+				draggable : true,
+				position : new google.maps.LatLng(this.lat, this.lng),
+				map: this.mapC
+			});
+			
+			mkr = this.marker;
+			x = this;
+			
+			google.maps.event.addListener(mkr, 'dragend', function()
+			{
+				//newPos = marker.getPosition();
+				
+				x.lat = mkr.getPosition().lat();
+				x.lng = mkr.getPosition().lng();
+				x.updateMarker();
+			})
+		}
+		else
+		{
+			this.marker.setPosition(new google.maps.LatLng(this.lat, this.lng));
+			this.marker.setMap(this.mapC);
+		}
+		if(!this.accCircle)
+		{
+			this.accCircle  = new google.maps.Circle({
+				center : new google.maps.LatLng(this.lat, this.lng),
+				radius : this.acc,
+				map : this.mapC,
+				strokeColor : 'transparent',
+				fillColor : '#0000FF'
+			})
+		}
+		else
+		{
+			this.accCircle.setCenter(new google.maps.LatLng(this.lat, this.lng));
+			this.accCircle.setRadius(this.acc);
+			this.accCircle.setMap(this.mapC);
+		}
+		this.get('acc').setValue(this.acc);
+		this.get('src').setValue(this.src);
+		this.get('alt').setValue(this.alt);
+	},
+	setValue : function(val)
+	{
+		var v = Ext.decode(config.value);
+		this.lat = Number(v.latitude);
+		this.lng = Number(v.longitude);
+		this.alt = Number(v.altitude);
+		this.src = v.provider;
+		this.acc = Number(v.accuracy);
+		this.updateMarker();
+	},
+	getValue : function()
+	{
+		return "{\"latitude\" : "+ this.lat+ ", \"longitude\":"+ this.lng+ ", \"altitude\":"+ this.alt+ ",\"accuracy\":"+ this.acc+ ",\"provider\":\""+ this.src+ "\"}"
+	},
+	constructor : function(config)
+	{
+		if (config.value)
+		{
+			var v = Ext.decode(config.value);
+			this.lat = Number(v.latitude);
+			this.lng = Number(v.longitude);
+			this.alt = Number(v.altitude);
+			this.src = v.provider;
+			this.acc = Number(v.accuracy);
+		}
+		
+		config = Ext.apply({
+			height : config.height | 305,
+			layout: 'absolute',
+			items:[
+				{
+					xtype: 'label',
+					x:5, y:2,
+					width: 100,
+					text : 'Find a location'
+				},
+				{
+					xtype: 'textfield',
+					id:'geoSearch',
+					name:'geoSearch',
+					x:105,y:0,
+					width: 150
+				},
+				{
+					xtype: 'button',
+					text:'search',
+					x:305, y: 0,
+					width:80,
+					listeners : 
+					{
+						click : function(btn)
+						{
+							pnl = btn.ownerCt;
+							req = { address: this.get('geoSearch').getValue() };
+							var gCoder = new google.maps.Geocoder();
+							gCoder.geocode(req, function(results,status)
+							{
+								if (status == google.maps.GeocoderStatus.OK) {
+										pnl.mapC.setCenter(results[0].geometry.location);
+										pnl.mapC.setZoom(10);
+										//pnl.marker.setPosition(results[0].geometry.location);
+										pnl.lat = results[0].geometry.location.lat();
+										pnl.lng  = results[0].geometry.location.lng();
+										var elevator = new google.maps.ElevationService();
+										elevator.getElevationForLocations({'locations' : [results[0].geometry.location]}, function(results, status) {
+											if(results[0])
+											{
+												pnl.alt = results[0].elevation;
+											}
+										});
+										pnl.acc = 1000.0;
+										pnl.src = 'user entered';
+										pnl.updateMarker();
+								}else{}
+							});
+							
+						
+						},
+						scope : this
+					}
+				},
+				{
+					xtype: 'button',
+					text:'Get current location',
+					x:390, y: 0,
+					width:80,
+					hidden : !navigator.geolocation,
+					listeners : 
+					{
+						click : function(btn)
+						{
+							pnl = btn.ownerCt;
+							
+							navigator.geolocation.getCurrentPosition(function(pos)
+							{
+								pnl.lat = pos.coords.latitude;
+								pnl.lng = pos.coords.longitude;
+								pnl.alt = pos.coords.altitude;
+								pnl.src = "html5 geolocation";
+								pnl.acc = pos.coords.accuracy;
+								pnl.updateMarker();
+							});
+						},
+						scope : this
+					}
+				},{
+					xtype: 'label',
+					x:5, y:235,
+					width: 100,
+					text : 'Altitude'
+				},
+				{
+					xtype: 'textfield',
+					id:'alt',
+					name:'alt',
+					x:105,y:230,
+					width: 150,
+					value : this.alt
+				},
+				{
+					xtype: 'label',
+					x:5, y:260,
+					width: 100,
+					text : 'Accuracy'
+				},
+				{
+					xtype: 'textfield',
+					id:'acc',
+					name:'acc',
+					x:105,y:255,
+					width: 150,
+					value : this.acc,
+					listeners : {
+						scope: this,
+						'change' : function(fld)
+						{
+							this.acc = Number(fld.getValue());
+							this.updateMarker();
+						}
+					}
+				},
+				{
+					xtype: 'label',
+					x:5, y:285,
+					width: 100,
+					text : 'Location provider'
+				},
+				{
+					xtype: 'textfield',
+					id:'src',
+					name:'src',
+					x:105,y:280,
+					width: 150,
+					value : this.src
+				},
+				{
+					anchor: '100%',
+					x: 0,
+					y:25,
+					height: 200,
+					xtype: 'panel',
+					html: '<div id="gmapctrl" style="width: 100%; height: 100%" ></div>',
+				}
+			],
+			listeners : {
+				'afterlayout': function(pnl, layout)
+				{
+					if(google.maps)
+					{
+						var mapOpts = {
+							backgroundColor: '#FFFFFF',
+							center : new google.maps.LatLng(this.lat,this.lng),
+							zoom : 1,
+							mapTypeId : google.maps.MapTypeId.ROADMAP,
+							streetViewControl : false
+						};
+						pnl.mapC = new google.maps.Map(Ext.get('gmapctrl').dom, mapOpts);
+						
+						pnl.updateMarker();
+						
+					}
+					else
+					{
+						//Ext.get('gmap').update('the google maps api is not loaded, please load the api before you use this control');
+					}
+				}
+			}
+			
+		}, config);
+		MapPanel.superclass.constructor.call(this, config);	
+	}
+});
+
+Ext.reg('location', MapPanel);
+
+var EcSurvey = function()
+{
+    this.tables = {};
+    this.localUrl = '';
+    this.remoteUrl = '';
+    this.name = '';
+    this.id = '';
+    this.allowEdits = false;
+    this.version = 0.0;
+    this.map;
+	
+	this.getNextTable = function(tblName)
+	{
+		var n = Number(this.tables[tblName].num) + 1;
+		var tbl = false;
+		
+		for(var t in this.tables)
+		{
+			if(this.tables[t].num == n)
+			{
+				tbl = this.tables[t];
+				break;
+			}
+		}
+		return tbl;
+	}
+	
+	this.getPrevTable = function(tblName)
+	{
+		var n = Number(this.tables[tblName].num) - 1;
+		var tbl = false;
+		
+		for(var t in this.tables)
+		{
+			if(this.tables[t].num == n)
+			{
+				tbl = this.tables[t];
+				break;
+			}
+		}
+		return tbl;
+	}
+	
+    this.parse = function(xml)
+    {
+        mdl = xml.getElementsByTagName('model')[0];
+        sub = mdl.getElementsByTagName('submission')[0];
+        this.id = sub.getAttribute('id');
+        this.name = sub.getAttribute('projectName');
+        this.allowEdits = sub.getAttribute('allowDownloadEdits') == 'true';
+        this.version = sub.getAttribute('versionNumber');
+		var localServers = mdl.getElementsByTagName('uploadToLocalServer');
+		if(localServers.length > 0){
+				this.localUrl = localServers[0].firstChild.data;
+		}
+		if(mdl.getElementsByTagName('uploadToServer').length> 0) this.remoteUrl = mdl.getElementsByTagName('uploadToServer')[0].firstChild.data;
+        
+        tbls = xml.getElementsByTagName('table');
+		if (tbls.length == 0)
+		{
+			tbls = xml.getElementsByTagName('form');
+		}
+        for(var i = 0 ; i < tbls.length; i++){
+            tbl = new EcTable();
+            tbl.parse(tbls[i]);
+            this.tables[tbl.name] = tbl;
+        }
+		for(tbl in this.tables)
+		{
+			var branches = this.tables[tbl].branchForms;
+			for(var i = 0; i < branches.length; i ++)
+			{
+				this.tables[branches[i]].branchOf = tbl;
+			}
+		}
+		
+	}
+		
+	this.draw = function(div)
+	{
+			var d = Ext.get(div);
+			d.update('<h1>' + this.name + '</h1><div id="ecTables"></div><div id="ecMap" style="width:300px;height:300px;display:none;"></div>');
+			
+			pnl = new Ext.Panel({
+						id:'SearchPanel',
+						width: Ext.getBody().getWidth() * 0.9,
+						height: Ext.getBody().getHeight() * 0.75,
+						border: false,
+						layout:{
+							type : 'vbox',
+							align : 'center',
+							defaultMargins: {
+								top: 5,
+								left: 5,
+								right : 5,
+								bottom : 5
+							}
+						}
+					});
+					
+					pnl.add(new Ext.form.Label ({text: 'Select a table to view'}))
+					
+					for(tbl in survey.tables)
+					{
+						pnl.add(new Ext.Button({
+							text:tbl,
+							width:250,
+							listeners:{
+								'click':show
+							}
+						}));
+					}
+					pnl.render('ecTables');
+					
+			
+			
+	}
+}
+
+
+var EcTable = function()
+{
+    this.fields = {};
+    this.num = 0;
+    this.name = '';
+    this.key = '';
+    this.titleField = '';
+    this.cols = []
+	
+	this.filterField = false;
+	this.filterValue = false;
+	this.searchValue = false;
+	
+	this.hasGps = false;
+	this.gpsFlds = [];
+	this.hasMedia = false;
+
+	this.loadsStarted = 0;
+	this.loadsFinished = 0;
+
+	this.groupField = "DeviceID";
+	this.grps = {};
+	
+	this.branchOf = false;
+	this.branchForms = [];
+	
+	this.groupForms = [];
+	
+    this.store = {};
+    this.tPanel;
+	
+	this.minT = Number.MAX_VALUE;
+	this.maxT = -Number.MAX_VALUE;
+		
+	this.mkrs = ["redCircle", "greenCircle", "greyCircle", "yellowCircle", "whiteCircle","plumCircle", "darkGreyCircle","maroonCircle", "navyCircle", "mintCircle",  "pinkCircle", "purpleCircle",
+							   "redSquare", "greenSquare", "greySquare", "plumSquare", "darkGreySquare","maroonSquare", "navySquare", "mintSquare",  "pinkSquare", "purpleSquare"];
+	this.currentMkr = -1;
+		
+    this.parse = function(xml)
+    {
+        var tblData = xml.getElementsByTagName('table_data')[0];
+		if(tblData){
+			this.name = tblData.getAttribute('table_name');
+			this.num = tblData.getAttribute('table_num');
+			this.key = tblData.getAttribute('table_key');
+		}
+		else
+		{
+			this.name = xml.getAttribute('name');
+			this.num = xml.getAttribute('num');
+			this.key = xml.getAttribute('key');	
+		}
+        
+		var fld = new EcField();
+		fld.id = "created";
+		fld.text = "Time Created";
+		this.fields[fld.id] = fld;
+		this.cols.push("created");
+		
+		fld = new EcField();
+		fld.id = "DeviceID";
+		fld.text = "Phone ID";
+		this.fields[fld.id] = fld;
+		this.cols.push("DeviceID");
+
+		for(var nd = 0; nd < xml.childNodes.length; nd++)
+		{
+			if(xml.childNodes[nd].nodeType == 1 && xml.childNodes[nd].nodeName != "table_data")
+			{
+				field = new EcField();
+				field.parse(xml.childNodes[nd]);
+				this.fields[field.id] = field;
+				this.cols.push(field.id);
+				if(field.title)this.titleField = field.id;
+				if(field.type == "video" || field.type == "audio" || field.type == "photo")
+				{
+					this.hasMedia = true;
+				}
+				else if (field.type == "gps")
+				{
+					this.hasGps = true;
+					this.gpsFlds.push(field.id);
+				}
+				else if (field.type == "branch")
+				{
+					this.branchForms.push(field.form);
+				}
+				else if(field.type == "group")
+				{
+					this.groupForms.push(field.form);
+				}
+			}
+		}
+		
+		this.store = new Ext.data.JsonStore({
+			autoLoad : false,
+			baseParams : {
+				limit : 25,
+				start : 0,
+				mode : 'list'
+			},
+			
+			storeId : this.name + "_store",
+			idProperty : this.key,
+			id : this.name + "_store",
+			fields : this.cols,
+			proxy: new Ext.data.HttpProxy({
+				method: 'GET',
+				url : './' + this.name + '.json'
+			}),
+			
+			listeners : {
+				'exception' : function(dataProxy, type, action,opts, response, arg) { alert(dataProxy.url + " \r\n\r\n" + response.responseText)}
+			}
+		});
+    }
+    
+	/*this.storeLoader = function(store, r, opts)
+	{
+		this.loadsFinished++;		
+		if(r.length == 10){
+			
+			pars  = {
+				limit : 25,
+				offset : this.store.getCount()
+			};
+			
+			this.loadsStarted++;
+			this.store.load({
+				params : pars,
+				add:true,
+				callback: this.storeLoader,
+				scope: this
+			})
+		}
+		
+		if(this.loadsStarted == this.loadsFinished && this.loadCallback) this.loadCallback();
+	}*/
+	//this.store.load({params:{offset:0, limit:1}});
+    this.getTable = function(allowAdd, allowEdit, allowDelete)
+    {
+		var cols = [];
+		var tBtns = [];
+	
+		for(fld in this.fields)
+		{
+			cols.push({id : this.fields[fld].id, header : this.fields[fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
+				if(typeof value == typeof "string" && value.match(/\.(jpe?g|png|gif)$/))
+				{
+					return "<a href=\"../uploads/" + value + "\" target=\"__blank\"><img src=\"../uploads/" + value + "\" height=\"64\" width=\"64\" /></a>";
+				}else if(typeof value == typeof "string" && value.match(/\.mpe?g?4$/))
+				{
+					return "<video width=\"200\" height=\"150\" controls><source src=\"../uploads/" + value + "\" type=\"video/mp4\"></video>";
+				}
+				else
+				{
+					return value;		
+				}
+				
+			}, dataIndex: this.fields[fld].id, sortable:true});
+		}
+	
+		if(allowAdd)
+		{
+			tBtns.push({
+				//xtype: 'button',
+				id:'addEntry',
+				text: 'Add Entry'
+			});
+		}
+		
+		if(allowEdit)
+		{
+			tBtns.push({
+				id:'editEntry',
+				text: 'Edit Entry',
+				disabled: true
+			});
+		}
+		
+		if(allowDelete)
+		{
+			tBtns.push({
+				id:'deleteEntry',
+				text:'Delete Entry',
+				disabled : true				
+			});
+		}
+		
+		
+		tBtns.push({
+			xtype : 'tbseparator'
+		})
+		
+		tBtns.push({
+			xtype: 'tbtext',
+			text : 'Search for Entry by ID'
+		})
+		
+		
+		
+		tBtns.push({
+			id: 'idSearchField',
+			xtype: 'textfield',
+			text : 'Search for Entry by ID',
+			value: this.searchValue,
+			listeners: {
+				'change' : function(fld){
+					try{
+					if(fld.getValue() != "")
+					{
+						var r = Ext.getCmp('dataGrid').getStore().find(Ext.getCmp('dataGrid').getStore().idProperty, fld.getValue(), 0, true,false);
+						if(r >= 0)
+						{
+							Ext.getCmp('dataGrid').getView().focusRow(r);
+							Ext.getCmp('dataGrid').getSelectionModel().selectRow(r, false, false);
+						}
+					}}catch(err){alert(err);}
+				},
+				scope:this
+			}
+		});
+		
+		tBtns.push({
+			xtype: 'button',
+			text : 'Find',
+			listeners: {
+				'click' : function(){
+					try{
+					if(Ext.getCmp('idSearchField').getValue() != "")
+					{
+						var r = Ext.getCmp('dataGrid').getStore().find(Ext.getCmp('dataGrid').getStore().idProperty, Ext.getCmp('idSearchField').getValue(), 0, false,false);
+						if(r >= 0)
+						{
+							Ext.getCmp('dataGrid').getView().focusRow(r);
+							Ext.getCmp('dataGrid').getSelectionModel().selectRow(r, false, false);
+						}
+					}}catch(err){alert(err);}
+				}
+			},
+			scope:this
+		})
+		
+		tBtns.push({
+			xtype : 'tbseparator'
+		})
+		
+		tBtns.push({
+			xtype: 'button',
+			text : 'Reload / Show All',
+			listeners: {
+				'click' : function(){
+					
+					this.filterField = false;
+					this.filterValue = false;
+					Ext.getCmp('dataGrid').store.baseParams = {start : 0, limit : 1, mode : 'list'};
+					Ext.getCmp('dataGrid').store.load();
+				}
+			},
+			scope:this
+		})
+		
+		
+		tBtns.push({
+			xtype : 'tbseparator'
+		})
+		
+		tBtns.push({
+			type: 'splitbutton',
+			text: 'Download this data as ',
+			menu: new Ext.menu.Menu ({
+				items : [
+					{text: 'Comma separated', handler: function () {
+						window.open(Ext.getCmp('dataGrid').getStore().proxy.url.replace(".json", ".csv") + (this.filterValue ? "?" + this.filterField + "=" + this.filterValue : ""));
+					}},
+					{text: 'Tab separated', handler: function () {
+						window.open(Ext.getCmp('dataGrid').getStore().proxy.url.replace(".json", ".tsv") + (this.filterValue ? "?" + this.filterField + "=" + this.filterValue : ""));
+					}}
+				]
+			})
+		
+		})
+		
+		var grid = new Ext.grid.GridPanel({
+			id: 'dataGrid',
+			border: true,
+			columns: cols,
+			store: this.store,
+			tbar: tBtns,
+			width: Ext.getBody().getWidth(),
+			height: Ext.getBody().getHeight() * 0.65,
+			bbar : new Ext.PagingToolbar({
+				pageSize: 25,
+				store: this.store,
+				displayInfo: true,
+				displayMsg: 'Displaying ' + this.name + ' {0} - {1} of {2}',
+				emptyMsg: "No " + this.name + " to display",
+				items:[
+					
+				]
+			})
+		});
+		
+		grid.on({
+			'contextmenu': function(e)
+			{
+				e.preventDefault();								
+			}
+		});
+		if(allowDelete)
+		{
+			grid.getTopToolbar().get('deleteEntry').on('click',function(){
+				if(confirm ("Are you sure you want to delete this entry."))
+				{
+					this.deleteEntry(grid.getSelectionModel().getSelected().data[this.key]);
+				}
+			}, this);
+		}
+		if(allowAdd){
+			grid.getTopToolbar().get('addEntry').on('click',function(){
+				frm = this.getForm();
+				
+				frm.anchor = "100% 100%";
+				win = new Ext.Window({
+					title: "Add Entry",
+					items:[frm],
+					layout : 'anchor',
+					modal:true,
+					width: Ext.getBody().getWidth() * 0.95,
+					height: Ext.getBody().getHeight() * 0.95
+				});
+				frm.getFooterToolbar().get('cnl').on('click', function(){win.close()}, this);
+				frm.getFooterToolbar().get('sub').on('click', function(){this.addEntry(frm.getForm().getValues(), function(){win.close()});}, this);
+				win.show();
+			}, this);
+		}
+		if(allowEdit)
+		{
+			grid.getTopToolbar().get('editEntry').on('click',function(){
+				rec = grid.getSelectionModel().getSelected();
+				frm = this.getForm(rec);
+				frm.anchor = "100% 100%";
+				win = new Ext.Window({
+					title: "Edit Entry",
+					items:[frm],
+					layout : 'anchor',
+					modal:true,
+					width: Ext.getBody().getWidth() * 0.5,
+					height: Ext.getBody().getHeight() * 0.75
+				});
+				frm.getFooterToolbar().get('cnl').on('click', function(){win.close()}, this);
+				frm.getFooterToolbar().get('sub').on('click', function(){this.editEntry(rec.data[this.key],frm.getForm().getValues(), function(){win.close()});}, this);
+				win.show();
+			}, this);
+		}
+		grid.getSelectionModel().on('selectionchange', function(selMdl){
+			var dis = grid.getSelectionModel().getCount() != 1;
+			if(grid.getTopToolbar().get('deleteEntry')) grid.getTopToolbar().get('deleteEntry').setDisabled(dis);
+			if(grid.getTopToolbar().get('editEntry')) grid.getTopToolbar().get('editEntry').setDisabled(dis);
+		}, this)
+		
+		/*this.loadsFinished = 0;
+		this.loadsStarted = 1;
+				
+		this.store.on('load', this.storeLoader, this);
+		
+		if(this.filterValue)
+		{
+			this.store.baseParams = {offset: 0, limit: 10, mode : 'list'};
+			this.store.baseParams[this.filterField] = this.filterValue;
+
+		}*/
+		
+		this.store.load({start:0, offset:1});
+		
+		if(this.hasGps)
+		{
+			this.tPanel = new Ext.TabPanel({
+				activeTab:0,
+				items : [{
+					title: "Table",
+					items: [grid]
+				},
+				{
+					title: 'Map',
+					width: Ext.getBody().getWidth() * 0.6,
+					height: 700,
+					items : [{
+							id: 'mapPnl',
+							region:'center',
+							title: "Map",
+							contentEl : "ecMap"
+						},
+						{
+							region : 'east',
+							title: 'sidebar'
+						},{
+							region: 'south',
+							title : 'Footer',
+							
+							height: 100,
+							defaults:
+							{
+								cls: 'cp-item'
+							},
+							items: [
+									{
+										xtype:'label',
+										text : 'Filter By Time'
+									},
+									{
+										style : '',
+										xtype: 'multislider',
+										id: 'timeSlider',
+										minValue : 0,
+										maxValue : 100,
+										values : [0, 100],
+										increment: 1,
+										width : 200,
+										listeners : {
+											'render' : function(slider){
+												if(!slider) return;
+												
+												
+												
+											},
+											'change' : function(slider, newVal, thumb)
+											{
+												
+												if(map){
+													map.removeAllFilters();
+													map.addFilter('date', 'le', slider.getValue(1));
+													map.addFilter('date', 'ge', slider.getValue(0));
+													map.doFilter();
+												}
+											}
+										}
+									},
+									{
+										xtype: 'label',
+										text : 'Colour points by field'
+									},{
+										xtype: 'combo',
+										id:'fieldCombo',
+										lazyRender:true,
+										mode: 'local',
+										store:this.store,
+										typeAhead: false,
+										typeAheadDelay:false,
+										triggerAction: 'all',
+										
+										store: new Ext.data.JsonStore({
+											autoLoad: true,
+											url: location.href + '.json',
+											root: 'fields',
+											idField : 'name',
+											fields:[
+												'name',
+												'label',
+												'type'
+											]
+										}),
+										displayField : 'label',
+										valueField : 'name',
+										listeners : {
+											'select': function(cbo, rec, idx) {
+												this.setGroupField(rec.data['name']);
+											},
+											scope: this	
+										}
+										
+									}
+								]
+							}
+							],
+							
+					
+					layout: {
+						type:'border'
+					}
+					
+				}],
+				listeners:{
+					render : function(t)
+					{
+						t.setActiveTab(1);
+						t.setActiveTab(0);
+					}
+				},
+				scope : this
+			});
+			
+			this.timeSlider = Ext.getCmp('timeSlider');
+			this.tPanel.on('tabchange', createHandler(this, "createMap"), this);
+			return this.tPanel;
+				
+		}
+		else
+		{
+			return grid;
+		}
+    }
+		
+	this.nextMkr = function()
+	{
+		this.currentMkr++;
+		if(this.currentMkr >= this.mkrs.length) this.currentMkr = 0;
+		return this.mkrs[this.currentMkr];
+	}
+		
+	this.setGroupField = function(grpField)
+	{
+		try{
+		this.currentMkr = -1;
+		this.grps = {};
+		this.groupField = grpField;
+	
+		for(var i = 0; i < map.markers.length; i++)
+		{
+			var mkr = "redCircle";
+			var gVal = map.markers[i].getAttribute(this.groupField);
+			if(this.grps[gVal])
+			{
+					mkr = this.grps[gVal];
+			}
+			else
+			{
+					mkr = this.nextMkr();
+					this.grps[gVal] = mkr;
+			}
+			map.markers[i].proprietary_marker.setIcon("../images/mapMarkers/" + (mkr ? mkr : "redCircle") + ".png");
+		}
+		this.drawMapLegend();
+		}catch(err){alert(err);}
+	}
+	
+	this.drawMapLegend = function()
+	{
+		
+		if(!map.maps['googlev3'].controls[google.maps.ControlPosition.RIGHT_BOTTOM].length)
+		{
+			this.legend = document.createElement('div');
+			this.legend.style.backgroundColor = '#EEEEEE';
+			this.legend.style.padding = '5px 5px 5px 5px';
+			this.legend.style.border = '1px solid #000000'
+			var inner = document.createTextNode('Hello World');
+			this.legend.appendChild(inner);
+			map.maps['googlev3'].controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(this.legend);
+		}
+		
+		
+		var i = 0;
+		for(grp in this.grps)
+		{
+			var legRow = document.createElement('div');
+			var img = document.createElement('img');
+			img.style.display = 'inline';
+			img.src = "../images/mapMarkers/" + this.grps[grp] + ".png";
+			legRow.appendChild(img);
+			legRow.appendChild(document.createTextNode(grp));
+			if(i < this.legend.childNodes.length)
+			{
+				this.legend.replaceChild(legRow, this.legend.childNodes[i]);
+			}
+			else
+			{
+				this.legend.appendChild(legRow);
+			}
+			i++;
+		}
+		while(i < this.legend.childNodes.length) this.legend.removeChild(this.legend.childNodes[i]);
+	}
+	
+	this.createMap = function(pnl, tab)
+	{
+		if(!tab.get('mapPnl')) return;
+		
+		Ext.get("ecMap").dom.style.display = "";
+		Ext.get("ecMap").dom.style.width = tab.get('mapPnl').getWidth() + "px";
+		Ext.get("ecMap").dom.style.height = (tab.get('mapPnl').getHeight() - 25) + "px";
+		map = new mxn.Mapstraction('ecMap', 'googlev3');
+		map.setCenterAndZoom(new mxn.LatLonPoint(0,0), 2);
+		//map.setMapType(mxn.Mapstraction.HYBRID);
+		
+		
+		map.maps['googlev3'].setOptions({
+			panControl: true,
+			rotateControl: true,
+			zoomControl: true
+		});
+		
+		
+		var recs = this.store.getRange();
+		 this.grps = {};
+		for(var i = 0; i < recs.length; i++)
+		{
+			//alert(recs.length);	
+			
+			
+			
+			var mkr = "redCircle";
+			if(this.grps[recs[i].data[this.groupField]])
+			{
+					mkr = this.grps[recs[i].data[this.groupField]];
+			}
+			else
+			{
+					mkr = this.nextMkr();
+					this.grps[recs[i].data[this.groupField]] = mkr;
+			}
+			//TODO: get GPS fields and render points.
+			for(fld = 0; fld < this.gpsFlds.length; fld ++)
+			{
+				var gps = Ext.decode(recs[i].data[this.gpsFlds[fld]])
+				
+				if( gps.accuracy != -1)
+				{
+					//alert(recs[i].data[this.gpsFlds[fld] + "_acc"]);
+					data = {
+						label: recs[i].data[(this.titleField != "" ? this.titleField : this.key)],
+						infoBubble : "<h3> " +(this.titleField != "" ? this.titleField : this.key) + " : " + recs[i].data[(this.titleField != "" ? this.titleField : this.key)] + "</h3>",
+						date: recs[i].data["created"],
+						icon : "../images/mapMarkers/" + (mkr ? mkr : "redCircle") + ".png",
+						iconSize: [12,20],
+						iconAnchor: [6, 20],
+						marker: 4
+					}
+					
+					for(fld in this.fields)
+					{
+						data[fld] = recs[i].data[fld];
+					}
+					map.addMarkerWithData(new mxn.Marker(new mxn.LatLonPoint(gps.latitude, gps.longitude)),data);
+				}
+			}
+			this.minT = Math.min(this.minT, Number(recs[i].data["created"]));
+			this.maxT = Math.max(this.maxT, Number(recs[i].data["created"]));
+			
+			var slider = Ext.getCmp('timeSlider');
+			
+			if(slider.minValue > this.minT)
+			{
+				slider.setMinValue(this.minT);
+				slider.setValue(0, this.minT, false);
+			}else{
+				slider.setValue(0, this.minT, false);
+				slider.setMinValue(this.minT);
+			}
+			
+			if(slider.maxValue < this.maxT)
+			{
+				slider.setMaxValue(this.maxT);
+				slider.setValue(1, this.maxT, false);
+			}else{
+				slider.setValue(1, this.maxT, false);
+				slider.setMaxValue(this.maxT);
+			}
+		}
+		
+		this.drawMapLegend();
+		map.autoCenterAndZoom();
+	}
+    
+    this.getSearch = function()
+    {
+        //may need to be a simple and a more complex search later,
+        //but for now just a combo box populating off of a PHP script.
+        return new Ext.form.ComboBox({
+            id: this.name + "_search",
+            fieldLabel:this.name,
+            lazyRender:true,
+            mode: 'local',
+            store:this.store,
+            typeAhead: false,
+			typeAheadDelay:false,
+			triggerAction: 'all',
+            displayField: this.titleField,
+            valueField:this.key
+        });
+    }
+	
+	this.getForm = function(rec)
+	{
+		ctrs = [];
+		for(fld in this.fields)
+		{
+				var isKey = false;
+				for(tbl in survey.tables){
+					if (survey.tables[tbl].key == this.fields[fld].id)
+					{
+						isKey = tbl;
+					}
+				}
+			
+				var ctrl =this.fields[fld].getControl();
+				if(isKey && this.fields[fld].id != this.key )
+				{
+					//Detect if the field is a foreign key
+					
+					ctrl.xtype = "combo";
+					ctrl.store = survey.tables[isKey].store;
+					ctrl.mode = "local";
+					ctrl.triggerAction = "all";
+					ctrl.lazyRender = true;
+					ctrl.typeAhead = false;
+					ctrl.displayField = survey.tables[isKey].key;
+					ctrl.valueField = survey.tables[isKey].key;
+					ctrl.forceSelection = true;
+					ctrl.fkParentField = this.fields[fld].fkParentField;
+					ctrl.fkParentTbl = this.fields[fld].fkParentTbl;
+					ctrl.listeners = {
+						'beforerender' : function(){
+							this.store.baseParams = {mode : 'list'};
+							this.store.load();
+						},
+						'expand' : function()
+						{
+							if(Ext.getCmp(this.fkParentField))
+							{
+								if(Ext.getCmp(this.fkParentField).getValue())
+									this.store.filter(this.fkParentField, Ext.getCmp(this.fkParentField).getValue(), false, true, true)
+								else
+									this.store.clearFilter();
+							}
+						}
+					};
+				}
+				if(this.fields[fld].hidden && this.key == this.fields[fld].id)
+				{
+					ctrl.value = genID();	
+				}
+				else
+				{
+					ctrl.disabled = false;
+				}
+				if(rec){
+					//if the form is being used for an edit give the control it's value
+					ctrl.value = rec.data[this.fields[fld].id];
+					//if the form is being used for an edit and this is the key field make it readonly so the user cannot edit it and break the reference to it's backend object
+					ctrl.readOnly = this.fields[fld].id == this.key;
+				}
+				else
+				{
+					
+					if(ctrl.id == "DeviceID") ctrl.value = "web";
+					if(ctrl.id == "created")
+					{
+						var date = new Date();
+						ctrl.value = date.getTime();
+					}
+				}
+				
+				ctrs.push(ctrl);
+			//}catch(err){}
+		}
+		
+		return new Ext.form.FormPanel({
+			//title: this.name,
+			id: this.name + "form",
+			autoScroll : true, 
+			monitorValid: true,
+			padding: 10,
+			items:ctrs,
+			labelSeparator: "",
+			buttons:[{
+				id:'sub',
+				text:'Submit',
+				formBind: true
+			},{
+				id:'cnl',
+				text:'Cancel'
+			}],
+			defaults:{
+				anchor : "95%"
+			}
+		})
+	}
+
+	this.deleteEntry = function(key)
+	{
+		Ext.Ajax.request({
+			url: "./" + this.name + "/" + key,
+			method: 'DELETE',
+			success: function(res, opts){
+				this.store.load();
+			},
+			scope: this
+		});
+	}
+	
+	this.addEntry = function(args, callback)
+	{
+		Ext.Ajax.request({
+			url: "./" + this.name,
+			method: 'POST',
+			params: args,
+			success: function(res, opts){
+				this.store.load();
+				callback();
+			},
+			scope: this
+		});
+	}
+	
+	this.editEntry = function(key, args, callback)
+	{
+		Ext.Ajax.request({
+			url: "./" + this.name + "/" + key ,
+			method: 'PUT',
+			params: args,
+			success: function(res, opts){
+				this.store.load();
+				callback();
+			},
+			scope: this
+		});
+	}
+}
+
+var EcField = function()
+{
+    this.text = '';
+    this.id = '';
+    this.required = false;
+    this.type = '';
+    this.isinteger = false;
+	this.isdouble = false;
+    this.options = [];
+    this.local = false;
+    this.title = false;
+	this.regex = false;
+	this.doubleCheck = false;
+	this.date = false;
+	this.time = false;
+	
+	this.hidden = false;
+	this.search = false;
+	
+	this.form = false;
+	
+	this.fkTable = false;
+	this.fkField = false;
+	
+	this.jumpTarget = false;
+	this.jumpCondition = false;
+
+    this.parse = function(xml)
+    {
+		this.type = xml.tagName;
+		this.id = xml.getAttribute('name');
+		if(!this.id) this.id = xml.getAttribute('ref');
+		this.title = Boolean(xml.getAttribute('title'));
+		this.required = xml.getAttribute('required') == "true";
+		this.integer = xml.getAttribute('integer') == "true";
+		this.isdouble = xml.getAttribute('double') == "true";
+		this.local = xml.getAttribute("local") == "true";
+		this.regex = xml.getAttribute('regex');
+		this.doubleEntry = xml.getAttribute('inputcheck')=="true";
+		
+		this.hidden = xml.getAttribute('display') == "false";
+		this.search = xml.getAttribute('search') == "true";
+		
+		if(this.type == "branch")
+		{
+			this.form = xml.getAttribute("branch_form");
+		}
+		else if(this.type == "group")
+		{
+			this.form = xml.getAttribute("group_form");
+		}
+		
+		/*for(t in survey.tables)
+		{
+			if(survey.tables[t].key == this.id)
+			{
+				//FUTURE-PROOF : if we want to allow the foreign key field to have a differnt name to the primary key field
+				this.fkParentTbl = survey.getPrevTable(survey.tables[t].name).name;
+				this.fkParentField = survey.getPrevTable(survey.tables[t].name).key;
+				
+				this.fkTable = survey.tables[t].name;
+				this.fkField = survey.tables[t].key;
+			}
+		}*/
+	
+		
+		this.text = xml.getElementsByTagName('label')[0].firstChild.data;
+		var opts = xml.getElementsByTagName('item');
+		for(var o = 0; o < opts.length; o++)
+		{
+			this.options.push([opts[o].getElementsByTagName('value')[0].firstChild.data,opts[o].getElementsByTagName('label')[0].firstChild.data]);  
+		}
+    }
+    
+    this.getControl = function()
+    {
+		var xtypes = {
+			"input" : "textfield",
+			"textarea":"textarea",
+			"select":"checkboxgroup",
+			"select1":"combo",
+			"barcode" : "textfield",
+			"photo" : "button",
+			"video" : "button",
+			"audio" : "button",
+			"gps": "button",
+			"radio" : "radiogroup",
+			"branch" : "button",
+			"group" : "combo"
+		};
+		var ctrl = {
+			allowBlank: !this.required,
+			id: this.id,
+			xtype: this.type ?  xtypes[this.type] : 'hidden',
+			fieldLabel : this.text,
+			disabled:  this.hidden
+		};
+		if(this.integer){
+			ctrl.regex = /^-?[0-9]*?$/;
+			ctrl.regexText = this.text + " must have an integer value";
+		}
+		if(this.isdouble)
+		{
+			ctrl.regex = /^-?[0-9]*(\.[0-9]+)?$/;
+			ctrl.regexText = this.text + " must have a decimal value";
+		}
+		if(this.regex)
+		{
+			ctrl.regex = new RegExp(this.regex);
+			ctrl.regexText = this.text + " must conform to the format specified by the form designer";
+		}
+		if(this.options.length > 0 && this.type == "select1"){
+			ctrl.store = this.options;
+			
+		}
+		if(this.options.length > 0 && (this.type == "radio" || this.type == "select")){
+			ctrl.items = [{columnWidth : 1, items: []}];
+			ctrl.columns = ["one"];
+			
+			for (var o = 0; o < this.options.length; o++)
+			{
+				ctrl.items[0].items.push({
+					fieldLabel : this.options[o][0], value : this.options[o][1]
+				});
+			}
+		}
+		if(this.type == "select1")
+		{
+			ctrl.mode = "local";
+			ctrl.triggerAction = "all";
+			ctrl.lazyRender = "true"
+		}
+		return ctrl;
+	}
+	
+	this.formatValue = function(value)
+	{
+		switch(this.type)
+		{
+			case "photo" : return "<img src=\""+value+"\" alt=\""+value+"\"/>";
+			default : return value;
+		}
+	}
+}

@@ -1,0 +1,489 @@
+{{script}}
+  <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/Ext/ext-all.css" />
+  <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/Ext/fileuploadfield.css" />
+  <script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-base-debug.js"></script>
+  <script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-all-debug.js"></script>
+  <script type="text/javascript" src="{#SITE_ROOT#}/Ext/FileUploadField.js"></script>
+  <script type="text/javascript">
+	
+	function drawForm()
+	{
+	  var formItems = [];
+	  
+		var ttl = "{#title#}";
+		
+		if(ttl != "") Ext.get("title").update(ttl);
+		
+	  var nameControl = new Ext.form.TextField({
+			id:"name",
+			fieldLabel: "Project Name",
+			allowBlank : false,
+			blankText:"The project must have a name",
+			vtype:'alphanum',
+			vtext:"The project name must only countain alphanumeric characters and _",
+			value: "{#projectName#}"
+	  });
+	  if(nameControl.value=="") nameControl.value = undefined;
+	  formItems.push(nameControl);
+	  
+	  var descriptionControl = new Ext.form.HtmlEditor({
+			id:"description",
+			fieldLabel: "Project Description",
+			value: "{#projectDescription#}",
+			width: 400,
+			height: 100
+	  });
+	  formItems.push(descriptionControl);
+	  
+	  var imageControl = new Ext.form.FormPanel({
+			id:"projectImagePanel",
+			border: false,
+			header:false,
+			fileUpload: true,
+			renderTo: "imageForm",
+			url: "./uploadFile.php",
+			width: 800,
+			labelWidth:250,
+			labelSeparator: ' ',
+			items:[
+				{
+					xtype: 'fileuploadfield',
+					id: 'form-file',
+					emptyText: 'Select an image',
+					fieldLabel: 'Project Image',
+					name: 'photo-path',
+					buttonText: 'Select image...',
+					anchor:"100%"
+				},
+				{
+					xtype:'panel',
+					id:'newImage',
+					border:false,
+					html:'<img src="{#SITE_ROOT#}/{#projectImage#}" alt="projectImage" />'
+				}
+			],
+			value: "{#SITE_ROOT#}/{#projectImage#}"
+			});
+			if("{#projectImage#}" == "") Ext.getCmp("newImage").update('<img src="images/no_image.png" alt="projectImage" />')
+				imageControl.items.get(0).on('fileselected', function(){
+				imageControl.getForm().submit({
+					params: imageControl.getForm().getValues(),
+					success:function(form, action)
+					{
+					if(action.result != "")
+					{
+						Ext.getCmp('newImage').update('<img src="' + action.result.msg + '" alt="projectImage" />');
+						//update form URL
+						//form.url = action.result.newUrl;
+						Ext.getCmp('image').setValue(action.result.msg);
+					}
+				}	
+			}
+	  )}, this);
+	  
+	  
+	  var imageValue = new Ext.form.TextField({
+			id: 'image',
+			hidden : true,
+			value: "{#SITE_ROOT#}/{#projectImage#}"
+	  });
+	  
+	  formItems.push(imageValue);
+	  
+	  var publicControl = new Ext.form.Checkbox({
+			id: "isPublic",
+			fieldLabel: "Should the project be accessable by anyone?",
+			checked: ("{#projectIsPublic#}" == "1")
+	  });
+	  formItems.push(publicControl);
+	  
+	  var listedControl = new Ext.form.Checkbox({
+			id: "isListed",
+			fieldLabel: "Should the project be listed in an index of projects?",
+			checked: ("{#projectIsListed#}" == "1")
+	  });
+	  formItems.push(listedControl);
+	  
+	  var submissionControl = new Ext.form.Checkbox({
+			id: "publicSubmission",
+			fieldLabel: "Should anybody be able to submit data to the project?",
+			checked: ("{#projectPublicSubmission#}" == "1")
+	  });
+	  formItems.push(submissionControl);
+	 			  
+	  var adminPanel = new Ext.grid.GridPanel({
+		id: "adminPanel",
+		border:false,
+		bodyCfg:{
+		  style : 'border: 1px solid #CCCCCC;'
+		},
+		stripeRows: true,
+		height: 150,
+		fieldLabel : "Administrators",
+		autoExpandColumn : 'Email',
+		footerCfg: {
+		  
+		},
+		store : new Ext.data.ArrayStore(
+		{
+		  
+		  storeId:'adminStore',
+		  idIndex: 0,
+		  fields : ['email', 'isregistered'],
+		  data : [{#projectAdmins#}]
+		}),
+		columns : [
+		  {id: 'Email', header : 'Email', dataIndex : 'email'},
+		  {header : 'Registered', dataIndex: 'isregistered', width : 30, renderer:function(value, metaData, record, rowIndex, colIndex, store) {
+			return "<img src=\"{#SITE_ROOT#}/images/default/dd/drop-" + (value ?  "yes" : "no") + ".gif\" alt=\"" + value + "\" />";
+		  }}
+		]
+	  });
+	  formItems.push(adminPanel);
+	  
+	  var adminField = new Ext.form.TriggerField({
+		id : 'adminfield',
+		fieldLabel: 'Add admin by email',
+		linkedCtrl : adminPanel,
+		triggerClass : 'x-form-add-trigger',
+		vtype: 'email',
+		onTriggerClick : function(e)
+		{
+		  //TODO:check if email is already in the list.
+		  if(this.isValid()){
+			Ext.Ajax.request({
+			  url: 'user/' + this.getValue(),
+			  success:function(res, opts){
+				this.linkedCtrl.getStore().addSorted(new Ext.data.Record({email : this.getValue(), isregistered: res.responseText==='true'}));
+				this.setValue('');
+			  },
+			  scope: this
+			});
+		  }
+		}
+	  });
+	  formItems.push(adminField);
+	  
+	  var removeAdmin = new Ext.Button({
+		anchor : "200",
+		text : 'Remove Selected Admin(s)',
+		linkedCtrl: adminPanel
+	  });
+	  
+	  removeAdmin.on('click', function()
+	  {
+	   this.linkedCtrl.getStore().remove(this.linkedCtrl.getSelectionModel().getSelections());
+	  });
+	  
+	  adminPanel.addButton(removeAdmin);
+	  
+	  
+	  var userPanel = new Ext.grid.GridPanel({
+		id: "userPanel",
+		border:false,
+		bodyCfg:{
+		  style : 'border: 1px solid #CCCCCC;'
+		},
+		stripeRows: true,
+		height: 150,
+		fieldLabel : "Users",
+		autoExpandColumn : 'Email',
+		hidden : publicControl.checked,
+		footerCfg: {
+		  
+		},
+		store : new Ext.data.ArrayStore(
+		{
+		  storeId:'userStore',
+		  idIndex: 0,
+		  fields : ['email', 'isregistered'],
+		  data : [{#projectUsers#}]
+		}),
+		columns : [
+		  {id: 'Email', header : 'Email', dataIndex : 'email'},
+		  {header : 'Registered', dataIndex: 'isregistered', width : 30, renderer:function(value, metaData, record, rowIndex, colIndex, store) {
+			return "<img src=\"{#SITE_ROOT#}/images/default/dd/drop-" + (value ?  "yes" : "no") + ".gif\" alt=\"" + value + "\" />";
+		  }}
+		]
+	  });
+	  formItems.push(userPanel);
+	  
+	   var userField = new Ext.form.TriggerField({
+		id : 'userfield',
+		fieldLabel: 'Add user by email',
+		linkedCtrl : userPanel,
+		triggerClass : 'x-form-add-trigger',
+		hidden : publicControl.checked,
+		onTriggerClick : function(e)
+		{
+		  //TODO:check if email is already in the list.
+		  
+		  Ext.Ajax.request({
+			url: 'user/' + this.getValue(),
+			success:function(res, opts){
+			  this.linkedCtrl.getStore().addSorted(new Ext.data.Record({email : this.getValue(), isregistered: res.responseText==='true'}));
+			  this.setValue('');
+			},
+			scope: this
+		  });
+		  
+		}
+	  });
+	  formItems.push(userField);
+	  
+	  var removeuser = new Ext.Button({
+		anchor : "200",
+		text : 'Remove Selected user(s)',
+		hidden : publicControl.checked,
+		linkedCtrl: userPanel
+	  });
+	  
+	  removeuser.on('click', function()
+	  {
+	   this.linkedCtrl.getStore().remove(this.linkedCtrl.getSelectionModel().getSelections());
+	  });
+	  
+	  userPanel.addButton(removeuser);
+	  
+	  publicControl.on('check', function(){
+		if(publicControl.getValue())
+		{
+		 userPanel.hide();
+		 userField.hide()
+		}
+		else
+		{
+		 userPanel.show();
+		 userField.show()
+		}
+	  }, this);
+	  
+	  var submitterPanel = new Ext.grid.GridPanel({
+		id: "submitterPanel",
+		border:false,
+		bodyCfg:{
+		  style : 'border: 1px solid #CCCCCC;'
+		},
+		stripeRows: true,
+		height: 150,
+		fieldLabel : "Submitters",
+		hidden : submissionControl.checked,
+		autoExpandColumn : 'Email',
+		footerCfg: {
+		  
+		},
+		store : new Ext.data.ArrayStore(
+		{
+		  storeId:'submitterStore',
+		  idIndex: 0,
+		  fields : ['email', 'isregistered'],
+		  data : [{#projectSubmitters#}]
+		}),
+		columns : [
+		  {id: 'Email', header : 'Email', dataIndex : 'email'},
+		  {header : 'Registered', dataIndex: 'isregistered', width : 30, renderer:function(value, metaData, record, rowIndex, colIndex, store) {
+			return "<img src=\"{#SITE_ROOT#}/images/default/dd/drop-" + (value ?  "yes" : "no") + ".gif\" alt=\"" + value + "\" />";
+		  }}
+		]
+	  });
+	  formItems.push(submitterPanel);
+	  
+	  var submitterField = new Ext.form.TriggerField({
+		id : 'submitterfield',
+		fieldLabel: 'Add submitter by email',
+		linkedCtrl : submitterPanel,
+		triggerClass : 'x-form-add-trigger',
+		hidden : submissionControl.checked,
+		onTriggerClick : function(e)
+		{
+		  //TODO:check if email is already in the list.
+		  
+		  Ext.Ajax.request({
+			url: 'user/' + this.getValue(),
+			success:function(res, opts){
+			  this.linkedCtrl.getStore().addSorted(new Ext.data.Record({email : this.getValue(), isregistered: res.responseText==='true'}));
+			  this.setValue('');
+			},
+			scope: this
+		  });
+		  
+		}
+	  });
+	  formItems.push(submitterField);
+	  
+	  var removesubmitter = new Ext.Button({
+		anchor : "200",
+		text : 'Remove Selected submitter(s)',
+		hidden : submissionControl.checked,
+		linkedCtrl: submitterPanel
+	  });
+	  
+	  removesubmitter.on('click', function()
+	  {
+	   this.linkedCtrl.getStore().remove(this.linkedCtrl.getSelectionModel().getSelections());
+	  });
+	  
+	  submitterPanel.addButton(removesubmitter);
+	  
+	  submissionControl.on('check', function(){
+		if(submissionControl.getValue())
+		{
+		 submitterPanel.hide();
+		 submitterField.hide()
+		}
+		else
+		{
+		 submitterPanel.show();
+		 submitterField.show()
+		}
+	  }, this);
+	  
+					  
+	  var frm = new Ext.form.FormPanel({
+		  id : "projectFrm",
+		  border: false,
+		  defaults:
+		  {
+			  anchor:"100%",
+			  msgTarget: "under"
+		  },
+		  items: formItems,
+		  labelWidth:250,
+		  labelSeparator: ' ',
+		  method: 'POST',
+		  renderTo: "projectForm",
+		  
+		  width: 800
+	  });
+	  
+	  var btns = new Ext.Panel({
+		border: false,
+		items:[
+		  {
+			xtype:'button',
+			text:'Submit',
+			handler: function(btn, evt)
+			{
+			
+			  if(frm.getForm().isValid())
+			  {
+				try{
+				var adminEmails =[];
+				adminPanel.getStore().each(function(rec)
+				{
+				  adminEmails.push(rec.get("email"));
+				  return true;
+				}, this);
+				
+				 var userEmails = [];
+				if(publicControl.getValue())
+				{
+				 
+				  userPanel.getStore().each(function(rec)
+				  {
+				    userEmails.push(rec.data["Email"]);
+				    return true;
+				  }, this);
+				}
+				
+				var submissionEmails = [];
+				if(submissionControl.getValue())
+				{
+				  
+				  submitterPanel.getStore().each(function(rec)
+				  {
+				    submissionEmails.push(rec.data["Email"]);
+				    return true;
+				  }, this);
+				}
+				
+				Ext.Ajax.request({
+				  url: '{#SITE_ROOT#}/{#projectName#}',
+				  method : 'POST',
+				  params : Ext.apply(
+					frm.getForm().getValues(),
+					{
+						admins : adminEmails.join(","),
+						users : userEmails.join(","),
+						submitters : submissionEmails.join(",")
+					}
+					),
+				  success: function(response, opts)
+				  {
+					if(response.responseText == "1") window.location.replace("./" + nameControl.getValue());
+					  //alert(response.responseText);
+				  },
+				  failure:function(response, opts)
+				  {
+					  var msgEle = Ext.get("message");
+					  msgEle.addClass("failure");
+					  msgEle.removeClass("success");
+					  msgEle.update(response.responseXML.getElementsByTagName("error")[0].firstChild.data)
+				  }					
+				});
+				}catch(e) {alert(e);}
+			  }
+			  else
+			  {
+				  var msgEle = Ext.get("message");
+				  msgEle.addClass("failure");
+				  msgEle.removeClass("success");
+				  msgEle.update("Some fields have not been filled in correctly, please check them and try again.")
+			  }
+			},
+			scope: this
+			},
+			{
+			  xtype:'button',
+			  text:'Reset Form',
+			  handler: function(btn, evt)
+			  {
+				  frm.getForm().reset();
+				  imageControl.getForm().reset();
+				  Ext.getCmp('newImage').update('<img src="images/no_image.png" alt="Project Image" />');
+			  },
+			  scope: this
+			}
+		  ],
+		  layout:{
+			align:'right',
+			type:'hbox'
+		  },
+		  defaults:{
+			width: 100,
+			margins:
+			{
+			  top : 5,
+			  bottom : 5,
+			  left: 5,
+			  right : 5
+			}
+				  
+		  },
+		  renderTo: 'buttonPanel',
+		  width:600
+	  });
+	  Ext.QuickTips.init();		
+	}
+
+	Ext.onReady(drawForm);
+  </script>
+{{/script}}
+{{breadcrumbs}}
+  &gt; <a href="createProject.html">{#title#}</a>
+{{/breadcrumbs}}
+{{main}}
+  <h1 id="title">Create a Project</h1>
+
+	<div id="message"></div>
+  <div id="projectForm"></div>
+  <div id="imageForm"></div>
+  <div id="buttonPanel"></div>
+	<div> <p>--or--</p>
+	<form id="uploadForm" action="{#SITE_ROOT#}/{#xmlUrl#}" method="post" enctype="multipart/form-data">
+		Form XML : <input type="file" name="projectXML" /><br />
+		<input type="submit" name="Submit" value="Submit" />
+	</form>
+	</div>
+	
+{{/main}}

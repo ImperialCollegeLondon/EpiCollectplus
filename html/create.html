@@ -1,0 +1,105 @@
+{{script}}
+<script type="text/javascript">
+	function expand(divId, rowId)
+	{
+		var newText = document.getElementById(divId).cloneNode(true);
+		var infoDiv = document.getElementById("validationMessages");
+		if(infoDiv.firstChild)
+		{
+			infoDiv.replaceChild(newText, infoDiv.firstChild);
+		}
+		else
+		{
+			infoDiv.appendChild(newText);	
+		}
+		newText.style.display = 'block';
+		
+		var tbl = document.getElementById("projectTable");
+		
+		for(var i = 0; i < tbl.rows.length; i ++)
+		{
+			
+			if(tbl.rows[i].id == rowId)
+			{
+				tbl.rows[i].className = "verrors";
+			}
+			else
+			{
+				tbl.rows[i].className = "";
+			}
+		}
+		
+	}
+</script>
+<style type="text/css">
+	ol 
+	{
+		padding-left: 20px !important;
+	}
+	
+	li
+	{
+		margin : 5px 5px 5px 5px !important;
+	}
+	
+	table
+	{
+		display: inline-block;
+		width: 40%;
+		vertical-align: top;
+		margin-right : 0;
+	}
+
+	td
+	{
+		padding: 5px 5px 5px 5px !important;
+	}	
+	
+	.failure
+	{
+		color: rgb(200,0,0);
+		font-weight : bold;
+	}
+
+	.success
+	{
+		color: rgb(0, 100, 0);
+		font-weight : bold;
+	}
+
+	.infobox
+	{
+		display: inline-block;
+		width: 40%;
+		vertical-align: top;
+		margin-left:0;
+	}
+	
+	div.verrors
+	{
+		display : none;
+		background : #EEEEEE;
+		padding : 10px 10px 10px 10px;
+		border-radius: 10px;
+	}
+	
+	tr.verrors td
+	{
+		background : #EEEEEE;
+	}
+	
+</style>
+{{/script}}
+{{main}}
+	<h1>Create a project</h1>
+	<p>The xml files listed below are in the XML directory ({#xmlFolder#}), their validation state is also shown, to create the project click the create project button next to it.</p>
+
+		{#projects#} <div id="validationMessages" class="infobox"> </div>
+		
+	<h3 style="margin-top:20px">Upload a new XML project</h3>
+	<form method="post" enctype="multipart/form-data" action="{#SITE_ROOT#}/createProject.html" >
+		Choose XML file to upload and validate <input type="file" name="xml" />
+		<br /> <input type="submit" value="Upload file" name="submit" />
+	</form>
+
+{{/main}}

@@ -1,0 +1,80 @@
+{{script}}
+	<link rel="stylesheet" type="text/css" href="Ext/ext-all.css" />
+	<script type="text/javascript" src="Ext/ext-base-debug.js"></script>
+	<script type="text/javascript" src="Ext/ext-all-debug.js"></script>
+	<script type="text/javascript">
+		function init()
+		{
+			var frmItems = [];
+			
+			var nameField = new Ext.form.TextField({
+				allowBlank: false,
+				id: "name",
+				fieldLabel: "Real Name", 
+				value: '{#Name#}'
+			});
+			frmItems.push(nameField);
+			
+			var emailField = new Ext.form.TextField({
+				allowBlank: false,
+				id: "email",
+				fieldLabel: "Email address",
+				vtype:"email",
+				value: '{#Email#}'
+			});
+			frmItems.push(emailField);
+			
+			var frm = new Ext.form.FormPanel({
+				border :false,
+				buttonAlign: 'right',
+				buttons : [
+					{
+						id:"submit",
+						text:"Submit Changes",
+						formBind:true
+					},
+					{
+						id:"reset",
+						text:"Reset"
+					}
+				],
+				defaults: {
+					anchor : "100%"
+				},
+				labelWidth: 150,
+				url: '/saveUser',
+				items: frmItems,
+				renderTo:"updateUsr",
+				width:600
+			});
+			
+			frm.getFooterToolbar().get('submit').on('click', function(){frm.getForm().submit({
+				success:function(form, action)
+				{
+					var msgEle = Ext.get("message");
+					msgEle.addClass("success");
+					msgEle.removeClass("failure");
+					msgEle.update(action.result.msg);
+				},
+				failure:function(form, action)
+				{
+					var msgEle = Ext.get("message");
+					msgEle.addClass("failure");
+					msgEle.removeClass("success");
+					msgEle.update(action.result.msg);
+				}
+			})}, this);
+			frm.getFooterToolbar().get('reset').on('click', function(){frm.getForm().reset()}, this);
+		}
+	
+		Ext.onReady(init);
+	</script>
+{{/script}}
+{{breadcrumbs}}
+> <a href="updateUser.html">Update User</a>
+{{/breadcrumbs}}
+{{main}}
+	<h1>Update your details</h1>
+	<div id="message"></div>
+	<div id="updateUsr"></div>
+{{/main}}

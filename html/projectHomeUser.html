@@ -1,0 +1,194 @@
+{{script}}
+	<meta http-equiv="Pragma" content="no-cache" />
+	
+	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/Ext/ext-all.css" />
+
+	<style type="text/css">
+		/*#projectDescription
+		{
+			border-bottom: 1px solid #CCCCCC;
+			margin-bottom :10px;
+			padding-bottom: 5px;
+			min-height : 75px;
+			
+		}*/
+	</style>
+	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-base-debug.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-all-debug.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollect2.js"></script>
+	<script type="text/javascript">
+	var uid = "<?php include('./getUserID.php'); ?>";
+		
+			var survey = {};
+			var pnl;
+			var gp;
+		
+			Ext.onReady(init);
+			
+			function init(){
+				Ext.QuickTips.init();
+				Ext.Ajax.request({
+					url:location.href.replace(/\/(\?.*)?$/, "") + ".xml",
+					success: function(response, options)
+					{
+						survey = new EcSurvey();
+						survey.parse(response.responseXML);
+						
+						//Ext.get("title").insertHtml('beforeEnd',survey.name);
+						//document.title += survey.name;
+						pnl = new Ext.Panel({
+							id:'SearchPanel',
+							width: Ext.getBody().getWidth() * 0.9,
+							height: Ext.getBody().getHeight() * 0.75,
+							border: false,
+							layout:{
+								type : 'vbox',
+								align : 'center',
+								defaultMargins: {
+									top: 5,
+									left: 5,
+									right : 5,
+									bottom : 5
+								}
+							},
+							items : [
+								/*{
+									xtype:'label',
+									html :'<h1>Home</h1>'
+								},*/
+								{
+									xtype:'label',
+									text :'To view all data from a particular table click the relevant button, or to search,  enter an ID in the text box and then click the button'
+								}
+							]
+						});
+						
+						
+						for(tbl in survey.tables)
+						{
+							if(!survey.tables[tbl].main)continue;
+							
+							pnl.add(new Ext.Panel({
+								border: false,
+								defaults : {
+									margins: {
+										left : 2,
+										right : 2,
+										top : 2,
+										bottom : 2
+									}
+								},
+								width: Ext.getBody().getWidth() * 0.8,
+								
+								layout:'hbox',
+								items: [
+								new Ext.form.Label(
+								{	
+									html: "<b>" + tbl + "</b>",
+									width :Ext.getBody().getWidth() * 0.3,
+									style : 'text-align:right;'
+								}),
+								new Ext.Button({
+									id: tbl + "Btn",
+									text:"View All Entries",
+									width:100,
+									listeners:{
+										'click':show
+									}
+								}),
+								new Ext.form.Label(
+								{	
+									html: "Or",
+									width : 25,
+									labelStyle:'text-align:center'
+									
+								}),
+								new Ext.form.TextField({
+									id : tbl + "Search",
+									width: 150,
+								
+									emptyText: 'Enter Id to search for...',
+									listeners: {
+										'specialkey' : function(fld, e)
+										{
+											
+											if(fld.getValue() != "" && (e.getKey() == e.ENTER || e.getKey() == e.TAB ))
+											{
+												pnl.hide();
+												var fName = fld.id.replace('Search', '');
+												addBreadcrumb(fName);				
+												showTable(fName, survey.tables[fName].key, fld.getValue());
+											}
+										}
+									}
+								}),
+								new Ext.Button({
+									id : tbl + "SearchBtn",
+									text : 'Search',
+									width: 75,
+									emptyText: 'Enter Id to search for...',
+									listeners: {
+										'click' : function(btn, e)
+										{
+											fld = Ext.getCmp(btn.id.replace('Btn', ''));
+											if(fld.getValue() != "")
+											{
+												pnl.hide();
+												var fName = fld.id.replace('Search', '');
+												addBreadcrumb(fName);				
+												showTable(fName, survey.tables[fName].key, fld.getValue());
+											}
+										}
+									}
+								}),
+								new Ext.Button({
+									id : tbl + "AddBtn",
+									text : 'Add ' + tbl,
+									width: 75,
+									listeners: {
+										'click' : function(btn, e)
+										{
+											var tbl = survey.tables[btn.id.replace('AddBtn','')];
+											frm = tbl.getForm();
+											frm.anchor = "100% 100%";
+											win = new Ext.Window({
+												title: "Add " + tbl.name,
+												items:[frm],
+												layout : 'anchor',
+												modal:true,
+												width: Ext.getBody().getWidth() * 0.5,
+												height: Ext.getBody().getHeight() * 0.75
+											});
+											frm.labelWidth = Ext.getBody().getWidth() * 0.2;
+											frm.getFooterToolbar().get('cnl').on('click', function(){win.close()}, tbl);
+											frm.getFooterToolbar().get('sub').on('click', function(){
+												this.addEntry(frm.getForm().getValues(), function(){win.close()});
+											}, tbl);
+											win.show();
+										}
+									}
+								})]
+							}));
+						}
+						pnl.render('vSearch');
+					}
+				});
+			}
+			
+			function show(btn, evt)
+			{
+				var tbl = btn.id.replace('Btn','');
+				location.replace(location.href.replace(/\/$/, '') + "/" + tbl);
+			}
+	
+	</script>
+{{/script}}
+{{breadcrumbs}}
+&gt; <a href=".">Project : {#projectName#}</a>
+{{/breadcrumbs}}
+{{main}}
+	<h1>{#projectName#}</h1><div id="projectPanel"></div>
+	<div id="projectDescription" style="display:none"><img class="projectImage" src="{#projectImage#}" alt="Project Image" />{#projectDescription#}</div>
+	<div id="vSearch"></div>
+	<div id="adminMenu" class="hMenu">{#adminMenu#}</div>
+{{/main}}

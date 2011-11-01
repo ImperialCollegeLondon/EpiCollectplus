@@ -1,0 +1,125 @@
+/* RESET!!! */
+html, body, div, img, h1, h2, h3, h4, h5, h6, ul, ol, dl, li, dt, dd, p, blockquote, pre, form, fieldset, table, th, td { margin: 0; padding: 0; border-spacing:0; }  
+
+img{ border:0;}
+body{
+	font-family: "Arial";
+	font-size: 14px;
+	margin : 50px 50px 50px 50px;
+	min-width: 760px;
+}
+
+h1
+{
+	border-bottom : 1px solid #CCCCCC;
+	color: #808080;
+	font-size : 20px;
+	padding-bottom : 5px;
+	margin-bottom : 1; 
+}
+
+a	
+{
+	text-decoration : none;
+}
+
+a:hover
+{
+	text-decoration : underline;
+}
+
+a:visited
+{
+	color : #0000FF;
+}
+
+p
+{
+	margin : 0.5em 0 0.5em 0;	
+}
+
+th
+{
+	background: #EEEEEE;
+	border-bottom : 2px solid #CCCCCC;
+}
+
+
+
+.alt td
+{
+	background: #d8e2fe;
+	padding: 5px 5px 5px 5px;
+}
+
+.bubbleth
+{
+	background: transparent;
+	font-weight : bold;
+	border:none;
+	margin-right : 3px !important;
+	padding : 2px 2px 2px 2px;
+}
+
+.projectImage
+{
+	float:right;
+}
+
+.hMenu
+{
+	width : 75%;
+	text-align : center;
+	
+}
+
+.menuItem
+{
+	display : inline-block;
+	width: 150px;
+}
+
+.rightie
+{
+	float: right;
+}
+
+.leftie
+{
+	float: left;
+}
+
+#loginStatus{
+	/*float:right;
+	margin-top: -2px;*/
+	display: none;
+}
+
+#main
+{
+	min-height: 400px;
+	border: 1px solid #cccccc;
+	padding: 10px 10px 10px 10px;
+}
+
+#nav{
+	float: right;
+	margin-top : -15px;
+}
+
+#nav a{
+	padding: 0px 5px 0px 5px;
+}
+
+#vSearch
+{
+	/*border : 1px solid #CCCCCC;	*/
+}
+
+#breadcrumbs
+{
+	margin : 5px 0px 0px 0px;
+	padding : 5px 2px 5px 2px;
+	border-top: 1px solid #CCCCCC;
+	/*border-bottom: 1px solid #CCCCCC;*/
+}

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html>
+<html>
+	<head>
+		
+		<link rel="stylesheet" type="text/css" href="css/EpiCollect2.css" />
+		<link rel="icon" href="favicon.ico" type="image/x-icon" /> 
+		<link rel="shortcut icon" href="favicon.png" type="image/png" />
+		<style type="text/css">
+			h2
+			{
+				margin : 1em 0px 0.5em 0px;	
+			}
+		
+			.code
+			{
+				font-family : "Courier New";
+				background: #EEEEEE;
+				border : 1px solid #CCCCCC;
+				margin : 0.5em 10px 0.5em 50px;
+				padding : 5px 5px 5px 5px;
+			}
+			
+		</style>
+		<title>EpiCollect+</title>
+	</head>
+	<body>
+		<div id="pageHead"><a href="index.html"><img alt="EpiCollect Plus " src="images/logo_new_transparent.png" /></a></div>
+		<div id="nav"> 
+		
+		</div> 
+		
+		<div id="breadcrumbs"><div id="loginStatus">
+			
+		</div></div>
+		
+		<div id="main">
+			<h1>Welcome to EpiCollect+</h1>
+			<h2>Setting up EpiCollect+ on Apache</h2>
+			<p>In order to use EpiCollect you need to add a couple of lines to your Apache httpd conf file. At the end of the file please add the following if you are deploying epicollect in the root of the website (i.e. http://www.epicollect.net/)</p>
+			<p class="code">
+				RewriteEngine on<br/>
+				RewriteRule .* main.php	
+			</p>
+			<p>Or if you are deploying EpiCollect in a sub directory of a website (e.g. http://www.example.com/epicollectplus)</p>
+			<p class="code">
+				RewriteEngine on<br/>
+				RewriteRule /epicollectplus/.* /epicollectplus/main.php	
+			</p>
+			<h2>Setting up EpiCollect+ on IIS 7</h2>
+			<p>To use EpiCollect+ with IIS 7 you will need to install <a href="http://www.iis.net/download/urlrewrite">URL rewrite</a> on your IIS server. Then navigate through IIS manager to the website containing your EpiCollect instnace, open the URL Reqrite option, select 'Add rule...' from the right hand side and set up a rule to direct all requests to the root directory of EpiCollect+ to main.php.
+			The below example shows a URL Rewrite for an EpiCollect instance in a directory such as http://www.example.org/EpiCollect2/</p>
+			<img src="images/URLReWrite.png" alt="URL Rewrite Screenshot" style="border:1px solid #CCCCCC;margin:10px 10px 10px 10px;"/>
+			<h2>Other Web Servers</h2>
+			<p>If you wish to set up EpiCollect+ on a different web server or have any questions please <a href="mailto:daanensen@imperial.ac.uk">Contact Us</a></p>
+		</div>
+		<div id="foot"> 
+			<span class="leftie">Hosted and Developed at <a href="http://www.imperial.ac.uk" target="_blank">Imperial College London</a> | <a href="mailto:d.aanensen@imperial.ac.uk">Contact us </a></span>
+			<span class="rightie"><a href="http://code.google.com/p/epicollect"  target="__blank"><img src="images/googleCode.png" style="vertical-align:middle" alt="Visit EpiCollect on Google Code"></a>
+				<a href="http://www.twitter.com/epicollect" target="__blank"><img src="http://twitter-badges.s3.amazonaws.com/follow_us-b.png" alt="Follow EpiCollect on Twitter" style="vertical-align:middle"/></a></span>
+		</div> 
+	</body>
+</html>

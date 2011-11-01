@@ -1,0 +1,16 @@
+{{main}}
+	<h2>Enter Database Settings</h2>
+	<p>Please fill out the form below to give EpiCollect access to your MySQL database. This form will only work once, after the initial settings have been written the settings file must be edited directly. All the below credentials
+	will be written to a file in an encrypted format.</p>
+	<form method="post" action="writeSettings">
+		<p class="formRow"><b>MySQL Server</b><input type="text" name="serverName" /></p>
+		<p class="note">The hostname or IP address of the MySQL server you wish to store your EpiCollect data on.</p>
+		<p class="formRow"><b>Database Name</b><input type="text" name="dbName" /></p>
+		<p class="note">The name of the database instance within MySQL that will store the epicollect data.</p>
+		<p class="formRow"><b>User Name</b><input type="text" name="userName" /></p>
+		<p class="note">The username used to access the EpiCollect database (should have SELECT, UPDATE, INSERT and DELETE rights to the database)</p>
+		<p class="formRow"><b>Password</b><input type="password" name="password" /></p>
+		<p class="note">The password that is associated with username</p>
+		<p><input type="submit" name="submit" value="Save Settings" /> <input type="reset" name="reset" value="Clear Data" /></p>
+	</form>
+{{/main}}

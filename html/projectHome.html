@@ -1,0 +1,212 @@
+{{script}}
+	<meta http-equiv="Pragma" content="no-cache" />
+	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/Ext/ext-all.css" />
+	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/Ext/examples/ux/css/Portal.css" /> 
+	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-base-debug.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-all-debug.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/examples/ux/Portal.js"></script> 
+    <script type="text/javascript" src="{#SITE_ROOT#}/Ext/examples/ux/PortalColumn.js"></script> 
+    <script type="text/javascript" src="{#SITE_ROOT#}/Ext/Examples/ux/Portlet.js"></script> 
+	<script type="text/javascript">
+		var descriptionPanel;
+		var menuPanel;
+		var formListPanel;
+		var usagePanel;
+		var usageChart;
+		var usageStore;
+		var projectPanel;
+		var c1Items = [descriptionPanel, formListPanel];
+		var c2Items = [usagePanel, menuPanel];
+
+		function init()
+		{
+			//loadLayout();
+			
+			var tools = [{
+				id:'gear',
+				handler: function(){
+					Ext.Msg.alert('Message', 'The Settings tool was clicked.');
+				}
+			},{
+				id:'close',
+				handler: function(e, target, panel){
+					panel.ownerCt.remove(panel, true);
+				}
+			}];
+			
+			descriptionPanel = new Ext.ux.Portlet({
+				id: 'descriptionPanel',
+				title: 'Project Description',
+				contentEl : 'projectDescription',
+				tools:tools
+			});
+			
+			menuPanel = new Ext.ux.Portlet({
+				id: 'menuPanel',
+				title: 'Project Menu',
+				contentEl : 'adminMenu',
+				tools:tools
+			});
+			
+			formListPanel = new Ext.ux.Portlet({
+				id: 'formListPanel',
+				title: 'Forms',
+				tools:tools,
+				items :[
+					{
+						xtype:'grid',
+						autoHeight: true,
+						columns:[{
+							header : 'Form Name',
+							sortable:  false,
+							dataIndex : 'Name',
+							renderer : function(val)
+							{
+								return "<a href=\"{#SITE_ROOT#}/{#projectName#}/" + val + "\">" + val + "</a>";
+							}
+						},
+						{
+							header : 'Entries',
+							sortable:  false,
+							dataIndex : 'entries'
+						},
+						{
+							header : 'Users',
+							sortable:  false,
+							dataIndex : 'users'
+						},
+						{
+							header : 'Devices',
+							sortable:  false,
+							dataIndex : 'devices'
+						}],
+						store : new Ext.data.JsonStore({
+							autoLoad :true,
+							url: location.href.replace(/\/$/, "")  + "/summary",
+							root: 'forms',
+							fields : [
+								{id:'Name', name: 'Name'},
+								{name: 'entries'},
+								{name: 'users'},
+								{name: 'devices'}
+							]
+						})
+						
+					}
+				]
+			});
+			
+			usageStore= new Ext.data.JsonStore({
+				autoLoad :true,
+				url: location.href.replace(/\/$/, "") + "/usage",
+				root: 'results',
+				fields : [
+					'dateField',
+					'entryTotal',
+					'userTotal'
+				]
+			});
+			
+			usageChart = {
+				xtype : 'linechart',
+				store: usageStore,
+				xField: 'dateField',
+				yField: 'entryTotal',
+				height: 150
+				
+			}
+			
+			usagePanel = new Ext.ux.Portlet({
+				id: 'usagePanel',
+				title: 'Project Activity',
+				tools:tools,
+				items: [
+					usageChart
+				]
+			});
+			
+			
+			
+			if(!localStorage["projectHomeLayout"])
+			{
+				c1Items = [descriptionPanel, formListPanel];
+				c2Items = [usagePanel, menuPanel];
+			}
+			else
+			{
+				loadLayout();
+			}
+			
+			
+			projectPanel = new Ext.ux.Portal({
+				renderTo : 'projectPanel',
+				width: Ext.getBody().getWidth() - 125,
+				border: false,
+				defaults :
+				{
+					style:'padding:0px 5px 5px 5px'
+				},
+				items : [{
+					columnWidth: .60,
+					items:c1Items
+				},
+				{
+					columnWidth: .40,
+					items: c2Items
+				}],
+				listeners: {
+					'drop': function(e){
+						saveLayout();
+					}
+				}
+			})
+			
+			Ext.EventManager.onWindowResize(function(){
+				projectPanel.setWidth(Ext.getBody().getWidth() - 125);
+				
+			})
+			
+		}
+		
+		function saveLayout()
+		{
+			var cArr = []; //Column ARRay
+			projectPanel.items.each(function(it){
+				var rArr = []; //Row ARRay
+				it.items.each(function(itt){
+					rArr.push(itt.id);
+				})
+				cArr.push(rArr);
+			});
+			localStorage["projectHomeLayout"] = Ext.util.JSON.encode(cArr);
+		}
+		
+		function loadLayout()
+		{
+			//if(!localStorage["projectHomeLayout"]) return;
+			var layout = [[],[]];
+			var names = Ext.util.JSON.decode(localStorage["projectHomeLayout"]);
+			for(var i = 0; i < 2; i++)
+			{
+				for(var j = 0; j < names[i].length; j++)
+				{
+					
+					layout[i].push(this[names[i][j]]);
+				}
+			}
+			c1Items = layout[0];
+			c2Items = layout[1];
+		}
+		
+		Ext.onReady(init);
+	
+	</script>
+{{/script}}
+{{breadcrumbs}}
+&gt; <a href="projectHome.html?name={#projectName#}">Project : {#projectName#}</a>
+{{/breadcrumbs}}
+{{main}}
+	<h1>{#projectName#}</h1><div id="projectPanel"></div>
+	<div id="projectDescription"><img class="projectImage" src="{#projectImage#}" alt="Project Image" />{#projectDescription#}</div>
+	<div id="adminMenu" class="hMenu">{#adminMenu#}</div>
+{{/main}}
