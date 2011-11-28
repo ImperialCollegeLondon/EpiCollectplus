@@ -772,10 +772,10 @@ var EcTable = function(conf)
 				items : [
 					{text: 'Comma separated', handler: function () {
 						window.open(Ext.getCmp(this.name + '_grid').getStore().proxy.url.replace(".json", ".csv") + (this.filterValue ? "?" + this.filterField + "=" + this.filterValue : ""));
-					}},
+					}, scope: this},
 					{text: 'Tab separated', handler: function () {
 						window.open(Ext.getCmp(this.name + '_grid').getStore().proxy.url.replace(".json", ".tsv") + (this.filterValue ? "?" + this.filterField + "=" + this.filterValue : ""));
-					}}
+					}, scope: this}
 				]
 			})
 		

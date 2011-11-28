@@ -1308,8 +1308,10 @@
 				{
 					if(preg_match("/^Message\s?:/", $e->getMessage()))
 					{
-						echo $e->getMessage();
+						header("HTTP/1.1 409 Conflict");
 					}
+					header("HTTP/1.1 500 Internal Server Error");
+					echo $e->getMessage();
 				}
 			}
 			else{

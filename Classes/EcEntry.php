@@ -71,7 +71,7 @@
 			$parent = $this->getParentEntry();
 			if($parent !== false && $parent["count"] == 0)
 			{
-				throw new Exception("Message: The parent of this recored is not present on the server.");
+				throw new Exception("Message: The parent of this entry is not present on the server.");
 			} 
 			
 			//TODO: need to get the user details from the phone
@@ -292,7 +292,10 @@
 			for($i = 0; $i < count($this->form->branches); $i++)
 			{
 				$branches = $this->form->survey->tables[$this->form->branches[$i]]->get(array($this->form->key => $this->key));
-				for($j = 0; j < count($branches[$this->form->branches][$i]); $j++) array_push($branchEntries, $branches[$this->form->branches][$j]);
+				for($j = 0; $j < count($branches[$this->form->branches[$i]]); $j++)
+				{
+					array_push($branchEntries, $branches[$this->form->branches[$i]][$j]);
+				}
 			}
 		}
 		
