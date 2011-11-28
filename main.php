@@ -1265,8 +1265,8 @@
 					break;
 				default:
 					//TODO: xml get/add/update for forms/tables from the website
-					
-					if(!array_key_exists("formCrumbs", $_SESSION) || !$prj->getPreviousTable($frmName))// || !preg_match("/{$prj->name}\//",$_SERVER["HTTP_REFERER"]))
+					$referer = array_key_exists("HTTP_REFERER", $_SERVER) ? $_SERVER["HTTP_REFERER"] : "";
+					if(!array_key_exists("formCrumbs", $_SESSION) || !$prj->getPreviousTable($frmName) || !preg_match("/{$prj->name}\//", $referer))
 					{
 						$_SESSION["formCrumbs"] = array();
 					}
