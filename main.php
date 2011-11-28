@@ -1265,14 +1265,31 @@
 					break;
 				default:
 					//TODO: xml get/add/update for forms/tables from the website
+					
+					if(!array_key_exists("formCrumbs", $_SESSION) || !$prj->getPreviousTable($frmName) || !preg_match("/{$prj->name}\//",$_SERVER["HTTP_REFERER"]))
+					{
+						$_SESSION["formCrumbs"] = array();
+					}
+					$p = "";
 					if(array_key_exists("prevForm", $_GET))
 					{	
+						
 						$pKey = $prj->tables[$_GET["prevForm"]]->key;
-						$p = "&gt; <a href=\"{$_GET["prevForm"]}\">{$_GET["prevForm"]} : $_GET[$pKey] </a>";
+						$_SESSION["formCrumbs"][$_GET["prevForm"]] =  $_GET[$pKey];
+						//if we've come back up a step we need to remove the entry. We assume that the crumbs are in the correct order to 
+						//draw them in the correct order
 					}
-					else 
+					
+					foreach($_SESSION["formCrumbs"] as $k => $v)
 					{
-						$p = "";
+						if($prj->tables[$k]->number >= $prj->tables[$frmName]->number)
+						{
+							unset($_SESSION["formCrumbs"][$k]);
+						}
+						else
+						{
+							$p .= "&gt; <a href=\"{$k}\">{$k} : $v </a>";
+						}
 					}
 					$vars = array("prevForm" => $p,"projectName" => $prj->name, "formName" => $frmName, "adder" => "true", "admin" =>  "true" );
 					echo applyTemplate("base.html", "./FormHome.html", $vars);

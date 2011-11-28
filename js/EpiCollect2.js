@@ -58,8 +58,7 @@ var BranchPanel = Ext.extend(Ext.Panel, {
 			collapsed : true,
 			collapsible : true,
 			title : "Click the arrow to expand"
-			
-		})
+		});
 		
 		BranchPanel.superclass.initComponent.call(this);
 	}
@@ -625,7 +624,7 @@ var EcTable = function(conf)
 			var fk = this.key;
 			var fn = this.name;
 			cols.push({
-				id: 'childEntries', header : survey.getNextTable(this.name).name + ' Entries', dataIndex : 'childEntries', sortable:false,  menuDisabled: true, renderer: function(value, metaData, record, rowIndex, colIndex, store)
+				id: 'childEntries', header : survey.getNextTable(this.name).name + ' Entries', dataIndex : 'childEntries', sortable:true,  menuDisabled: true, renderer: function(value, metaData, record, rowIndex, colIndex, store)
 				{		
 					if(value == "")
 					{
@@ -1306,6 +1305,15 @@ var EcTable = function(conf)
 			
 			if(this.fields[this.fld].fkTable)//Detect if the field is a foreign key
 			{
+				var url = location.href;
+				url = url.replace("/" + this.name, "");
+				if(url.indexOf(survey.name) < 0)
+				{
+					if(url.charAt(url.length -1) != "/") url += "/";
+					url += survey.name;
+				}
+				
+				
 				if(this.branchOf) continue;
 				ctrl = {};
 				ctrl.id = this.fld;
@@ -1326,7 +1334,7 @@ var EcTable = function(conf)
 					fields : [this.fld],
 					proxy: new Ext.data.HttpProxy({
 						method: 'GET',
-						url : './' + this.fields[this.fld].fkTable + '.json'
+						url : url + (url.charAt(url.length -1) == "/" ? "" : "/")  + this.fields[this.fld].fkTable + '.json'
 					}),
 					root : this.fields[this.fld].fkTable,
 					totalProperty : 'count'
@@ -1346,12 +1354,13 @@ var EcTable = function(conf)
 				ctrl.fkChildTbl = this.fields[this.fld].fkChildTbl;
 				
 				ctrl.listeners = {
-					'expand' : function()
+					'expand' : function(cbo)
 					{
 						if(Ext.getCmp(this.fkParentField))
 						{
+							
 							if(Ext.getCmp(this.fkParentField).getValue()){
-								this.store.load({
+								cbo.store.load({
 									callback : function (recs, opts, success) {
 									
 										if(recs.length == 0)
@@ -1368,6 +1377,7 @@ var EcTable = function(conf)
 								this.collapse();
 							}	
 						}
+						
 					},
 					'select' : function(cbo, rec,idx)
 					{
@@ -1397,7 +1407,8 @@ var EcTable = function(conf)
 						
 							Ext.getCmp(cbo.fkChildField).enable();
 						}
-					}
+					},
+					scope: ctrl
 				};
 			}
 			else
@@ -1775,6 +1786,23 @@ var EcField = function()
 		else if(this.type == "group")
 		{
 			this.form = xml.getAttribute("group_form");
+		}
+		else
+		{
+			for(t in survey.tables)
+			{
+				if(survey.tables[t].key == this.id)
+				{
+					//FUTURE-PROOF : if we want to allow the foreign key field to have a differnt name to the primary key field
+					this.fkParentTbl = survey.getPrevTable(survey.tables[t].name).name;
+					this.fkParentField = survey.getPrevTable(survey.tables[t].name).key;
+					this.fkChildTbl = survey.getNextTable(survey.tables[t].name).name;
+					this.fkChildField = survey.getNextTable(survey.tables[t].name).key;
+					
+					this.fkTable = survey.tables[t].name;
+					this.fkField = survey.tables[t].key;
+				}
+			}
 		}
 		
 		this.text = xml.getElementsByTagName('label')[0].firstChild.data;
