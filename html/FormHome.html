@@ -1,6 +1,36 @@
 {{style}}
 	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/Ext/ext-all.css" />
 	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/js/fileuploadfield.css" />
+	<style>
+		.cp-item {
+			vertical-align: top;
+			display: inline-block;
+			margin-left : 10px;
+		}
+		
+		.cp-item img {
+			margin: 0;
+		}
+		
+		.entry
+		{
+			border-bottom : 1px solid #CCCCCC;
+			background-color : #EEEEEE;
+			margin : 0;
+			padding : 5px 5px 5px 5px;
+			
+		}
+		
+		.nolocation
+		{
+			font-style : italic; 
+		}
+		
+		#timeText
+		{
+			width : 30em;
+		}
+	</style>
 {{/style}}
 
 {{script}}
@@ -38,36 +68,7 @@
 		
 		Ext.onReady(init);
 	</script>
-	<style>
-		.cp-item {
-			vertical-align: top;
-			display: inline-block;
-			margin-left : 10px;
-		}
-		
-		.cp-item img {
-			margin: 0;
-		}
-		
-		.entry
-		{
-			border-bottom : 1px solid #CCCCCC;
-			background-color : #EEEEEE;
-			margin : 0;
-			padding : 5px 5px 5px 5px;
-			
-		}
-		
-		.nolocation
-		{
-			font-style : italic; 
-		}
-		
-		#timeText
-		{
-			width : 30em;
-		}
-	</style>
+	
 {{/script}}
 {{breadcrumbs}}
 &gt; <a href="../{#projectName#}">Project : {#projectName#}</a> {#prevForm#} &gt; Form : {#formName#}

@@ -1560,7 +1560,7 @@ var EcTable = function(conf)
 								},
 								failure : function(res, opts)
 								{
-									alert(res.responseText);
+									alert(res.responseText.replace(/Message\s?:/,""));
 								},
 								scope: this
 							});

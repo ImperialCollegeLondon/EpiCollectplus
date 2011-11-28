@@ -300,7 +300,12 @@ class EcProject{
 		
 		public function getPreviousTable($tblName)
 		{
+			$tbl = false;
 			$num = $this->tables[$tblName]->number - 1;
+			
+			//if there is no parent table return false;
+			if($num === 0) return false;
+			
 			$tbl = false;
 				
 			foreach($this->tables as $t)

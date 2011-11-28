@@ -1162,13 +1162,21 @@
 				}
 				else
 				{
-					header("HTTP 1.1 405");
+					header("HTTP/1.1 405 Bad Request");
 					echo "{\"success\":false, \"msg\":\"$key is a required field\"}";
 					return;
 				}
 			}
-			$res = $ent->post();
-			echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
+			try
+			{
+				$res = $ent->post();
+				echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
+			}
+			catch(Exception $e)
+			{
+				header("HTTP/1.1 409 Conflict");
+				echo $e->getMessage();
+			}
 		}
 		elseif($_SERVER["REQUEST_METHOD"] == "DELETE")
 		{

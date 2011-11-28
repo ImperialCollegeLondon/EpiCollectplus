@@ -67,19 +67,12 @@
 			{
 				$this->deviceId = "web upload";
 			}
-			
-			foreach($this->form->survey->tables as $tbl)
+				
+			$parent = $this->getParentEntry();
+			if($parent !== false && $parent["count"] == 0)
 			{
-				if($this->form->number == ($tbl->number + 1) && array_key_exists($tbl->key,$this->values))
-				{
-					$recs = $tbl->get(array($tbl->key => $this->values[$tbl->key]));
-					if($recs["count"] == 0)
-					{
-						throw new Exception("Message : The parent record referenced by this entry does not exist on the server.");
-					}
-				}
-			}
-			
+				throw new Exception("Message: The parent of this recored is not present on the server.");
+			} 
 			
 			//TODO: need to get the user details from the phone
 			try{
@@ -252,11 +245,31 @@
 			$db->do_query($sql);
 		}
 		
+		
+		/*
+		 * returns the parent entry for the proposed entry. Either the entry from the main table with the next lowest number, or the form of which this table is a branch.
+		 * 
+		 * if the entry's table has no parent the function returns false, if the entry should have a parent and doesn't then the function returns array( count => 0, parentTableName => array());
+		 */
 		public function getParentEntry()
 		{
-			$tbl = $this->form->survey->getPreviousTable($this->form->name, true);
-			$ents = $tbl->get(array($tbl->key => $this->values[$tbl->key]));
-			return is_array($ents) ? $ents[0] : $ents;
+			if($this->form->branchOf)
+			{
+				$tbl = $this->form->survey->tables[$this->form->branchOf];
+			}
+			else
+			{
+				$tbl = $this->form->survey->getPreviousTable($this->form->name, true);
+			}
+			if($tbl)
+			{
+				$ents = $tbl->get(array($tbl->key => $this->values[$tbl->key]));
+			}
+			else 
+			{
+				$ents = false;
+			}
+			return $ents;
 		}
 		
 		public function getChildEntries()
@@ -270,7 +283,7 @@
 			{
 				$children = array();
 			}
-			return $children;
+			return $children[$tbl->name];
 		}
 		
 		public function getBranchEntries()
@@ -279,7 +292,7 @@
 			for($i = 0; $i < count($this->form->branches); $i++)
 			{
 				$branches = $this->form->survey->tables[$this->form->branches[$i]]->get(array($this->form->key => $this->key));
-				for($j = 0; j < count($branches); $j++) array_push($branchEntries, $branches[$j]);
+				for($j = 0; j < count($branches[$this->form->branches][$i]); $j++) array_push($branchEntries, $branches[$this->form->branches][$j]);
 			}
 		}
 		
