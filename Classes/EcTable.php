@@ -300,10 +300,17 @@
 			{
 				$sql = "SELECT DISTINCT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded FROM entry e {{joinclause}} WHERE e.projectName = '{$this->survey->name}' AND e.formName = '{$this->name}' {{whereclause}} ORDER BY e.$sortField $sortDir";
 			}
+			elseif (preg_match("/childEntries/i", $sortField))
+			{
+				$childForm = $this->survey->getNextTable($this->name, true);
+				$sql = "SELECT DISTINCT idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded, c.childEntries FROM entry e LEFT JOIN entryvalue ev ON ev.entry = e.idEntry LEFT JOIN (SELECT Value, count(1) as childEntries FROM EntryValue where projectName = '{$this->survey->name}' AND formName = '{$childForm->name}' and fieldName = '{$this->key}' GROUP BY value) c ON c.value = ev.value {{joinclause}} WHERE ev.projectName = '{$this->survey->name}' AND ev.formName = '{$this->name}' and ev.fieldName = '{$this->key}' {{whereclause}} ORDER BY c.childEntries $sortDir";
+				
+			}
 			else
 			{
 				$sql = "SELECT DISTINCT idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded FROM entry e LEFT JOIN entryvalue ev ON ev.entry = e.idEntry {{joinclause}} WHERE ev.projectName = '{$this->survey->name}' AND ev.formName = '{$this->name}' AND ev.fieldName = '{$sortField}'  {{whereclause}} ORDER BY ev.Value $sortDir";
 			}
+			
 			$sql2 = "SELECT count(DISTINCT entry) as ttl FROM entryvalue WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
 			
 			if(is_array($args) && count($args) > 0)
@@ -334,7 +341,7 @@
 				$sql = str_replace("{{joinclause}}", "", $sql);
 				$sql = str_replace("{{whereclause}}", "", $sql);
 			}
-			
+
 			if($limit > 0)
 			{
 				if($offset > 0)
