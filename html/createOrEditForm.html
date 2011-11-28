@@ -3,8 +3,8 @@
 		<link rel="stylesheet" type="text/css" href="../EpiSkins.css" />
 {{/style}}
 {{script}}				
-		<script type="text/javascript" src="../Ext/ext-base-debug.js"></script>
-		<script type="text/javascript" src="../Ext/ext-all-debug.js"></script> 
+		<script type="text/javascript" src="../Ext/ext-base.js"></script>
+		<script type="text/javascript" src="../Ext/ext-all.js"></script> 
 		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
 		<script type="text/javascript" src="../js/EpiCollect2.js"></script>
 		<script type="text/javascript" src="../js/formBuilder.js"></script>
@@ -16,8 +16,6 @@
 <div id="toolbox">
 		<a href="javascript:saveProject()">Save</a>
 </div>
-<div
-
 	<div class="columns">
 		<div id="source" class="column first">
 				<b>Form Elements</b><hr />
@@ -30,7 +28,7 @@
 								<a href="javascript:void(0)" onclick="popup($('#middle&gt;p'),'Preview', 'See a preview of what your form will look like when used on the iPhone or an Android phone')">?</a>
 						</div>
 						Preview: <a href="#webbie"  id="web" onclick="web();">Web</a>|<a href="#android"  id="web" onclick="android();">Android</a>|<a href="#iphone"  id="web" onclick="iphone();">iPhone</a>
-				</p>
+				
 		
         <hr />
         <div class="ui-sortable" id="destination">
@@ -63,7 +61,7 @@
 					 <!--<br><a href="http://www.epicollect.net/formHelp.asp#flags" target="_blank">Subtitle</a> <input name="subtitle" type="checkbox"><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Read-Only', 'The data in this field cannot be edited once it has been entered')">?</a></div>-->
 					 <br><div id="numericFlag" style="display: inline;"><a href="http://www.epicollect.net/formHelp.asp#flags" target="_blank">Numeric</a> <input name="numeric" type="checkbox"></div><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Numeric', 'The data in this field will be restricted to integer or decimal numbers')">?</a></div>
 					 <br><a href="http://www.epicollect.net/formHelp.asp#flags" target="_blank">Chartable</a> <input name="chart" type="checkbox"><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Chartable', 'The data in this field can be displayed in a chart. For text input fields this means the data must also be numeric.')">?</a></div>
-					 <br><div id="chartType">(pie<input name="pie" disabled="true" type="radio"> bar<input name="bar" disabled="true" type="radio">)</div><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Read-Only', 'Whether chartable data should be diplayed as a pie or bar chart.')">?</a></div>
+					 <br><div id="chartType">(pie<input name="pie" disabled="disabled" type="radio"> bar<input name="bar" disabled="disabled" type="radio">)</div><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Read-Only', 'Whether chartable data should be diplayed as a pie or bar chart.')">?</a></div>
 					 <input id="done" name="done" value="Done" type="submit">
 					 <input id="delete" name="delete" value="Delete" type="submit">
         </div>

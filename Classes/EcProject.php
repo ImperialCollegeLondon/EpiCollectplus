@@ -210,6 +210,27 @@ class EcProject{
 			
 			$this->uploadToServer = (string)$model->uploadToServer[0];
 			
+			foreach($this->tables as $t)
+			{
+				
+				if(!$t->isMain) continue;
+				$tn = $this->getNextTable($t->name, true);
+				
+				if($tn && !array_key_exists($t->key, $tn->fields))
+				{
+					
+					$f = new EcField();
+					$f->name = $t->fields[$t->key]->name;
+					$f->label = $t->fields[$t->key]->label;
+					$f->form = $tn;
+					$f->type = 'input';
+					$f->fkTable = $t->name;
+					$f->fkField = $t->key;
+					$tn->fields[$f->name] = $f;
+				}
+			
+			}
+			
 		}
 		
 		public function checkPermission($uid)
@@ -221,9 +242,32 @@ class EcProject{
 			return $obj ? $obj->role : $this->isPublic;
 		}
 		
-		private function getPermission ($lvl)
+		public function getNextTable($tblName, $mainOnly)
 		{
-				
+			$num = $this->tables[$tblName]->number + 1;
+			
+			$tbl = false;
+			
+			foreach($this->tables as $t)
+			{
+				if($t->number == $num)
+				{
+					if($t->isMain === "true" || !$mainOnly)
+					{
+						$tbl = $t;
+						break;
+					}
+					else
+					{
+						$num++;
+					}
+				}
+			}
+			return $tbl;
+		}
+		
+		private function getPermission ($lvl)
+		{	
 				if(!is_numeric($this->id) || strstr($this->id, ".")) return "ID {$this->id} is not properly set";
 				
 				global $auth;
@@ -252,6 +296,29 @@ class EcProject{
 				{
 						return "You do not have permission to update this project";
 				}
+		}
+		
+		public function getPreviousTable($tblName)
+		{
+			$num = $this->tables[$tblName]->number - 1;
+			$tbl = false;
+				
+			foreach($this->tables as $t)
+			{
+				if($t->number == $num)
+				{
+					if($t->isMain || !$mainOnly)
+					{
+						$tbl = $t;
+						break;
+					}
+					else
+					{
+						$num--;
+					}
+				}
+			}
+			return $tbl;
 		}
 		
 		private function setPermission ($emails, $lvl)

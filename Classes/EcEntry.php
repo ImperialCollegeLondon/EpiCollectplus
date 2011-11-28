@@ -1,12 +1,15 @@
 <?php
 	class EcEntry{
 		public $id;
+		/*
+		 * The value of the key field for this entry
+		 */
 		public $key;
 		public $form;
 		public $projectName;	//name of the project
 		public $formName;		//name of the form
 		public $deviceId;
-		public $created;
+		public $created = false;
 		public $uploaded;
 		public $user;
 		public $values = array(); //associative array of the entry values
@@ -52,6 +55,18 @@
 		public function post() // add!
 		{
 			global $auth;
+			
+			
+			if(!$this->created)
+			{
+				$dt = new DateTime();
+				$this->created = $dt->getTimestamp();
+			}
+			
+			if(!$this->deviceId)
+			{
+				$this->deviceId = "web upload";
+			}
 			
 			foreach($this->form->survey->tables as $tbl)
 			{
@@ -100,12 +115,14 @@
 				//else
 					//$sql = "SELECT isUsers FROM user WHERE email = {$_GET['email']}";
 				
-				$qry = "INSERT INTO entry (form, projectName, formName, DeviceId, created, uploaded, user) VALUES ({$this->form->id},'{$this->projectName}','{$this->formName}','{$this->deviceId}',{$this->created},now(),0);";
+				
+				$qry = "INSERT INTO entry (form, projectName, formName, DeviceId, created, uploaded, user) VALUES ({$this->form->id}," . $db->stringVal($this->projectName) . "," . $db->stringVal($this->formName) . "," . $db->stringVal($this->deviceId) . ",{$this->created},now(),0);";
 				$res = $db->do_query($qry);
+				
 				if($res !== true) return $res;
 				$this->id = $db->last_id();
 				//$this->fetch(); //get id of entry
-				
+								
 				$qry = "INSERT INTO entryvalue (field, projectName, formName, fieldName, value, entry) ";
 				$ins = array();
 				foreach(array_keys($this->values) as $key)
@@ -223,9 +240,11 @@
 		public function delete()
 		{
 			$db = new dbConnection();
-			//check for parent record
 			
-			
+			if(count($this->getChildEntries()) > 0 || count($this->getBranchEntries()) > 0)
+			{
+				throw new Exception("Message: Cannot delete entry {$this->key}, the entry has child or branch entries associated with it.");
+			}
 			
 			$sql = "DELETE from entryvalue where Entry = {$this->id}";
 			$db->do_query($sql);
@@ -235,7 +254,33 @@
 		
 		public function getParentEntry()
 		{
+			$tbl = $this->form->survey->getPreviousTable($this->form->name, true);
+			$ents = $tbl->get(array($tbl->key => $this->values[$tbl->key]));
+			return is_array($ents) ? $ents[0] : $ents;
+		}
 		
+		public function getChildEntries()
+		{
+			$tbl = $this->form->survey->getNextTable($this->form->name, true);
+			if($tbl)
+			{
+				$children = $tbl->get(array($this->form->key => $this->key));
+			}
+			else
+			{
+				$children = array();
+			}
+			return $children;
+		}
+		
+		public function getBranchEntries()
+		{
+			$branchEntries = array();
+			for($i = 0; $i < count($this->form->branches); $i++)
+			{
+				$branches = $this->form->survey->tables[$this->form->branches[$i]]->get(array($this->form->key => $this->key));
+				for($j = 0; j < count($branches); $j++) array_push($branchEntries, $branches[$j]);
+			}
 		}
 		
 	}

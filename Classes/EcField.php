@@ -87,7 +87,7 @@ class EcField{
 		
 		public function toXML()
 		{
-			$xml = "\n\t\t<{$this->type} name=\"{$this->name}\"";
+			$xml = "\n\t\t<{$this->type} ref=\"{$this->name}\"";
 			if($this->required) $xml .= ' required="true"';
 			if($this->isInt) $xml .= ' integer="true"';
 			if($this->isDouble) $xml .= ' double="true"';
@@ -254,7 +254,7 @@ class EcField{
 					if($res !== true) return $res;
 				}
 			}	
-			echo "$qry\n";
+			//echo "$qry\n";
 			return $res;
 		}
 		

@@ -97,7 +97,14 @@
 	function setupDb()
 	{
 		global $DBUSER, $DBNAME;
-		$db = new dbConnection($_POST["un"], $_POST["pwd"]);
+		try{
+			$db = new dbConnection($_POST["un"], $_POST["pwd"]);
+		}catch(Exception $e)
+		{
+			$_GET["redir"] = "pwd";
+			siteTest();
+			return ;
+		}
 		if(!$db)
 		{
 			echo "DB not connected";
@@ -125,15 +132,16 @@
 		{
 			if($qrys[$i] != "")
 			{
+				
 				$res = $db->do_multi_query($qrys[$i]);
 				if($res !== true && !preg_match("/already exists|Duplicate entry .* for key/", $res))
 				{
-					echo $res;
+					siteHome();
 					return;
 				}
 			}
 		}
-		echo "database set up";
+		siteHome();
 	}
 	
 	function assocToDelimStr($arr, $delim)
@@ -254,7 +262,8 @@
 			"js" => "text/javascript",
 			"json" => "text/javascript",
 			"xml" => "text/xml",
-			"php" => "text/html"
+			"php" => "text/html",
+			"mp4" => "video/mp4"
 		);
 		
 		$f = preg_replace("/\?.*$/", "", $f);
@@ -358,21 +367,28 @@
 					echo $prj->toXML();
 					break;
 				default:
-				header ("Content-type: text/html;");
+					header ("Content-type: text/html;");
 				
-				try{
-					$userMenu = '<h2>View Data</h2><span class="menuItem"><img src="images/map.png" alt="Map" /><br />View Map</span><span class="menuItem"><img src="images/form_view.png" alt="List" /><br />List Data</span>';
-					$adminMenu = '<h2>Project Administration</h2><span class="menuItem"><a href="./' . $prj->name . '/formBuilder.html"><img src="'.$SITE_ROOT.'/images/form_small.png" alt="Form" /><br />Create or Edit Form(s)</a></span><span class="menuItem"><a href="editProject.html?name='.$prj->name.'"><img src="'.$SITE_ROOT.'/images/homepage_update.png" alt="Home" /><br />Update Project</a></span>';
-					
-					$vals =  array(
-						"projectName" => $prj->name,
-						"projectDescription" => $prj->description != "" ? $prj->description : "Project homepage for {$prj->name}",
-						"projectImage" => $prj->image ? $SITE_ROOT . "/". $prj->image : "$SITE_ROOT/images/projectPlaceholder.png",
-						"adminMenu" => "",
-						"userMenu" => ""
-					);
-					
-					echo applyTemplate("base.html","./projectHomeUser.html",$vals);
+					try{
+						//$userMenu = '<h2>View Data</h2><span class="menuItem"><img src="images/map.png" alt="Map" /><br />View Map</span><span class="menuItem"><img src="images/form_view.png" alt="List" /><br />List Data</span>';
+						//$adminMenu = '<h2>Project Administration</h2><span class="menuItem"><a href="./' . $prj->name . '/formBuilder.html"><img src="'.$SITE_ROOT.'/images/form_small.png" alt="Form" /><br />Create or Edit Form(s)</a></span><span class="menuItem"><a href="editProject.html?name='.$prj->name.'"><img src="'.$SITE_ROOT.'/images/homepage_update.png" alt="Home" /><br />Update Project</a></span>';
+						$tblList = "";
+						foreach($prj->tables as $tbl)
+						{
+							$tblList .= "<div class=\"tblDiv\"><a class=\"tblName\" href=\"{$prj->name}/{$tbl->name}\">{$tbl->name}</a><a href=\"{$prj->name}/{$tbl->name}\">View All Data</a> | <form name=\"{$tbl->name}SearchForm\" action=\"./{$prj->name}/{$tbl->name}\" method=\"GET\"> Search for {$tbl->key} <input type=\"text\" name=\"{$tbl->key}\" /> <a href=\"javascript:document.{$tbl->name}SearchForm.submit();\">Search</a></form></div>";
+						}
+						
+						$vals =  array(
+							"projectName" => $prj->name,
+							"projectDescription" => $prj->description && $prj->description != "" ? $prj->description : "Project homepage for {$prj->name}",
+							"projectImage" => $prj->image ? $SITE_ROOT . "/". $prj->image : "$SITE_ROOT/images/projectPlaceholder.png",
+							"tables" => $tblList,
+							"adminMenu" => "",
+							"userMenu" => ""
+						);
+						
+						echo applyTemplate("base.html","./projectHomeUser.html",$vals);
+						break;
 				}
 				catch(Exception $e)
 				{
@@ -443,6 +459,8 @@
 		if($doit && !(array_key_exists("edit", $_GET) && $_GET["edit"] === "true"))
 		{
 			if(array_key_exists("redir", $_GET) && $_GET["redir"] === "true") $res["redirMsg"] = "	<p class=\"message\">You have been brought to this page because of a fatal error opening the home page</p>";
+			if(array_key_exists("redir", $_GET) && $_GET["redir"] === "pwd") $res["redirMsg"] = "	<p class=\"message\">The username and password you entered were incorrect, please try again.</p>";
+			
 			$db = false;
 			try{
 				$db = new dbConnection();
@@ -512,7 +530,7 @@
 							$_g = implode(" -- ", $arr) . "<br />";
 							if(preg_match("/ON (`?$DBNAME`?|\*\.\*)/", $_g))
 							{
-								if(preg_match("/ALL PERMISSIONS/i"))
+								if(preg_match("/ALL PERMISSIONS/i", $_g))
 								{
 									$res["dbPermStatus"] = "fail";
 									$res["dbPermResults"] = "The user account $DBUSER by the website should only have SELECT, INSERT, UPDATE, DELETE and EXECUTE priviliges on $DBNAME";
@@ -677,7 +695,7 @@
 			{
 				foreach($_FILES as $file){
 					
-					/*if(preg_match("/.+\.xml$/", $file["name"])){
+					if(preg_match("/.+\.xml$/", $file["name"])){
 						$ts = new DateTime("now", new DateTimeZone("UTC"));
 						$ts = $ts->getTimestamp();
 					
@@ -702,31 +720,29 @@
 							echo ($res === true ? "1" : "0");
 						}
 					}
-					else
-					{*/
-						if(preg_match("/\.(png|gif|rtf|docx?|pdf|jpg|jpeg|txt|avi|mpe?g|mov|mpe?g?3|wav|mpe?g?4)$/", $file['name']))
-						{
+					else if(preg_match("/\.(png|gif|rtf|docx?|pdf|jpg|jpeg|txt|avi|mpe?g|mov|mpe?g?3|wav|mpe?g?4)$/", $file['name']))
+					{
+						
+						try{
+							//if(!fileExists("./uploads/{$prj->name}")) mkdir("./uploads/{$prj->name}");
 							
-							try{
-								//if(!fileExists("./uploads/{$prj->name}")) mkdir("./uploads/{$prj->name}");
-								
-								move_uploaded_file($file['tmp_name'], "./ec/uploads/{$prj->name}~" . ($_REQUEST["type"] == "thumbnail" ? "tn~" : "" ) ."{$file['name']}");
-								fwrite($flog, $file['name'] . " copied to uploads directory\n");
-								echo 1;
-							}
-							catch(Exception $e)
-							{
-								fwrite($flog, $e . "\r\n");
-								echo "0";
-							}
+							move_uploaded_file($file['tmp_name'], "./ec/uploads/{$prj->name}~" . ($_REQUEST["type"] == "thumbnail" ? "tn~" : "" ) ."{$file['name']}");
+							fwrite($flog, $file['name'] . " copied to uploads directory\n");
+							echo 1;
 						}
-						else
+						catch(Exception $e)
 						{
-							fwrite($flog, $file['name'] . " error : file type not allowed\r\n");
+							fwrite($flog, $e . "\r\n");
 							echo "0";
 						}
-					/*}*/
+					}
+					else
+					{
+						fwrite($flog, $file['name'] . " error : file type not allowed\r\n");
+						echo "0";
+					}
 				}
+				
 			}
 			else
 			{
@@ -737,8 +753,23 @@
 				try
 				{
 					$ent = new EcEntry($prj->tables[$tn]);
-					$ent->deviceId = $_POST["ecPhoneID"];
-					$ent->created = $_POST["ecTimeCreated"];
+					if(array_key_exists("ecPhoneID", $_POST))
+					{
+						$ent->deviceId = $_POST["ecPhoneID"];
+					}
+					else
+					{
+						$ent->deviceId = "web";
+					}
+					if(array_key_exists("ecTimeCreated", $_POST))
+					{
+						$ent->created = $_POST["ecTimeCreated"];
+					}
+					else
+					{
+						$d = new DateTime('now', new DateTimeZone('UTC'));
+						$ent->created = $d->getTimestamp();
+					}
 					$ent->project = $prj;
 					
 					foreach($prj->tables[$tn]->fields as $key => $fld){
@@ -775,6 +806,7 @@
 					if($res === true)
 					{
 						header("HTTP/1.1 200 OK");
+						echo 1;
 					}
 					else
 					{
@@ -785,7 +817,7 @@
 				}
 				catch(Exception $e)
 				{
-					fwrite($flog, "error : " . $e->getMessage() . "\r\n" . implode("\n", $e->getTrace()));
+					fwrite($flog, "error : " . $e->getMessage() . "\r\n");
 					$msg = $e->getMessage();
 					if(preg_match("/^Message/", $msg))
 					{
@@ -795,7 +827,7 @@
 					{
 						header("HTTP/1.1 405 Bad Request");
 					}
-					echo $e->getMessage();
+					echo $msg;
 				}
 			}
 		}
@@ -842,234 +874,257 @@
 		
 		$survey->fetch();
 		
-		if(array_key_exists("table", $_GET))
+		//the root of the working directory is the Script filename minus everthing after the last \
+		//NOTE: This will be the same for EC+ as the upload directory is project-independant
+		$pos = max(strrpos($_SERVER["SCRIPT_FILENAME"], "\\") ,strrpos($_SERVER["SCRIPT_FILENAME"], "/"));
+		$root =substr($_SERVER["SCRIPT_FILENAME"], 0, $pos);
+		$wwwroot = "http://{$_SERVER["HTTP_HOST"]}$SITE_ROOT";
+
+		$startTbl = (array_key_exists('select_table', $_GET) ? $_GET["table"] : false);
+		$endTbl = (array_key_exists('select_table', $_GET) ? $_GET["select_table"] :  $_GET["table"]);
+		$entry = (array_key_exists('entry', $_GET) ? $_GET["entry"] : false);
+		$dataType = (array_key_exists('type', $_GET) ? $_GET["type"] : "data");
+		$xml = !(array_key_exists('xml', $_GET) && $_GET['xml'] === "false"); 
+		
+		$files_added = 0;
+		
+		$delim = "\t";
+		$rowDelim = "\n";
+		
+		$tbls = array();
+		$branches = array();
+		
+		function addBranch($branch, $branchOf)
 		{
-			if(!array_key_exists("type", $_GET) || strtolower($_GET["type"]) == "data")
+			global $branches;
+			if(!array_key_exists($branchOf, $branches))
 			{
-				$res = Array();
-				if(array_key_exists("entry", $_GET) && $_GET["entry"] != "")
+				$branches[$branchOf] = array();
+			}
+			array_push($branches[$branchOf], $branch);
+		}
+		
+		$n = $startTbl ? $survey->tables[$startTbl]->number : 1;
+		$end = $endTbl ? $survey->tables[$endTbl]->number : count($survey->tables);
+		
+		// if we're doing a select_table query we don't want the data from the first table, as we already have that entry.
+		if(array_key_exists('select_table', $_GET)) $n++;
+		
+		//for each table between startTbl and end Tbl (or that is a branch of a table we want)
+		//we'll loop through the table array to establish which tables we need
+		foreach($survey->tables as $name => $tbl)
+		{
+			//first off is $tbl is already in $tbls we can skip it
+			if(array_key_exists($name, $tbls))
+			{
+				continue;
+			}
+			// first check if the table has a number between $n and $end
+			else if(($tbl->number >= $n && $tbl->number <= $end))
+			{
+				$tbls[$tbl->number] = $name;
+			}
+			//else if it is a branch form
+			//TODO : Not needed for EC2, but must work for EC+
+			/*else if($tbl->branchOf)
+			{
+				//if the parent table is in the list add it.
+				if(array_key_exists($tbl->branchOf, $tbls))
 				{
-					$st = array_key_exists("select_table", $_GET) ? $survey->tables[$_GET["select_table"]]->number : false;
-					$res[$_GET["table"]] = $survey->tables[$_GET["table"]]->get($_GET["entry"]);
-					getChildEntries($survey, $survey->tables[$_GET["table"]], $_GET["entry"], $res, $st);
+					addBranch($name, $tbls->branchOf);
 				}
-				else
+				//if not see if the parent table should be in the list, if it is add it and if not skip and move on
+				else if ($survey->tables[$tbl->branchOf]->number >= $n || $survey->tables[$tbl->branchOf]->number <= $n)
 				{
-					$tn = $survey->tables[$_GET["table"]]->number;
-					$tnm = $survey->tables[$_GET["table"]]->name;
-					foreach($survey->tables as $tbl)
-					{
-						if($tbl->number <= $tn || (is_string($tbl->branchOf) && array_key_exists($tbl->branchOf, $res)))
-						{
-							$res[$tbl->name] = $tbl->get();
-						}
-					}
+					$tbls[$tables[$tbl->branchOf]->number] =  $tbl->branchOf;
+					//addBranch($tbl->name, $tbls->branchOf);
 				}
-				
+				//else continue;
+			} */
+		}
+		
+		//criteria
+		$cField = false;
+		$cVals = array();
+		if($entry)
+		{
+			$cField = $survey->tables[$startTbl]->key;
+			$cVals[0] = $entry;
+		}
+		
+		$nxtCVals = array();
 			
-				//print_r($res);
-				if(array_key_exists("xml", $_GET) && $_GET["xml"] == "false")
+		//for each main table we're intersted in (i.e. main tables between stat and end table)
+		$ts = new DateTime("now", new DateTimeZone("UTC"));
+		$ts = $ts->getTimestamp();
+		if($dataType == "data" && $xml)
+		{
+			//header("Content-type: text/xml");
+			$fxml = fopen("$root\\ec\\uploads\\{$ts}.xml", "w+");
+			$fx_url = "$wwwroot/ec/uploads/{$ts}.xml";
+			fwrite($fxml,"<?xml version=\"1.0\"?><entries>");
+			
+		}
+		else if($dataType == "data")
+		{
+			header("Content-type: text/plain");
+			$tsv = fopen("$root\\ec\\uploads\\{$ts}.tsv", "w+");
+			$ts_url = "$wwwroot/uploads/{$ts}.tsv";
+		}
+		else
+		{
+		
+			$zfn = "$root\\ec\\uploads\\arc{$ts}.zip";
+			$zrl = "$wwwroot/ec/uploads/arc{$ts}.zip";
+			$arc = new ZipArchive;
+			$x = $arc->open($zfn, ZipArchive::CREATE);
+			if(!$x) die("Could not create the zip file.");
+		}
+		
+		
+		for($t = $n; $t <= $end; $t++)
+		{
+			if($dataType == "data" && $xml)
+			{
+				fwrite($fxml, "<table><table_name>{$tbls[$t]}</table_name>");
+			}
+	
+			for($c = 0; $c < count($cVals) || $c < 1; $c++)
+			{
+				
+				$res = false;
+				
+				if($entry && count($cVals) == 0) break;
+				$args = array();
+					
+				if($entry) $args[$cField] = $cVals[$c];
+					
+				$res = $survey->tables[$tbls[$t]]->get($args);
+				
+				if(count($res) == 0) continue;
+				
+				foreach(array_keys($res[$tbls[$t]])as $ent)
 				{
-					$delim = "\t";
-					$rowDelim = "\n";
-					header("Content-type: text/plain");
-					foreach(array_keys($res) as $tbl)
-					{
-						if(array_key_exists('select_table', $_GET) && $tbl == $_GET['table']) continue;
-						
-						foreach(array_keys($res[$tbl][$tbl])as $ent)
+					if($dataType == "data")
+					{ 
+						if($xml)
 						{
-							echo "$tbl$delim";
-							foreach(array_keys($res[$tbl][$tbl][$ent]) as $fld)
+							fwrite($fxml,"\t\t<entry>\n");
+							foreach(array_keys($res[$tbls[$t]][$ent]) as $fld)
 							{
 								if($fld == "childEntries") continue;
-								if($fld == "id") continue;
-								if(array_key_exists($fld, $survey->tables[$tbl]->fields) && ($survey->tables[$tbl]->fields[$fld]->type == "gps" ||$survey->tables[$tbl]->fields[$fld]->type == "location"))
-								{
-									$gps = json_decode($res[$tbl][$tbl][$ent][$fld]);
-									foreach($gps as $key => $val)
-									{
-										$suf = ($key != "provider" ? substr($key, 0, 3) : $key);
-										echo "{$fld}_{$suf}$delim" . str_replace("&", "&amp;", $val) . "$delim";
-									}
-								}
-								else
-								{
-									echo "$fld$delim" . escapeTSV($res[$tbl][$tbl][$ent][$fld]). $delim;
-								}
+								fwrite($fxml,"\t\t\t<$fld>" . str_replace("&", "&amp;", $res[$tbls[$t]][$ent][$fld]) . "</$fld>\n");
 							}
-							echo $rowDelim;
-						}
-						
-					}
-					return;
-				}
-				else
-				{
-					//print_r($res);
-					header("Content-type: text/xml");
-					echo "<?xml version=\"1.0\"?>\n";
-					echo "<entries>\n";
-					foreach(array_keys($res) as $tbl)
-					{
-						if(array_key_exists('select_table', $_GET) && $tbl == $_GET['table']) continue;
-						echo "\t<table>\n\t\t<table_name>$tbl</table_name>\n";
-
-						foreach(array_keys($res[$tbl][$tbl])as $ent)
-						{
-							echo "\t\t<entry>\n";
-							foreach(array_keys($res[$tbl][$tbl][$ent]) as $fld)
-							{
-								if($fld == "id") continue;
-								if(array_key_exists($fld, $survey->tables[$tbl]->fields) && ($survey->tables[$tbl]->fields[$fld]->type == "gps" ||$survey->tables[$tbl]->fields[$fld]->type == "location"))
-								{
-									$gps = json_decode($res[$tbl][$tbl][$ent][$fld]);
-									foreach($gps as $key => $val)
-									{
-										$suf = ($key != "provider" ? substr($key, 0, 3) : $key);
-										echo "\t\t\t<{$fld}_{$suf}>" . str_replace("&", "&amp;", $val) . "</{$fld}_{$suf}>\n";
-									}
-								}
-								else
-								{
-									echo "\t\t\t<$fld>" . str_replace("&", "&amp;", $res[$tbl][$tbl][$ent][$fld]) . "</$fld>\n";
-								}
-								
-							}
-							echo "\t\t</entry>\n";
-						}
-						echo "\t</table>\n";
-					}
-					echo "</entries>";
-					return;
-				}
-				
-			}
-			else
-			{
-				$files = array();
-				$arc = new ZipArchive;
-				
-				if(array_key_exists("entry", $_GET) && $_GET["entry"] != "")
-				{
-					$st = array_key_exists("select_table", $_GET) ? $survey->tables[$_GET["select_table"]]->number : false;
-					
-					$res = $survey->tables[$_GET["table"]]->get($_GET["entry"]);
-					foreach($survey->tables[$_GET["table"]]->fields as $fld)
-					{
-						if(strtolower($_GET["type"]) == "thumbnail")
-						{
-							if($fld->type == "photo")
-							{
-								array_push($files, "./ec/uploads/{$survey->name}~tn~" . $res[$fld->name]);
-							}
-						}
-						elseif(strtolower($_GET["type"]) == "full_image")
-						{
-							if($fld->type == "photo")
-							{
-								array_push($files, "./ec/uploads/{$survey->name}~tn_" . $res[$fld->name]);
-							}
+							fwrite($fxml, "\t\t</entry>\n");
 						}
 						else
 						{
-							if($fld->type == $_GET["type"])
+							fwrite($tsv, "{$tbls[$t]}$delim");
+							foreach(array_keys($res[$tbls[$t]][$ent]) as $fld)
 							{
-								array_push($files, "./ec/uploads/{$survey->name}~{$res[$fld->name]}");
+								if($fld == "childEntries") continue;
+								fwrite($tsv,  "$fld$delim" . escapeTSV($res[$tbls[$t]][$ent][$fld]). $delim);
 							}
-						}
-					}
-				}
-				else
-				{
-					$tn = $survey->tables[$_GET["table"]]->number;
-					foreach($survey->tables as $tbl)
-					{
-						if($tbl->number >= $tn)
-						{
-							$res = $tbl->get();
-							if(!is_array($res)) continue;
-							//print_r($res[$tbl->name]);
-							for($i = 0; $i < count($res[$tbl->name]); $i++){
-								//echo "($i)";
-								$r = $res[$tbl->name][$i];
-								foreach($tbl->fields as $fld)
-								{
-									if(strtolower($_GET["type"]) == "thumbnail")
-									{
-										if($fld->type == "photo" && $r[$fld->name] != "" && file_exists("./ec/uploads/{$survey->name}~tn~".$r[$fld->name]))
-										{
-											array_push($files, "./ec/uploads/{$survey->name}~tn~" . $r[$fld->name]);
-										}
-									}
-									elseif(strtolower($_GET["type"]) == "full_image")
-									{
-										if($fld->type == "photo" && $r[$fld->name] != "" && file_exists("./ec/uploads/{$survey->name}~".$r[$fld->name]))
-										{
-											array_push($files, "./ec/uploads/{$survey->name}~{$r[$fld->name]}");
-										}
-										else if($fld->type == "photo" && $r[$fld->name] != "" && file_exists("./ec/uploads/{$survey->name}~tn~".$r[$fld->name]))
-										{
-											array_push($files, "./ec/uploads/{$survey->name}~tn~" . $r[$fld->name]);
-										}
-									}
-									else
-									{
-										if($fld->type == $_GET["type"])
-										{
-											array_push($files, "./ec/uploads/{$survey->name}~{$r[$fld->name]}");
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-				
-				
-				$ts = new DateTime("now", new DateTimeZone("UTC"));
-				$ts = $ts->getTimestamp();
-				$zfn = "./ec/uploads/arc{$ts}.zip";
-				$zrl = "$SITE_ROOT/uploads/arc{$ts}.zip";
-				$x = $arc->open($zfn, ZipArchive::CREATE);
-				
-				if($x === true)
-				{
-					$added = 0;
-					foreach($files as $fn)
-					{
-						if(file_exists($fn))
-						{
-							if($arc->addFile($fn))
-							{
-								$added++;	
-							}
-							else
-							{
-								echo "fail";
-							}
+							fwrite($tsv,  $rowDelim);
 						}
 						
 					}
-					
-					if($arc->close()!==true) {echo "fail"; return;}
-					
-					if($added > 0)
+					elseif(strtolower($_GET["type"]) == "thumbnail")
 					{
-						header("Location: $zrl");
+						foreach(array_keys($res[$tbls[$t]][$ent]) as $fld)
+						{
+							if($fld == "childEntries") continue;
+							if($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $res[$tbls[$t]][$ent][$fld] != "" && file_exists("$root\\ec\\uploads\\tn_".$res[$tbls[$t]][$ent][$fld]))
+							{
+								if(!$arc->addFile( "$root\\ec\\uploads\\tn_" . $res[$tbls[$t]][$ent][$fld], $res[$tbls[$t]][$ent][$fld])) die("fail -- \\ec\\uploads\\tn_" . $res[$tbls[$t]][$ent][$fld]);
+								//echo "$root\\uploads\\tn_".$res[$tbls[$t]][$ent][$fld];
+								$files_added++;
+							}
+						}
+						//array_push($files, "tn_" . $r[$fld->name]);
+					}
+					elseif(strtolower($_GET["type"]) == "full_image")
+					{
+						foreach(array_keys($res[$tbls[$t]][$ent]) as $fld)
+						{
+							if($fld == "childEntries") continue;
+							if($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $res[$tbls[$t]][$ent][$fld] != "" && file_exists("$root\\ec\\uploads\\".$res[$tbls[$t]][$ent][$fld]))
+							{
+								if(!$arc->addFile( "$root\\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld], $res[$tbls[$t]][$ent][$fld])) die("fail -- \\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld]);
+								//echo "$root\\uploads\\".$res[$tbls[$t]][$ent][$fld];
+								$files_added++;
+							}
+						}
 					}
 					else
 					{
-						echo "no files found";
+						foreach(array_keys($res[$tbls[$t]][$ent]) as $fld)
+						{
+							if($fld == "childEntries") continue;
+							if($survey->tables[$tbls[$t]]->fields[$fld]->type == $_GET["type"] && $res[$tbls[$t]][$ent][$fld] != "" && file_exists("$root\\ec\\uploads\\".$res[$tbls[$t]][$ent][$fld]))
+							{
+								if(!$arc->addFile( "$root\\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld], $res[$tbls[$t]][$ent][$fld])) die("fail -- \\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld]);
+								//echo "$root\\uploads\\".$res[$tbls[$t]][$ent][$fld];
+								$files_added++;
+							}
+						}
 					}
+					
 				}
-				else
+				 
+				if($ent && !array_key_exists($res[$tbls[$t]][$ent][$survey->tables[$tbls[$t]]->key], $nxtCVals))
 				{
-					echo $x;
+					$nxtCVals[$res[$tbls[$t]][$ent][$survey->tables[$tbls[$t]]->key]] = true;
 				}
+				
+				
+			}
+			if($dataType == "data" && $xml)
+			{
+				fwrite($fxml,  "</table>");
 			}
 		}
+		
+		
+		if($entry)
+		{
+			$cField = $survey->tables[$tbls[$t]]->key;
+			$cVals = array_keys($nxtCVals);			
+			$nxtCVals = array();
+		}
+	
+	
+		if($dataType == "data" && $xml)
+		{
+				fwrite($fxml,  "</entries>");
+				fclose($fxml);
+				header("Location : $fx_url");
+		}
+		elseif ($dataType == "data")
+		{
+			fclose($tsv);
+			header("Location : $fx_tsv");
+		}
+		else
+		{
+			//close zip files
+			$err = $arc->close();
+			if($files_added === 0)
+			{
+				echo "no files";
+				return;
+			}
+			
+			if(!$err==true) {
+				echo "fail expecting $files_added files"; 
+				return;
+			} 
+			//echo $zfn;
+			//echo $zrl;
+			header("Location: $zrl");
+		}
 	}
+	
 	
 	function formHandler()
 	{
@@ -1202,7 +1257,16 @@
 					break;
 				default:
 					//TODO: xml get/add/update for forms/tables from the website
-					$vars = array("prevForm" => (array_key_exists("prevForm", $_GET) ? "&gt; <a href=\"{$_GET["prevForm"]}\">Form : {$_GET["prevForm"]}</a>" : ""),"projectName" => $prj->name, "formName" => $frmName, "adder" => "true", "admin" =>  "true" );
+					if(array_key_exists("prevForm", $_GET))
+					{	
+						$pKey = $prj->tables[$_GET["prevForm"]]->key;
+						$p = "&gt; <a href=\"{$_GET["prevForm"]}\">{$_GET["prevForm"]} : $_GET[$pKey] </a>";
+					}
+					else 
+					{
+						$p = "";
+					}
+					$vars = array("prevForm" => $p,"projectName" => $prj->name, "formName" => $frmName, "adder" => "true", "admin" =>  "true" );
 					echo applyTemplate("base.html", "./FormHome.html", $vars);
 					break;
 			}
@@ -1220,6 +1284,7 @@
 		$prj = new EcProject();
 		$prj->name = $prjName;
 		$prj->fetch();
+
 		$ent = new EcEntry($prj->tables[$frmName]);
 		$ent->key = $entId;
 		$r = $ent->fetch();
@@ -1228,7 +1293,16 @@
 		{
 			if($r === true)
 			{
-				$ent->delete();
+				try
+				{
+					$ent->delete();
+				}catch(Exception $e)
+				{
+					if(preg_match("/^Message\s?:/", $e->getMessage()))
+					{
+						echo $e->getMessage();
+					}
+				}
 			}
 			else{
 				echo $r;
@@ -1325,7 +1399,7 @@
 		else
 		{
 			$vals = array("error" => $res);
-			echo applyTemplate("base.html","./error.html",$vals);
+			echo applyTemplate("base.html","error.html",$vals);
 		}
 	}
 	
@@ -1768,7 +1842,7 @@
 	{
 		global $url;
 		
-		if(preg_match('~tn~', $url))
+		if(preg_match('~tn~', $url) )
 		{
 			//if the image is a thumbnail just try and open it
 			header("Content-type: " . mimeType($url));
@@ -1932,7 +2006,9 @@
 		//generic, dynamic handlers		
 		"getControls" =>  new PageRule(null, 'getControlTypes'),
 		"uploadFile.php" => new PageRule(null, 'uploadHandlerFromExt'),
-		
+		"ec/uploads/.+\.(jpg)|(mp4)$" => new PageRule(null, 'getMedia'),
+		"ec/uploads/.+" => new PageRule(null, null),
+			
 		//to API
 		"[a-zA-Z0-9_-]*(\.xml|\.json|\.tsv|\.csv|/)?" =>new PageRule(null, 'projectHome'),
 		"[a-zA-Z0-9_-]*/upload" =>new PageRule(null, 'uploadData'),
@@ -1946,8 +2022,7 @@
 		"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*(\.xml|\.json|\.tsv|\.csv|/)?" => new PageRule(null, 'formHandler'),
 		//"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage" => new  => new PageRule(null, formUsage),
 		"[^/\.]*/[^/\.]*/[^/\.]*(\.xml|\.json|/)?" => new PageRule(null, 'entryHandler'),
-		"ec/uploads/.+\.jpg" => new PageRule(null, 'getMedia'),
-		"ec/uploads/.+" => new PageRule(null, null),
+		
 		//forTesting
 		"uploadTest.html" => new PageRule(null, 'defaultHandler', true),
 		"test" => new PageRule(null, 'siteTest', false),

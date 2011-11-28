@@ -406,6 +406,7 @@
 					foreach(array_keys($ents) as $ent)
 					{
 						//echo ($ents[$ent][$this->key] . " - ". $arr["value"] . "\n");
+						try{
 						if($ents[$ent][$this->key] == $arr["value"])
 						{	
 							//echo "\n";
@@ -418,6 +419,7 @@
 								$ents[$ent]["childEntries"] = $arr["count"];
 							}
 						}
+						}catch(Exception $e) { print_r ($ents) ; }
 					}
 				}
 				

@@ -81,10 +81,10 @@ var mediaPanel = Ext.extend(Ext.Panel, {
 	},
 	setValue: function(newVal)
 	{
-		
 		this.value = newVal;
 		
 		document.getElementById(this.id + "fld").value = this.value;
+
 		document.getElementById(this.id + "_iframe").src = location.pathname + "/uploadMedia?fn=" + newVal;
 		
 	},
@@ -104,7 +104,14 @@ var mediaPanel = Ext.extend(Ext.Panel, {
 	},
 	render : function(cmp)
 	{
-		this.html = "<iframe id=\"" + this.id + "_iframe\" style=\"border:0\" onload=\"if(document.getElementById('" + this.id + "_iframe').contentDocument.getElementsByTagName('img').length > 0) document.getElementById('" + this.id+ "fld').value = document.getElementById('" + this.id + "_iframe').contentDocument.getElementsByTagName('img')[0].src.match(/~.*/).toString().replace('~tn~', '')\" src=\"" + location.pathname + "/uploadMedia" + (this.value ? "?fn=" + this.value : "") +"\" width=\"100%\" height=\"100%\"> </iframe><input type=\"hidden\" id=\"" + this.id + "fld\" name=\"" + this.id+ "\">",
+		if(location.pathname.indexOf(this.parent) >= 0)
+		{
+			this.html = "<iframe id=\"" + this.id + "_iframe\" style=\"border:0\" onload=\"if(document.getElementById('" + this.id + "_iframe').contentDocument.getElementsByTagName('img').length > 0) document.getElementById('" + this.id+ "fld').value = document.getElementById('" + this.id + "_iframe').contentDocument.getElementsByTagName('img')[0].src.match(/~.*/).toString().replace('~tn~', '')\" src=\"" + location.pathname + "/uploadMedia" + (this.value ? "?fn=" + this.value : "") +"\" width=\"100%\" height=\"100%\"> </iframe><input type=\"hidden\" id=\"" + this.id + "fld\" name=\"" + this.id+ "\">";
+		}
+		else
+		{
+			this.html = "<iframe id=\"" + this.id + "_iframe\" style=\"border:0\" onload=\"if(document.getElementById('" + this.id + "_iframe').contentDocument.getElementsByTagName('img').length > 0) document.getElementById('" + this.id+ "fld').value = document.getElementById('" + this.id + "_iframe').contentDocument.getElementsByTagName('img')[0].src.match(/~.*/).toString().replace('~tn~', '')\" src=\"" + location.pathname + "/" + this.parent + "/uploadMedia" + (this.value ? "?fn=" + this.value : "") +"\" width=\"100%\" height=\"100%\"> </iframe><input type=\"hidden\" id=\"" + this.id + "fld\" name=\"" + this.id+ "\">";
+		}
 		mediaPanel.superclass.render.call(this,cmp);
 	}
 });
@@ -122,8 +129,6 @@ var GPSPanel = Ext.extend(Ext.Panel,{
 			listeners: {
 				'afterrender' : function()
 				{
-					
-					
 					mkr = this.marker;
 					
 					this.gMap = new google.maps.Map(document.getElementById(this.id + "_map"),{
@@ -162,8 +167,6 @@ var GPSPanel = Ext.extend(Ext.Panel,{
 			}
 		})
 		GPSPanel.superclass.initComponent.call(this);
-		
-		
 	},
 	setValue: function(newVal)
 	{
@@ -183,8 +186,6 @@ var GPSPanel = Ext.extend(Ext.Panel,{
 		document.getElementById(d.id + "_alt").value = obj.altitude;
 		document.getElementById(d.id + "_acc").value = obj.accuracy;
 		document.getElementById(d.id + "_src").value = obj.source;
-		
-		
 	},
 	getValue : function()
 	{
@@ -451,6 +452,7 @@ var EcTable = function(conf)
         
 		this.fld = new EcField();
 		this.fld.id = "created";
+		this.fld.parent = this.name;
 		this.fld.text = "Time Created";
 		this.fields[this.fld.id] = this.fld;
 		this.cols.push("created");
@@ -458,8 +460,10 @@ var EcTable = function(conf)
 		this.fld = new EcField();
 		this.fld.id = "DeviceID";
 		this.fld.text = "Device ID";
+		this.fld.parent = this.name;
 		this.fields[this.fld.id] = this.fld;
 		this.cols.push("DeviceID");
+		
 		
 		for(var nd = 0; nd < xml.childNodes.length; nd++)
 		{
@@ -467,6 +471,8 @@ var EcTable = function(conf)
 			{
 				field = new EcField();
 				field.parse(xml.childNodes[nd]);
+				field.parent = this.name;
+		
 				this.fields[field.id] = field;
 				this.cols.push(field.id);
 				
@@ -493,6 +499,8 @@ var EcTable = function(conf)
 				{
 					this.groupForms.push(field.form);
 				}
+				
+				
 			}
 		}
 		this.cols.push("childEntries");
@@ -502,7 +510,11 @@ var EcTable = function(conf)
     {
 		var cols = [];
 		var tBtns = [];
-	
+		path = location.href;
+		var path = location.pathname ;//+ ".json"
+		if(path.indexOf(survey.name) < 0) path = path + "/" + survey.name;
+		if(path.indexOf(this.name) < 0) path = path + "/" + this.name;
+		
 		this.store = new Ext.data.JsonStore({
 			autoLoad : false,
 			baseParams : {
@@ -517,7 +529,7 @@ var EcTable = function(conf)
 			fields : this.cols,
 			proxy: new Ext.data.HttpProxy({
 				method: 'GET',
-				url : './' + this.name + '.json' + location.search
+				url : path + '.json' + location.search
 			}),
 			root : this.name,
 			totalProperty : 'count'
@@ -548,7 +560,7 @@ var EcTable = function(conf)
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 					if(value != "" && value != "0")
 					{
-						return "<a href=\"../ec/uploads/"+ survey.name + "~" + value + "\">" + value + "</a>";
+						return "<a href=\"../ec/uploads/"+ survey.name + "~" + value + "\" target=\"__blank\">" + value + "</a>";
 					}
 					else
 					{
@@ -573,15 +585,15 @@ var EcTable = function(conf)
 			{
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 					
-						var gps = Ext.decode(value);
-						if(gps.accuracy == "-1")
-						{
-							return "<i>no position</i>";
-						}
-						else
-						{
-							return gps.latitude + "," + gps.longitude;
-						}
+					var gps = Ext.decode(value);
+					if(gps.accuracy == "-1")
+					{
+						return "<i>no position</i>";
+					}
+					else
+					{
+						return gps.latitude + "," + gps.longitude;
+					}
 					
 				}, dataIndex: this.fields[this.fld].id, sortable:true});
 			}
@@ -592,7 +604,7 @@ var EcTable = function(conf)
 				var fn = this.name;
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, sortable:false, menuDisabled: true, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 					
-					if(value == "")
+					if(!value ||value == "")
 					{
 						return "<i>no entries</i>";
 					}
@@ -607,7 +619,7 @@ var EcTable = function(conf)
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, dataIndex: this.fields[this.fld].id, hidden : (this.branchOf && this.fld == survey.tables[this.branchOf].key),sortable:true});
 			}
 		}
-		if(!this.branchOf && survey.getNextTable(this.name))
+		if(!this.branchOf && survey.getNextTable(this.name).main)
 		{
 			var ff = survey.getNextTable(this.name).name;
 			var fk = this.key;
@@ -1467,7 +1479,14 @@ var EcTable = function(conf)
 				url: "./" + this.name + "/" + key,
 				method: 'DELETE',
 				success: function(res, opts){
-					this.store.load();
+					if(res.responseText.match(/^Message\s?:/))
+					{
+						alert(res.responseText.replace(/^Message\s?:/, ""));
+					}
+					else
+					{
+						this.store.load();
+					}
 				},
 				scope: this
 			});
@@ -1502,12 +1521,20 @@ var EcTable = function(conf)
 			
 			var ct = this;
 			
+			var path = location.pathname ;//+ ".json"
+			if(path.indexOf(survey.name) < 0) path = path + "/" + survey.name;
+			if(path.indexOf(this.name) < 0) path = path + "/" + this.name;
+			path += ".json";
+			
+			var sx = this;
+			
 			Ext.Ajax.request({
-				url: location.pathname + ".json",
+				url: path,
 				method: 'GET',
 				params : pars,
 				success : function(res, opts)
 				{
+					
 					var at = Ext.decode(res.responseText);
 						
 					if(at.count == 0 || confirm("You have entered the same primary key as another record. Do you wish to overwrite the previous record"))
@@ -1515,31 +1542,33 @@ var EcTable = function(conf)
 						try
 						{
 							Ext.Ajax.request({
-								url: location.pathname,
+								url: path,
 								method: 'POST',
 								params: newArgs,
 								success: function(res, opts){
-									if(scope.branchForms.length > 0)
+																		
+									if(this.branchForms.length > 0)
 									{
-										scope.saveBranches(false, callback, scope);
+										this.saveBranches(false, callback, scope);
 									}
 									else
 									{
-										scope.store.load({params: {start : 0, limit: 25, mode: 'list'}});
-										callback(scope);
+										this.store.load({params: {start : 0, limit: 25, mode: 'list'}});
+										callback(this);
 									}
 									//callback(scope);
 								},
 								failure : function(res, opts)
 								{
 									alert(res.responseText);
-								}
+								},
+								scope: this
 							});
 						}
 						catch(e) {alert(e);}
 					}
 				},
-				scope: this
+				scope: sx
 			});
 		}
 	}
@@ -1598,7 +1627,7 @@ var EcTable = function(conf)
 							succeeded++;
 							if(succeeded == bfs.length + dbs.length)
 							{
-								scope.store.load({params: {start : 0, limit: 25, mode: 'list'}});
+								this.store.load({params: {start : 0, limit: 25, mode: 'list'}});
 								callback(scope);
 							}
 							else if(completed == bfs.length+ dbs.length)
@@ -1619,7 +1648,7 @@ var EcTable = function(conf)
 			}
 			else
 			{
-				scope.store.load({params: {start : 0, limit: 25, mode: 'list'}});
+				//this.store.load({params: {start : 0, limit: 25, mode: 'list'}});
 				callback(scope);			
 			}
 		}
@@ -1674,6 +1703,8 @@ var EcTable = function(conf)
 
 var EcField = function()
 {
+	 this.parent = false;
+	
     this.text = '';
     this.id = '';
     this.required = false;
@@ -1767,16 +1798,19 @@ var EcField = function()
 			"audio" : mediaPanel,
 			"gps": GPSPanel,
 			"location" : GPSPanel,
-			"radio" : Ext.form.RadioGroup,
+			"radio" :  Ext.form.ComboBox,
 			"branch" : BranchPanel,
 			"group" : Ext.form.ComboBox,
 			"" : Ext.form.TextField
 		}
 		
+		
+		
 		var ctrl = {
 			id: this.id,
 			fieldLabel : this.text,
-			readOnly:  this.hidden
+			readOnly:  this.hidden,
+			parent : this.parent
 		};
 		
 		if(this.type == "")
@@ -1805,12 +1839,12 @@ var EcField = function()
 			ctrl.regexText = this.text + " must conform to the format specified by the form designer";
 		}
 		
-		if(this.options.length > 0 && this.type == "select1"){
+		if(this.options.length > 0 && (this.type == "select1" || this.type == "radio")){
 			ctrl.store = this.options;
 			
 		}
 		
-		if(this.options.length > 0 && (this.type == "radio" || this.type == "select")){
+		if(this.options.length > 0 && (this.type == "select")){
 			ctrl.items = [{columnWidth : 1, items: []}];
 			ctrl.columns = ["one"];
 			
@@ -1822,7 +1856,7 @@ var EcField = function()
 			}
 		}
 		
-		if(this.type == "select1" || this.fkField)
+		if(this.type == "radio" || this.type == "select1" || this.fkField)
 		{
 			ctrl.mode = "local";
 			ctrl.triggerAction = "all";
@@ -1831,7 +1865,6 @@ var EcField = function()
 		
 		if(this.type == "group" || this.type == "branch")
 		{
-			
 			ctrl.form = this.form;
 		}
 		

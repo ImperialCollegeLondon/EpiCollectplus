@@ -13,11 +13,11 @@
 			
 		}*/
 	</style>
-	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-base-debug.js"></script>
-	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-all-debug.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-base.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-all.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollect2.js"></script>
 	<script type="text/javascript">
-	var uid = "<?php include('./getUserID.php'); ?>";
+			var uid = "{#uid#}";
 		
 			var survey = {};
 			var pnl;
@@ -128,17 +128,7 @@
 									width: 75,
 									emptyText: 'Enter Id to search for...',
 									listeners: {
-										'click' : function(btn, e)
-										{
-											fld = Ext.getCmp(btn.id.replace('Btn', ''));
-											if(fld.getValue() != "")
-											{
-												pnl.hide();
-												var fName = fld.id.replace('Search', '');
-												addBreadcrumb(fName);				
-												showTable(fName, survey.tables[fName].key, fld.getValue());
-											}
-										}
+										'click' : search
 									}
 								}),
 								new Ext.Button({
@@ -160,10 +150,12 @@
 												height: Ext.getBody().getHeight() * 0.75
 											});
 											frm.labelWidth = Ext.getBody().getWidth() * 0.2;
-											frm.getFooterToolbar().get('cnl').on('click', function(){win.close()}, tbl);
-											frm.getFooterToolbar().get('sub').on('click', function(){
+										
+											frm.getFooterToolbar().get(tbl.name+'cnl').on('click', function(){win.close()}, tbl);
+											frm.getFooterToolbar().get(tbl.name + 'sub').on('click', function(){
 												this.addEntry(frm.getForm().getValues(), function(){win.close()});
 											}, tbl);
+											
 											win.show();
 										}
 									}
@@ -179,6 +171,12 @@
 			{
 				var tbl = btn.id.replace('Btn','');
 				location.replace(location.href.replace(/\/$/, '') + "/" + tbl);
+			}
+			
+			function search(btn, evt)
+			{
+				var tbl = btn.id.replace('SearchBtn','');
+				location.replace(location.href.replace(/\/$/, '') + "/" + tbl + "?" + survey.tables[tbl].key + "=" + Ext.getCmp(tbl + "Search").getValue());
 			}
 	
 	</script>

@@ -43,7 +43,7 @@
 		public function boolVal($val) {return $val === true || $val === "true" ? "1" : "0";}
 		public function boolVal2($val) {return $val === false || $val === "false" ? "0" : "1";}
 		public function stringVal($val) {return $val == "" ? "NULL" : "'". mysqli_escape_string($this->con, $val) . "'";}
-		public function numVal($val) {return $val && $val !== 0 && $val !== 0.0 ? "NULL" : $val;}
+		public function numVal($val) {return !$val && $val !== 0 && $val !== 0.0 ? "NULL" : "$val";}
 		
 		public function beginTransaction()
 		{
