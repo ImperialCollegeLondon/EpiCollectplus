@@ -1496,7 +1496,6 @@ var EcTable = function(conf)
 					}
 					else
 					{
-						alert(res.repsonseText);
 						this.store.load();
 					}
 				},
