@@ -23,6 +23,9 @@ class EcField{
 		public $branch_form = false;
 		public $display = true;
 		
+		public $crumb = false;
+		public $match = false;
+		
 		public $genkey= false;
 		
 		public $position = 0;
@@ -107,6 +110,8 @@ class EcField{
 			if($this->min) $xml .= " min=\"{$this->min}\"";
 			if($this->max) $xml .= " max=\"{$this->max}\"";
 			if($this->defaultValue) $xml .= " defaultValue=\"{$this->defaultValue}\"";
+			if($this->crumb) $xml .= " crumb=\"{$this->crumb}\"";
+			if($this->match) $xml .= " match=\"{$this->match}\"";
 			$xml.= ">\n\t\t\t<label>{$this->label}</label>\n\t\t";
 			foreach($this->options as $opt)
 			{
@@ -136,6 +141,8 @@ class EcField{
 			if($this->setTime) $json .= " \"settime\":\"{$this->setTime}\",";
 			if($this->min) $json .= " \"min\":\"{$this->min}\",";
 			if($this->max) $json .= " \"max\":\"{$this->max}\",";
+			if($this->crumb) $json .= " \"crumb\":\"{$this->crumb}\"";
+			if($this->match) $json .= " \"crumb\":\"{$this->match}\"";
 			if($this->defaultValue) $json .= " \"defaultValue\":\"{$this->defaultValue}\",";
 			$json.= "\n\t\t\t\"label\" : \"{$this->label}\",\n\t\t\"options\":[";
 			$i =0;
@@ -213,7 +220,7 @@ class EcField{
 			
 			$lbl = mysql_escape_string($this->label);
 			
-			$qry ="INSERT INTO field (form, projectName, formName, type, name, label, language, regex, title, `key`, isinteger, isdouble, active, doubleentry, jump, required, search, group_form, branch_form, display, genkey, date, time, setdate, settime, min, max, defaultValue, position) VALUES
+			$qry ="INSERT INTO field (form, projectName, formName, type, name, label, language, regex, title, `key`, isinteger, isdouble, active, doubleentry, jump, required, search, group_form, branch_form, display, genkey, date, time, setdate, settime, min, max, match, crumb, defaultValue, position) VALUES
 								 ({$this->form->id}, '{$this->form->survey->name}', '{$this->form->name}', $fieldType, '{$this->name}','{$lbl}', '{$this->language}',";
 			$qry .= ($this->regex != "" ? $db->stringVal($this->regex) . "," : "NULL,");
 			$qry .= ($this->title ? "1," : "0,");
@@ -235,6 +242,8 @@ class EcField{
 			$qry .= ($this->setTime ? "'{$this->setTime}'," : "NULL,");
 			$qry .= ($this->min ? "{$this->min}," : "NULL,");
 			$qry .= ($this->max ? "{$this->max}," : "NULL,");
+			$qry .= ($this->match ? "'{$this->match}'," : "NULL,");
+			$qry .= ($this->crumb ? "'{$this->crumb}," : "NULL,");
 			$qry .= ($this->defaultValue ? "'{$this->defaultValue}'," : "NULL,");
 			$qry .= "{$this->position})";
 			
@@ -300,7 +309,7 @@ class EcField{
 								}
 								$this->regex = $rx;
 								break;
-						case 'doubleEntry':
+						case 'verify':
 								$this->doubleEntry = false;
 								break;
 						case 'search' :
@@ -339,6 +348,12 @@ class EcField{
 						case 'max' :
 								$this->max = (string)$val;
 								break;
+						case 'match' :
+							$this->match = (string)$val;
+							break;
+						case 'crumb' :
+							$this->crumb = (string)$val;
+							break;
 				} //end switch
 				
 			}//end foreach
@@ -360,11 +375,11 @@ class EcField{
 				}
 			}
 			
-			//check that only one of isInt, isDouble, date, time, setdate, settime, regex is set
+			//check that only one of isInt, isDouble, date, time, setdate, settime, regex or match is set
 			$vcheck = 0;
 			$vlist = "";
 				//PHP var => xml attribute
-			$vtype = array("isInt" => "integer", "isDouble" => "decimal" , "date" => "date",  "time" => "time", "setDate" => "setdate", "setTime" => "settime", "regex" => "regex");	
+			$vtype = array("isInt" => "integer", "isDouble" => "decimal" , "date" => "date",  "time" => "time", "setDate" => "setdate", "setTime" => "settime", "regex" => "regex", "match" => "match");	
 			
 			foreach($vtype as $var => $att)
 			{

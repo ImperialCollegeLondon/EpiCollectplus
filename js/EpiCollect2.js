@@ -1733,7 +1733,7 @@ var EcField = function()
     this.local = false;
     this.title = false;
 	this.regex = false;
-	this.doubleCheck = false;
+	this.verify = false;
 	this.date = false;
 	this.time = false;
 	this.genKey = false;
@@ -1749,6 +1749,9 @@ var EcField = function()
 	this.max = undefined;
 	this.defaultValue = undefined;
 	
+	this.match = false;
+	this.crumb = false;
+	
 	this.hidden = false;
 	this.search = false;
 	
@@ -1757,8 +1760,7 @@ var EcField = function()
 	this.fkTable = false;
 	this.fkField = false;
 	
-	this.jumpTarget = false;
-	this.jumpCondition = false;
+	this.jump = false;
 
     this.parse = function(xml)
     {
@@ -1771,7 +1773,7 @@ var EcField = function()
 		this.isdouble = xml.getAttribute('decimal') == "true";
 		this.local = xml.getAttribute("local") == "true";
 		this.regex = xml.getAttribute('regex');
-		this.doubleEntry = xml.getAttribute('inputcheck')=="true";
+		this.verify = xml.getAttribute('verify')=="true";
 		this.genkey = xml.getAttribute('genkey') == "true";
 		this.hidden = xml.getAttribute('display') == "false";
 		this.search = xml.getAttribute('search') == "true";
@@ -1785,6 +1787,11 @@ var EcField = function()
 		this.min = Number(xml.getAttribute('min'));
 		this.max = Number(xml.getAttribute('max'));
 		this.defaultValue = xml.getAttribute('default');
+		
+		this.jump = xml.getAttribute('jump');
+		
+		this.match = xml.getAttribute('match');
+		this.crumb = xml.getAttribute('crumb');
 		
 		if(this.type == "branch")
 		{
@@ -1902,6 +1909,92 @@ var EcField = function()
 		{
 			ctrl.form = this.form;
 		}
+		
+		
+		if(this.match)
+		{
+			ctrl.match = this.match;
+			ctrl.validator = function(value)
+			{
+				if(value == "") return false;
+				mParts = this.match.split(",");
+				var pVal = Ext.getCmp(mParts[1]).getValue();
+				if(!pVal)
+				{
+					//alert("Please select a value for " + Ext.getCmp('Person_ID').label.dom.firstChild.data + " before filling out " + this.label.dom.firstChild.data)
+					return false;
+				}
+				var rex = new RegExp(mParts[2]);
+				
+				if(pVal.match(rex) && value.match(rex) && pVal.match(rex)[0] == value.match(rex)[0])
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+		}
+		
+		ctrl.listeners = {};
+		if(this.verify)
+		{
+			ctrl.listeners['change'] = function(fld, newVal, oldVal)
+			{
+				if(!this.isValid()) return false;
+				if(prompt("Please re-enter the value for " + fld.label.dom.firstChild.data) != newVal)
+				{
+					alert("Values did not match, data has not been changed");
+					fld.setValue(oldVal);
+				}
+			}
+			
+		}
+		else if(this.jump)
+		{
+			ctrl.jump = this.jump;
+			ctrl.listeners['select'] = function(fld, rec, idx)
+			{
+				var jumpParts = this.jump.split(",");
+				var jField = false;
+				
+				idx++;//idx is zero indexed, jump is 1 indexed
+
+				for(var i = 0; i < jumpParts.length ; i += 2)
+				{
+					if(jumpParts[i+1] == idx || (jumpParts[i+1].match(/^!.*/) && jumpParts[i+1] != "!" + idx))
+					{
+						jField = jumpParts[i];
+						break;
+					}
+				}
+				
+				var start = false;
+				for(var f in table.fields)
+				{
+					if(table.name + "_" + f == fld.id) 
+					{
+						start = true
+					}
+					else if(start && f == jField)
+					{
+						return;
+					}
+					else if(start && jField)
+					{
+						Ext.getCmp(table.name + "_" + f).disable();
+					}
+					else
+					{
+						if(Ext.getCmp(table.name + "_" + f))Ext.getCmp(table.name + "_" + f).enable();
+					}
+				}	
+			}
+			
+		}
+		
+	
 		
 		Ext.apply(ctrl, cfg);
 		return new xtypes[this.type](ctrl);

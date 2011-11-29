@@ -102,12 +102,14 @@ CREATE TABLE IF NOT EXISTS `field` (
   `genkey` bit(1) NOT NULL DEFAULT b'0',
   `min` double DEFAULT NULL,
   `max` double DEFAULT NULL,
+  `crumb` varchar(255) DEFAULT NULL,
+  `match` varchar(255) DEFAULT NULL,
   `defaultValue` varchar(1000) DEFAULT NULL,
   `position` int(11) NOT NULL COMMENT 'zero-indexed position in the form.',
   PRIMARY KEY (`idField`),
   KEY `fk_form` (`form`),
   KEY `fk_field` (`type`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2422 ~
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=0 ~
 
 CREATE TABLE IF NOT EXISTS `fieldtype` (
   `idFieldType` int(11) NOT NULL AUTO_INCREMENT,
