@@ -1496,7 +1496,15 @@ var EcTable = function(conf)
 					}
 					else
 					{
+						alert(res.repsonseText);
 						this.store.load();
+					}
+				},
+				failure : function(res, opts)
+				{
+					if(res.responseText.match(/^Message\s?:/))
+					{
+						alert(res.responseText.replace(/^Message\s?:/, ""));
 					}
 				},
 				scope: this
@@ -1564,7 +1572,7 @@ var EcTable = function(conf)
 									}
 									else
 									{
-										this.store.load({params: {start : 0, limit: 25, mode: 'list'}});
+										if(this.store.load) this.store.load({params: {start : 0, limit: 25, mode: 'list'}});
 										callback(this);
 									}
 									//callback(scope);

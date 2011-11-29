@@ -80,7 +80,6 @@
 	$log = new Logger("Ec2");
 	$db = false;
 
-	session_cache_limiter('nocache');
 	@session_start();
 	
 	/* class and function definitions */
@@ -334,6 +333,7 @@
 	{
 		global $auth, $url, $SITE_ROOT;
 		
+		
 		$url = preg_replace("/\/$/", "", $url);
 		
 		$prj = new EcProject();
@@ -363,6 +363,7 @@
 			$format = $ext != "" ? $ext : $format;
 			switch($format){
 				case "xml":
+					header("Cache-Control: no-cache, must-revalidate");
 					header ("Content-type: text/xml; charset=utf-8;");
 					echo $prj->toXML();
 					break;
@@ -378,10 +379,16 @@
 							$tblList .= "<div class=\"tblDiv\"><a class=\"tblName\" href=\"{$prj->name}/{$tbl->name}\">{$tbl->name}</a><a href=\"{$prj->name}/{$tbl->name}\">View All Data</a> | <form name=\"{$tbl->name}SearchForm\" action=\"./{$prj->name}/{$tbl->name}\" method=\"GET\"> Search for {$tbl->key} <input type=\"text\" name=\"{$tbl->key}\" /> <a href=\"javascript:document.{$tbl->name}SearchForm.submit();\">Search</a></form></div>";
 						}
 						
+						$imgName = $prj->image ? $prj->image : "images/projectPlaceholder.png";
+						
+						$imgSize = getimagesize($imgName);
+						
 						$vals =  array(
 							"projectName" => $prj->name,
 							"projectDescription" => $prj->description && $prj->description != "" ? $prj->description : "Project homepage for {$prj->name}",
-							"projectImage" => $prj->image ? $SITE_ROOT . "/". $prj->image : "$SITE_ROOT/images/projectPlaceholder.png",
+							"projectImage" => $imgName,
+							"imageWidth" => $imgSize[0],
+							"imageHeight" =>$imgSize[1],
 							"tables" => $tblList,
 							"adminMenu" => "",
 							"userMenu" => ""
@@ -1129,7 +1136,9 @@
 	function formHandler()
 	{
 		global $url, $auth;
-			
+		
+		
+		
 		$format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "/") + 1);
 		$ext = substr($url, strrpos($url, ".") + 1);
 		$format = $ext != "" ? $ext : $format;
@@ -1144,6 +1153,7 @@
 		global $url, $auth;
 		if($_SERVER["REQUEST_METHOD"] == "POST")
 		{
+			header("Cache-Control: no-cache, must-revalidate");
 			$ent = $prj->tables[$frmName]->createEntry();
 			
 			$ent->created = $_POST["created"];
@@ -1189,6 +1199,8 @@
 			
 			switch($format){
 				case "json":
+					header("Cache-Control: no-cache, must-revalidate");
+					header("Content-Type: application/json");
 					if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
 					{
 						$arr = array();
@@ -1206,15 +1218,17 @@
 					}
 					else
 					{
-						header("Content-Type: application/json");
+						
 						echo $prj->tables[$frmName]->toJson();
 						break;
 					}
 					break;
 				case "xml":
+					header("Cache-Control: no-cache, must-revalidate");
+					header("Content-Type: text/xml");
 					if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
 					{
-						header("Content-Type: text/xml");
+						
 						$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
 						foreach($arr["$frmName"] as $ent)
 						{
@@ -1242,11 +1256,11 @@
 					}
 					else
 					{
-						header("Content-Type: text/xml");
 						echo $prj->tables[$frmName]->toXml();
 						break;
 					}
 				case "csv":
+						header("Cache-Control: no-cache, must-revalidate");
 						header("Content-Type: text/csv");
 						$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
 						$arr = $arr[$frmName];
@@ -1256,6 +1270,7 @@
 					
 					break;
 				case "tsv":
+						header("Cache-Control: no-cache, must-revalidate");
 						header("Content-Type: text/tsv");
 						$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
 						$arr = $arr[$frmName];
@@ -1264,6 +1279,7 @@
 					
 					break;
 				default:
+					header("Cache-control: public");
 					//TODO: xml get/add/update for forms/tables from the website
 					$referer = array_key_exists("HTTP_REFERER", $_SERVER) ? $_SERVER["HTTP_REFERER"] : "";
 					if(!array_key_exists("formCrumbs", $_SESSION) || !$prj->getPreviousTable($frmName) || !preg_match("/{$prj->name}\//", $referer))
@@ -1299,13 +1315,17 @@
 	}
 	
 	function entryHandler()
-	{
+	{	
 		global $auth, $url;
+		
+		header("Cache-Control: no-cache, must-revalidate");
+		
 		$prjEnd = strpos($url, "/");
 		$frmEnd =  strpos($url, "/", $prjEnd+1);
 		$prjName = substr($url,0,$prjEnd);
 		$frmName = substr($url,$prjEnd + 1,$frmEnd - $prjEnd - 1);
-		$entId = substr($url, $frmEnd + 1);
+		$entId = urldecode(substr($url, $frmEnd + 1));
+
 		$prj = new EcProject();
 		$prj->name = $prjName;
 		$prj->fetch();
@@ -1313,6 +1333,7 @@
 		$ent = new EcEntry($prj->tables[$frmName]);
 		$ent->key = $entId;
 		$r = $ent->fetch();
+	
 		//TODO: xml get/add/update for records from the website
 		if($_SERVER["REQUEST_METHOD"] == "DELETE")
 		{
@@ -1327,7 +1348,10 @@
 					{
 						header("HTTP/1.1 409 Conflict");
 					}
-					header("HTTP/1.1 500 Internal Server Error");
+					else
+					{
+						header("HTTP/1.1 500 Internal Server Error");
+					}
 					echo $e->getMessage();
 				}
 			}
@@ -1676,6 +1700,8 @@
 	function createProject()
 	{
 		global $auth, $url;
+		
+		header("Cache-Control: no-cache, must-revalidate");
 		
 		$vals =  array(
 			"title" =>  "Create Project", 

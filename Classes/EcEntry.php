@@ -232,13 +232,14 @@
 		
 		public function delete()
 		{
+			
 			$db = new dbConnection();
 			
 			if(count($this->getChildEntries()) > 0 || count($this->getBranchEntries()) > 0)
 			{
 				throw new Exception("Message: Cannot delete entry {$this->key}, the entry has child or branch entries associated with it.");
 			}
-			
+			echo "...";
 			$sql = "DELETE from entryvalue where Entry = {$this->id}";
 			$db->do_query($sql);
 			$sql = "DELETE from entry where idEntry = {$this->id}";
@@ -281,7 +282,7 @@
 			}
 			else
 			{
-				$children = array();
+				return array();
 			}
 			return $children[$tbl->name];
 		}
@@ -297,6 +298,7 @@
 					array_push($branchEntries, $branches[$this->form->branches[$i]][$j]);
 				}
 			}
+			return $branchEntries;
 		}
 		
 	}

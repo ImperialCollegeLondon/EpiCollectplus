@@ -1,16 +1,5 @@
 {{style}}
 	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/Ext/ext-all.css" />
-
-	<style type="text/css">
-		/*#projectDescription
-		{
-			border-bottom: 1px solid #CCCCCC;
-			margin-bottom :10px;
-			padding-bottom: 5px;
-			min-height : 75px;
-			
-		}*/
-	</style>
 {{/style}}
 
 {{script}}
@@ -188,7 +177,7 @@
 {{/breadcrumbs}}
 {{main}}
 	<h1>{#projectName#}</h1><div id="projectPanel"></div>
-	<div id="projectDescription" style="display:none"><img class="projectImage" src="{#projectImage#}" alt="Project Image" />{#projectDescription#}</div>
+	<div id="projectDescription" style="display:none"><img class="projectImage" src="{#projectImage#}" alt="Project Image" width="{{imgWidth}}" height="{{imgHeight}}" />{#projectDescription#}</div>
 	<div id="vSearch"></div>
 	<div id="adminMenu" class="hMenu">{#adminMenu#}</div>
 {{/main}}
