@@ -296,7 +296,7 @@
 			//global $auth;
 			
 			$db = new dbConnection();
-			if(preg_match("/created|deviceId/i", $sortField))
+			if(preg_match("/created|deviceId|lastEdited|uploaded/i", $sortField))
 			{
 				$sql = "SELECT DISTINCT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded FROM entry e {{joinclause}} WHERE e.projectName = '{$this->survey->name}' AND e.formName = '{$this->name}' {{whereclause}} ORDER BY e.$sortField $sortDir";
 			}

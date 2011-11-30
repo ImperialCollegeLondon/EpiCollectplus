@@ -457,6 +457,20 @@ var EcTable = function(conf)
 		this.cols.push("created");
 		
 		this.fld = new EcField();
+		this.fld.id = "uploaded";
+		this.fld.parent = this.name;
+		this.fld.text = "Time Uploaded";
+		this.fields[this.fld.id] = this.fld;
+		this.cols.push("uploaded");
+		
+		this.fld = new EcField();
+		this.fld.id = "lastEdited";
+		this.fld.parent = this.name;
+		this.fld.text = "Last Updated";
+		this.fields[this.fld.id] = this.fld;
+		this.cols.push("lastEdited");
+		
+		this.fld = new EcField();
 		this.fld.id = "DeviceID";
 		this.fld.text = "Device ID";
 		this.fld.parent = this.name;
@@ -544,6 +558,20 @@ var EcTable = function(conf)
 						return d.toLocaleString();
 				}, dataIndex: this.fields[this.fld].id, sortable:true});
 			}
+			else if(this.fld == "lastEdited" || this.fld == "uploaded")
+			{
+				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
+					if(value != "" && value != "0" && value != null)
+					{
+						var d = new Date(value);
+						return d.toLocaleString();
+					}
+					else
+					{
+						return "";
+					}
+				}, dataIndex: this.fields[this.fld].id, sortable:true});
+			}
 			else if(this.fields[this.fld].type == "photo")
 			{
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
@@ -557,7 +585,7 @@ var EcTable = function(conf)
 			{
 			
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-					if(value != "" && value != "0")
+					if(value != "" && value != "0" && value != null)
 					{
 						return "<a href=\"../ec/uploads/"+ survey.name + "~" + value + "\" target=\"__blank\">" + value + "</a>";
 					}
@@ -567,7 +595,7 @@ var EcTable = function(conf)
 					}
 				}, dataIndex: this.fields[this.fld].id, sortable:true});
 			}
-			else if(this.fields[this.fld].type == "audio")
+			else if(this.fields[this.fld].type == "audio" && value != null)
 			{
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 					if(value != "" && value != "0")
@@ -626,7 +654,7 @@ var EcTable = function(conf)
 			cols.push({
 				id: 'childEntries', header : survey.getNextTable(this.name).name + ' Entries', dataIndex : 'childEntries', sortable:true,  menuDisabled: true, renderer: function(value, metaData, record, rowIndex, colIndex, store)
 				{		
-					if(value == "")
+					if(value == "" || value == null)
 					{
 						return "<i>no entries</i>";
 					}

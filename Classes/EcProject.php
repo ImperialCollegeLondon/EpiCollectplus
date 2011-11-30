@@ -233,6 +233,32 @@ class EcProject{
 			
 		}
 		
+		public function getLastUpdated()
+		{
+			$db = new dbConnection();
+			$sql = "SELECT max(uploaded) as Uploaded, max(lastEdited) as Edited from entry WHERE projectName = '{$this->name}'";
+			$res = $db->do_query($sql);
+			
+			if($res !== true)
+			{
+				return $res;
+			}
+			
+			$arr = $db->get_row_array();
+			
+			$tz = new DateTimeZone('UTC');
+			
+			//ignore created as it will, by definition, be earlier than uploaded!
+			//$created = new DateTime('now', $tz);
+			//$created->setTimestamp($arr["Created"]);
+			
+			$uploaded = new DateTime($arr["Uploaded"], $tz);
+			$edited = new DateTime($arr["Edited"],$tz);
+			
+			//$dat = $created > $uploaded ? $created : $uploaded;
+			return 	 $uploaded > $edited ? $uploaded : $edited;
+		}
+		
 		public function checkPermission($uid)
 		{
 			$db = new dbConnection();

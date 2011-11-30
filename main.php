@@ -80,7 +80,7 @@
 	$log = new Logger("Ec2");
 	$db = false;
 
-	@session_start();
+	
 	
 	/* class and function definitions */
 	
@@ -873,16 +873,20 @@
 	
 	function downloadData()
 	{
-		
-	
 		//TODO: Dowload data from server, including gzipped media files
 		global $auth, $url, $SITE_ROOT;
+		header("Cache-Control: none,  must-revalidate");
+		
 		$flog = fopen('ec/uploads/fileUploadLog.log', 'a');
 		$survey = new EcProject();
 		$survey->name = preg_replace("/\/download\.?(xml|json)?$/", "", $url);
 		
 		$survey->fetch();
 		
+		$lastUpdated = $survey->getLastUpdated();
+		$qString = $_SERVER["QUERY_STRING"];
+		
+		$baseFn = md5($qString);
 		//the root of the working directory is the Script filename minus everthing after the last \
 		//NOTE: This will be the same for EC+ as the upload directory is project-independant
 		$pos = max(strrpos($_SERVER["SCRIPT_FILENAME"], "\\") ,strrpos($_SERVER["SCRIPT_FILENAME"], "/"));
@@ -964,27 +968,47 @@
 		$nxtCVals = array();
 			
 		//for each main table we're intersted in (i.e. main tables between stat and end table)
-		$ts = new DateTime("now", new DateTimeZone("UTC"));
-		$ts = $ts->getTimestamp();
+		//$ts = new DateTime("now", new DateTimeZone("UTC"));
+		//$ts = $ts->getTimestamp();
 		if($dataType == "data" && $xml)
 		{
 			//header("Content-type: text/xml");
-			$fxml = fopen("$root\\ec\\uploads\\{$ts}.xml", "w+");
-			$fx_url = "$wwwroot/ec/uploads/{$ts}.xml";
+			$fxn = "$root\\ec\\uploads\\{$baseFn}.xml";
+			$fx_url = "$wwwroot/ec/uploads/{$baseFn}.xml";
+			if(file_exists($fxn))
+			{
+				header("Location: $fx_url");
+				return;
+			}
+			$fxml = fopen("$fxn", "w+");
 			fwrite($fxml,"<?xml version=\"1.0\"?><entries>");
 			
 		}
 		else if($dataType == "data")
 		{
 			//header("Content-type: text/plain");
-			$tsv = fopen("$root\\ec\\uploads\\{$ts}.tsv", "w+");
-			$ts_url = "$wwwroot/ec/uploads/{$ts}.tsv";
+			$txn = "$root\\ec\\uploads\\{$baseFn}.tsv";
+			$ts_url = "$wwwroot/ec/uploads/{$baseFn}.tsv";
+			if(file_exists($txn))
+			{
+				header("Location: $ts_url");
+				return;
+			}
+			
+			$tsv = fopen($txn, "w+");	
 		}
 		else
 		{
 		
-			$zfn = "$root\\ec\\uploads\\arc{$ts}.zip";
-			$zrl = "$wwwroot/ec/uploads/arc{$ts}.zip";
+			$zfn = "$root\\ec\\uploads\\arc{$baseFn}.zip";
+			$zrl = "$wwwroot/ec/uploads/arc{$baseFn}.zip";
+			
+			if(file_exists($zfn))
+			{
+				header("Location: $zrl");
+				return;
+			}
+			
 			$arc = new ZipArchive;
 			$x = $arc->open($zfn, ZipArchive::CREATE);
 			if(!$x) die("Could not create the zip file.");
@@ -1042,7 +1066,7 @@
 					{
 						foreach(array_keys($res[$tbls[$t]][$ent]) as $fld)
 						{
-							if($fld == "childEntries") continue;
+							if($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields)) continue;
 							if($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $res[$tbls[$t]][$ent][$fld] != "" && file_exists("$root\\ec\\uploads\\tn_".$res[$tbls[$t]][$ent][$fld]))
 							{
 								if(!$arc->addFile( "$root\\ec\\uploads\\tn_" . $res[$tbls[$t]][$ent][$fld], $res[$tbls[$t]][$ent][$fld])) die("fail -- \\ec\\uploads\\tn_" . $res[$tbls[$t]][$ent][$fld]);
@@ -1054,7 +1078,7 @@
 					{
 						foreach(array_keys($res[$tbls[$t]][$ent]) as $fld)
 						{
-							if($fld == "childEntries") continue;
+							if($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields)) continue;
 							if($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $res[$tbls[$t]][$ent][$fld] != "" && file_exists("$root\\ec\\uploads\\".$res[$tbls[$t]][$ent][$fld]))
 							{
 								if(!$arc->addFile( "$root\\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld], $res[$tbls[$t]][$ent][$fld])) die("fail -- \\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld]);
@@ -1066,7 +1090,7 @@
 					{
 						foreach(array_keys($res[$tbls[$t]][$ent]) as $fld)
 						{
-							if($fld == "childEntries") continue;
+							if($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields)) continue;
 							if($survey->tables[$tbls[$t]]->fields[$fld]->type == $_GET["type"] && $res[$tbls[$t]][$ent][$fld] != "" && file_exists("$root\\ec\\uploads\\".$res[$tbls[$t]][$ent][$fld]))
 							{
 								if(!$arc->addFile( "$root\\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld], $res[$tbls[$t]][$ent][$fld])) die("fail -- \\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld]);
@@ -1103,12 +1127,14 @@
 		{
 				fwrite($fxml,  "</entries>");
 				fclose($fxml);
-				header("Location : $fx_url");
+				header("Location: $fx_url");
+				return;
 		}
 		elseif ($dataType == "data")
 		{
 			fclose($tsv);
-			header("Location : $ts_url");
+			header("Location: $ts_url");
+			return;
 		}
 		else
 		{
@@ -1127,12 +1153,14 @@
 			//echo $zfn;
 			//echo $zrl;
 			header("Location: $zrl");
+			return;
 		}
 	}
 	
 	
 	function formHandler()
 	{
+		
 		global $url, $auth;		
 		
 		$format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "/") + 1);
@@ -1272,7 +1300,7 @@
 						break;
 					break;
 				default:
-					header("Cache-control: public");
+					header("Cache-control: max-age=864000");
 					//TODO: xml get/add/update for forms/tables from the website
 					$referer = array_key_exists("HTTP_REFERER", $_SERVER) ? $_SERVER["HTTP_REFERER"] : "";
 					if(!array_key_exists("formCrumbs", $_SESSION) || !$prj->getPreviousTable($frmName) || !preg_match("/{$prj->name}\//", $referer))
@@ -2106,13 +2134,16 @@
 			$url = $rule->redirect;
 		}
 		if($rule->handler)
-		{	
+		{
 			$h = $rule->handler;
+			if($h != 'defaultHandler') @session_start();
 			$h();
 		}
 		else
 		{
+			//static files
 			header("Content-type: " . mimeType($url));
+			header("Cache-Control: public; max-age=86400;");
 			echo file_get_contents("./" . $url);
 		}	
 	}
