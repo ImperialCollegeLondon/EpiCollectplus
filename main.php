@@ -873,6 +873,8 @@
 	
 	function downloadData()
 	{
+		
+	
 		//TODO: Dowload data from server, including gzipped media files
 		global $auth, $url, $SITE_ROOT;
 		$flog = fopen('ec/uploads/fileUploadLog.log', 'a');
@@ -974,9 +976,9 @@
 		}
 		else if($dataType == "data")
 		{
-			header("Content-type: text/plain");
+			//header("Content-type: text/plain");
 			$tsv = fopen("$root\\ec\\uploads\\{$ts}.tsv", "w+");
-			$ts_url = "$wwwroot/uploads/{$ts}.tsv";
+			$ts_url = "$wwwroot/ec/uploads/{$ts}.tsv";
 		}
 		else
 		{
@@ -1044,11 +1046,9 @@
 							if($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $res[$tbls[$t]][$ent][$fld] != "" && file_exists("$root\\ec\\uploads\\tn_".$res[$tbls[$t]][$ent][$fld]))
 							{
 								if(!$arc->addFile( "$root\\ec\\uploads\\tn_" . $res[$tbls[$t]][$ent][$fld], $res[$tbls[$t]][$ent][$fld])) die("fail -- \\ec\\uploads\\tn_" . $res[$tbls[$t]][$ent][$fld]);
-								//echo "$root\\uploads\\tn_".$res[$tbls[$t]][$ent][$fld];
 								$files_added++;
 							}
 						}
-						//array_push($files, "tn_" . $r[$fld->name]);
 					}
 					elseif(strtolower($_GET["type"]) == "full_image")
 					{
@@ -1058,7 +1058,6 @@
 							if($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $res[$tbls[$t]][$ent][$fld] != "" && file_exists("$root\\ec\\uploads\\".$res[$tbls[$t]][$ent][$fld]))
 							{
 								if(!$arc->addFile( "$root\\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld], $res[$tbls[$t]][$ent][$fld])) die("fail -- \\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld]);
-								//echo "$root\\uploads\\".$res[$tbls[$t]][$ent][$fld];
 								$files_added++;
 							}
 						}
@@ -1071,7 +1070,6 @@
 							if($survey->tables[$tbls[$t]]->fields[$fld]->type == $_GET["type"] && $res[$tbls[$t]][$ent][$fld] != "" && file_exists("$root\\ec\\uploads\\".$res[$tbls[$t]][$ent][$fld]))
 							{
 								if(!$arc->addFile( "$root\\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld], $res[$tbls[$t]][$ent][$fld])) die("fail -- \\ec\\uploads\\" . $res[$tbls[$t]][$ent][$fld]);
-								//echo "$root\\uploads\\".$res[$tbls[$t]][$ent][$fld];
 								$files_added++;
 							}
 						}
@@ -1110,7 +1108,7 @@
 		elseif ($dataType == "data")
 		{
 			fclose($tsv);
-			header("Location : $fx_tsv");
+			header("Location : $ts_url");
 		}
 		else
 		{
@@ -1136,7 +1134,7 @@
 	function formHandler()
 	{
 		global $url, $auth;
-		
+		echo "formHandler";
 		
 		
 		$format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "/") + 1);
@@ -1264,10 +1262,8 @@
 						header("Content-Type: text/csv");
 						$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
 						$arr = $arr[$frmName];
-						
 						echo assocToDelimStr($arr, ",");
 						break;
-					
 					break;
 				case "tsv":
 						header("Cache-Control: no-cache, must-revalidate");
@@ -1276,7 +1272,6 @@
 						$arr = $arr[$frmName];
 						echo assocToDelimStr($arr, "\t");
 						break;
-					
 					break;
 				default:
 					header("Cache-control: public");
