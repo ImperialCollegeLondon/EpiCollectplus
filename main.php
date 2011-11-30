@@ -1133,9 +1133,7 @@
 	
 	function formHandler()
 	{
-		global $url, $auth;
-		echo "formHandler";
-		
+		global $url, $auth;		
 		
 		$format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "/") + 1);
 		$ext = substr($url, strrpos($url, ".") + 1);
