@@ -1046,7 +1046,19 @@
 							foreach(array_keys($res[$tbls[$t]][$ent]) as $fld)
 							{
 								if($fld == "childEntries") continue;
-								fwrite($fxml,"\t\t\t<$fld>" . str_replace("&", "&amp;", $res[$tbls[$t]][$ent][$fld]) . "</$fld>\n");
+								if(array_key_exists($fld, $survey->tables[$tbls[$t]]->fields) && preg_match("/^(gps|location)$/i", $survey->tables[$tbls[$t]]->fields[$fld]->type))
+								{
+									$gpsObj = json_decode($res[$tbls[$t]][$ent][$fld]);
+									fwrite($fxml,"\t\t\t<{$fld}_lat>{$gpsObj->latitude}</{$fld}_lat>\n");
+									fwrite($fxml,"\t\t\t<{$fld}_lon>{$gpsObj->longitude}</{$fld}_lon>\n");
+									fwrite($fxml,"\t\t\t<{$fld}_acc>{$gpsObj->accuracy}</{$fld}_acc>\n");
+									fwrite($fxml,"\t\t\t<{$fld}_provider>{$gpsObj->provider}</{$fld}_provider>\n");
+									fwrite($fxml,"\t\t\t<{$fld}_alt>{$gpsObj->altitude}</{$fld}_alt>\n");
+								}
+								else
+								{
+									fwrite($fxml,"\t\t\t<$fld>" . str_replace("&", "&amp;", $res[$tbls[$t]][$ent][$fld]) . "</$fld>\n");
+								}
 							}
 							fwrite($fxml, "\t\t</entry>\n");
 						}
@@ -1056,7 +1068,19 @@
 							foreach(array_keys($res[$tbls[$t]][$ent]) as $fld)
 							{
 								if($fld == "childEntries") continue;
-								fwrite($tsv,  "$fld$delim" . escapeTSV($res[$tbls[$t]][$ent][$fld]). $delim);
+								if(array_key_exists($fld, $survey->tables[$tbls[$t]]->fields) && preg_match("/^(gps|location)$/i", $survey->tables[$tbls[$t]]->fields[$fld]->type))
+								{
+									$gpsObj = json_decode($res[$tbls[$t]][$ent][$fld]);
+									fwrite($tsv,"{$fld}_lat{$delim}{$gpsObj->latitude}{$delim}");
+									fwrite($tsv,"{$fld}_lon{$delim}{$gpsObj->longitude}{$delim}");
+									fwrite($tsv,"{$fld}_acc{$delim}{$gpsObj->accuracy}{$delim}");
+									fwrite($tsv,"{$fld}_provider{$delim}{$gpsObj->provider}{$delim}");
+									fwrite($tsv,"{$fld}_alt{$delim}{$gpsObj->altitude}{$delim}");
+								}
+								else
+								{
+									fwrite($tsv,  "$fld$delim" . escapeTSV($res[$tbls[$t]][$ent][$fld]). $delim);
+								}
 							}
 							fwrite($tsv,  $rowDelim);
 						}
