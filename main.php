@@ -972,7 +972,7 @@
 		//$ts = $ts->getTimestamp();
 		if($dataType == "data" && $xml)
 		{
-			//header("Content-type: text/xml");
+			header("Content-type: text/xml");
 			$fxn = "$root\\ec\\uploads\\{$baseFn}.xml";
 			$fx_url = "$wwwroot/ec/uploads/{$baseFn}.xml";
 			if(file_exists($fxn))
@@ -986,7 +986,7 @@
 		}
 		else if($dataType == "data")
 		{
-			//header("Content-type: text/plain");
+			header("Content-type: text/plain");
 			$txn = "$root\\ec\\uploads\\{$baseFn}.tsv";
 			$ts_url = "$wwwroot/ec/uploads/{$baseFn}.tsv";
 			if(file_exists($txn))
@@ -1309,7 +1309,7 @@
 					}
 				case "csv":
 						header("Cache-Control: no-cache, must-revalidate");
-						header("Content-Type: text/csv");
+						//header("Content-Type: text/csv");
 						$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
 						$arr = $arr[$frmName];
 						echo assocToDelimStr($arr, ",");
@@ -1317,7 +1317,7 @@
 					break;
 				case "tsv":
 						header("Cache-Control: no-cache, must-revalidate");
-						header("Content-Type: text/tsv");
+						//header("Content-Type: text/tsv");
 						$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
 						$arr = $arr[$frmName];
 						echo assocToDelimStr($arr, "\t");
