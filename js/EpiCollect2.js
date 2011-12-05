@@ -123,7 +123,7 @@ var GPSPanel = Ext.extend(Ext.Panel,{
 			html: "<div id=\"" + this.id + "_searchcontatiner\">Search for location<input id=\"" + this.id + "_search\" /><span class=\"button\" onclick=\"Ext.getCmp('" + this.id + "container').locationSearch();\">Search</span></div><div id=\"" + this.id + "_map\" width=\"100%\" style=\"height: 200px;width: 50%;display:inline-block;vertical-align:top;\"></div><div class=\"GPSInputs\" style=\"display: inline-block;vertical-align:top;padding:5px 5px 5px 5px;\">"
 				+ "<table>" + " <tr> <td>Accuracy</td><td><input type=\"text\" id=\"" + this.id + "_acc\" name=\"" + this.id+ "_acc\" onchange=\"Ext.getCmp('" + this.id + "').accCircle.setRadius(Number(this.value));\"/></td></tr>"
 				+ " <tr> <td>Altitude</td><td><input type=\"text\" id=\"" + this.id + "_alt\" name=\"" + this.id+ "_alt\"></td></tr>"
-				+ " <tr> <td>Source</td><td><input type=\"text\" id=\"" + this.id + "_src\" name=\"" + this.id+ "_src\"></td></tr></table><input type=\"hidden\" name=\""+this.id + "\" id=\"" + this.id + "fld\" />",
+				+ " <tr> <td>Provider</td><td><input type=\"text\" id=\"" + this.id + "_src\" name=\"" + this.id+ "_src\"></td></tr></table><input type=\"hidden\" name=\""+this.id + "\" id=\"" + this.id + "fld\" />",
 			height: 150,
 			listeners: {
 				'afterrender' : function()
@@ -184,7 +184,7 @@ var GPSPanel = Ext.extend(Ext.Panel,{
 		
 		document.getElementById(d.id + "_alt").value = obj.altitude;
 		document.getElementById(d.id + "_acc").value = obj.accuracy;
-		document.getElementById(d.id + "_src").value = obj.source;
+		document.getElementById(d.id + "_src").value = obj.provider;
 	},
 	getValue : function()
 	{
@@ -202,7 +202,7 @@ var GPSPanel = Ext.extend(Ext.Panel,{
 		
 		val.altitude = Number(document.getElementById(d.id + "_alt").value);
 		val.accuracy = Number(document.getElementById(d.id + "_acc").value);
-		val.source = document.getElementById(d.id + "_src").value;
+		val.provider = document.getElementById(d.id + "_src").value;
 		
 		Ext.get(d.id  + "fld").dom.value = Ext.encode(val);
 		
@@ -684,6 +684,7 @@ var EcTable = function(conf)
 					});
 					this.frm.getFooterToolbar().get(this.name + 'cnl').on('click', function(){this.win.close()}, this);
 					this.frm.getFooterToolbar().get(this.name + 'sub').on('click', function(){this.addEntry(this.frm.getForm().getValues(),function(scope){scope.win.close()}, this);}, this);
+					
 					this.win.show();
 				},
 				scope : this
@@ -1326,6 +1327,8 @@ var EcTable = function(conf)
 	{
 		this.ctrs = [];
 		
+		var hidden = false;
+		
 		for(this.fld in this.fields)
 		{
 
@@ -1381,6 +1384,7 @@ var EcTable = function(conf)
 				ctrl.fkChildField = this.fields[this.fld].fkChildField;
 				ctrl.fkChildTbl = this.fields[this.fld].fkChildTbl;
 				
+	
 				ctrl.listeners = {
 					'expand' : function(cbo)
 					{
@@ -1393,7 +1397,7 @@ var EcTable = function(conf)
 									
 										if(recs.length == 0)
 										{
-											alert("The " + survey.tables[this.fkParentTbl].key + " that you selected has not had any " + pluralize(this.fieldLabel) + " added to it yet.");
+											Ext.MessageBox.alert("Validation Message", "The " + survey.tables[this.fkParentTbl].key + " that you selected has not had any " + pluralize(this.fieldLabel) + " added to it yet.");
 										}
 									},
 									scope: this
@@ -1401,7 +1405,7 @@ var EcTable = function(conf)
 							}
 							else
 							{
-								alert('Please choose the value of ' + Ext.getCmp(this.fkParentField).fieldLabel + ' before you choose the value of this field');
+								Ext.MessageBox.alert("Validation Message",'Please choose the value of ' + Ext.getCmp(this.fkParentField).fieldLabel + ' before you choose the value of this field');
 								this.collapse();
 							}	
 						}
@@ -1422,7 +1426,7 @@ var EcTable = function(conf)
 									callback : function (recs, opts, success) {
 										if(recs.length == 0)
 										{
-											alert("The " + this.fieldLabel + " that you selected has not had any " + pluralize(survey.tables[this.fkChildTbl].name) + " added to it yet.");
+											Ext.MessageBox.alert("Validation Message","The " + this.fieldLabel + " that you selected has not had any " + pluralize(survey.tables[this.fkChildTbl].name) + " added to it yet.");
 										}
 									},
 									scope: cbo
@@ -1477,6 +1481,9 @@ var EcTable = function(conf)
 				}
 			}
 			
+			ctrl.hidden = hidden || ctrl.hidden;
+		    hidden = hidden || !!ctrl.jump;
+			
 			this.ctrs.push(ctrl);
 		}
 		
@@ -1520,7 +1527,7 @@ var EcTable = function(conf)
 				success: function(res, opts){
 					if(res.responseText.match(/^Message\s?:/))
 					{
-						alert(res.responseText.replace(/^Message\s?:/, ""));
+						Ext.MessageBox.alert("Validation Message",res.responseText.replace(/^Message\s?:/, ""));
 					}
 					else
 					{
@@ -1531,7 +1538,7 @@ var EcTable = function(conf)
 				{
 					if(res.responseText.match(/^Message\s?:/))
 					{
-						alert(res.responseText.replace(/^Message\s?:/, ""));
+						Ext.MessageBox.alert("Validation Message",res.responseText.replace(/^Message\s?:/, ""));
 					}
 				},
 				scope: this
@@ -1606,7 +1613,7 @@ var EcTable = function(conf)
 								},
 								failure : function(res, opts)
 								{
-									alert(res.responseText.replace(/Message\s?:/,""));
+									Ext.MessageBox.alert("Validation Message",res.responseText.replace(/Message\s?:/,""));
 								},
 								scope: this
 							});
@@ -1873,9 +1880,7 @@ var EcField = function()
 			"group" : Ext.form.ComboBox,
 			"" : Ext.form.TextField
 		}
-		
-		
-		
+				
 		var ctrl = {
 			id: this.id,
 			fieldLabel : this.text,
@@ -1890,6 +1895,12 @@ var EcField = function()
 		else
 		{
 			ctrl.hidden = false;
+		}
+		
+		if(this.type == "select1" || this.type == "radio")
+		{
+			ctrl.forceSelection = true;
+			ctrl.lazyRender = true;
 		}
 		
 		if(this.integer){
@@ -1911,7 +1922,6 @@ var EcField = function()
 		
 		if(this.options.length > 0 && (this.type == "select1" || this.type == "radio")){
 			ctrl.store = this.options;
-			
 		}
 		
 		if(this.options.length > 0 && (this.type == "select")){
@@ -1937,8 +1947,7 @@ var EcField = function()
 		{
 			ctrl.form = this.form;
 		}
-		
-		
+			
 		if(this.match)
 		{
 			ctrl.match = this.match;
@@ -1968,12 +1977,12 @@ var EcField = function()
 		ctrl.listeners = {};
 		if(this.verify)
 		{
-			ctrl.listeners['change'] = function(fld, newVal, oldVal)
+			ctrl.listeners['blur'] = function(fld, newVal, oldVal)
 			{
 				if(!this.isValid()) return false;
 				if(prompt("Please re-enter the value for " + fld.label.dom.firstChild.data) != newVal)
 				{
-					alert("Values did not match, data has not been changed");
+					Ext.MessageBox.alert("Validation Message", "Values did not match, data has not been changed");
 					fld.setValue(oldVal);
 				}
 			}
@@ -1982,42 +1991,50 @@ var EcField = function()
 		else if(this.jump)
 		{
 			ctrl.jump = this.jump;
-			ctrl.listeners['select'] = function(fld, rec, idx)
+			var evt = (this.type == 'select1' || this.type == 'radio' ? 'select' : 'valid' );
+			ctrl.listeners[evt] = function(fld, rec, idx)
 			{
 				var jumpParts = this.jump.split(",");
 				var jField = false;
 				
 				idx++;//idx is zero indexed, jump is 1 indexed
-
 				for(var i = 0; i < jumpParts.length ; i += 2)
 				{
-					if(jumpParts[i+1] == idx || (jumpParts[i+1].match(/^!.*/) && jumpParts[i+1] != "!" + idx))
+					if(jumpParts[i+1].match(/^All$/i) != null || jumpParts[i+1] == idx || (jumpParts[i+1].match(/^![0-9]+$/) && jumpParts[i+1] != "!" + idx))
 					{
 						jField = jumpParts[i];
 						break;
 					}
 				}
-				
+
 				var start = false;
-				for(var f in table.fields)
+				var end = !jField;
+				for(var f in survey.tables[tbl].fields)
 				{
 					if(table.name + "_" + f == fld.id) 
 					{
-						start = true
+						start = true;
 					}
 					else if(start && f == jField)
 					{
-						return;
+						Ext.getCmp(table.name + "_" + f).show();
+						end = true;
+						if(Ext.getCmp(table.name + "_" + f).jump) return;
+						//return;
 					}
-					else if(start && jField)
+					else if(start && !end && f != jField)
 					{
-						Ext.getCmp(table.name + "_" + f).disable();
+						Ext.getCmp(table.name + "_" + f).hide();
 					}
-					else
+					else if(start)
 					{
-						if(Ext.getCmp(table.name + "_" + f))Ext.getCmp(table.name + "_" + f).enable();
-					}
-				}	
+						if(Ext.getCmp(table.name + "_" + f))
+						{
+							Ext.getCmp(table.name + "_" + f).show();
+							if(end && Ext.getCmp(table.name + "_" + f).jump) return;
+						}
+					}			
+				}
 			}
 			
 		}

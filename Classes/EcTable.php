@@ -414,7 +414,7 @@
 					{
 						//echo ($ents[$ent][$this->key] . " - ". $arr["value"] . "\n");
 						try{
-						if($ents[$ent][$this->key] == $arr["value"])
+						if(preg_match("/{$arr["value"]}/i", $ents[$ent][$this->key]))
 						{	
 							//echo "\n";
 							if(array_key_exists($arr["FormName"], $formToField))

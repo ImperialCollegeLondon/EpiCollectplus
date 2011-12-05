@@ -1015,7 +1015,7 @@
 		}
 		
 		
-		for($t = $n; $t <= $end; $t++)
+		for($t = $n; $t <= $end && $t < count($survey->tables); $t++)
 		{
 			if($dataType == "data" && $xml)
 			{
