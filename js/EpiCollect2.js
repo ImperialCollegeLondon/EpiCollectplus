@@ -158,7 +158,14 @@ var GPSPanel = Ext.extend(Ext.Panel,{
 						d = this;
 					if(!this.value)
 					{
-						if(navigator.geolocation) navigator.geolocation.getCurrentPosition(d.updatePos,null,{enableHighAccuracy: true});
+						if(navigator.geolocation)
+						{
+							navigator.geolocation.getCurrentPosition(d.updatePos,null,{enableHighAccuracy: true});
+						}
+						else
+						{
+							d.updatePos({coords : {latitude:0, longitude:0, altitude:0,accuracy:1000000}});
+						}
 					}
 					
 					
