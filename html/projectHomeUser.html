@@ -14,6 +14,8 @@
 			var pnl;
 			var gp;
 		
+			var table;
+			
 			Ext.onReady(init);
 			
 			function init(){
@@ -129,11 +131,11 @@
 									listeners: {
 										'click' : function(btn, e)
 										{
-											var tbl = survey.tables[btn.id.replace('AddBtn','')];
-											frm = tbl.getForm();
+											table = survey.tables[btn.id.replace('AddBtn','')];
+											frm = table.getForm();
 											frm.anchor = "100% 100%";
 											win = new Ext.Window({
-												title: "Add " + tbl.name,
+												title: "Add " + table.name,
 												items:[frm],
 												layout : 'anchor',
 												modal:true,
@@ -142,10 +144,10 @@
 											});
 											frm.labelWidth = Ext.getBody().getWidth() * 0.2;
 										
-											frm.getFooterToolbar().get(tbl.name+'cnl').on('click', function(){win.close()}, tbl);
-											frm.getFooterToolbar().get(tbl.name + 'sub').on('click', function(){
+											frm.getFooterToolbar().get(table.name+'cnl').on('click', function(){win.close()}, table);
+											frm.getFooterToolbar().get(table.name + 'sub').on('click', function(){
 												this.addEntry(frm.getForm().getValues(), function(){win.close()});
-											}, tbl);
+											}, table);
 											
 											win.show();
 										}

@@ -2015,6 +2015,7 @@ var EcField = function()
 			var evt = (this.type == 'select1' || this.type == 'radio' ? 'select' : 'valid' );
 			ctrl.listeners[evt] = function(fld, rec, idx)
 			{
+			
 				var jumpParts = this.jump.split(",");
 				var jField = false;
 				
@@ -2023,6 +2024,7 @@ var EcField = function()
 				{
 					if(jumpParts[i+1].match(/^All$/i) != null || jumpParts[i+1] == idx || (jumpParts[i+1].match(/^![0-9]+$/) && jumpParts[i+1] != "!" + idx))
 					{
+						
 						jField = jumpParts[i];
 						break;
 					}
@@ -2030,34 +2032,48 @@ var EcField = function()
 
 				var start = false;
 				var end = !jField;
-				for(var f in survey.tables[tbl].fields)
+				var x = false
+				for(var f in table.fields)
 				{
+					
 					if(table.name + "_" + f == fld.id) 
 					{
 						start = true;
+						
 					}
 					else if(start && f == jField)
 					{
+						
 						Ext.getCmp(table.name + "_" + f).show();
 						end = true;
-						if(Ext.getCmp(table.name + "_" + f).jump) return;
+						if(Ext.getCmp(table.name + "_" + f).jump) {start = false; x=true} 
 						//return;
 					}
 					else if(start && !end && f != jField)
 					{
+						console.log(table.name + "_" + f);
 						Ext.getCmp(table.name + "_" + f).hide();
 					}
 					else if(start)
 					{
 						if(Ext.getCmp(table.name + "_" + f))
 						{
+							console.log(table.name + "_" + f);
 							Ext.getCmp(table.name + "_" + f).show();
-							if(end && Ext.getCmp(table.name + "_" + f).jump) return;
+							if(end && Ext.getCmp(table.name + "_" + f).jump)
+							{
+								start = false;
+								x=true;
+							}
 						}
-					}			
+					}
+					else if(x)
+					{
+						if(Ext.getCmp(table.name + "_" + f))
+						{	Ext.getCmp(table.name + "_" + f).hide();}
+					}
 				}
 			}
-			
 		}
 		
 	
