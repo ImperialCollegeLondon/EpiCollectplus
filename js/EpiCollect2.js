@@ -119,12 +119,14 @@ var GPSPanel = Ext.extend(Ext.Panel,{
 	initComponent :function()
 	{
 		Ext.apply(this, {
-			border: false,
-			html: "<div id=\"" + this.id + "_searchcontatiner\">Search for location<input id=\"" + this.id + "_search\" /><span class=\"button\" onclick=\"Ext.getCmp('" + this.id + "container').locationSearch();\">Search</span></div><div id=\"" + this.id + "_map\" width=\"100%\" style=\"height: 200px;width: 50%;display:inline-block;vertical-align:top;\"></div><div class=\"GPSInputs\" style=\"display: inline-block;vertical-align:top;padding:5px 5px 5px 5px;\">"
+			border:false,
+			bodyStyle: "1px solid #EEEEEE",
+			html: "<div id=\"" + this.id + "_map\" width=\"100%\" style=\"height: 175px;width: 50%;display:inline-block;vertical-align:top;\"></div><div class=\"GPSInputs\" style=\"display: inline-block;vertical-align:top;padding:5px 5px 5px 5px;\">"
 				+ "<table>" + " <tr> <td>Accuracy</td><td><input type=\"text\" id=\"" + this.id + "_acc\" name=\"" + this.id+ "_acc\" onchange=\"Ext.getCmp('" + this.id + "').accCircle.setRadius(Number(this.value));\"/></td></tr>"
 				+ " <tr> <td>Altitude</td><td><input type=\"text\" id=\"" + this.id + "_alt\" name=\"" + this.id+ "_alt\"></td></tr>"
-				+ " <tr> <td>Provider</td><td><input type=\"text\" id=\"" + this.id + "_src\" name=\"" + this.id+ "_src\"></td></tr></table><input type=\"hidden\" name=\""+this.id + "\" id=\"" + this.id + "fld\" />",
-			height: 150,
+				+ " <tr> <td>Provider</td><td><input type=\"text\" id=\"" + this.id + "_src\" name=\"" + this.id+ "_src\"></td></tr></table><input type=\"hidden\" name=\""+this.id + "\" id=\"" + this.id + "fld\" /></div><div id=\"" + this.id + "_searchcontatiner\">"
+				+ "<h4>To change the location click and drag the marker or search using the text box below</h4> <input id=\"" + this.id + "_search\" style=\"width:60%\"/><span class=\"button\" onclick=\"Ext.getCmp('" + this.id + "container').locationSearch();\">Search</span></div>",
+
 			listeners: {
 				'afterrender' : function()
 				{
@@ -156,7 +158,7 @@ var GPSPanel = Ext.extend(Ext.Panel,{
 						d = this;
 					if(!this.value)
 					{
-						navigator.geolocation.getCurrentPosition(d.updatePos,null,{enableHighAccuracy: true});
+						if(navigator.geolocation) navigator.geolocation.getCurrentPosition(d.updatePos,null,{enableHighAccuracy: true});
 					}
 					
 					
@@ -1293,7 +1295,6 @@ var EcTable = function(conf)
 			}
 			
 			map.maps["googlev3"].fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minLat, minLon), new google.maps.LatLng(maxLat, maxLon)));
-			//map.autoCenterAndZoom();
 			this.minT = Math.min(this.minT, Number(recs[i].data["created"]));
 			this.maxT = Math.max(this.maxT, Number(recs[i].data["created"]));
 			var slider = Ext.getCmp('timeSlider');
@@ -1495,6 +1496,13 @@ var EcTable = function(conf)
 			padding: 10,
 			items:this.ctrs,
 			labelSeparator: "",
+			defaultMargins:
+				{
+					 top: '0',
+					 bottom: '8',
+					 left: '0',
+					 right: '0'
+				},
 			buttons:[{
 				id:this.name + 'sub',
 				text:'Submit',
@@ -1977,15 +1985,21 @@ var EcField = function()
 		ctrl.listeners = {};
 		if(this.verify)
 		{
-			ctrl.listeners['blur'] = function(fld, newVal, oldVal)
+			ctrl.listeners['change'] = function(fld, newVal, oldVal)
 			{
 				if(!this.isValid()) return false;
 				if(prompt("Please re-enter the value for " + fld.label.dom.firstChild.data) != newVal)
 				{
-					Ext.MessageBox.alert("Validation Message", "Values did not match, data has not been changed");
+					Ext.MessageBox.alert("Validation Message", "Values did not match, please try again");
 					fld.setValue(oldVal);
+					//fld.verified = false;
 				}
+				//else
+				//{
+					//fld.verified = true;
+				//}
 			}
+			//ctrl.validator = function(value){return this.verified;}
 			
 		}
 		else if(this.jump)
