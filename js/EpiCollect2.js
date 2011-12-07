@@ -72,7 +72,7 @@ var mediaPanel = Ext.extend(Ext.Panel, {
 			id : this.id,
 			border: false,
 			height : 150
-			
+	
 		})
 
 		mediaPanel.superclass.initComponent.call(this);
@@ -1503,6 +1503,7 @@ var EcTable = function(conf)
 			padding: 10,
 			items:this.ctrs,
 			labelSeparator: "",
+			html: "<p>Update 5 Dec 2011 - if the form contains jumps then not all questions will be immediately visible. Fill in the visible questions to expose the other relevant fields.</p>",
 			defaultMargins:
 				{
 					 top: '0',
@@ -2051,14 +2052,14 @@ var EcField = function()
 					}
 					else if(start && !end && f != jField)
 					{
-						console.log(table.name + "_" + f);
+						//console.log(table.name + "_" + f);
 						Ext.getCmp(table.name + "_" + f).hide();
 					}
 					else if(start)
 					{
 						if(Ext.getCmp(table.name + "_" + f))
 						{
-							console.log(table.name + "_" + f);
+							//console.log(table.name + "_" + f);
 							Ext.getCmp(table.name + "_" + f).show();
 							if(end && Ext.getCmp(table.name + "_" + f).jump)
 							{
