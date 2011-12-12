@@ -567,7 +567,7 @@ var EcTable = function(conf)
 						return d.toLocaleString();
 				}, dataIndex: this.fields[this.fld].id, sortable:true});
 			}
-			else if(this.fld == "lastEdited" || this.fld == "uploaded")
+			/*else if(this.fld == "lastEdited" || this.fld == "uploaded")
 			{
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 					if(value != "" && value != "0" && value != null)
@@ -580,7 +580,7 @@ var EcTable = function(conf)
 						return "";
 					}
 				}, dataIndex: this.fields[this.fld].id, sortable:true});
-			}
+			}*/
 			else if(this.fields[this.fld].type == "photo")
 			{
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
