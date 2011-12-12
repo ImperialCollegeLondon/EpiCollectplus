@@ -1309,7 +1309,7 @@
 					}
 				case "csv":
 						header("Cache-Control: no-cache, must-revalidate");
-						//header("Content-Type: text/csv");
+						header("Content-Type: text/csv");
 						$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
 						$arr = $arr[$frmName];
 						echo assocToDelimStr($arr, ",");
@@ -1317,7 +1317,7 @@
 					break;
 				case "tsv":
 						header("Cache-Control: no-cache, must-revalidate");
-						//header("Content-Type: text/tsv");
+						header("Content-Type: text/tsv");
 						$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
 						$arr = $arr[$frmName];
 						echo assocToDelimStr($arr, "\t");
