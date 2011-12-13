@@ -101,7 +101,7 @@
 				
 			}
 			
-			$qry = "SELECT f.idField as idField, f.key, f.name, f.label, ft.name as type, f.required, f.jump, f.isinteger as isInt, f.isDouble, f.title, f.regex, f.doubleEntry, f.search, f.group_form, f.branch_form, f.display, f.genkey, f.date, f.time, f.setDate, f.setTime, f.crumb, f.`match` FROM field f LEFT JOIN fieldtype ft on ft.idFieldType = f.type WHERE ";
+			$qry = "SELECT f.idField as idField, f.key, f.name, f.label, ft.name as type, f.required, f.jump, f.isinteger as isInt, f.isDouble, f.title, f.regex, f.doubleEntry, f.search, f.group_form, f.branch_form, f.display, f.genkey, f.date, f.time, f.setDate, f.setTime, f.min, f.max, f.crumb, f.`match` FROM field f LEFT JOIN fieldtype ft on ft.idFieldType = f.type WHERE ";
 			if(is_numeric($this->id))
 			{
 				$qry = "$qry f.form = {$this->id} ORDER BY f.position";
@@ -404,32 +404,35 @@
 					}
 				}
 				
-				$sql = "SELECT FormName, value, count(1) as count from entryvalue WHERE projectName = '{$this->survey->name}' AND formName <> '{$this->name}' AND fieldName = '{$this->key}' Group By FormName, value";
-				
-				$res = $db->do_query($sql);
-				if($res !== true) return $res;
-				while($arr = $db->get_row_array())
+				if($this->survey->getNextTable($this->name, true))
 				{
-					foreach(array_keys($ents) as $ent)
+					$sql = "SELECT FormName, value, count(1) as count from entryvalue WHERE projectName = '{$this->survey->name}' AND formName = '" . $this->survey->getNextTable($this->name, true)->name . "' AND fieldName = '{$this->key}' Group By FormName, value";
+					
+					
+					$res = $db->do_query($sql);
+					if($res !== true) return $res;
+					while($arr = $db->get_row_array())
 					{
-						//echo ($ents[$ent][$this->key] . " - ". $arr["value"] . "\n");
-						try{
-						if(preg_match("/{$arr["value"]}/i", $ents[$ent][$this->key]))
-						{	
-							//echo "\n";
-							if(array_key_exists($arr["FormName"], $formToField))
-							{
-								$ents[$ent][$formToField[$arr["FormName"]]] = $arr["count"];
+						foreach(array_keys($ents) as $ent)
+						{
+							//echo ($ents[$ent][$this->key] . " - ". $arr["value"] . "\n");
+							try{
+							if(preg_match("/{$arr["value"]}/i", $ents[$ent][$this->key]))
+							{	
+								//echo "\n";
+								if(array_key_exists($arr["FormName"], $formToField))
+								{
+									$ents[$ent][$formToField[$arr["FormName"]]] = $arr["count"];
+								}
+								else
+								{
+									$ents[$ent]["childEntries"] = $arr["count"];
+								}
 							}
-							else
-							{
-								$ents[$ent]["childEntries"] = $arr["count"];
-							}
+							}catch(Exception $e) { print_r ($ents) ; }
 						}
-						}catch(Exception $e) { print_r ($ents) ; }
 					}
 				}
-				
 
 			
 				$count = 0;

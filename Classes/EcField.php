@@ -17,6 +17,7 @@ class EcField{
 		public $language = "EN";
 		public $regex = "";
 		public $doubleEntry = false;
+		public $local=false;
 		
 		public $search = false;
 		public $group_form = false;
