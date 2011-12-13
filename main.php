@@ -1015,8 +1015,9 @@
 		}
 		
 		
-		for($t = $n; $t <= $end && $t < count($survey->tables); $t++)
+		for($t = $n; $t <= $end && $t <= count($survey->tables); $t++)
 		{
+			echo $tbls[$t];
 			if($dataType == "data" && $xml)
 			{
 				fwrite($fxml, "<table><table_name>{$tbls[$t]}</table_name>");
