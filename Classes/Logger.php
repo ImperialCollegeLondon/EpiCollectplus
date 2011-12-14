@@ -1,28 +1,29 @@
 <?php
 	class Logger
 	{
-		private $fn;
-		private $fp;
+		private $db;
 		
 		public function __construct($logName)
 		{
-			$this->fp = fopen ("./ec/logs/{$logName}.log" , "a");
+			$this->db = new dbConnection(); 
 		}
 		
 		public function close()
 		{
-			fclose($this->fp);
+			$this->db->__destruct();
 		}
 		
 		public function write($level, $msg)
 		{
 			$dat = new DateTime('now', new DateTimeZone('UTC'));
+			$ts = $dat->getTimestamp();
 			
-			$logstring = $dat->format("d/M/y h:m:s") . "\t$level\t" . str_replace("\n", "", $msg) . "\n";
+			$level = $this->db->escapeArg($level);
+			$msg = $this->db->escapeArg($msg);
 			
-			fwrite($this->fp, $logstring);
+			$qry = "INSERT INTO Logs(`Timestamp`, `Type`, `Message`) VALUES ($ts, '$level', '$msg')";
+			$res = $this->db->do_query($qry);
+			if($res !== true) throw new ErrorException($db->error($res));	
 		}
-		
-	
 	}
 ?>

@@ -290,7 +290,8 @@
 		
 	function uploadHandlerFromExt()
 	{
-		$flog = fopen('fileUploadLog.log', 'w');
+		global $log;
+		//$flog = fopen('fileUploadLog.log', 'w');
 		if($_SERVER["REQUEST_METHOD"] == "POST")
 		{
 			if(count($_FILES) > 0)
@@ -300,7 +301,8 @@
 				{
 					if($_FILES[$key]['error'] > 0)
 					{
-						fwrite($flog, $key . " error : " .$_FILES[$key]['error']);
+						//fwrite($flog, $key . " error : " .$_FILES[$key]['error']);
+						$log->write("error", $key . " error : " .$_FILES[$key]['error'] );
 					}
 					else
 					{
@@ -690,7 +692,7 @@
 	
 	function uploadData()
 	{
-		global $auth, $url;
+		global $auth, $url, $log;
 		$flog = fopen('ec/uploads/fileUploadLog.log', 'a');
 		$prj = new EcProject();
 		$prj->name = preg_replace("/\/upload\.?(xml|json)?$/", "", $url);
@@ -723,7 +725,8 @@
 						}
 						else
 						{
-							fwrite($flog, "$res\r\m");
+							//fwrite($flog, "$res\r\m");
+							$log->write("debug", "$res");
 							echo ($res === true ? "1" : "0");
 						}
 					}
@@ -734,18 +737,18 @@
 							//if(!fileExists("./uploads/{$prj->name}")) mkdir("./uploads/{$prj->name}");
 							
 							move_uploaded_file($file['tmp_name'], "./ec/uploads/{$prj->name}~" . ($_REQUEST["type"] == "thumbnail" ? "tn~" : "" ) ."{$file['name']}");
-							fwrite($flog, $file['name'] . " copied to uploads directory\n");
+							$log->write('debug', $file['name'] . " copied to uploads directory\n");
 							echo 1;
 						}
 						catch(Exception $e)
 						{
-							fwrite($flog, $e . "\r\n");
+							$log->write("error", $e . "\r\n");
 							echo "0";
 						}
 					}
 					else
 					{
-						fwrite($flog, $file['name'] . " error : file type not allowed\r\n");
+						$log->write("error", $file['name'] . " error : file type not allowed\r\n");
 						echo "0";
 					}
 				}
@@ -753,7 +756,7 @@
 			}
 			else
 			{
-				fwrite($flog, "data : " . serialize($_POST) . "\r\n");
+				$log->write("POST", "data : " . serialize($_POST) . "\r\n");
 				$tn = $_POST["table"];
 				unset($_POST["table"]);
 				
@@ -806,9 +809,9 @@
 							$ent->values[$key] = (string)$_POST[$key];
 						}
 					}
-					fwrite($flog, "posting ... \r\n");
+					$log->write("debug", "posting ... \r\n");
 					$res = $ent->post();
-					fwrite($flog, "response : $res \r\n");
+					$log->write("debug",  "response : $res \r\n");
 					
 					if($res === true)
 					{
@@ -818,13 +821,13 @@
 					else
 					{
 						header("HTTP/1.1 405 Bad Request");
-						fwrite($flog, "error : $res\r\n");
+						$log->write("error",  "error : $res\r\n");
 						echo $res;
 					}
 				}
 				catch(Exception $e)
 				{
-					fwrite($flog, "error : " . $e->getMessage() . "\r\n");
+					$log->write("error",  "error : " . $e->getMessage() . "\r\n");
 					$msg = $e->getMessage();
 					if(preg_match("/^Message/", $msg))
 					{
@@ -873,7 +876,7 @@
 	
 	function downloadData()
 	{
-		//TODO: Dowload data from server, including gzipped media files
+		//TODO: Dowload data from server, including zipped media files
 		global $auth, $url, $SITE_ROOT;
 		header("Cache-Control: none,  must-revalidate");
 		
@@ -1185,7 +1188,7 @@
 	function formHandler()
 	{
 		
-		global $url, $auth;		
+		global $url, $auth, $log;		
 		
 		$format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "/") + 1);
 		$ext = substr($url, strrpos($url, ".") + 1);
@@ -1201,6 +1204,8 @@
 		global $url, $auth;
 		if($_SERVER["REQUEST_METHOD"] == "POST")
 		{
+			$log->write("debug", json_encode($_POST));
+			
 			header("Cache-Control: no-cache, must-revalidate");
 			$ent = $prj->tables[$frmName]->createEntry();
 			
@@ -1361,7 +1366,7 @@
 	
 	function entryHandler()
 	{	
-		global $auth, $url;
+		global $auth, $url, $log;
 		
 		header("Cache-Control: no-cache, must-revalidate");
 		

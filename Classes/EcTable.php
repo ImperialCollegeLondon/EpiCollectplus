@@ -322,8 +322,8 @@
 				foreach($args as $k => $v)
 				{
 					$joinClause .= " JOIN entryvalue ev$k on e.idEntry = ev$k.Entry ";
-					$whereClause .= "AND (ev$k.fieldName = '$k' AND ev$k.value = '$v') ";
-					$sql2 .= "(fieldName = '$k' AND value = '$v') OR";
+					$whereClause .= "AND (ev$k.fieldName = '$k' AND ev$k.value Like '%$v%') ";
+					$sql2 .= "(fieldName = '$k' AND value Like '%$v%') OR";
 				}
 				$whereClause = substr($whereClause, 0, count($whereClause) - 3). ")";
 				$sql2 = substr($sql2, 0, count($sql2) - 3). ");";

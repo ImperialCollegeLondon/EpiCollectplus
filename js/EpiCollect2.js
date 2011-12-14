@@ -567,12 +567,12 @@ var EcTable = function(conf)
 						return d.toLocaleString();
 				}, dataIndex: this.fields[this.fld].id, sortable:true});
 			}
-			/*else if(this.fld == "lastEdited" || this.fld == "uploaded")
+			else if(this.fld == "lastEdited" || this.fld == "uploaded")
 			{
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 					if(value != "" && value != "0" && value != null)
 					{
-						var d = new Date(value);
+						var d = Date.parseDate(value, "Y-m-d H:i:s");
 						return d.toLocaleString();
 					}
 					else
@@ -580,7 +580,7 @@ var EcTable = function(conf)
 						return "";
 					}
 				}, dataIndex: this.fields[this.fld].id, sortable:true});
-			}*/
+			}
 			else if(this.fields[this.fld].type == "photo")
 			{
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
@@ -1333,6 +1333,7 @@ var EcTable = function(conf)
 	
 	this.getForm = function(rec)
 	{
+		Ext.QuickTips.init();
 		this.ctrs = [];
 		
 		var hidden = false;
@@ -1345,7 +1346,9 @@ var EcTable = function(conf)
 			if(this.fields[this.fld].fkTable)//Detect if the field is a foreign key
 			{
 				var url = location.href;
+				if(url.indexOf("?") > 0) url = url.substring(0, url.indexOf("?"));
 				url = url.replace("/" + this.name, "");
+
 				if(url.indexOf(survey.name) < 0)
 				{
 					if(url.charAt(url.length -1) != "/") url += "/";
@@ -1378,9 +1381,11 @@ var EcTable = function(conf)
 					root : this.fields[this.fld].fkTable,
 					totalProperty : 'count'
 				});
+				
 				ctrl.mode = "remote";
 				ctrl.pageSize = 25;
 				ctrl.triggerAction = "all";
+				ctrl.queryParam = this.fld;
 				ctrl.lazyRender = true;
 				ctrl.allowBlank = false;
 				ctrl.typeAhead = true;
@@ -1783,7 +1788,7 @@ var EcField = function()
     this.options = [];
     this.local = false;
     this.title = false;
-	this.regex = false;
+		 = false;
 	this.verify = false;
 	this.date = false;
 	this.time = false;
@@ -1793,8 +1798,8 @@ var EcField = function()
 	
 	this.date = false;
 	this.time = false;
-	this.setdate = false;
-	this.settime = false;
+	this.setDate = false;
+	this.setTime = false;
 	
 	this.min = undefined;
 	this.max = undefined;
@@ -1896,7 +1901,9 @@ var EcField = function()
 			"group" : Ext.form.ComboBox,
 			"" : Ext.form.TextField
 		}
-				
+		
+		var constructor = xtypes[this.type];
+		
 		var ctrl = {
 			id: this.id,
 			fieldLabel : this.text,
@@ -1920,14 +1927,36 @@ var EcField = function()
 		}
 		
 		if(this.integer){
-			ctrl.regex = /^-?[0-9]*?$/;
-			ctrl.regexText = this.text + " must have an integer value";
+			constructor = Ext.form.NumberField;
+			ctrl.allowDecimals = false;
+			if(this.min) ctrl.minValue = this.min;
+			if(this.max) ctrl.maxValue = this.max;
 		}
 		
 		if(this.isdouble)
 		{
-			ctrl.regex = /^-?[0-9]*(\.[0-9]+)?$/;
-			ctrl.regexText = this.text + " must have a decimal value";
+			constructor = Ext.form.NumberField;
+			ctrl.allowDecimals = true;
+			if(this.min) ctrl.minValue = this.min;
+			if(this.max) ctrl.maxValue = this.max;
+		}
+		
+		if(this.date || this.setDate)
+		{
+			constructor = Ext.form.DateField;
+			format = this.setDate ? this.setDate : this.date;
+			format = format.replace(/D+/i, "d").replace(/M+/i, "m").replace(/Y+/i, "Y");
+			ctrl.format = format;
+			if(this.setDate)ctrl.value = new Date().format(format);
+		}
+		
+		if(this.time || this.setTime)
+		{
+			constructor = Ext.form.TimeField;
+			format = this.setTime ? this.setTime : this.time;
+			format = format.replace(/H+/i, "H").replace(/M+/i, "i").replace(/S+/i, "s");
+			ctrl.format = format;
+			if(this.setTime)ctrl.value = new Date().format(format);
 		}
 		
 		if(this.regex)
@@ -2077,10 +2106,10 @@ var EcField = function()
 			}
 		}
 		
-	
+		ctrl.msgTarget = "under";
 		
 		Ext.apply(ctrl, cfg);
-		return new xtypes[this.type](ctrl);
+		return new constructor(ctrl);
 	}
 	
 	this.formatValue = function(value)
