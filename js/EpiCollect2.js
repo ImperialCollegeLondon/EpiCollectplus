@@ -1500,6 +1500,27 @@ var EcTable = function(conf)
 			this.ctrs.push(ctrl);
 		}
 		
+		lst = {};
+		if(rec)
+		{
+			lst =  {
+					"show" : function (e){
+						alert("event");
+						for(i = 0; this.getComponent(i); i++)
+						{
+							alert(this.id + " " +this.getValue())
+							if(this.jumpEvent)
+							{
+								
+								this.getComponent(i).fireEvent(this.jumpEvent);
+							}
+							
+						}
+					} ,
+					scope: this.frm
+				};
+		}
+		
 		this.frm = new Ext.form.FormPanel({
 			//title: this.name,
 			id: this.name + "form",
@@ -1526,7 +1547,8 @@ var EcTable = function(conf)
 			}],
 			defaults:{
 				anchor : "95%"
-			}
+			},
+			listeners : lst
 		});
 		
 		return this.frm;
@@ -2029,20 +2051,15 @@ var EcField = function()
 				{
 					Ext.MessageBox.alert("Validation Message", "Values did not match, please try again");
 					fld.setValue(oldVal);
-					//fld.verified = false;
 				}
-				//else
-				//{
-					//fld.verified = true;
-				//}
 			}
-			//ctrl.validator = function(value){return this.verified;}
-			
 		}
-		else if(this.jump)
+		
+		if(this.jump)
 		{
 			ctrl.jump = this.jump;
 			var evt = (this.type == 'select1' || this.type == 'radio' ? 'select' : 'valid' );
+			ctrl.jumpEvent = evt;
 			ctrl.listeners[evt] = function(fld, rec, idx)
 			{
 			
