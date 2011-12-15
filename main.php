@@ -889,7 +889,7 @@
 		$lastUpdated = $survey->getLastUpdated();
 		$qString = $_SERVER["QUERY_STRING"];
 		
-		$baseFn = md5($lastUpdated->getTimestamp() . $qString);
+		$baseFn = md5($lastUpdated . $qString);
 		//the root of the working directory is the Script filename minus everthing after the last \
 		//NOTE: This will be the same for EC+ as the upload directory is project-independant
 		$pos = max(strrpos($_SERVER["SCRIPT_FILENAME"], "\\") ,strrpos($_SERVER["SCRIPT_FILENAME"], "/"));

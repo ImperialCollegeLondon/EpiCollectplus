@@ -236,7 +236,7 @@ class EcProject{
 		public function getLastUpdated()
 		{
 			$db = new dbConnection();
-			$sql = "SELECT max(uploaded) as Uploaded, max(lastEdited) as Edited from entry WHERE projectName = '{$this->name}'";
+			$sql = "SELECT max(uploaded) as Uploaded, max(lastEdited) as Edited, count(1) as ttl from entry WHERE projectName = '{$this->name}'";
 			$res = $db->do_query($sql);
 			
 			if($res !== true)
@@ -256,7 +256,8 @@ class EcProject{
 			$edited = new DateTime($arr["Edited"],$tz);
 			
 			//$dat = $created > $uploaded ? $created : $uploaded;
-			return 	 $uploaded > $edited ? $uploaded : $edited;
+			$dat = $uploaded > $edited ? $uploaded : $edited;
+			return $dat->getTimestamp() . $arr["ttl"];
 		}
 		
 		public function checkPermission($uid)
