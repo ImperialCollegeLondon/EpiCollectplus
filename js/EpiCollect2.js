@@ -724,9 +724,16 @@ var EcTable = function(conf)
 									
 									if(fld.doJump)
 									{
-										try{
+										if(fld.getStore)
+										{
 											fld.doJump(fld, {}, fld.getStore().indexOfId(fld.getValue()));
-										}catch(err) {alert(err)}
+										}
+										else
+										{
+											
+											fld.doJump(fld, {}, -1);
+										}
+									
 									}
 									
 								}
@@ -1807,8 +1814,7 @@ var EcTable = function(conf)
 
 var EcField = function()
 {
-	 this.parent = false;
-	
+	this.parent = false;
     this.text = '';
     this.id = '';
     this.required = false;
@@ -2000,7 +2006,7 @@ var EcField = function()
 		if(this.options.length > 0 && (this.type == "select1" || this.type == "radio")){
 			ctrl.store = new Ext.data.ArrayStore({
 				autoDestroy: true,
-				idIndex : 0,
+				idIndex : 1,
 				fields : [
 					'key',
 					'value'
@@ -2083,7 +2089,7 @@ var EcField = function()
 			
 			ctrl.doJump = function(fld, rec, idx)
 		    {
-				//if(!fld.isVisible()) return;
+				if(fld.hidden) return;
 				
 		    	var jumpParts = fld.jump.split(",");
 				var jField = false;
