@@ -55,8 +55,7 @@
 		public function post() // add!
 		{
 			global $auth;
-			
-			
+						
 			if(!$this->created)
 			{
 				$dt = new DateTime();

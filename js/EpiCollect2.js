@@ -689,7 +689,7 @@ var EcTable = function(conf)
 						layout : 'anchor',
 						modal:true,
 						width: Ext.getBody().getWidth() * 0.95,
-						height: Ext.getBody().getHeight() * 0.95
+						height: Ext.getBody().getHeight() * 0.95,
 					});
 					this.frm.getFooterToolbar().get(this.name + 'cnl').on('click', function(){this.win.close()}, this);
 					this.frm.getFooterToolbar().get(this.name + 'sub').on('click', function(){this.addEntry(this.frm.getForm().getValues(),function(scope){scope.win.close()}, this);}, this);
@@ -714,7 +714,24 @@ var EcTable = function(conf)
 						layout : 'anchor',
 						modal:true,
 						width: Ext.getBody().getWidth() * 0.95,
-						height: Ext.getBody().getHeight() * 0.95
+						height: Ext.getBody().getHeight() * 0.95,
+						listeners : {
+							"show" : function(win)
+							{
+								for(i = 0; win.getComponent(0).getComponent(i); i++)
+								{
+									fld = win.getComponent(0).getComponent(i)
+									
+									if(fld.doJump)
+									{
+										try{
+											fld.doJump(fld, {}, fld.getStore().indexOfId(fld.getValue()));
+										}catch(err) {alert(err)}
+									}
+									
+								}
+							}
+						}
 					});
 					this.frm.getFooterToolbar().get(this.name + 'cnl').on('click', function(){this.win.close()}, this);
 					this.frm.getFooterToolbar().get(this.name + 'sub').on('click', function(){this.editEntry(rec.data[this.key],this.frm.getForm().getValues(), function(scope){scope.win.close()}, this);}, this);
@@ -1505,17 +1522,8 @@ var EcTable = function(conf)
 		{
 			lst =  {
 					"show" : function (e){
-						alert("event");
-						for(i = 0; this.getComponent(i); i++)
-						{
-							alert(this.id + " " +this.getValue())
-							if(this.jumpEvent)
-							{
-								
-								this.getComponent(i).fireEvent(this.jumpEvent);
-							}
-							
-						}
+					
+						
 					} ,
 					scope: this.frm
 				};
@@ -1905,6 +1913,8 @@ var EcField = function()
 		}
     }
     
+   
+    
     this.getControl = function(cfg)
     {
 		var xtypes = {
@@ -1988,7 +1998,17 @@ var EcField = function()
 		}
 		
 		if(this.options.length > 0 && (this.type == "select1" || this.type == "radio")){
-			ctrl.store = this.options;
+			ctrl.store = new Ext.data.ArrayStore({
+				autoDestroy: true,
+				idIndex : 0,
+				fields : [
+					'key',
+					'value'
+				],
+				data:this.options,
+			});
+			ctrl.displayField = 'value';
+			ctrl.valueField = 'key'
 		}
 		
 		if(this.options.length > 0 && (this.type == "select")){
@@ -2060,10 +2080,12 @@ var EcField = function()
 			ctrl.jump = this.jump;
 			var evt = (this.type == 'select1' || this.type == 'radio' ? 'select' : 'valid' );
 			ctrl.jumpEvent = evt;
-			ctrl.listeners[evt] = function(fld, rec, idx)
-			{
 			
-				var jumpParts = this.jump.split(",");
+			ctrl.doJump = function(fld, rec, idx)
+		    {
+				//if(!fld.isVisible()) return;
+				
+		    	var jumpParts = fld.jump.split(",");
 				var jField = false;
 				
 				idx++;//idx is zero indexed, jump is 1 indexed
@@ -2076,7 +2098,7 @@ var EcField = function()
 						break;
 					}
 				}
-
+	
 				var start = false;
 				var end = !jField;
 				var x = false
@@ -2120,7 +2142,9 @@ var EcField = function()
 						{	Ext.getCmp(table.name + "_" + f).hide();}
 					}
 				}
-			}
+		    }
+			
+			ctrl.listeners[evt] = ctrl.doJump;
 		}
 		
 		ctrl.msgTarget = "under";
@@ -2131,10 +2155,10 @@ var EcField = function()
 	
 	this.formatValue = function(value)
 	{
-		switch(this.type)
-		{
-			case "photo" : return "<img src=\""+value+"\" alt=\""+value+"\"/>";
-			default : return value;
+		if(this.type == "photo"){
+			return "<img src=\""+value+"\" alt=\""+value+"\"/>";
 		}
+		else{ return value;}
+		
 	}
 }
