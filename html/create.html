@@ -1,37 +1,6 @@
-{{script}}
-<script type="text/javascript">
-	function expand(divId, rowId)
-	{
-		var newText = document.getElementById(divId).cloneNode(true);
-		var infoDiv = document.getElementById("validationMessages");
-		if(infoDiv.firstChild)
-		{
-			infoDiv.replaceChild(newText, infoDiv.firstChild);
-		}
-		else
-		{
-			infoDiv.appendChild(newText);	
-		}
-		newText.style.display = 'block';
-		
-		var tbl = document.getElementById("projectTable");
-		
-		for(var i = 0; i < tbl.rows.length; i ++)
-		{
-			
-			if(tbl.rows[i].id == rowId)
-			{
-				tbl.rows[i].className = "verrors";
-			}
-			else
-			{
-				tbl.rows[i].className = "";
-			}
-		}
-		
-	}
-</script>
-<style type="text/css">
+{{style}}
+	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />
+	<style type="text/css">
 	ol 
 	{
 		padding-left: 20px !important;
@@ -89,6 +58,41 @@
 	}
 	
 </style>
+{{/style}}
+{{script}}
+<script type="text/javascript">
+	function expand(divId, rowId)
+	{
+		var newText = document.getElementById(divId).cloneNode(true);
+		var infoDiv = document.getElementById("validationMessages");
+		if(infoDiv.firstChild)
+		{
+			infoDiv.replaceChild(newText, infoDiv.firstChild);
+		}
+		else
+		{
+			infoDiv.appendChild(newText);	
+		}
+		newText.style.display = 'block';
+		
+		var tbl = document.getElementById("projectTable");
+		
+		for(var i = 0; i < tbl.rows.length; i ++)
+		{
+			
+			if(tbl.rows[i].id == rowId)
+			{
+				tbl.rows[i].className = "verrors";
+			}
+			else
+			{
+				tbl.rows[i].className = "";
+			}
+		}
+		
+	}
+</script>
+
 {{/script}}
 {{main}}
 	<h1>Create a project</h1>

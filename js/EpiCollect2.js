@@ -973,14 +973,21 @@ var EcTable = function(conf)
 												{
 													
 													if(map){
-														map.removeAllFilters();
-														map.addFilter('date', 'le', slider.getValue(1));
-														map.addFilter('date', 'ge', slider.getValue(0));
-														map.doFilter();
+														//map.removeAllFilters();
+														//	map.addFilter('date', 'le', slider.getValue(1));
+														//	map.addFilter('date', 'ge', slider.getValue(0));
+														//	map.doFilter();
+														for(var mkr in this.markers)
+														{
+															this.markers[mkr].setVisible(this.markerData[mkr].date <= slider.getValue(1) && this.markerData[mkr].date >= slider.getValue(0))
+														}
+														
 													}
 													Ext.get('timeText').update("From " + new Date(slider.getValue(0)).toLocaleString() + " to " + new Date(slider.getValue(1)).toLocaleString())
-												}
+												},
+												scope : this
 											}
+										
 										},
 										{
 											border: false,
@@ -1100,10 +1107,10 @@ var EcTable = function(conf)
 		this.grps = {};
 		this.groupField = grpField;
 	
-		for(var i = 0; i < map.markers.length; i++)
+		for(var i in this.markers)
 		{
 			var mkr = "redCircle";
-			var gVal = map.markers[i].getAttribute(this.groupField);
+			var gVal = this.markerData[i][this.groupField];
 			if(this.grps[gVal])
 			{
 					mkr = this.grps[gVal];
@@ -1113,7 +1120,7 @@ var EcTable = function(conf)
 					mkr = this.nextMkr();
 					this.grps[gVal] = mkr;
 			}
-			map.markers[i].proprietary_marker.setIcon("../images/mapMarkers/" + (mkr ? mkr : "redCircle") + ".png");
+			this.markers[i].setIcon("../images/mapMarkers/" + (mkr ? mkr : "redCircle") + ".png");
 		}
 		this.drawMapLegend();
 		}catch(err){alert(err);}
@@ -1122,7 +1129,7 @@ var EcTable = function(conf)
 	this.drawMapLegend = function()
 	{
 		
-		if(!map.maps['googlev3'].controls[google.maps.ControlPosition.RIGHT_BOTTOM].length)
+		if(!map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].length)
 		{
 			this.legend = document.createElement('div');
 			this.legend.style.backgroundColor = '#EEEEEE';
@@ -1130,7 +1137,7 @@ var EcTable = function(conf)
 			this.legend.style.border = '1px solid #000000'
 			var inner = document.createTextNode('Hello World');
 			this.legend.appendChild(inner);
-			map.maps['googlev3'].controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(this.legend);
+			map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(this.legend);
 		}
 		
 		
@@ -1159,9 +1166,9 @@ var EcTable = function(conf)
 	this.showAndFocus = function(key)
 	{
 		if(this.w) this.w.close();
-		for(mkr in map.markers)
+		for(mkr in this.markers)
 		{
-			if(map.markers[mkr].proprietary_infowindow)map.markers[mkr].proprietary_infowindow.close();
+			if(this.markers[mkr].proprietary_infowindow)this.markers[mkr].proprietary_infowindow.close();
 		}
 		if(this.markers[key])
 		{
@@ -1207,19 +1214,35 @@ var EcTable = function(conf)
 		Ext.get("ecMap").dom.style.display = "";
 		Ext.get("ecMap").dom.style.width = tab.get('mapPnl').getWidth() + "px";
 		Ext.get("ecMap").dom.style.height = (tab.get('mapPnl').getHeight() - 25) + "px";
-		map = new mxn.Mapstraction('ecMap', 'googlev3');
-		map.setCenterAndZoom(new mxn.LatLonPoint(0,0), 2);
-		//map.setMapType(mxn.Mapstraction.HYBRID);
-		
-		
-		map.maps['googlev3'].setOptions({
+		map = new google.maps.Map(document.getElementById('ecMap'), {
+			center : new google.maps.LatLng(0,0),
+			mapTypeId: google.maps.MapTypeId.HYBRID,
+			zoom : 2,
 			panControl: true,
 			rotateControl: true,
 			zoomControl: true
 		});
+		//map.setCenterAndZoom(new mxn.LatLonPoint(0,0), 2);
+		//map.setMapType(mxn.Mapstraction.HYBRID);
+		
+		
+		/*map.maps['googlev3'].setOptions({
+			panControl: true,
+			rotateControl: true,
+			zoomControl: true
+		});*/
 		
 		this.drawPoints();
 	}
+	
+	this.removeAllMarkers = function()
+	{
+		for(var mkr in this.markers)
+		{
+			this.markers[mkr].setMap(null);
+		}
+		this.markers = {};
+	};
 	
 	this.drawPoints = function()
 	{
@@ -1227,10 +1250,12 @@ var EcTable = function(conf)
 		var recs = this.store.getRange();
 		this.grps = {};
 		var sidebarHtml = "";
-		this.markers = {};
+		if(!this.markers) this.markers = {};
+		if(!this.markerData) this.markerData = {};
+		if(!this.infoWindow) this.infoWindow = new google.maps.InfoWindow({});
 		this.descs = {};
 		
-		map.removeAllMarkers();
+		this.removeAllMarkers();
 		
 		for(var i = 0; i < recs.length; i++)
 		{
@@ -1274,7 +1299,7 @@ var EcTable = function(conf)
 			descHtml += "</table>"
 			
 			var bnds = new google.maps.LatLngBounds();
-			
+
 			for(this.fld = 0; this.fld < this.gpsFlds.length; this.fld ++)
 			{
 				var gps = Ext.decode(recs[i].data[this.gpsFlds[this.fld]])
@@ -1286,11 +1311,7 @@ var EcTable = function(conf)
 					data = {
 						label: recs[i].data[(this.titleField != "" ? this.titleField : this.key)],
 						infoBubble : descHtml,
-						date: recs[i].data["created"],
-						icon : "../images/mapMarkers/" + (mkr ? mkr : "redCircle") + ".png",
-						iconSize: [12,20],
-						iconAnchor: [6, 20],
-						marker: 4
+						date: recs[i].data["created"]
 					}
 					
 					for(fld2 in this.fields)
@@ -1298,24 +1319,40 @@ var EcTable = function(conf)
 						data[fld2] = recs[i].data[fld2];
 					}
 					
-					var mkr = new mxn.Marker(new mxn.LatLonPoint(gps.latitude, gps.longitude));
+					var mkr = new google.maps.Marker({ 
+						position: new google.maps.LatLng(gps.latitude, gps.longitude),
+						title: recs[i].data[(this.titleField != "" ? this.titleField : this.key)],
+						icon : "../images/mapMarkers/" + (mkr ? mkr : "redCircle") + ".png",
+					});
 					
 					maxLat = Math.max(maxLat, gps.latitude);
 					minLat = Math.min(minLat, gps.latitude);
 					maxLon = Math.max(maxLon, gps.longitude);
 					minLon = Math.min(minLon, gps.longitude);
 					
-					mkr.openInfoBubble.addHandler(function(event_name, event_source, event_args) {
+					var _ctx = this;
 					
-						for(mkr in map.markers)
+					//mkr.openInfoBubble.addHandler(function(event_name, event_source, event_args) {
+					google.maps.event.addListener(mkr, 'click', function(evt){
+						var l = evt.latLng;
+						
+						if(!_ctx.infoWindow) _ctx.infoWindow = new google.maps.InfoWindow({});
+						_ctx.infoWindow.close();
+						for(var m in _ctx.markers)
 						{
-							if(map.markers[mkr].proprietary_infowindow)map.markers[mkr].proprietary_infowindow.close();
+							if(_ctx.markers[m].position == l){
+								_ctx.infoWindow.setContent(_ctx.markerData[m].infoBubble);
+								_ctx.infoWindow.setPosition(l);
+								_ctx.infoWindow.open(map);
+								break;
+							}
 						}
+						
 					});
-					this.markers[recs[i].data[this.key]] = mkr;
-					map.addMarkerWithData(mkr,data);
 					
-					if(bnds.isEmpty() || ! bnds.contains )
+					mkr.setMap(map);
+					this.markers[recs[i].data[this.key]] = mkr;
+					this.markerData[recs[i].data[this.key]] = data;
 					
 					sidebarHtml = sidebarHtml.replace(' ###', '');
 					
@@ -1329,7 +1366,7 @@ var EcTable = function(conf)
 				sidebarHtml += "</a></p>"
 			}
 			
-			map.maps["googlev3"].fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minLat, minLon), new google.maps.LatLng(maxLat, maxLon)));
+			map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minLat, minLon), new google.maps.LatLng(maxLat, maxLon)));
 			this.minT = Math.min(this.minT, Number(recs[i].data["created"]));
 			this.maxT = Math.max(this.maxT, Number(recs[i].data["created"]));
 			var slider = Ext.getCmp('timeSlider');
@@ -2171,4 +2208,8 @@ var EcField = function()
 		else{ return value;}
 		
 	}
+	
+	
 }
+
+

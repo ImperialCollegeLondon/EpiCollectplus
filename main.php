@@ -1332,9 +1332,96 @@
 						echo assocToDelimStr($arr, "\t");
 						break;
 					break;
+				case "js" :
+					global $SITE_ROOT;
+					
+					$files = array("./Ext/ext-base.js", "./Ext/ext-all.js", "./js/EpiCollect2.js");
+					echo packFiles($files);
+					echo "var survey;
+		var table;
+		
+		var uid = 'web_" .  md5($_SERVER["HTTP_HOST"]) .  "';
+		
+		function init()
+		{
+			survey = new EcSurvey;
+			//table = new EcTable();
+			Ext.Ajax.request({
+				url: location.pathname.substring(0, location.pathname.lastIndexOf('/')) + \".xml\",
+				success: function (res)
+				{
+					survey.parse(res.responseXML);
+					table = survey.tables[location.pathname.substring(location.pathname.lastIndexOf('/') + 1)]
+					drawPage();
+				}
+			})
+		}
+		
+		function drawPage(){
+			var tbl = table.getTable(true, true, true);
+			tbl.render('tabPanel');
+		}
+		
+		Ext.onReady(init);";
+					break;
+				case "css":
+					global $SITE_ROOT;
+					
+					header("Content-type: text/css");
+					
+					$files = array("./Ext/ext-all.css", "./css/EpiCollect2.css");
+					echo packFiles($files);
+		echo ".cp-item {
+			vertical-align: top;
+			display: inline-block;
+			margin-left : 10px;
+		}
+		
+		.cp-item img {
+			margin: 0;
+		}
+		
+		.entry
+		{
+			border-bottom : 1px solid #CCCCCC;
+			background-color : #EEEEEE;
+			margin : 0;
+			padding : 5px 5px 5px 5px;
+			
+		}
+		
+		.nolocation
+		{
+			font-style : italic; 
+		}
+		
+		#timeText
+		{
+			width : 30em;
+		}
+
+		.button
+		{
+			padding : 0.25em 0.5em 0.25em 0.5em;
+			margin : 0em 0.25em 0em 0.25em;
+			background-color:#C7DFFC;
+			border-radius: 0.25em;
+			cursor: pointer;
+			font-weight : bold;	
+			width : 30%;
+		}
+
+		
+		.button:active
+		{
+			background-color: #CCCCCC;
+		}
+					";
+					break;
 				default:
-					header("Cache-control: max-age=864000");
+					header("Cache-control: max-age=1000000");
 					//TODO: xml get/add/update for forms/tables from the website
+					global $SITE_ROOT;
 					$referer = array_key_exists("HTTP_REFERER", $_SERVER) ? $_SERVER["HTTP_REFERER"] : "";
 					if(!array_key_exists("formCrumbs", $_SESSION) || !$prj->getPreviousTable($frmName) || !preg_match("/{$prj->name}\//", $referer))
 					{
@@ -1361,7 +1448,9 @@
 							$p .= "&gt; <a href=\"{$k}\">{$k} : $v </a>";
 						}
 					}
-					$vars = array("prevForm" => $p,"projectName" => $prj->name, "formName" => $frmName, "adder" => "true", "admin" =>  "true" );
+					
+					$mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>" : "";
+					$vars = array("prevForm" => $p,"projectName" => $prj->name, "formName" => $frmName, "adder" => "true", "admin" =>  "true", "mapScript" => $mapScript );
 					echo applyTemplate("base.html", "./FormHome.html", $vars);
 					break;
 			}
@@ -2037,7 +2126,20 @@
 		header("Location: http://{$_SERVER["HTTP_HOST"]}/$SITE_ROOT/");
 	}
 	
-	
+	function packFiles($files)
+	{
+		if(!is_array($files)) throw new Exception("files to be packed must be an array");
+		
+		$str = "";
+		
+		foreach($files as $k=>$f)
+		{
+			$str .= file_get_contents($f);
+			$str .= "\r\n";
+		}
+		
+		return $str;
+	}
 	
 	function userHandler()
 	{
@@ -2085,8 +2187,7 @@
 		"favicon\..+" => new PageRule(),
 		"Ext/.+" => new PageRule(),
 		"js/.+" => new PageRule(),
-		"css/EpiCollect2.css" => new PageRule(),
-		"css/EpiSkins.css" => new PageRule(),
+		"css/.+" => new PageRule(),
 		"EpiCollect2.js" => new PageRule(),
 		
 		//project handlers		
@@ -2126,7 +2227,7 @@
 		"[a-zA-Z0-9_-]*/updateProject" =>new PageRule(null, 'uploadProjectXMLUpdate', true),
 		"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/uploadMedia" =>new PageRule(null, 'uploadMedia'),
 		"[a-zA-Z0-9_-]*/editProject.html" =>new PageRule(null, 'editProject', true),
-		"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*(\.xml|\.json|\.tsv|\.csv|/)?" => new PageRule(null, 'formHandler'),
+		"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*(\.xml|\.json|\.tsv|\.csv|\.js|\.css|/)?" => new PageRule(null, 'formHandler'),
 		//"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage" => new  => new PageRule(null, formUsage),
 		"[^/\.]*/[^/\.]*/[^/\.]*(\.xml|\.json|/)?" => new PageRule(null, 'entryHandler'),
 		
@@ -2176,7 +2277,7 @@
 		{
 			//static files
 			header("Content-type: " . mimeType($url));
-			header("Cache-Control: public; max-age=86400;");
+			header("Cache-Control: public; max-age=100000;");
 			echo file_get_contents("./" . $url);
 		}	
 	}

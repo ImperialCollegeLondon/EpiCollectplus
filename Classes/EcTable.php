@@ -18,6 +18,15 @@
 			$this->survey = $s;
 		}
 		
+		public function hasGPS()
+		{
+			foreach ($this->fields as $name => $fld) {
+				if($fld->type == "gps" || $fld->type == "location")
+					return true;
+			}
+			return false;
+		}
+		
 		public function fromArray($arr)
 		{
 			foreach(array_keys($arr) as $key)
