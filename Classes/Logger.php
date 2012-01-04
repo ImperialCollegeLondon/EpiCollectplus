@@ -5,16 +5,18 @@
 		
 		public function __construct($logName)
 		{
-			$this->db = new dbConnection(); 
+			try{$this->db = new dbConnection();}catch(Exception $err) {$this->db = false;} 
 		}
 		
 		public function close()
 		{
-			$this->db->__destruct();
+			if($this->db)$this->db->__destruct();
 		}
 		
 		public function write($level, $msg)
 		{
+			if(!$this->db) return;
+			
 			$dat = new DateTime('now', new DateTimeZone('UTC'));
 			$ts = $dat->getTimestamp();
 			
