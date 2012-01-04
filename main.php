@@ -31,10 +31,10 @@
 	$url = rtrim($url, "/");
 	$url = urldecode($url);
 	
-	if(file_exists("ec/logs/ec.txt") && file_exists("ec/settings.php"))
+	if(file_exists("ec/ec.txt") && file_exists("ec/settings.php"))
 	{
 		include "./ec/settings.php";
-		$ik = explode(",", file_get_contents("ec/logs/ec.txt"));
+		$ik = explode(",", file_get_contents("ec/ec.txt"));
 		$str = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $ik[1], base64_decode($settings), MCRYPT_MODE_CBC, base64_decode($ik[0]));
 		$arr = explode(",", $str);
 		$DBSERVER = trim($arr[0]);
@@ -2102,7 +2102,7 @@
 		
 		
 		$sf = fopen("ec/settings.php", "w");
-		$ef = fopen("ec/logs/ec.txt", "w");
+		$ef = fopen("ec/ec.txt", "w");
 		
 		$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
 		$iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
@@ -2119,7 +2119,6 @@
 		fwrite($sf, $str);
 		fclose($sf);
 		
-		header("Location: http://{$_SERVER["HTTP_HOST"]}/$SITE_ROOT/");
 	}
 	
 	function packFiles($files)
