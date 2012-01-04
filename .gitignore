@@ -29,20 +29,15 @@
 # OS generated files #
 ######################
 .DS_Store*
-ehthumbs.db
+thumbs.db
 Icon?
 *Thumbs.db
 web.config
 
 *.svn*
-ec/uploads/*
-ec/rescue/*
-ec/settings.php
-ec/logs/*
-ec/xml/*
+ec/*
 .buildpath
 .settings
 .project
 index-blah.html
 instructions*
-Ext*
