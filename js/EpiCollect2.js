@@ -1162,14 +1162,20 @@ var EcTable = function(conf)
 	this.showAndFocus = function(key)
 	{
 		if(this.w) this.w.close();
-		for(mkr in this.markers)
+		/*for(mkr in this.markers)
 		{
 			if(this.markers[mkr].proprietary_infowindow)this.markers[mkr].proprietary_infowindow.close();
-		}
+		}*/
+		if(!this.infoWindow) this.infoWindow = new google.maps.InfoWindow({});
+		this.infoWindow.close();
 		if(this.markers[key])
 		{
-			this.markers[key].openBubble();
-			map.setCenterAndZoom(this.markers[key].location, 16);
+			//this.markers[key].openBubble();
+			this.infoWindow.setContent(this.markerData[key].infoBubble);
+			this.infoWindow.setPosition(this.markers[key].getPosition());
+			this.infoWindow.open(map);
+			map.setCenterAndZoom(this.markers[key].location)
+			map.setZoom(16);
 		}
 		else
 		{
