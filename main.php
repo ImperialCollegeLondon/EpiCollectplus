@@ -1336,6 +1336,8 @@
 					global $SITE_ROOT;
 					
 					$files = array("./Ext/ext-base.js", "./Ext/ext-all.js", "./js/EpiCollect2.js");
+					header("Content-type: text/javascript");
+					header("Cache-Control: public; max-age=100000;");
 					echo packFiles($files);
 					echo "var survey;
 		var table;
@@ -1366,7 +1368,7 @@
 					break;
 				case "css":
 					global $SITE_ROOT;
-					
+					header("Cache-Control: public; max-age=100000;");
 					header("Content-type: text/css");
 					
 					$files = array("./Ext/ext-all.css", "./css/EpiCollect2.css");
@@ -2123,6 +2125,7 @@
 		fwrite($sf, $str);
 		fclose($sf);
 		
+		header("Location: http://{$_SERVER["HTTP_HOST"]}/$SITE_ROOT/");
 	}
 	
 	function packFiles($files)
