@@ -1179,7 +1179,7 @@ var EcTable = function(conf)
 			this.infoWindow.setPosition(this.markers[key].getPosition());
 			this.infoWindow.open(map);
 			map.setCenter(this.markers[key].location)
-			map.setZoom(16);
+			map.setZoom(10);
 		}
 		else
 		{

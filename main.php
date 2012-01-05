@@ -24,7 +24,7 @@
 
 
 	include ("./utils/HttpUtils.php");
-	include ("./Auth/AuthManager.php");
+	//include ("./Auth/AuthManager.php");
 	include './db/dbConnection.php';
 	include ("./Classes/Logger.php");
 	
@@ -169,14 +169,14 @@
 	
 	function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 	{
-		global $auth, $SITE_ROOT;
+		global $SITE_ROOT;
 		
 		$template = file_get_contents("./html/$baseUri");
 		$templateVars["SITE_ROOT"] = ltrim($SITE_ROOT, "\\");
 		$templateVars["uid"] = md5($_SERVER["HTTP_HOST"]);
 		// Is there a user logged in?
 		
-		if($auth && $auth->isLoggedIn())
+		/*if($auth && $auth->isLoggedIn())
 		{
 			//if so put the user's name and a logout option in the login section
 			$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="javascript:logout();">Sign out</a> | <a href="updateUser.html">Update User</a>', $template);
@@ -185,7 +185,7 @@
 		else
 		{
 			$template = str_replace("{#loggedIn#}", '<a href="{#SITE_ROOT#}/login.php">Sign in</a>', $template);
-		}
+		}*/
 		// work out breadcrumbs
 		//$template = str_replace("{#breadcrumbs#}", '', $template);
 		
@@ -335,7 +335,7 @@
 	
 	function projectHome()
 	{
-		global $auth, $url, $SITE_ROOT;
+		global $url, $SITE_ROOT;
 		
 		
 		$url = preg_replace("/\/$/", "", $url);
@@ -696,7 +696,7 @@
 	
 	function uploadData()
 	{
-		global $auth, $url, $log;
+		global  $url, $log;
 		$flog = fopen('ec/uploads/fileUploadLog.log', 'a');
 		$prj = new EcProject();
 		$prj->name = preg_replace("/\/upload\.?(xml|json)?$/", "", $url);
@@ -881,7 +881,7 @@
 	function downloadData()
 	{
 		//TODO: Dowload data from server, including zipped media files
-		global $auth, $url, $SITE_ROOT;
+		global  $url, $SITE_ROOT;
 		header("Cache-Control: none,  must-revalidate");
 		
 		$flog = fopen('ec/uploads/fileUploadLog.log', 'a');
@@ -1192,7 +1192,7 @@
 	function formHandler()
 	{
 		
-		global $url, $auth, $log;		
+		global $url,  $log;		
 		
 		$format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "/") + 1);
 		$ext = substr($url, strrpos($url, ".") + 1);
@@ -1205,7 +1205,6 @@
 		$extStart = strpos($url, ".");
 		$frmName = rtrim(substr($url, $pNameEnd + 1, ($extStart > 0 ?  $extStart : strlen($url)) - $pNameEnd - 1), "/");
 		
-		global $url, $auth;
 		if($_SERVER["REQUEST_METHOD"] == "POST")
 		{
 			$log->write("debug", json_encode($_POST));
@@ -1461,7 +1460,7 @@
 	
 	function entryHandler()
 	{	
-		global $auth, $url, $log;
+		global  $url, $log;
 		
 		header("Cache-Control: no-cache, must-revalidate");
 		
@@ -1531,26 +1530,25 @@
 	
 	function updateUser()
 	{
-		global $auth;
 		
-		echo applyTemplate("base.html", "./updateUser.html", $auth->getEcUser());
+		echo applyTemplate("base.html", "./updateUser.html", "");
 	}
 	
 	function saveUser()
 	{
-		global $auth;
-		$qry = "CALL updateUser(" . $auth->getEcUserId() . ",'{$_POST["name"]}','{$_POST["email"]}')";
-		$db = new dbConnection();
-		$res = $db->do_query($qry);
+		//global $auth;
+		//$qry = "CALL updateUser(" . $auth->getEcUserId() . ",'{$_POST["name"]}','{$_POST["email"]}')";
+		//$db = new dbConnection();
+		//$res = $db->do_query($qry);
 		
-		if($res === true)
-		{
-			echo '{"success" : true, "msg" : "User updated successfully"}';
-		}
-		else
-		{
-			echo '{"success" : false, "msg" : "'.$res.'"}';
-		}
+		//if($res === true)
+		//{
+		//	echo '{"success" : true, "msg" : "User updated successfully"}';
+		//}
+		//else
+		//{
+		//	echo '{"success" : false, "msg" : "'.$res.'"}';
+		//}
 	}
 	
 	function uploadProjectXML()
@@ -1798,7 +1796,7 @@
 	
 	function uploadProjectXMLUpdate()
 	{
-		global $SITE_ROOT, $auth, $url;
+		global $SITE_ROOT,  $url;
 		
 		//get project details
 		$prj = new EcProject();
@@ -1811,10 +1809,10 @@
 		
 		$prj->fetch();
 	
-		$uId = $auth->getEcUserId();
-		$uLvl = $uId ? $prj->checkPermission($uId) : 0;
-		if($uLvl == 3)		
-		{
+		//$uId = $auth->getEcUserId();
+		//$uLvl = $uId ? $prj->checkPermission($uId) : 0;
+		/*if($uLvl == 3)		
+		{*/
 			$newfn = "ec/uploads/xml/" . $_FILES["projectXML"]["name"];
 			move_uploaded_file($_FILES["projectXML"]["tmp_name"], $newfn);
 			$prj->parse(file_get_contents($newfn));
@@ -1834,17 +1832,17 @@
 				$vals = array("error" => $res);
 				echo applyTemplate("./base.html","./error.html",$vals);
 			}
-		}
+		/*}
 		else
 		{
 			echo applyTemplate("./base.html","./error.html",array("error" => "You do not have permission to update this project"));
 			return;
-		}
+		}*/
 	}
 	
 	function createProject()
 	{
-		global $auth, $url;
+		global $url;
 		
 		header("Cache-Control: no-cache, must-revalidate");
 		
@@ -1870,7 +1868,7 @@
 	
 	function editProject()
 	{
-		global $auth, $url;
+		global  $url;
 		
 		//get project details
 		$prj = new EcProject();
@@ -1886,10 +1884,10 @@
 		try{
 			$prj->fetch();
 		
-			$uId = $auth->getEcUserId();
-			$uLvl = $uId ? $prj->checkPermission($uId) : 0;
-			if($uLvl == 3) //if the user is a project administator
-			{
+			//$uId = $auth->getEcUserId();
+			//$uLvl = $uId ? $prj->checkPermission($uId) : 0;
+			//if($uLvl == 3) //if the user is a project administator
+			//{
 				$admins = "";
 				foreach($prj->getAdmins() as $adm) $admins .= "['$adm', true],";
 				$users = "";
@@ -1912,12 +1910,12 @@
 				);
 				
 				echo applyTemplate("./base.html","./createProject.html",$vals);
-			}
-			else
-			{
-				echo applyTemplate("./base.html","./error.html",array("error" => "You do not have permission to update this project"));
-				return;
-			}
+			//}
+			////else
+			//{
+			//	echo applyTemplate("./base.html","./error.html",array("error" => "You do not have permission to update this project"));
+			//	return;
+			//}
 		}
 		catch(Exception $e)
 		{
@@ -2077,7 +2075,7 @@
 
 	function projectSummary()
 	{
-		global $url, $auth;
+		global $url;
 		
 		$prj = new EcProject();
 		$prj->name = substr($url, 0, strpos($url, "/"));
@@ -2089,13 +2087,13 @@
 	
 	function projectUsage()
 	{
-		global $url, $auth;
+		global $url;
 		
 		$prj = new EcProject();
 		$prj->name = substr($url, 0, strpos($url, "/"));
 		$prj->fetch();
 		
-		if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2) return "access denied)";
+		//if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2) return "access denied)";
 		
 		$sum = $prj->getUsage();
 		header("Content-type: text/plain");
@@ -2145,7 +2143,7 @@
 	
 	function userHandler()
 	{
-		global $url, $auth, $SITE_ROOT;
+		global $url, $SITE_ROOT;
 
 		//if(!(strstr($_SERVER["HTTP_REFERER"], "/createProject.html"))) return;
 		
@@ -2203,7 +2201,7 @@
 		"validate" => new PageRule(null, 'validate',false),
 		//"listXML" => new PageRule(null, 'listXML',false),
 		//login handlers
-		"Auth/loginCallback.php" => new PageRule(null,'loginCallbackHandler'),
+		//"Auth/loginCallback.php" => new PageRule(null,'loginCallbackHandler'),
 		"login.php" => new PageRule(null,'loginHandler'),
 		"logout.html" => new PageRule(null, 'logoutHandler'),
 		"chooseProvider.html" => new PageRule(null, 'chooseProvider'),
