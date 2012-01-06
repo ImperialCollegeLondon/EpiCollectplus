@@ -221,7 +221,7 @@ class EcField{
 			
 			$lbl = mysql_escape_string($this->label);
 			
-			$qry ="INSERT INTO field (form, projectName, formName, type, name, label, language, regex, title, `key`, isinteger, isdouble, active, doubleentry, jump, required, search, group_form, branch_form, display, genkey, date, time, setdate, settime, `min`, `max`, match, crumb, defaultValue, position) VALUES
+			$qry ="INSERT INTO field (form, projectName, formName, type, name, label, language, regex, title, `key`, isinteger, isdouble, active, doubleentry, jump, required, search, group_form, branch_form, display, genkey, date, time, setdate, settime, `min`, `max`, `match`, crumb, defaultValue, position) VALUES
 								 ({$this->form->id}, '{$this->form->survey->name}', '{$this->form->name}', $fieldType, '{$this->name}','{$lbl}', '{$this->language}',";
 			$qry .= ($this->regex != "" ? $db->stringVal($this->regex) . "," : "NULL,");
 			$qry .= ($this->title ? "1," : "0,");
