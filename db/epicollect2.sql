@@ -224,12 +224,12 @@ ALTER TABLE `userprojectpermission`
   ADD CONSTRAINT `fk_role` FOREIGN KEY (`role`) REFERENCES `role` (`idRole`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_user` FOREIGN KEY (`user`) REFERENCES `user` (`idUsers`) ON DELETE NO ACTION ON UPDATE NO ACTION~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `addAdmin`(prj INT, adm INT)
+CREATE PROCEDURE `addAdmin`(prj INT, adm INT)
 BEGIN
     INSERT INTO userprojectpermission (user, project, role) VALUES (adm, prj, 3);
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `addField`(pName varchar(255), formName varchar(255), fieldId varchar(255), fieldLabel varchar(255), typeName varchar(255), labelLanguage varchar(2),
+CREATE PROCEDURE `addField`(pName varchar(255), formName varchar(255), fieldId varchar(255), fieldLabel varchar(255), typeName varchar(255), labelLanguage varchar(2),
     regex varchar(255), isTitle bit, isKey bit, isInt bit, isDouble bit, isActive bit, isDoubelEntry bit, jump varchar(255))
 BEGIN
     declare prjId int;
@@ -244,46 +244,46 @@ BEGIN
 
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `addForm`(pName varchar(255), form_name varchar(255), form_number INT, version Float)
+CREATE PROCEDURE `addForm`(pName varchar(255), form_name varchar(255), form_number INT, version Float)
 BEGIN
     declare prjId INT;
     select id into prjId from project where `name` = pName;
 	INSERT INTO form (project, version, table_num, `name`) VALUES (prjId, version, form_number, form_name);
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `addOption`(prj Varchar(255), frm varchar(255), fld varchar(255), idx int, lbl varchar(255), val varchar(255))
+CREATE PROCEDURE `addOption`(prj Varchar(255), frm varchar(255), fld varchar(255), idx int, lbl varchar(255), val varchar(255))
 BEGIN
 	declare fldID INT;
     select idField into fldId from field where projectName = prj and formName = frm and `name` = fld;
     INSERT INTO `option` (`index`, `label`, `value`, `field`) VALUES (idx, lbl, val, fldId);
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `addproject`(pName VARCHAR(255), submissionId varchar(255), pDescription TEXT, pImage varchar(255), pIsPublic BIT, pIsListed BIT, pPublicSubmission BIT, creator INT)
+CREATE PROCEDURE `addproject`(pName VARCHAR(255), submissionId varchar(255), pDescription TEXT, pImage varchar(255), pIsPublic BIT, pIsListed BIT, pPublicSubmission BIT, creator INT)
 BEGIN
     INSERT INTO project (`name`, `submission_id`, `description`, `image`, `isPublic`, `isListed`, `publicSubmission`) VALUES (pName, submissionId, pDescription, pImage, pIsPublic, pIsListed,pPublicSubmission);
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `addSubmitter`(prj INT, sub INT)
+CREATE PROCEDURE `addSubmitter`(prj INT, sub INT)
 BEGIN
     INSERT INTO userprojectpermission (user, project, role) VALUES (sub, prj, 1);
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `addUser`(prj INT, usr INT)
+CREATE PROCEDURE `addUser`(prj INT, usr INT)
 BEGIN
     INSERT INTO userprojectpermission (user, project, role) VALUES (usr, prj, 2);
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `checkProjectPermission`(userId INT, projectId int)
+CREATE PROCEDURE `checkProjectPermission`(userId INT, projectId int)
 BEGIN
     select role from userprojectpermission where `user` = userId and project = projectId;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `clearPermissions`(prj INT, adm INT)
+CREATE PROCEDURE `clearPermissions`(prj INT, adm INT)
 BEGIN
     delete from userprojectpermission where project = prj and user <> adm;
 END ~
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `deleteProject`(prjName varchar(255))
+CREATE PROCEDURE `deleteProject`(prjName varchar(255))
 BEGIN
 	DELETE FROM entryvalue where projectName = prjName;
 	DELETE FROM entry where projectName = prjName;
@@ -292,51 +292,51 @@ BEGIN
 	DELETE FROM form where projectName = prjName;
 	DELETE FROM project where name = prjName;
 END ~
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `endOAuthSession`(userId INT, provider VARCHAR(45))
+CREATE PROCEDURE `endOAuthSession`(userId INT, provider VARCHAR(45))
 BEGIN
     DECLARE providerId INT;
     SELECT `idProvider` INTO providerId FROM oauthprovider WHERE `name` = provider;
     UPDATE useroauth SET `requestToken` = '', `accessToken` = '' WHERE `user` = userId and `UserOAuth`.`provider` = providerId;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `getFields`(frm int)
+CREATE PROCEDURE `getFields`(frm int)
 BEGIN
 	select f.idField, f.name, f.label, f.regex, f.title, f.key, f.isInteger, f.isDouble, f.doubleEntry, f.jump, ft.name as type, ft.hasOptions from field f left join fieldtype ft on f.type = ft.idFieldType where form = frm;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `getForm`(frmName varchar(255), version double)
+CREATE PROCEDURE `getForm`(frmName varchar(255), version double)
 BEGIN
     select * from form where `name` = frmName and version = version;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `getFormFields`(frmName varchar(255), version double)
+CREATE PROCEDURE `getFormFields`(frmName varchar(255), version double)
 BEGIN
     declare frmID int;
     select frmID = id from form where `name` = frmName and version = version;
     select * from field where form = frmID;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `getForms`(prj Varchar(255))
+CREATE  PROCEDURE `getForms`(prj Varchar(255))
 BEGIN
 	select f.* from form f left join project p on f.project = p.id  where p.name = prj;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `getOAuthProvider`(provider VARCHAR(45))
+CREATE  PROCEDURE `getOAuthProvider`(provider VARCHAR(45))
 BEGIN
     SELECT * FROM oauthprovider WHERE `name` = provider;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `getOAuthProviders`()
+CREATE  PROCEDURE `getOAuthProviders`()
 BEGIN
     select `name`, providerIcon, providerLargeIcon from oauthprovider;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `getOptions`(fld int)
+CREATE PROCEDURE `getOptions`(fld int)
 BEGIN
 select * from `option` where field = fld;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `getProject`(pName VARCHAR(255))
+CREATE PROCEDURE `getProject`(pName VARCHAR(255))
 BEGIN
     IF pName is not null then
         SELECT * FROM project WHERE `name` = pName;
@@ -345,24 +345,24 @@ BEGIN
     end if;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `getProjectPeople`(prj int)
+CREATE PROCEDURE `getProjectPeople`(prj int)
 BEGIN
     SELECT User, role from userprojectpermission where project = prj;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `getUser`(id INT)
+CREATE PROCEDURE `getUser`(id INT)
 BEGIN
     SELECT * from user where idUsers = id;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `getUserOAuthDetails`(ecId INT, provider VARCHAR(45))
+CREATE PROCEDURE `getUserOAuthDetails`(ecId INT, provider VARCHAR(45))
 BEGIN
     DECLARE providerId INT;
     SELECT idProvider INTO providerId FROM oauthprovider WHERE `name` = provider;
     SELECT * FROM useroauth WHERE `user` = ecID and provider = providerId;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `setOAuthLoginDetails`(provider VARCHAR(45), user_id VARCHAR(255), nickname Varchar(255), requestToken VARCHAR(1000), accessToken VARCHAR(1000), sesssionId VARCHAR(1000))
+CREATE PROCEDURE `setOAuthLoginDetails`(provider VARCHAR(45), user_id VARCHAR(255), nickname Varchar(255), requestToken VARCHAR(1000), accessToken VARCHAR(1000), sesssionId VARCHAR(1000))
 BEGIN
     DECLARE providerId INT;
     DECLARE currentUserId INT;
@@ -387,23 +387,23 @@ BEGIN
     END IF;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `updateEcUser`(id INT, RealName varchar(255), newemail varchar(255))
+CREATE PROCEDURE `updateEcUser`(id INT, RealName varchar(255), newemail varchar(255))
 BEGIN
     UPDATE `user` SET `Name` = RealName, Email = newemail where idUsers = id;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `updateProject`(pId int, pName VARCHAR(255), pDescription TEXT, pImage varchar(255), pIsPublic BIT, pIsListed BIT, pPublicSubmission BIT)
+CREATE PROCEDURE `updateProject`(pId int, pName VARCHAR(255), pDescription TEXT, pImage varchar(255), pIsPublic BIT, pIsListed BIT, pPublicSubmission BIT)
 BEGIN
     UPDATE project set `name` = pName, `description` = pDescription, `image` = pImage, `isPublic` = pIsPublic, `isListed` = pIsListed, `publicSubmission` = pPublicSubmission
         WHERE `id`= pId;
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `updateUser`(id INT, uName VARCHAR(100), uEmail VARCHAR(100))
+CREATE PROCEDURE `updateUser`(id INT, uName VARCHAR(100), uEmail VARCHAR(100))
 BEGIN
    UPDATE `user` SET `Name` = uName, `Email` =uEmail where idUsers = id; 
 END ~
 
-CREATE DEFINER=`cpowell`@`%` PROCEDURE `userSearch`(search varchar(255))
+CREATE PROCEDURE `userSearch`(search varchar(255))
 BEGIN
     Select idUsers, `Name` from user where `Name` Like search or Email like search
     UNION 
