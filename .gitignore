@@ -29,12 +29,10 @@
 # OS generated files #
 ######################
 .DS_Store*
-thumbs.db
 Icon?
-*Thumbs.db
 web.config
-
-*.svn*
+.db
+.svn*
 .buildpath
 .settings
 .project

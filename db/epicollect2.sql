@@ -428,3 +428,9 @@ INSERT INTO `role` (`idRole`, `name`) VALUES
 (3, 'admin'),
 (1, 'submitter'),
 (2, 'user') ~
+
+CREATE TABLE Logs (
+	Timestamp BIGINT NOT NULL,
+	Type VARCHAR(50) NOT NULL,
+	Message TEXT NOT NULL
+) ENGINE=ARCHIVE DEFAULT CHARSET=utf8 ~
