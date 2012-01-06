@@ -285,23 +285,23 @@ END ~
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `deleteProject`(prjName varchar(255))
 BEGIN
-	DELETE FROM EntryValue where projectName = prjName;
-	DELETE FROM Entry where projectName = prjName;
-	DELETE FROM `Option` where field in (SELECT idField FROM Field WHERE projectName = prjName);
-	DELETE FROM Field where projectName = prjName;
-	DELETE FROM Form where projectName = prjName;
-	DELETE FROM Project where name = prjName;
+	DELETE FROM entryvalue where projectName = prjName;
+	DELETE FROM entry where projectName = prjName;
+	DELETE FROM `option` where field in (SELECT idField FROM field WHERE projectName = prjName);
+	DELETE FROM field where projectName = prjName;
+	DELETE FROM form where projectName = prjName;
+	DELETE FROM project where name = prjName;
 END ~
 CREATE DEFINER=`cpowell`@`%` PROCEDURE `endOAuthSession`(userId INT, provider VARCHAR(45))
 BEGIN
     DECLARE providerId INT;
-    SELECT `idProvider` INTO providerId FROM OAuthProvider WHERE `name` = provider;
+    SELECT `idProvider` INTO providerId FROM oauthprovider WHERE `name` = provider;
     UPDATE useroauth SET `requestToken` = '', `accessToken` = '' WHERE `user` = userId and `UserOAuth`.`provider` = providerId;
 END ~
 
 CREATE DEFINER=`cpowell`@`%` PROCEDURE `getFields`(frm int)
 BEGIN
-	select f.idField, f.name, f.label, f.regex, f.title, f.key, f.isInteger, f.isDouble, f.doubleEntry, f.jump, ft.name as type, ft.hasOptions from field f left join fieldType ft on f.type = ft.idFieldType where form = frm;
+	select f.idField, f.name, f.label, f.regex, f.title, f.key, f.isInteger, f.isDouble, f.doubleEntry, f.jump, ft.name as type, ft.hasOptions from field f left join fieldtype ft on f.type = ft.idFieldType where form = frm;
 END ~
 
 CREATE DEFINER=`cpowell`@`%` PROCEDURE `getForm`(frmName varchar(255), version double)
@@ -374,7 +374,7 @@ BEGIN
             SELECT `user` INTO currentUserId from `useroauth` where `providerUserId` = user_id and `UserOAuth`.`provider` = providerId;
             IF currentUserId is null THEN
                 SET newUser = 1;
-                INSERT INTO `User` (`Name`, Email) value (nickname, nickname);
+                INSERT INTO `user` (`Name`, Email) value (nickname, nickname);
                 set currentUserId = LAST_INSERT_ID();
                 INSERT INTO useroauth (`user`, `provider`, `providerUserId`, `nickname`, `requestToken`, `accessToken`, `sessionId`, `sessionStarted`)
                     VALUES(currentUserId, providerId, user_id, nickname, requestToken, accessToken, sessionId, Now());
@@ -429,7 +429,7 @@ INSERT INTO `role` (`idRole`, `name`) VALUES
 (1, 'submitter'),
 (2, 'user') ~
 
-CREATE TABLE Logs (
+CREATE TABLE logs (
 	Timestamp BIGINT NOT NULL,
 	Type VARCHAR(50) NOT NULL,
 	Message TEXT NOT NULL
