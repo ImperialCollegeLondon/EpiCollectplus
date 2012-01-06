@@ -31,7 +31,7 @@
 .DS_Store*
 Icon?
 web.config
-.db
+Thumbs.db
 .svn*
 .buildpath
 .settings

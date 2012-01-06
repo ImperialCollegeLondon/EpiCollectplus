@@ -238,10 +238,10 @@
 		}
 		if($templateVars)
 		{
-			foreach(array_keys($templateVars) as $sec)
+			foreach($templateVars as $sec => $cts)
 			{
 				// do processing
-				$template = str_replace("{#$sec#}", $templateVars[$sec], $template);
+				$template = str_replace("{#$sec#}", $cts, $template);
 			}
 		}
 		

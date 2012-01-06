@@ -86,7 +86,7 @@
 		{
 			$db = new dbConnection();
 			
-			$qry = "SELECT * from Form WHERE";
+			$qry = "SELECT * from form WHERE";
 			if(is_numeric($this->id))
 			{
 				$qry = "$qry idForm = {$this->id}";
