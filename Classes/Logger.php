@@ -23,9 +23,9 @@
 			$level = $this->db->escapeArg($level);
 			$msg = $this->db->escapeArg($msg);
 			
-			$qry = "INSERT INTO Logs(`Timestamp`, `Type`, `Message`) VALUES ($ts, '$level', '$msg')";
+			$qry = "INSERT INTO logs(`Timestamp`, `Type`, `Message`) VALUES ($ts, '$level', '$msg')";
 			$res = $this->db->do_query($qry);
-			if($res !== true) throw new ErrorException($db->error($res));	
+			if($res !== true) throw new ErrorException($this->db->error($res));	
 		}
 	}
 ?>
