@@ -423,7 +423,7 @@ INSERT INTO `fieldtype` (`idFieldType`, `name`, `formbuilderLabel`, `ctrlHtml`, 
 (11, 'radio', 'Select One', '<div></div>', '<input type="radio" />', 1),
 (12, 'group', 'Group field', '<select></select>', '<option value="one">one</option>', 1),
 (13, 'branch', 'Branch field', '<input />', NULL, 0),
-(14, 'location', 'Location', '<input type="text" />', NULL, 0), ~
+(14, 'location', 'Location', '<input type="text" />', NULL, 0) ~
 
 INSERT INTO `role` (`idRole`, `name`) VALUES
 (3, 'admin'),
