@@ -849,7 +849,7 @@ var EcTable = function(conf)
 			store: this.store,
 			tbar: tBtns,
 			width: Ext.getBody().getWidth() - 25,
-			height: Ext.getBody().getHeight() * 0.65,
+			height: Ext.getBody().getHeight() * 0.75,
 			listeners : {
 				'contextmenu': function(e)
 				{
@@ -919,7 +919,7 @@ var EcTable = function(conf)
 				{
 					title: 'Map',
 					width: Ext.getBody().getWidth() * 0.6,
-					height: 700,
+					height: 800,
 					items : [{
 							id: 'mapPnl',
 							region:'center',
