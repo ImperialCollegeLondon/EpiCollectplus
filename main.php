@@ -666,8 +666,9 @@
 		$res = $db->do_query("SELECT name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName group by project.name");
 		if($res !== true)
 		{
-			$vals["projects"] = "<p class=\"error\">Database is not set up correctly, go to the <a href=\"test\">test page</a> to establish the problem.</p>";
-			echo applyTemplate("base.html","./index.html",$vals);
+			//$vals["projects"] = "<p class=\"error\">Database is not set up correctly, go to the <a href=\"test\">test page</a> to establish the problem.</p>";
+			//echo applyTemplate("base.html","./index.html",$vals);
+			header("location: http://$server/$root/test?redir=true");
 			return;
 		}
 		$vals["projects"] = "<h1>Projects on this server</h1>" ;
@@ -2123,7 +2124,7 @@
 		fwrite($sf, $str);
 		fclose($sf);
 		
-		header("Location: http://{$_SERVER["HTTP_HOST"]}/$SITE_ROOT/");
+		header("Location: http://{$_SERVER["HTTP_HOST"]}$SITE_ROOT/");
 	}
 	
 	function packFiles($files)

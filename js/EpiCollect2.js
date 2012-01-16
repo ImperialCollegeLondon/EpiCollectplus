@@ -853,7 +853,7 @@ var EcTable = function(conf)
 			store: this.store,
 			tbar: tBtns,
 			width: Ext.getBody().getWidth() - 25,
-			height: Ext.getBody().getHeight() * 0.65,
+			height: Ext.getBody().getHeight() * 0.75,
 			listeners : {
 				'contextmenu': function(e)
 				{
