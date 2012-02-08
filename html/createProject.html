@@ -1,6 +1,8 @@
 {{script}}
+  
   <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/Ext/ext-all.css" />
   <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/Ext/fileuploadfield.css" />
+  <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />
   <script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-base-debug.js"></script>
   <script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-all-debug.js"></script>
   <script type="text/javascript" src="{#SITE_ROOT#}/Ext/FileUploadField.js"></script>
@@ -64,7 +66,7 @@
 			],
 			value: "{#SITE_ROOT#}/{#projectImage#}"
 			});
-			if("{#projectImage#}" == "") Ext.getCmp("newImage").update('<img src="images/no_image.png" alt="projectImage" />')
+			if("{#projectImage#}" == "") Ext.getCmp("newImage").update('<img src="{#SITE_ROOT#}/images/no_image.png" alt="projectImage" />')
 				imageControl.items.get(0).on('fileselected', function(){
 				imageControl.getForm().submit({
 					params: imageControl.getForm().getValues(),
@@ -107,7 +109,7 @@
 	  var submissionControl = new Ext.form.Checkbox({
 			id: "publicSubmission",
 			fieldLabel: "Should anybody be able to submit data to the project?",
-			checked: ("{#projectPublicSubmission#}" == "1")
+			checked: true
 	  });
 	  formItems.push(submissionControl);
 	 			  
@@ -152,7 +154,7 @@
 		  //TODO:check if email is already in the list.
 		  if(this.isValid()){
 			Ext.Ajax.request({
-			  url: 'user/' + this.getValue(),
+			  url: '{#SITE_ROOT#}/user/' + this.getValue(),
 			  success:function(res, opts){
 				this.linkedCtrl.getStore().addSorted(new Ext.data.Record({email : this.getValue(), isregistered: res.responseText==='true'}));
 				this.setValue('');
@@ -219,7 +221,7 @@
 		  //TODO:check if email is already in the list.
 		  
 		  Ext.Ajax.request({
-			url: 'user/' + this.getValue(),
+			url: '{#SITE_ROOT#}/user/' + this.getValue(),
 			success:function(res, opts){
 			  this.linkedCtrl.getStore().addSorted(new Ext.data.Record({email : this.getValue(), isregistered: res.responseText==='true'}));
 			  this.setValue('');

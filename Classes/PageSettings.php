@@ -9,7 +9,7 @@
 	 {
 		$this->redirect = $r;
 		$this->handler = $h;
-		$this->login = false;
+		$this->login = $l;
 	 }
 	 
 	}

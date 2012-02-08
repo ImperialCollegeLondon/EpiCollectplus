@@ -431,10 +431,16 @@ class EcProject{
 					$r = $tbl->addToDb();
 					if($r !== true) return $r;
 				}
+				
+				$qry = "INSERT INTO userprojectpermission (user, project, role) VALUES ({$auth->getEcUserId()}, {$this->id}, 3)";
+				$res = $db->do_multi_query($qry);
+				if(!$res === true) die($res + " " + $qry);
 				return true;
 			}
 			else
+			{
 				return $res;
+			}
 			
 		}
 		

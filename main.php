@@ -7,8 +7,8 @@
 	//fwrite($tlog, "Load started at " . $dat->format("H:i:s") . "\n");
 	
 	$SITE_ROOT = "";
-	$DBSERVER = "";
 	
+	@session_start();
 	
 	if(preg_match("/main.php/", $_SERVER["SCRIPT_NAME"]))
 	{
@@ -24,33 +24,17 @@
 
 
 	include ("./utils/HttpUtils.php");
-	//include ("./Auth/AuthManager.php");
+	include ("./Auth/AuthManager.php");
 	include './db/dbConnection.php';
 	include ("./Classes/Logger.php");
 	
 	$url = preg_replace("/\\$SITE_ROOT\/|\?.*$/i", "", (array_key_exists("REQUEST_URI", $_SERVER) ? $_SERVER["REQUEST_URI"] : $_SERVER["HTTP_X_ORIGINAL_URL"])); //strip off site root and GET query
 	$url = rtrim($url, "/");
 	$url = urldecode($url);
-	
-	if(file_exists("ec/ec.txt") && file_exists("ec/settings.php"))
-	{
-		include "./ec/settings.php";
-		$ik = explode(",", file_get_contents("ec/ec.txt"));
-		$str = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $ik[1], base64_decode($settings), MCRYPT_MODE_CBC, base64_decode($ik[0]));
-		$arr = explode(",", $str);
-		$DBSERVER = trim($arr[0]);
-		$DBUSER = trim($arr[1]);
-		$DBPASS = trim($arr[2]);
-		$DBNAME = trim($arr[3]);
-	}
-	else if(!preg_match("/(test|.*\.css|.*\.js|.*\.png|.*\.jpg)$/", $url))
-	{
-		header("Location: http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/test");
-	}
-	
-	
+		
 	include "./Classes/PageSettings.php";
-
+	include ("./Classes/Logger.php");
+	include ("./Classes/configManager.php");
 	
 	/*
 	 * Ec Class declatratioions
@@ -64,6 +48,8 @@
 	/*
 	 * End of Ec Class definitions
 	 */ 
+	
+	$cfg = new ConfigManager("epicollect.ini");
 
 	function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 	{
@@ -76,12 +62,19 @@
 	}
 	set_error_handler('handleError', E_ALL);
 
-	
-	$DEFAULT_OUT = "xml";
-	$log = false;
+	$DEFAULT_OUT = $cfg->settings["misc"]["default_out"];
+	$log = new Logger("Ec2");
 	$db = false;
-	try{$log = new Logger("EC2");}catch(Exception $e){}
-	
+
+	if($cfg->settings["security"]["auth_method"] == "any" && array_key_exists("provider", $_SESSION))
+	{
+		$auth = new AuthManager($_SESSION["provider"]);	
+	}
+	else
+	{
+		$auth = new AuthManager($cfg->settings["security"]["auth_method"]);
+	}
+
 	
 	/* class and function definitions */
 	
@@ -96,7 +89,7 @@
 	
 	function setupDb()
 	{
-		global $DBUSER, $DBNAME;
+		global $cfg;
 		try{
 			$db = new dbConnection($_POST["un"], $_POST["pwd"]);
 			
@@ -169,23 +162,23 @@
 	
 	function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 	{
-		global $SITE_ROOT;
+		global $SITE_ROOT, $auth;
 		
 		$template = file_get_contents("./html/$baseUri");
 		$templateVars["SITE_ROOT"] = ltrim($SITE_ROOT, "\\");
 		$templateVars["uid"] = md5($_SERVER["HTTP_HOST"]);
 		// Is there a user logged in?
 		
-		/*if($auth && $auth->isLoggedIn())
+		if($auth && $auth->isLoggedIn())
 		{
 			//if so put the user's name and a logout option in the login section
-			$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="javascript:logout();">Sign out</a> | <a href="updateUser.html">Update User</a>', $template);
+			$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $template);
 		}
 		// else show the login link
 		else
 		{
 			$template = str_replace("{#loggedIn#}", '<a href="{#SITE_ROOT#}/login.php">Sign in</a>', $template);
-		}*/
+		}
 		// work out breadcrumbs
 		//$template = str_replace("{#breadcrumbs#}", '', $template);
 		
@@ -289,6 +282,47 @@
 		header("Content-type: " . mimeType($url));
 		echo applyTemplate('base.html', "./" . $url);
 	}
+	
+	function loginHandler($cb_url = ".")
+	{
+		header("Cache-Control: no-cache, must-revalidate");
+		
+		global $auth, $url, $cfg;
+		if(array_key_exists("provider", $_GET))
+		{
+			$_SESSION["provider"] = $_GET["provider"];
+			$auth = new AuthManager($_GET["provider"]);
+			$frm = $auth->requestlogin($cb_url);
+		}
+		if(!$auth) $auth = new AuthManager($cfg->settings["security"]["auth_method"]);
+		echo applyTemplate("./base.html", "./loginbase.html", array( "form" => $auth->requestlogin($cb_url)));
+	}
+	
+	function loginCallback()
+	{
+		global $auth, $cfg;
+		if(!$auth) $auth = new AuthManager($cfg->settings["security"]["auth_method"]);
+		$auth->callback();
+	}
+	
+	function logoutHandler()
+	{
+		header("Cache-Control: no-cache, must-revalidate");
+		
+		global $auth, $SITE_ROOT;
+		$server = trim($_SERVER["HTTP_HOST"], "/");
+		$root = trim($SITE_ROOT, "/");
+		if($auth)
+		{
+			$auth->logout();
+			header("location: http://$server/$root/");
+		}
+		else
+		{
+			echo "No Auth";
+		}
+	
+	}
 		
 	function uploadHandlerFromExt()
 	{
@@ -335,7 +369,7 @@
 	
 	function projectHome()
 	{
-		global $url, $SITE_ROOT;
+		global $url, $SITE_ROOT, $auth;
 		
 		
 		$url = preg_replace("/\/$/", "", $url);
@@ -358,11 +392,24 @@
 			return;
 		}
 		
+		if(!$prj->isPublic && !$auth->isLoggedIn())
+		{
+			loginHandler($url);
+			return;
+		}
+		else if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2)
+		{
+			echo "access denied";
+			return;
+		}
+		
+		
+		
 		//echo strtoupper($_SERVER["REQUEST_METHOD"]);
 		
 		if(strtoupper($_SERVER["REQUEST_METHOD"]) == "GET")
 		{
-			if(array_key_exists("HTTP_ACCEPT", $_SERVER)) $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "/") + 1);
+			if(array_key_exists("HTTP_ACCEPT", $_SERVER)) $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "$SITE_ROOT/") + 1);
 			$ext = substr($url, strrpos($url, ".") + 1);
 			$format = $ext != "" ? $ext : $format;
 			switch($format){
@@ -372,6 +419,7 @@
 					echo $prj->toXML();
 					break;
 				default:
+					header("Cache-Control: no-cache, must-revalidate");
 					header ("Content-type: text/html;");
 				
 					try{
@@ -445,22 +493,22 @@
 	function siteTest()
 	{
 		$res = array();
-		global $DBSERVER, $DBUSER, $DBNAME;
+		global $cfg;
 		
 		$doit = true;
-		if($DBSERVER == "")
+		if(!array_key_exists("database", $cfg->settings) || !array_key_exists("server", $cfg->settings["database"]) ||$cfg->settings["database"]["server"] == "")
 		{
 			$res["dbStatus"] = "fail";
 			$res["dbResult"] = "No database server specified, please amend the file ec/settings.php and so that \$DBSERVER equals the name of the MySQL server";
 			$doit = false;
 		}
-		else if($DBUSER == "")
+		else if(!array_key_exists("user", $cfg->settings["database"]) ||$cfg->settings["database"]["user"] == "")
 		{
-			$res["dbStatus"] = "fail";
+			$res["dbStatus"] = "fail"; 
 			$res["dbResult"] = "No database user specified, please amend the file ec/settings.php so that \$DBUSER and \$DBPASS equal the credentials for MySQL server";
 			$doit = false;
 		}
-		else if($DBNAME == "")
+		else if(!array_key_exists("database", $cfg->settings["database"]) ||$cfg->settings["database"]["database"] == "")
 		{
 			$res["dbStatus"] = "fail";
 			$res["dbResult"] = "No database name specified, please amend the file ec/settings.php so that \$DBNAME equals the name of the MySQL database";
@@ -509,7 +557,7 @@
 				while($arr = $db->get_row_array())
 				{
 					
-					if( $arr['Database'] == $DBNAME)
+					if( $arr['Database'] == $cfg->settings["database"]["database"])
 					{
 						$res["dbStatus"] = "succeed";
 						$res["dbResult"] = "";
@@ -518,7 +566,7 @@
 					else
 					{
 						$res["dbStatus"] = "fail";
-						$res["dbResult"] = "DB Server found, but the database '$DBNAME' does not exist.<br />";
+						$res["dbResult"] = "DB Server found, but the database '{$cfg->settings["database"]["database"]}' does not exist.<br />";
 					}
 				}
 				
@@ -528,7 +576,7 @@
 				
 				if($res["dbStatus"] == "succeed")
 				{
-					$dbres = $db->do_query("SHOW GRANTS FOR $DBUSER;");
+					$dbres = $db->do_query("SHOW GRANTS FOR {$cfg->settings["database"]["user"]};");
 					if($dbres !== true)
 					{
 						$res["dbPermResults"] = $res;
@@ -536,16 +584,16 @@
 					else
 					{
 						$perms = array("SELECT", "INSERT", "UPDATE", "DELETE", "EXECUTE");
-						$res ["dbPermResults"] = "Permssions not set, the user $DBUSER requires SELECT, UPDATE, INSERT, DELETE and EXECUTE permissions on the database $DBNAME";
+						$res ["dbPermResults"] = "Permssions not set, the user {$cfg->settings["database"]["user"]} requires SELECT, UPDATE, INSERT, DELETE and EXECUTE permissions on the database {$cfg->settings["database"]["database"]}";
 						while($arr = $db->get_row_array())
 						{
 							$_g = implode(" -- ", $arr) . "<br />";
-							if(preg_match("/ON (`?$DBNAME`?|\*\.\*)/", $_g))
+							if(preg_match("/ON (`?{$cfg->settings["database"]["database"]}`?|\*\.\*)/", $_g))
 							{
 								if(preg_match("/ALL PERMISSIONS/i", $_g))
 								{
 									$res["dbPermStatus"] = "fail";
-									$res["dbPermResults"] = "The user account $DBUSER by the website should only have SELECT, INSERT, UPDATE, DELETE and EXECUTE priviliges on $DBNAME";
+									$res["dbPermResults"] = "The user account {$cfg->settings["database"]["user"]} by the website should only have SELECT, INSERT, UPDATE, DELETE and EXECUTE priviliges on {$cfg->settings["database"]["database"]}";
 									break;
 								}
 								for($_p = 0; $_p < count($perms); $_p++)
@@ -566,7 +614,7 @@
 						}
 						else 
 						{
-							$res ["dbPermResults"] = "Permssions not set, the user $DBUSER is missing " . implode(", ", $perms) .  " permissions on the database $DBNAME";
+							$res ["dbPermResults"] = "Permssions not set, the user {$cfg->settings["database"]["user"]} is missing " . implode(", ", $perms) .  " permissions on the database {$cfg->settings["database"]["database"]}";
 						}
 					}
 				}
@@ -603,7 +651,7 @@
 					$i = 0;
 					while($arr = $db->get_row_array())
 					{
-						$tblTemplate[$arr["Tables_in_{$DBNAME}"]] = true;
+						$tblTemplate[$arr["Tables_in_{$cfg->settings["database"]["database"]}"]] = true;
 						$i++;
 					}
 					if($i == 0)
@@ -649,23 +697,25 @@
 	
 	function siteHome()
 	{
-		$vals = array();
+		header("Cache-Control: no-cache, must-revalidate");
 		
+		global $SITE_ROOT;
+		$vals = array();
+		$server = trim($_SERVER["HTTP_HOST"], "/");
+		$root = trim($SITE_ROOT, "/");
 		try{
 			$log = new Logger("Ec2");
 			$db = new dbConnection;
 		}
 		catch(Exception $e)
 		{
-			global $SITE_ROOT;
-			$server = trim($_SERVER["HTTP_HOST"], "/");
-			$root = trim($SITE_ROOT, "/");
 			header("location: http://$server/$root/test?redir=true");
 		}
 		
 		$res = $db->do_query("SELECT name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName group by project.name");
 		if($res !== true)
 		{
+			
 			//$vals["projects"] = "<p class=\"error\">Database is not set up correctly, go to the <a href=\"test\">test page</a> to establish the problem.</p>";
 			//echo applyTemplate("base.html","./index.html",$vals);
 			header("location: http://$server/$root/test?redir=true");
@@ -883,7 +933,7 @@
 	{
 		//TODO: Dowload data from server, including zipped media files
 		global  $url, $SITE_ROOT;
-		header("Cache-Control: none,  must-revalidate");
+		header("Cache-Control: no-cache,  must-revalidate");
 		
 		$flog = fopen('ec/uploads/fileUploadLog.log', 'a');
 		$survey = new EcProject();
@@ -1193,7 +1243,7 @@
 	function formHandler()
 	{
 		
-		global $url,  $log;		
+		global $url,  $log, $auth;		
 		
 		$format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "/") + 1);
 		$ext = substr($url, strrpos($url, ".") + 1);
@@ -1203,6 +1253,19 @@
 		$pNameEnd = strpos($url, "/");
 		$prj->name = substr($url, 0, $pNameEnd);
 		$prj->fetch();
+		
+		
+		if(!$prj->isPublic && !$auth->isLoggedIn())
+		{
+			loginHandler($url);
+			return;
+		}
+		else if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2)
+		{
+			echo "access denied";
+			return;
+		}
+		
 		$extStart = strpos($url, ".");
 		$frmName = rtrim(substr($url, $pNameEnd + 1, ($extStart > 0 ?  $extStart : strlen($url)) - $pNameEnd - 1), "/");
 		
@@ -1421,7 +1484,7 @@
 					";
 					break;
 				default:
-					header("Cache-control: max-age=1000000");
+					header("Cache-control: no-cache");
 					//TODO: xml get/add/update for forms/tables from the website
 					global $SITE_ROOT;
 					$referer = array_key_exists("HTTP_REFERER", $_SERVER) ? $_SERVER["HTTP_REFERER"] : "";
@@ -1537,19 +1600,19 @@
 	
 	function saveUser()
 	{
-		//global $auth;
-		//$qry = "CALL updateUser(" . $auth->getEcUserId() . ",'{$_POST["name"]}','{$_POST["email"]}')";
-		//$db = new dbConnection();
-		//$res = $db->do_query($qry);
+		global $auth;
+		$qry = "CALL updateUser(" . $auth->getEcUserId() . ",'{$_POST["name"]}','{$_POST["email"]}')";
+		$db = new dbConnection();
+		$res = $db->do_query($qry);
 		
-		//if($res === true)
-		//{
-		//	echo '{"success" : true, "msg" : "User updated successfully"}';
-		//}
-		//else
-		//{
-		//	echo '{"success" : false, "msg" : "'.$res.'"}';
-		//}
+		if($res === true)
+		{
+			echo '{"success" : true, "msg" : "User updated successfully"}';
+		}
+		else
+		{
+			echo '{"success" : false, "msg" : "'.$res.'"}';
+		}
 	}
 	
 	function uploadProjectXML()
@@ -1625,7 +1688,7 @@
 		}
 		$tbl.= "</table>";
 		return $tbl;
-		//TODO: for each get the project name and work out if the project exists.
+		//DONE!: for each get the project name and work out if the project exists.
 	}
 	
 	function projectCreator()
@@ -1810,10 +1873,10 @@
 		
 		$prj->fetch();
 	
-		//$uId = $auth->getEcUserId();
-		//$uLvl = $uId ? $prj->checkPermission($uId) : 0;
-		/*if($uLvl == 3)		
-		{*/
+		$uId = $auth->getEcUserId();
+		$uLvl = $uId ? $prj->checkPermission($uId) : 0;
+		if($uLvl == 3)		
+		{
 			$newfn = "ec/uploads/xml/" . $_FILES["projectXML"]["name"];
 			move_uploaded_file($_FILES["projectXML"]["tmp_name"], $newfn);
 			$prj->parse(file_get_contents($newfn));
@@ -1833,12 +1896,12 @@
 				$vals = array("error" => $res);
 				echo applyTemplate("./base.html","./error.html",$vals);
 			}
-		/*}
+		}
 		else
 		{
 			echo applyTemplate("./base.html","./error.html",array("error" => "You do not have permission to update this project"));
 			return;
-		}*/
+		}
 	}
 	
 	function createProject()
@@ -1869,7 +1932,7 @@
 	
 	function editProject()
 	{
-		global  $url;
+		global  $url, $auth;
 		
 		//get project details
 		$prj = new EcProject();
@@ -1884,11 +1947,11 @@
 		
 		try{
 			$prj->fetch();
-		
-			//$uId = $auth->getEcUserId();
-			//$uLvl = $uId ? $prj->checkPermission($uId) : 0;
-			//if($uLvl == 3) //if the user is a project administator
-			//{
+			$auth->isLoggedIn();
+			$uId = $auth->getEcUserId();
+			$uLvl = $uId ? $prj->checkPermission($uId) : 0;
+			if($uLvl == 3) //if the user is a project administator
+			{
 				$admins = "";
 				foreach($prj->getAdmins() as $adm) $admins .= "['$adm', true],";
 				$users = "";
@@ -1911,12 +1974,12 @@
 				);
 				
 				echo applyTemplate("./base.html","./createProject.html",$vals);
-			//}
-			////else
-			//{
-			//	echo applyTemplate("./base.html","./error.html",array("error" => "You do not have permission to update this project"));
-			//	return;
-			//}
+			}
+			else
+			{
+				echo applyTemplate("./base.html","./error.html",array("error" => "You do not have permission to update this project"));
+				return;
+			}
 		}
 		catch(Exception $e)
 		{
@@ -2094,7 +2157,7 @@
 		$prj->name = substr($url, 0, strpos($url, "/"));
 		$prj->fetch();
 		
-		//if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2) return "access denied)";
+		if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2) return "access denied)";
 		
 		$sum = $prj->getUsage();
 		header("Content-type: text/plain");
@@ -2103,28 +2166,9 @@
 	
 	function writeSettings()
 	{
-		global $DBSERVER, $DBUSER, $DBPASS, $DBNAME, $SITE_ROOT;
+		global $cfg;
 		
-		
-		$sf = fopen("ec/settings.php", "w");
-		$ef = fopen("ec/ec.txt", "w");
-		
-		$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
-		$iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
-		
-		$key = md5($_SERVER["REMOTE_ADDR"] . $_SERVER["REQUEST_TIME"]);
-		
-		fwrite($ef, base64_encode($iv).",$key");
-		fclose($ef);
-		
-		$settings = base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $_POST["serverName"].",". $_POST["userName"].",". $_POST["password"].",". $_POST["dbName"], MCRYPT_MODE_CBC, $iv));
-		
-		$str = "<?php \$settings = '$settings'; ?>";
-		
-		fwrite($sf, $str);
-		fclose($sf);
-		
-		header("Location: http://{$_SERVER["HTTP_HOST"]}$SITE_ROOT/");
+		$cfg->writeConfig();
 	}
 	
 	function packFiles($files)
@@ -2151,22 +2195,31 @@
 		$qry = str_replace("user/", "", $url);
 		
 		$db = new dbConnection();
-		$sql = "Select openid from user where Email = '$qry'";
-		//echo $qry;
+		$sql = "Select details from user where Email = '$qry'";
+		
 		$res = $db->do_query($sql);
 		if($res === true)
 		{
 			if($arr = $db->get_row_array())
 			{
-				if($arr["openid"])
+				if(array_key_exists("details", $arr))
 				{
 					echo "true";
+					return;
+				}
+				else 
+				{
+					print_r($arr);
 				}
 			}
 			else
 			{
 				echo "false";
 			}
+		}
+		else 
+		{
+			die($res + " " + $sql);
 		}
 	}
 	/* end handlers */
@@ -2204,7 +2257,8 @@
 		//login handlers
 		//"Auth/loginCallback.php" => new PageRule(null,'loginCallbackHandler'),
 		"login.php" => new PageRule(null,'loginHandler'),
-		"logout.html" => new PageRule(null, 'logoutHandler'),
+		"loginCallback" => new PageRule(null,'loginCallback'),
+		"logout" => new PageRule(null, 'logoutHandler'),
 		"chooseProvider.html" => new PageRule(null, 'chooseProvider'),
 		
 		//user handlers
@@ -2264,6 +2318,40 @@
 	
 	if($rule)
 	{
+		if($rule->login && !$auth->isLoggedIn())
+		{
+			header("Cache-Control: no-cache, must-revalidate");
+			if($cfg->settings["security"]["auth_method"] == "any")
+			{
+				
+				if(array_key_exists("provider", $_GET))
+				{
+					$_SESSION["provider"] = $_GET["provider"];
+					$auth = new AuthManager($_GET["provider"]);
+					$frm = $auth->requestlogin($url);
+				}
+				elseif(array_key_exists("provider", $_SESSION))
+				{
+					$auth = new AuthManager($_SESSION["provider"]);
+					$frm = $auth->requestlogin($url);
+				}
+				else
+				{
+					$frm =  "<p>Please Choose a Method to login</p><a class=\"provider\" href=\"$url?provider=OPENID\">Google/Gmail</a>";
+					if(array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "")
+					{
+						$frm .= "<a class=\"provider\" href=\"$url?provider=LDAP\">LDAP ({$cfg->settings["security"]["ldap_domain"]})</a>";
+					}
+				}
+				echo applyTemplate("./base.html", "./loginbase.html", array( "form" => $frm));
+			}
+			else
+			{
+				echo applyTemplate("./base.html", "./loginbase.html", array( "form" => $auth->requestlogin($url)));
+			}
+			
+			return;
+		}
 		if($rule->redirect)
 		{
 			$url = $rule->redirect;
@@ -2271,7 +2359,7 @@
 		if($rule->handler)
 		{
 			$h = $rule->handler;
-			if($h != 'defaultHandler') @session_start();
+			//if($h != 'defaultHandler') @session_start();
 			$h();
 		}
 		else

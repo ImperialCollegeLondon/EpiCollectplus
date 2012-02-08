@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `FirstName` varchar(255) DEFAULT NULL,
   `LastName` varchar(255) DEFAULT NULL,
   `Email` varchar(255) NOT NULL,
-  `openId` varchar(255) DEFAULT NULL,
+  `details` TEXT DEFAULT NULL,
   `language` varchar(8) DEFAULT NULL,
   PRIMARY KEY (`idUsers`),
   UNIQUE KEY `Email` (`Email`)
@@ -200,7 +200,6 @@ CREATE TABLE IF NOT EXISTS `userprojectpermission` (
   KEY `fk_project` (`project`),
   KEY `fk_role` (`role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ~
-
 
 ALTER TABLE `deviceuser`
   ADD CONSTRAINT `fk_DeviceUser_Device1` FOREIGN KEY (`device`) REFERENCES `device` (`idDevice`) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -292,12 +291,7 @@ BEGIN
 	DELETE FROM form where projectName = prjName;
 	DELETE FROM project where name = prjName;
 END ~
-CREATE PROCEDURE `endOAuthSession`(userId INT, provider VARCHAR(45))
-BEGIN
-    DECLARE providerId INT;
-    SELECT `idProvider` INTO providerId FROM oauthprovider WHERE `name` = provider;
-    UPDATE useroauth SET `requestToken` = '', `accessToken` = '' WHERE `user` = userId and `UserOAuth`.`provider` = providerId;
-END ~
+
 
 CREATE PROCEDURE `getFields`(frm int)
 BEGIN
@@ -319,16 +313,6 @@ END ~
 CREATE  PROCEDURE `getForms`(prj Varchar(255))
 BEGIN
 	select f.* from form f left join project p on f.project = p.id  where p.name = prj;
-END ~
-
-CREATE  PROCEDURE `getOAuthProvider`(provider VARCHAR(45))
-BEGIN
-    SELECT * FROM oauthprovider WHERE `name` = provider;
-END ~
-
-CREATE  PROCEDURE `getOAuthProviders`()
-BEGIN
-    select `name`, providerIcon, providerLargeIcon from oauthprovider;
 END ~
 
 CREATE PROCEDURE `getOptions`(fld int)
@@ -353,38 +337,6 @@ END ~
 CREATE PROCEDURE `getUser`(id INT)
 BEGIN
     SELECT * from user where idUsers = id;
-END ~
-
-CREATE PROCEDURE `getUserOAuthDetails`(ecId INT, provider VARCHAR(45))
-BEGIN
-    DECLARE providerId INT;
-    SELECT idProvider INTO providerId FROM oauthprovider WHERE `name` = provider;
-    SELECT * FROM useroauth WHERE `user` = ecID and provider = providerId;
-END ~
-
-CREATE PROCEDURE `setOAuthLoginDetails`(provider VARCHAR(45), user_id VARCHAR(255), nickname Varchar(255), requestToken VARCHAR(1000), accessToken VARCHAR(1000), sesssionId VARCHAR(1000))
-BEGIN
-    DECLARE providerId INT;
-    DECLARE currentUserId INT;
-    DECLARE newUser BIT;
-    
-    SELECT idProvider INTO providerId FROM oauthprovider WHERE `name` = provider;
-    
-    IF providerId is not null THEN
-            SELECT `user` INTO currentUserId from `useroauth` where `providerUserId` = user_id and `UserOAuth`.`provider` = providerId;
-            IF currentUserId is null THEN
-                SET newUser = 1;
-                INSERT INTO `user` (`Name`, Email) value (nickname, nickname);
-                set currentUserId = LAST_INSERT_ID();
-                INSERT INTO useroauth (`user`, `provider`, `providerUserId`, `nickname`, `requestToken`, `accessToken`, `sessionId`, `sessionStarted`)
-                    VALUES(currentUserId, providerId, user_id, nickname, requestToken, accessToken, sessionId, Now());
-            ELSE
-                SET newUser = 0;
-                UPDATE `useroauth` SET `accessToken` = accessToken, `requestToken` = requestToken, `sessionId` = sessionId, sessionStarted =  Now() WHERE `user` = currentUserId and providerUserId = user_id and `UserOAuth`.`provider` = providerId;
-            END IF;
-            
-            SELECT currentUserId as `EcUserId`, newUser as `newUser`;
-    END IF;
 END ~
 
 CREATE PROCEDURE `updateEcUser`(id INT, RealName varchar(255), newemail varchar(255))
@@ -426,12 +378,20 @@ INSERT INTO `fieldtype` (`idFieldType`, `name`, `formbuilderLabel`, `ctrlHtml`, 
 (14, 'location', 'Location', '<input type="text" />', NULL, 0) ~
 
 INSERT INTO `role` (`idRole`, `name`) VALUES
-(3, 'admin'),
-(1, 'submitter'),
-(2, 'user') ~
+(1, 'collector'),
+(2, 'curator'),
+(3, 'manager')~
 
-CREATE TABLE logs (
-	Timestamp BIGINT NOT NULL,
-	Type VARCHAR(50) NOT NULL,
-	Message TEXT NOT NULL
+CREATE TABLE `logs` (
+	`Times` BIGINT NOT NULL,
+	`Type` VARCHAR(50) NOT NULL,
+	`Message` TEXT NOT NULL
 ) ENGINE=ARCHIVE DEFAULT CHARSET=utf8 ~
+
+
+CREATE TABLE `ecsession` (
+	`id` VARCHAR(255) NOT NULL,
+	`user` INT NOT NULL,
+	`expires` BIGINT,
+	PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ~

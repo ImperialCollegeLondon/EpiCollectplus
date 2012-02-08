@@ -13,7 +13,7 @@
 		
 		public function __construct($un = false, $pwd = false)
 		{
-			global $DBUSER, $DBPASS, $DBSERVER, $DBNAME;
+			global $cfg;
 			if($un)
 			{
 				$this->username = $un;
@@ -21,12 +21,12 @@
 			}
 			else
 			{
-				$this->username = $DBUSER;
-				$this->password = $DBPASS;
+				$this->username = $cfg->settings["database"]["user"];
+				$this->password = $cfg->settings["database"]["password"];
 			}
-			$this->server = $DBSERVER;
-			$this->schema = $DBNAME;
-			$this->port = 3306;
+			$this->server = $cfg->settings["database"]["server"];
+			$this->schema = $cfg->settings["database"]["database"];;
+			$this->port = $cfg->settings["database"]["port"];
 			
 			$this->con = mysqli_connect($this->server, $this->username, $this->password, NULL,  $this->port);
 			$this->con->set_charset('utf-8');

@@ -90,9 +90,9 @@ th
 }
 
 #loginStatus{
-	/*float:right;
-	margin-top: -2px;*/
-	display: none;
+	float:right;
+	margin-top: -2px;
+	/*display: none;*/
 }
 
 #main

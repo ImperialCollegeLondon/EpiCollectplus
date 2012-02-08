@@ -67,10 +67,10 @@ class LightOpenID
         'pref/timezone'           => 'timezone',
         );
 
-    function __construct()
+    function __construct($cb_url)
     {
         $this->trustRoot = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
-        $uri = rtrim(preg_replace('#((?<=\?)|&)openid\.[^&]+#', '', $_SERVER['HTTP_X_ORIGINAL_URL']), '?');
+        $uri = rtrim(preg_replace('#((?<=\?)|&)openid\.[^&]+#', '', $cb_url), '?');
         $this->returnUrl = $this->trustRoot . $uri;
 
         $this->data = $_POST + $_GET; # OPs may send data as POST or GET.
