@@ -1,0 +1,116 @@
+{{style}}
+	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />
+	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/jquery-ui-1.8.17.custom.css" />
+	<style type="text/css">
+		.invalid
+		{
+			border: 1px solid #FFAAAA;
+		}
+		
+		label
+		{
+			display: inline-block;
+			width: 10em;
+		}
+		
+		input[type=submit]
+		{
+			magin-top: .2em;
+			margin-left:11em;
+		}
+			
+	</style>
+{{/style}}
+{{script}}
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript">
+	
+		$(function(){
+			$("#tabs").tabs();	
+			
+			$("input[type=\"password\"]").change(function(e){
+				var qs = true;
+				var ps = false;
+				
+				$("input[type=\"password\"]").each(function(idx, ele){
+					if(ps === false)
+					{
+						ps = $(ele).val();
+					}
+					else
+					{
+						if($(ele).val() != ps) qs = false;
+					}
+				});
+				
+				if(qs) 
+				{
+					$("input[type=\"password\"]").removeClass("invalid");
+				}
+				else
+				{
+					$("input[type=\"password\"]").addClass("invalid");
+				}
+			})
+			
+		});
+		
+	</script>
+{{/script}}
+{{main}}
+	<div id="tabs">
+		<ul>
+			<li><a href="#add">Add User</a></li>
+			<li><a href="#manage">Manage Server Admins</a></li>
+		</ul>
+		<div id="add">
+			<h2>Add a new user</h2>
+			{#flashes#}
+			<p>You only need to use this form to add a user that doesn't have an account in another protocol</p>
+			<form method="POST" action="userAdmin">
+				<p>
+					<label for="fname">First Name</label>
+					<input type="text" name="fname" />
+				</p>
+				<p>
+					<label for="lname">Last Name</label>
+					<input type="text" name="lname" />
+				</p>
+				<p>
+					<label for="email">Email</label>
+					<input type="email" name="email" />
+				</p>
+
+				<p>
+					<label for="username">User Name</label>
+					<input type="text" name="username" />
+				</p>
+
+				<p>
+					<label for="password">Password</label>
+					<input type="password" name="password" />
+				</p>
+				<p>
+					<label for="password_check">Repeat Password</label>
+					<input type="password" name="password_check" />
+				</p>
+				<p>
+					<input type="submit" value="Create User"/>
+				</p>
+			</form>
+		</div>
+		<div id="manage">
+			<h2>Manage Users</h2>
+			{#flashes#}
+			<p>The following users are currently assigned as Server Managers</p>
+			<div>
+				{#serverManagers#}
+			</div>
+			<h3>Add a new Manager</h3>
+			<form method="POST" action="user/manager">
+				<label for="email">Email address</label><input name="email" type="email"/><input type="submit" value="Add Admin" />
+			</form>
+		</div>
+	</div>
+{{/main}}
