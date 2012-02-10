@@ -923,7 +923,7 @@ var EcTable = function(conf)
 				{
 					title: 'Map',
 					width: Ext.getBody().getWidth() * 0.6,
-					height: 700,
+					height: 800,
 					items : [{
 							id: 'mapPnl',
 							region:'center',
