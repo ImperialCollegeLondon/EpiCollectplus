@@ -366,6 +366,10 @@ var EcSurvey = function()
             tbl.parse(tbls[i]);
             this.tables[tbl.name] = tbl;
 			keys[tbl.key] = tbl.name;
+			if(this.getPrevTable(tbl.name)){
+				t = this.getPrevTable(tbl.name);
+				t.cols.push(tbl.name + "Entries");
+			}
         }
 		for(tbl in this.tables)
 		{
@@ -525,7 +529,7 @@ var EcTable = function(conf)
 				
 			}
 		}
-		this.cols.push("childEntries");
+		//if(survey.getNextTable(this.name)) this.cols.push(survey.getNextTable(this.name).name + "Entries");
     }
 
     this.getTable = function(loadData, filterField, filterValue)
@@ -661,7 +665,7 @@ var EcTable = function(conf)
 			var fk = this.key;
 			var fn = this.name;
 			cols.push({
-				id: 'childEntries', header : survey.getNextTable(this.name).name + ' Entries', dataIndex : 'childEntries', sortable:true,  menuDisabled: true, renderer: function(value, metaData, record, rowIndex, colIndex, store)
+				id: survey.getNextTable(this.name).name + 'Entries', header : survey.getNextTable(this.name).name + ' Entries', dataIndex : survey.getNextTable(this.name).name + 'Entries', sortable:true,  menuDisabled: true, renderer: function(value, metaData, record, rowIndex, colIndex, store)
 				{		
 					if(value == "" || value == null)
 					{

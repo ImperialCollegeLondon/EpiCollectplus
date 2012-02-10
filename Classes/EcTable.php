@@ -291,7 +291,7 @@
 			$this->fields[$this->key]->key = true;
 		}
 		
-		public function get($args = false, $offset = 0, $limit = 0, $sortField = "created", $sortDir = "asc")
+		public function get($args = false, $offset = 0, $limit = 0, $sortField = "created", $sortDir = "asc", $exact = false)
 		{
 			//global $auth;
 			
@@ -322,8 +322,16 @@
 				foreach($args as $k => $v)
 				{
 					$joinClause .= " JOIN entryvalue ev$k on e.idEntry = ev$k.Entry ";
-					$whereClause .= "AND (ev$k.fieldName = '$k' AND ev$k.value Like '%$v%') ";
-					$sql2 .= "(fieldName = '$k' AND value Like '%$v%') OR";
+					if($exact)
+					{
+						$whereClause .= "AND (ev$k.fieldName = '$k' AND ev$k.value Like '$v') ";
+						$sql2 .= "(fieldName = '$k' AND value Like '$v') OR";
+					}
+					else
+					{
+						$whereClause .= "AND (ev$k.fieldName = '$k' AND ev$k.value Like '%$v%') ";
+						$sql2 .= "(fieldName = '$k' AND value Like '%$v%') OR";
+					}
 				}
 				$whereClause = substr($whereClause, 0, count($whereClause) - 3). ")";
 				$sql2 = substr($sql2, 0, count($sql2) - 3). ");";
@@ -426,10 +434,10 @@
 								}
 								else
 								{
-									$ents[$ent]["childEntries"] = $arr["count"];
+									$ents[$ent][$this->survey->getNextTable($this->name, true)->name . "Entries"] = $arr["count"];
 								}
 							}
-							}catch(Exception $e) { print_r ($ents) ; }
+							}catch(Exception $e) { print $e->getMessage() ; }
 						}
 					}
 				}

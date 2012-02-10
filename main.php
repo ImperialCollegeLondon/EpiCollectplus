@@ -26,6 +26,7 @@
 	include ("./utils/HttpUtils.php");
 	include ("./Auth/AuthManager.php");
 	include './db/dbConnection.php';
+	include ("./Classes/Logger.php");
 	
 	$url = preg_replace("/\\$SITE_ROOT\/|\?.*$/i", "", (array_key_exists("REQUEST_URI", $_SERVER) ? $_SERVER["REQUEST_URI"] : $_SERVER["HTTP_X_ORIGINAL_URL"])); //strip off site root and GET query
 	$url = rtrim($url, "/");
@@ -49,7 +50,7 @@
 	
 	
 	include "./Classes/PageSettings.php";
-	include ("./Classes/Logger.php");
+
 	
 	/*
 	 * Ec Class declatratioions
@@ -74,12 +75,12 @@
 		throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 	}
 	set_error_handler('handleError', E_ALL);
+
 	
-
 	$DEFAULT_OUT = "xml";
-	$log = new Logger("Ec2");
+	$log = false;
 	$db = false;
-
+	try{$log = new Logger("EC2");}catch(Exception $e){}
 	
 	
 	/* class and function definitions */
@@ -98,6 +99,7 @@
 		global $DBUSER, $DBNAME;
 		try{
 			$db = new dbConnection($_POST["un"], $_POST["pwd"]);
+			
 		}catch(Exception $e)
 		{
 			$_GET["redir"] = "pwd";
@@ -472,6 +474,7 @@
 			
 			$db = false;
 			try{
+				
 				$db = new dbConnection();
 				$res["dbStatus"] = "succeed";
 				$res["dbResult"] = "Connected";
@@ -649,6 +652,7 @@
 		$vals = array();
 		
 		try{
+			$log = new Logger("Ec2");
 			$db = new dbConnection;
 		}
 		catch(Exception $e)

@@ -263,7 +263,7 @@
 			}
 			if($tbl)
 			{
-				$ents = $tbl->get(array($tbl->key => $this->values[$tbl->key]));
+				$ents = $tbl->get(array($tbl->key => $this->values[$tbl->key]),0,0,"created", "asc", true);
 			}
 			else 
 			{
