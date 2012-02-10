@@ -186,6 +186,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `Email` varchar(255) NOT NULL,
   `details` TEXT DEFAULT NULL,
   `language` varchar(8) DEFAULT NULL,
+  `serverManager` bit(1) DEFAULT b'0',
   PRIMARY KEY (`idUsers`),
   UNIQUE KEY `Email` (`Email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ~
@@ -383,7 +384,7 @@ INSERT INTO `role` (`idRole`, `name`) VALUES
 (3, 'manager')~
 
 CREATE TABLE `logs` (
-	`Times` BIGINT NOT NULL,
+	`Timestamp` BIGINT NOT NULL,
 	`Type` VARCHAR(50) NOT NULL,
 	`Message` TEXT NOT NULL
 ) ENGINE=ARCHIVE DEFAULT CHARSET=utf8 ~

@@ -25,7 +25,7 @@
 			
 			$qry = "INSERT INTO logs(`Timestamp`, `Type`, `Message`) VALUES ($ts, '$level', '$msg')";
 			$res = $this->db->do_query($qry);
-			if($res !== true) throw new ErrorException($this->db->error($res));	
+			if($res !== true) throw new ErrorException($res);	
 		}
 	}
 ?>

@@ -61,6 +61,20 @@ th
 	padding : 2px 2px 2px 2px;
 }
 
+.flash
+{
+	border-radius: 0.5em;
+	background-color :#CCCCFF;
+	color : #0000FF;
+	padding: 0.5em 0.5em 0.5em 0.5em; 
+}
+
+.err
+{
+	background-color :#FFCCCC;
+	color : #FF0000;
+}
+
 .projectImage
 {
 	float:right;

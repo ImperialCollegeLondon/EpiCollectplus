@@ -1,5 +1,5 @@
 <?php
-
+	if (isset($_REQUEST['_SESSION'])) die("Bad client request");
 	//$tlog = fopen("./uploads/speedLog", "w");
 	date_default_timezone_set('UTC');
 	$dat = new DateTime('now');
@@ -49,7 +49,7 @@
 	 * End of Ec Class definitions
 	 */ 
 	
-	$cfg = new ConfigManager("epicollect.ini");
+	$cfg = new ConfigManager("ec/epicollect.ini");
 
 	function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 	{
@@ -66,15 +66,7 @@
 	$log = new Logger("Ec2");
 	$db = false;
 
-	if($cfg->settings["security"]["auth_method"] == "any" && array_key_exists("provider", $_SESSION))
-	{
-		$auth = new AuthManager($_SESSION["provider"]);	
-	}
-	else
-	{
-		$auth = new AuthManager($cfg->settings["security"]["auth_method"]);
-	}
-
+	$auth = new AuthManager();
 	
 	/* class and function definitions */
 	
@@ -86,10 +78,21 @@
 		return $string;
 	}
 
+	function flash($msg, $type="msg")
+	{
+		if(!array_key_exists("flashes", $_SESSION) || !is_array($_SESSION["flashes"]))
+		{
+			$_SESSION["flashes"] = array();
+		}
+		
+		array_push($_SESSION["flashes"], array("msg" => $msg, "type" => $type));
+		
+	}
 	
 	function setupDb()
 	{
-		global $cfg;
+		global $cfg, $auth;
+		
 		try{
 			$db = new dbConnection($_POST["un"], $_POST["pwd"]);
 			
@@ -168,6 +171,19 @@
 		$templateVars["SITE_ROOT"] = ltrim($SITE_ROOT, "\\");
 		$templateVars["uid"] = md5($_SERVER["HTTP_HOST"]);
 		// Is there a user logged in?
+	
+		$flashes = "";
+		
+		
+		if(array_key_exists("flashes", $_SESSION) && is_array($_SESSION["flashes"]))
+		{
+			while($flash = array_pop($_SESSION["flashes"]))
+			{
+				$flashes .= "<p class=\"flash {$flash["type"]}\">{$flash["msg"]}</p>";
+			}
+		}
+		
+		
 		
 		if($auth && $auth->isLoggedIn())
 		{
@@ -230,6 +246,7 @@
 				// do processing
 				$template = str_replace("{#$sec#}", $sections[$sec], $template);
 			}
+			$template = str_replace("{#flashes#}", $flashes, $template);
 		}
 		if($templateVars)
 		{
@@ -316,6 +333,7 @@
 		{
 			$auth->logout();
 			header("location: http://$server/$root/");
+			return;
 		}
 		else
 		{
@@ -366,6 +384,7 @@
 		}
 		fclose($flog);
 	}
+	
 	
 	function projectHome()
 	{
@@ -691,7 +710,17 @@
 		}
 		else
 		{
-			echo applyTemplate("base.html", "setup.html", $res);
+			$arr = "{";
+			foreach($cfg->settings as $k => $v)
+			{
+				foreach($v as $sk => $sv)
+				{
+					$arr .= "\"{$k}\\\\{$sk}\" : \"$sv\",";
+				}
+			}
+			$arr = trim($arr, ",") . "}";
+			
+			echo applyTemplate("base.html", "setup.html", array("vals" => $arr));
 		}
 	}
 	
@@ -710,6 +739,7 @@
 		catch(Exception $e)
 		{
 			header("location: http://$server/$root/test?redir=true");
+			return;
 		}
 		
 		$res = $db->do_query("SELECT name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName group by project.name");
@@ -1630,6 +1660,7 @@
 			$server = trim($_SERVER["HTTP_HOST"], "/");
 			$root = trim($SITE_ROOT, "/");
 			header("location: http://$server/$root/editProject.html?name={$prj->name}");
+			return;
 		}
 		else
 		{
@@ -1890,6 +1921,7 @@
 				$server = trim($_SERVER["HTTP_HOST"], "/");
 				$root = trim($SITE_ROOT, "/");
 				header("location: http://$server/$root/editProject.html?name={$prj->name}");
+				return;
 			}
 			else
 			{
@@ -1902,6 +1934,83 @@
 			echo applyTemplate("./base.html","./error.html",array("error" => "You do not have permission to update this project"));
 			return;
 		}
+	}
+	
+	function userAdmin()
+	{
+		
+		global $auth, $SITE_ROOT;
+		$auth->isLoggedIn();
+		if(!$auth->isServerManager())
+		{
+			flash("You must be a server manager to manager the server.", "err");
+			
+			header("location: $SITE_ROOT/");
+			return;
+		}
+		
+		if($_SERVER["REQUEST_METHOD"] == "GET")
+		{ 
+			$mans = $auth->getServerManagers();
+			$men = "";
+			foreach($mans as $man)
+			{
+				$men = "<form method=\"POST\" action=\"user/manager\"><p>{$man["firstName"]} {$man["lastName"]} ({$man["Email"]})<input type=\"hidden\" name=\"email\" value=\"{$man["Email"]}\" /> <input type=\"submit\" name=\"remove\" value=\"Remove\" /></form></p>";
+			}
+			
+			echo applyTemplate("./base.html", "./userAdmin.html", array("serverManagers" => $men));
+
+		}
+		else if($_SERVER["REQUEST_METHOD"] == "POST")
+		{
+			createUser();
+		}
+	}
+	
+	function createUser()
+	{
+		global $auth, $SITE_ROOT;
+		
+		header("Cache-Control: no-cache; must-revalidate;");
+		
+		if($auth->createUser($_POST["username"], $_POST["password"], $_POST["email"], $_POST["fname"], $_POST["lname"], $_POST["email"]))
+		{
+			header("location: $SITE_ROOT/userAdmin.html");
+			return;
+		}
+	}
+	
+	function managerHandler()
+	{
+		global $auth, $SITE_ROOT;
+
+		if($_SERVER["REQUEST_METHOD"] == "POST")
+		{
+			if(array_key_exists("remove", $_POST) && $_POST["remove"] == "Remove")
+			{
+				$auth->removeServerManager($_POST["email"]);	
+				flash("{$_POST["email"]} is not longer a server manager.");
+			}
+			else
+			{
+				$x = $auth->makeServerManager($_POST["email"]);
+				if($x === 1)
+				{
+					flash("{$_POST["email"]} is now a server manager.");
+				}
+				elseif ($x === -1)
+				{
+					flash("{$_POST["email"]} is already a server manager.");
+				}
+				else
+				{
+					flash("Could not find user {$_POST["email"]}. ($x)", "err");
+				}
+			}
+		}
+		
+		
+		header("location: {$SITE_ROOT}/userAdmin#manage");
 	}
 	
 	function createProject()
@@ -2010,8 +2119,6 @@
 			header ("Content-type: application/json");
 			echo json_encode(array("controlTypes" => $arr));
 		}
-		
-		
 	}
 	
 	function uploadMedia()
@@ -2166,9 +2273,24 @@
 	
 	function writeSettings()
 	{
-		global $cfg;
+		global $cfg, $SITE_ROOT;
+		foreach ($_POST as $k => $v)
+		{
+			$kp = explode("\\", $k);
+			$cfg->settings[$kp[0]][$kp[1]] = $v;
+		}
 		
+		if(!array_key_exists("salt",$cfg->settings["security"]) || $cfg->settings["security"]["salt"] == "")
+		{
+			$str = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+			$str = str_shuffle($str);
+			$str = substr($str, -22);
+			$cfg->settings["security"]["salt"] = $str;
+		}
+			
 		$cfg->writeConfig();
+		header("Cache-Control: no-cache, must-revalidate");
+		header("location: $SITE_ROOT/test?edit=true");
 	}
 	
 	function packFiles($files)
@@ -2264,7 +2386,10 @@
 		//user handlers
 		"updateUser.html" => new PageRule(null, 'updateUser', true),
 		"saveUser" =>new PageRule(null, 'saveUser', true),
-		"user/.*?" => new PageRule(null, 'userHandler', true),
+		"user/manager/?" => new PageRule(null, 'managerHandler', true),
+		"user/.*@.*?" => new PageRule(null, 'userHandler', true),
+		"userAdmin" => new PageRule(null, 'userAdmin', true),
+		
 		
 		//generic, dynamic handlers		
 		"getControls" =>  new PageRule(null, 'getControlTypes'),

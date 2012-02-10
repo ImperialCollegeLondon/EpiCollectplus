@@ -43,7 +43,7 @@ class ConfigManager
 	{
 		$str = "";
 		
-		foreach($this->sections as $k => $v)
+		foreach($this->settings as $k => $v)
 		{
 			$str .= "[$k]\n";
 			foreach ($v as $ek => $ev)
@@ -52,7 +52,7 @@ class ConfigManager
 			}
 		}
 		
-		$_f = fopen($fn, "w+");
+		$_f = fopen($this->fn, "w");
 		fwrite($_f, $str);
 		fclose($_f);
 	}

@@ -1,49 +1,67 @@
 <?php
  require "OpenIDProvider.php";
  require "Ldap.php";
-
- if (isset($_REQUEST['_SESSION'])) die("Computer says no!");
-
- class AuthTypes
- {
- 	const ANY = 0;
- 	const ANON = 1;
- 	const OPENID = 2;
- 	const LDAP = 3;
- }
+ require "LocalAuthProvider.php";
  
  class AuthManager
  {
 	private $provider;
-	  
-	function __construct($prv)
+
+	public $firstName;
+	public $lastName;
+	public $email;
+	
+	private $openIdEnabled = true;
+	private $ldapEnabled = true;
+	private $localEnabled = true;
+	
+	function __construct()
 	{
-		if($prv == "OPENID")
+		global $cfg;
+		
+		if(array_key_exists("use_openID", $cfg->settings["security"]))
+		{
+			$this->openIdEnabled = $cfg->settings["security"]["use_openID"];
+		}
+
+		if(array_key_exists("use_ldap", $cfg->settings["security"]))
+		{
+			$this->ldapEnabled = $cfg->settings["security"]["use_ldap"];
+		}
+		
+		if(array_key_exists("use_local", $cfg->settings["security"]))
+		{
+			$this->localEnabled = $cfg->settings["security"]["use_local"];
+		}
+		
+		$this->providers = array();
+		
+		if($this->openIdEnabled)
 	  	{
-	   		$this->provider = new OpenIDProvider("http://test.mlst.net/index.php");
+	   		$this->providers["OPENID"] = new OpenIDProvider("http://test.mlst.net/index.php");
 	  	}
-	   	else if($prv == "LDAP")
+	   	if($this->ldapEnabled)
 	   	{
-	   		$this->provider = new LdapProvider();
+	   		$this->providers["LDAP"] = new LdapProvider();
 	   	}
-	   	else
+	   	if($this->localEnabled)
 	   	{
-	   		$this->provider = null;
+	   		$this->providers["LOCAL"] = new LocalLoginProvider();
 	   	}
   	}
   
-  	function requestlogin($requestedUrl)
+  	function requestlogin($requestedUrl, $provider = "")
   	{
   		global $cfg;
   		$_SESSION["url"] = $requestedUrl;
-  		if($this->provider)
+  		if($provider != "" && array_key_exists($provider, $this->providers))
   		{
-  			return $this->provider->requestLogin($requestedUrl);
+  			return $this->providers[$provider]->requestLogin($requestedUrl);
   		}
   		else
   		{
   			global $url;
-  			$frm =  "<p>Please Choose a Method to login</p><a class=\"provider\" href=\"$url?provider=OPENID\">Google/Gmail</a>";
+  			$frm =  "<p>Please Choose a Method to login</p><a class=\"provider\" href=\"$url?provider=local\">EpiCollect Account</a><a class=\"provider\" href=\"$url?provider=OPENID\">Google/Gmail</a>";
 			if(array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "")
 			{
 					$frm .= "<a class=\"provider\" href=\"$url?provider=LDAP\">LDAP ({$cfg->settings["security"]["ldap_domain"]})</a>";
@@ -53,11 +71,14 @@
    		
   	}
   
-  	function callback()
+  	function callback($provider = "")
   	{
   		global  $cfg;
+  		
+  		if(!array_key_exists($provider, $this->providers)) return false;
+  		
   		$db = new dbConnection();
-  		$res = $this->provider->callback();
+  		$res = $this->providers[$provider]->callback();
   		if($res === true)
   		{
   			$uid = false;
@@ -90,14 +111,15 @@
   		}
   	}
   	
-  	function logout()
+  	function logout($provider = "")
   	{
+  		if(!array_key_exists($provider, $this->providers)) return false;
   		$params = session_get_cookie_params();
 	    setcookie(session_name(), '', time() - 42000,
 	        $params["path"], $params["domain"],
 	        $params["secure"], $params["httponly"]
 	    );
-  		$this->provider->logout();
+  		$this->providers[$provider]->logout();
 
   	}
   
@@ -123,18 +145,67 @@
   		
   		$this->user = false;
   		
-  		$qry = "select user, firstName, lastName, email from ecsession left join user on ecsession.user = user.idUsers WHERE ecsession.id = '" . session_id() ."'"; 
+  		$qry = "select user, firstName, lastName, email, serverManager from ecsession left join user on ecsession.user = user.idUsers WHERE ecsession.id = '" . session_id() ."'"; 
   		$res = $db->do_query($qry);
-  		if($res !== true) die($res . "\n" . $sql);
+  		if($res !== true) die($res . "\n" . $qry);
   		while ($arr = $db->get_row_array()){ 
   			$this->user = $arr["user"]; 
-  			$this->provider->firstName = $arr["firstName"];
-  			$this->provider->lastName = $arr["lastName"];
-  			$this->provider->email = $arr["email"];
+  			$this->firstName = $arr["firstName"];
+  			$this->lastName = $arr["lastName"];
+  			$this->email = $arr["email"];
+  			$this->serverManager = $arr["serverManager"];
   		}
    		return $this->user !== false;
   	}
   
+  	function isServerManager()
+  	{
+  		return !!$this->serverManager;
+  	}
+  	
+  	function makeServerManager($email)
+  	{
+  		global $db;
+  		$qry = "select serverManager from user WHERE email = '$email'";
+  		$res = $db->do_query($qry);
+  		$r=0;$u=0;
+  		while ($arr = $db->get_row_array())
+  		{
+  			$u++;
+  			$r += $arr["serverManager"];
+  		}
+  		
+  		if($u == 0) return 0;
+  		if($r > 0) return -1;
+  		
+  		$qry = "UPDATE user SET serverManager = 1 WHERE email = '$email'";
+  		if($db->do_query($qry) !== true) die("oops"); 
+  		return 1;
+  	}
+  	
+  	function removeServerManager($email)
+  	{
+  		global $db;
+  		$qry = "UPDATE user SET serverManager = 0 WHERE email = '$email'";
+  		if($db->do_query($qry) !== true) die("oops");
+  	}
+  	
+  	function getServerManagers()
+  	{
+  		global $db;
+  		
+  		$qry = "SELECT firstName, lastName, Email FROM User WHERE serverManager = 1";
+  		$res = $db->do_query($qry);
+  		if($db->do_query($qry) !== true) die("$res");
+  		
+  		$men = array();
+  		while($arr = $db->get_row_array())
+  		{
+  			array_push($men, $arr);
+  		}
+  		return $men;
+  	}
+  	
   	private function populateSesssionInfo()
   	{
 	   $db = new dbConnection();
@@ -152,11 +223,23 @@
    		}
 	  }
 	  
+	  function createUser($username, $pass, $email, $firstName, $lastName, $language)
+	  {
+	  	if($this->localEnabled)
+	  	{
+	  	 	return $this->provider->createUser($username, $pass, $email, $firstName, $lastName, $language);
+	  	}
+	  	else
+	  	{
+	  		return false;
+	  	}
+	  }
+	  
 	  function getUserNickname()
 	  {
 		   //$arr = $this->openid->getAttributes();
 		   
-		   return "{$this->provider->firstName} {$this->provider->lastName}";
+		   return "{$this->firstName} {$this->lastName}";
 	  }
 	  
 	  function getEcUserId()
@@ -168,7 +251,7 @@
 	  {
 		  	//$arr = $this->openid->getAttributes();
 			//   echo $arr["contact/email"];
-		   return $this->provider->email;
+		   return $this->email;
 	  }
 }
 ?>

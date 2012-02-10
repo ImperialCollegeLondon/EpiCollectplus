@@ -4,7 +4,7 @@
 	{
 		private $con;
 		private $resSet;
-		
+		private $numRows;
 		private $username;// = $DBUSER;
 		private $password;// = $DBPASS;
 		private $server;// = $DBSERVER;
@@ -28,10 +28,10 @@
 			$this->schema = $cfg->settings["database"]["database"];;
 			$this->port = $cfg->settings["database"]["port"];
 			
-			$this->con = mysqli_connect($this->server, $this->username, $this->password, NULL,  $this->port);
+			$this->con = new mysqli($this->server, $this->username, $this->password, NULL,  $this->port);
 			$this->con->set_charset('utf-8');
 			try{
-				mysqli_select_db($this->con, $this->schema);
+				$this->con->select_db($this->schema);
 			}catch(Exception $e){}
 		}
 		
@@ -47,69 +47,70 @@
 		
 		public function beginTransaction()
 		{
-			if(mysqli_query($this->con, "START TRANSACTION;"))
+			if($this->con->query("START TRANSACTION;"))
 			{
 				return true;
 			}
 			else
 			{
-				return "START TRANSACTION;\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
+				return "START TRANSACTION;\r\n" . $this->con->errno() . " : " . $this->con->error();
 			}
 		}
 		
 		public function commitTransaction()
 		{
-			if(mysqli_query($this->con, "COMMIT;"))
+			if($this->con->query("COMMIT;"))
 			{
 				return true;
 			}
 			else
 			{
-				return "COMMIT;\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
+				return "COMMIT;\r\n" . $this->con->errno() . " : " .$this->con->error();
 			}
 		}
 		
 		public function rollbackTransaction()
 		{
-			if(mysqli_query($this->con, "ROLLBACK;"))
+			if($this->con->query( "ROLLBACK;"))
 			{
 				return true;
 			}
 			else
 			{
-				return "ROLLBACK;\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
+				return "ROLLBACK;\r\n" . $this->con->errno() . " : " .$this->con->error();
 			}
 		}
 		
 		public function affectedRows()
 		{
-			return mysqli_affected_rows($this->con);
+			return $this->numRows;
 		}
 		
 		public function escapeArg($arg)
 		{
-			return mysqli_escape_string($this->con, $arg);
+			return $this->con->escape_string($arg);
 		}
 		
 		public function do_query($qry)
 		{
 			if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
-			$this->resSet = mysqli_query($this->con, $qry);
+			$this->resSet = $this->con->query($qry);
 			if($this->resSet)
 			{
+				$this->numRows = $this->con->affected_rows;
 				return true;
 			}
 			else
 			{
 				//echo $qry .  "\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
-				return $qry .  "\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
+				return $qry .  "\r\n" . $this->con->errno() . " : " .$this->con->error();
 			}
 		}
 		
 		public function do_multi_query($qry)
 		{
 			if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
-			$this->resSet = mysqli_multi_query($this->con, $qry);
+			$this->resSet = $this->con->multi_query($qry);
 			if($this->resSet)
 			{
 				return true;
@@ -117,7 +118,7 @@
 			else
 			{
 				//echo $qry .  "\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
-				return $qry .  "\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
+				return $qry .  "\r\n" . $this->con->errno() . " : " .$this->con->error();
 			}
 		}
 		
@@ -128,7 +129,7 @@
 			{
 				//$args[$i] = mysqli_escape_string($this->con, $args[$i]);
 				
-				if((is_string($args[$i]))){ $args[$i] = "'".str_replace("'", "\\\\'", mysqli_escape_string($this->con, $args[$i]))."'"; }
+				if((is_string($args[$i]))){ $args[$i] = "'".str_replace("'", "\\\\'",$this->con->escape_string($args[$i]))."'"; }
 				
 				else if(!$args[$i]){
 					if(is_int($args[$i]) || is_double($args[$i]) || is_bool($args[$i])) $args[$i] = "0";
@@ -138,14 +139,14 @@
 			
 			$qry = "CALL $spName (" . implode(", ", $args) . ")";
 			
-			$this->resSet = mysqli_query($this->con, $qry);
+			$this->resSet = $this->con->query($qry);
 			if($this->resSet)
 			{
 				return true;
 			}
 			else
 			{
-				return $qry . "\r\n" .mysqli_errno($this->con) . " : " . mysqli_error($this->con);
+				return $qry . "\r\n" .$this->con->errno() . " : " . $this->con->error();
 			}
 			
 		}
@@ -162,7 +163,7 @@
 		
 		public function last_id()
 		{
-			return mysqli_insert_id($this->con);
+			return $this->con->insert_id;
 		}
 		
 	}

@@ -1,9 +1,7 @@
 <?php
 	abstract Class AuthProvider
 	{
-		public $firstName;
-		public $lastName;
-		public $email;
+		
 		public $data;
 		public $language;
 		
