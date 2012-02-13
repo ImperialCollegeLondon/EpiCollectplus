@@ -26,16 +26,15 @@
 	include ("./utils/HttpUtils.php");
 	include ("./Auth/AuthManager.php");
 	include './db/dbConnection.php';
-	include ("./Classes/Logger.php");
+
 	
 	$url = preg_replace("/\\$SITE_ROOT\/|\?.*$/i", "", (array_key_exists("REQUEST_URI", $_SERVER) ? $_SERVER["REQUEST_URI"] : $_SERVER["HTTP_X_ORIGINAL_URL"])); //strip off site root and GET query
 	$url = rtrim($url, "/");
 	$url = urldecode($url);
 		
 	include "./Classes/PageSettings.php";
-	include ("./Classes/Logger.php");
 	include ("./Classes/configManager.php");
-	
+	include ("./Classes/Logger.php");
 	/*
 	 * Ec Class declatratioions
 	 */
@@ -51,6 +50,16 @@
 	
 	$cfg = new ConfigManager("ec/epicollect.ini");
 
+	if(!array_key_exists("salt",$cfg->settings["security"]) || $cfg->settings["security"]["salt"] == "")
+	{
+		$str = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		$str = str_shuffle($str);
+		$str = substr($str, -22);
+		$cfg->settings["security"]["salt"] = $str;
+	}
+		
+	$cfg->writeConfig();
+	
 	function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 	{
 		// error was suppressed with the @-operator
@@ -188,7 +197,14 @@
 		if($auth && $auth->isLoggedIn())
 		{
 			//if so put the user's name and a logout option in the login section
-			$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $template);
+			if($auth->isServerManager())
+			{
+				$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
+			}
+			else
+			{
+				$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $template);
+			}
 		}
 		// else show the login link
 		else
@@ -311,13 +327,22 @@
 			$auth = new AuthManager($_GET["provider"]);
 			$frm = $auth->requestlogin($cb_url);
 		}
-		if(!$auth) $auth = new AuthManager($cfg->settings["security"]["auth_method"]);
-		echo applyTemplate("./base.html", "./loginbase.html", array( "form" => $auth->requestlogin($cb_url)));
+		if(!$auth) $auth = new AuthManager();
+		if (array_key_exists("provider", $_SESSION))
+		{
+			echo applyTemplate("./base.html", "./loginbase.html", array( "form" => $auth->requestlogin($cb_url, $_SESSION["provider"])));
+		}
+		else
+		{
+			echo applyTemplate("./base.html", "./loginbase.html", array( "form" => $auth->requestlogin($cb_url)));
+		}	
+		
 	}
 	
 	function loginCallback()
 	{
-		global $auth, $cfg;
+		global $auth, $cfg, $db;
+		$db = new dbConnection();
 		if(!$auth) $auth = new AuthManager($cfg->settings["security"]["auth_method"]);
 		$auth->callback();
 	}
@@ -339,7 +364,6 @@
 		{
 			echo "No Auth";
 		}
-	
 	}
 		
 	function uploadHandlerFromExt()
@@ -413,12 +437,14 @@
 		
 		if(!$prj->isPublic && !$auth->isLoggedIn())
 		{
+			flash("The is a private project, please log in to view the project.");
 			loginHandler($url);
 			return;
 		}
 		else if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2)
 		{
-			echo "access denied";
+			flash("You do not have permission to view {$prj->name}.");
+			header("location: {$SITE_ROOT}");
 			return;
 		}
 		
@@ -452,7 +478,14 @@
 						
 						$imgName = $prj->image ? $prj->image : "images/projectPlaceholder.png";
 						
-						$imgSize = getimagesize($imgName);
+						if(file_exists($imgName))
+						{
+							$imgSize = getimagesize($imgName);
+						}
+						else
+						{
+							$imgSize = array(0,0);
+						}
 						
 						$vals =  array(
 							"projectName" => $prj->name,
@@ -512,7 +545,7 @@
 	function siteTest()
 	{
 		$res = array();
-		global $cfg;
+		global $cfg, $db;
 		
 		$doit = true;
 		if(!array_key_exists("database", $cfg->settings) || !array_key_exists("server", $cfg->settings["database"]) ||$cfg->settings["database"]["server"] == "")
@@ -638,7 +671,7 @@
 					}
 				}
 			}
-			
+		
 			if($db && $res["dbPermStatus"] == "succeed")
 			{
 				
@@ -708,7 +741,7 @@
 			$res["endMsg"] = ($res["endStatus"] == "fail" ? "The MySQL database is not ready, please correct the errors in red above and refresh this page. <a href = \"/test?edit=true\">Configuration tool</a>" : "You are now ready to create EpiCollect projects, place xml project definitions in {$_SERVER["PHP_SELF"]}/xml and visit the <a href=\"createProject.html\">create project</a> page");
 			echo applyTemplate("base.html", "testResults.html", $res);
 		}
-		else
+		elseif(!$db)
 		{
 			$arr = "{";
 			foreach($cfg->settings as $k => $v)
@@ -721,6 +754,11 @@
 			$arr = trim($arr, ",") . "}";
 			
 			echo applyTemplate("base.html", "setup.html", array("vals" => $arr));
+		}
+		else
+		{
+			global $SITE_ROOT;
+			//header("location: $SITE_ROOT/admin");
 		}
 	}
 	
@@ -742,7 +780,7 @@
 			return;
 		}
 		
-		$res = $db->do_query("SELECT name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName group by project.name");
+		$res = $db->do_query("SELECT name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name");
 		if($res !== true)
 		{
 			
@@ -1284,13 +1322,16 @@
 		$prj->name = substr($url, 0, $pNameEnd);
 		$prj->fetch();
 		
+		$permissionLevel = 0;
+		
+		if($auth->isLoggedIn()) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
 		
 		if(!$prj->isPublic && !$auth->isLoggedIn())
 		{
 			loginHandler($url);
 			return;
 		}
-		else if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2)
+		else if(!$prj->isPublic &&  $permissionLevel < 2)
 		{
 			echo "access denied";
 			return;
@@ -1514,7 +1555,7 @@
 					";
 					break;
 				default:
-					header("Cache-control: no-cache");
+					header("Cache-Control: no-cache, must-revalidate");
 					//TODO: xml get/add/update for forms/tables from the website
 					global $SITE_ROOT;
 					$referer = array_key_exists("HTTP_REFERER", $_SERVER) ? $_SERVER["HTTP_REFERER"] : "";
@@ -1545,7 +1586,7 @@
 					}
 					
 					$mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>" : "";
-					$vars = array("prevForm" => $p,"projectName" => $prj->name, "formName" => $frmName, "adder" => "true", "admin" =>  "true", "mapScript" => $mapScript );
+					$vars = array("prevForm" => $p,"projectName" => $prj->name, "formName" => $frmName, "curate" =>  $permissionLevel > 1 ? "true" : "false", "mapScript" => $mapScript );
 					echo applyTemplate("base.html", "./FormHome.html", $vars);
 					break;
 			}
@@ -1936,14 +1977,14 @@
 		}
 	}
 	
-	function userAdmin()
+	function admin()
 	{
 		
-		global $auth, $SITE_ROOT;
-		$auth->isLoggedIn();
-		if(!$auth->isServerManager())
+		global $auth, $SITE_ROOT, $cfg;
+		
+		if(count($auth->getServerManagers()) > 0 && $auth->isLoggedIn() && !$auth->isServerManager())
 		{
-			flash("You must be a server manager to manager the server.", "err");
+			flash("Configuration only available to server managers", "err");
 			
 			header("location: $SITE_ROOT/");
 			return;
@@ -1958,7 +1999,17 @@
 				$men = "<form method=\"POST\" action=\"user/manager\"><p>{$man["firstName"]} {$man["lastName"]} ({$man["Email"]})<input type=\"hidden\" name=\"email\" value=\"{$man["Email"]}\" /> <input type=\"submit\" name=\"remove\" value=\"Remove\" /></form></p>";
 			}
 			
-			echo applyTemplate("./base.html", "./userAdmin.html", array("serverManagers" => $men));
+			$arr = "{";
+			foreach($cfg->settings as $k => $v)
+			{
+				foreach($v as $sk => $sv)
+				{
+					$arr .= "\"{$k}\\\\{$sk}\" : \"$sv\",";
+				}
+			}
+			$arr = trim($arr, ",") . "}";
+			
+			echo applyTemplate("./base.html", "./userAdmin.html", array("serverManagers" => $men, "vals" => $arr));
 
 		}
 		else if($_SERVER["REQUEST_METHOD"] == "POST")
@@ -1969,15 +2020,25 @@
 	
 	function createUser()
 	{
-		global $auth, $SITE_ROOT;
+		global $auth, $SITE_ROOT, $cfg;
 		
 		header("Cache-Control: no-cache; must-revalidate;");
 		
-		if($auth->createUser($_POST["username"], $_POST["password"], $_POST["email"], $_POST["fname"], $_POST["lname"], $_POST["email"]))
+		if(!$cfg->settings["security"]["use_local"])
 		{
-			header("location: $SITE_ROOT/userAdmin.html");
-			return;
+			flash("This server is not configured to user Local Accounts", "err");
 		}
+		elseif($auth->createUser($_POST["username"], $_POST["password"], $_POST["email"], $_POST["fname"], $_POST["lname"], $_POST["email"]))
+		{
+			flash("User Added");
+		}
+		else 
+		{
+			flash("Could not create the user", "err");
+		}
+		
+		header("location: $SITE_ROOT/userAdmin.html");
+		return;
 	}
 	
 	function managerHandler()
@@ -2277,7 +2338,8 @@
 		foreach ($_POST as $k => $v)
 		{
 			$kp = explode("\\", $k);
-			$cfg->settings[$kp[0]][$kp[1]] = $v;
+			if(count($kp) > 1)
+				$cfg->settings[$kp[0]][$kp[1]] = $v;
 		}
 		
 		if(!array_key_exists("salt",$cfg->settings["security"]) || $cfg->settings["security"]["salt"] == "")
@@ -2288,7 +2350,7 @@
 			$cfg->settings["security"]["salt"] = $str;
 		}
 			
-		$cfg->writeConfig();
+		$cfg->writeConfig(); 
 		header("Cache-Control: no-cache, must-revalidate");
 		header("location: $SITE_ROOT/test?edit=true");
 	}
@@ -2388,7 +2450,7 @@
 		"saveUser" =>new PageRule(null, 'saveUser', true),
 		"user/manager/?" => new PageRule(null, 'managerHandler', true),
 		"user/.*@.*?" => new PageRule(null, 'userHandler', true),
-		"userAdmin" => new PageRule(null, 'userAdmin', true),
+		"admin" => new PageRule(null, 'admin', true),
 		
 		
 		//generic, dynamic handlers		
@@ -2415,7 +2477,7 @@
 		"uploadTest.html" => new PageRule(null, 'defaultHandler', true),
 		"test" => new PageRule(null, 'siteTest', false),
 		"createDB" => new PageRule(null, 'setupDB', true),
-		"writeSettings" => new PageRule(null, 'writeSettings', true)
+		"writeSettings" => new PageRule(null, 'writeSettings', count($auth->getServerManagers()) > 0)
 	);
 	
 	$d = new DateTime();
@@ -2446,36 +2508,20 @@
 		if($rule->login && !$auth->isLoggedIn())
 		{
 			header("Cache-Control: no-cache, must-revalidate");
-			if($cfg->settings["security"]["auth_method"] == "any")
-			{
-				
+			
 				if(array_key_exists("provider", $_GET))
 				{
 					$_SESSION["provider"] = $_GET["provider"];
-					$auth = new AuthManager($_GET["provider"]);
-					$frm = $auth->requestlogin($url);
-				}
-				elseif(array_key_exists("provider", $_SESSION))
-				{
-					$auth = new AuthManager($_SESSION["provider"]);
-					$frm = $auth->requestlogin($url);
+					$auth = new AuthManager();
+					$frm = $auth->requestlogin($url, $_GET["provider"]);
 				}
 				else
 				{
-					$frm =  "<p>Please Choose a Method to login</p><a class=\"provider\" href=\"$url?provider=OPENID\">Google/Gmail</a>";
-					if(array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "")
-					{
-						$frm .= "<a class=\"provider\" href=\"$url?provider=LDAP\">LDAP ({$cfg->settings["security"]["ldap_domain"]})</a>";
-					}
+					$auth = new AuthManager();
+					$frm = $auth->requestlogin($url);
 				}
 				echo applyTemplate("./base.html", "./loginbase.html", array( "form" => $frm));
-			}
-			else
-			{
-				echo applyTemplate("./base.html", "./loginbase.html", array( "form" => $auth->requestlogin($url)));
-			}
-			
-			return;
+				return;
 		}
 		if($rule->redirect)
 		{

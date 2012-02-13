@@ -514,7 +514,6 @@ var EcTable = function(conf)
 				}
 				else if (field.type == "gps" || field.type == "location")
 				{
-					this.hasGps = true;
 					this.gpsFlds.push(field.id);
 				}
 				else if (field.type == "branch")
@@ -532,7 +531,7 @@ var EcTable = function(conf)
 		//if(survey.getNextTable(this.name)) this.cols.push(survey.getNextTable(this.name).name + "Entries");
     }
 
-    this.getTable = function(loadData, filterField, filterValue)
+    this.getTable = function(curate)
     {
 		var cols = [];
 		var tBtns = [];
@@ -679,7 +678,9 @@ var EcTable = function(conf)
 			});
 		}
 	
-		tBtns = [{
+		tBtns = [];
+		
+		if(curate) tBtns.push({
 			//xtype: 'button',
 			id:'addEntry_' + this.name,
 			text: 'Add Entry',
@@ -767,8 +768,9 @@ var EcTable = function(conf)
 		},
 		{
 			xtype : 'tbseparator'
-		},
-		{
+		});
+		
+		tBtns.push({
 			xtype: 'tbtext',
 			text : 'Search for Entry by ID'
 		},
@@ -844,7 +846,7 @@ var EcTable = function(conf)
 				]
 			})
 		
-		}];
+		});
 		
 		var grid = new Ext.grid.GridPanel({
 			id: this.name + '_grid',
@@ -886,7 +888,7 @@ var EcTable = function(conf)
 		}, this)
 		
 		var pars = {start : 0, limit: 25, mode: 'list'};
-		pars[filterField] = filterValue;
+		//pars[filterField] = filterValue;
 		this.store.load({params: pars}); // change this one!!<<<<
 		
 		if(this.hasGps)

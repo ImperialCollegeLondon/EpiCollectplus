@@ -68,7 +68,7 @@
 				$("#session_length_base").val(
 						$("#session_length").val() / $("#session_length_mutiplier").val()				
 				);
-				var ldapvis = $("#auth_method").val() == "LDAP" ||$("#auth_method").val() == "any";
+				var ldapvis = $("#_LDAP").checked();
 				$(".ldap_option").toggle(ldapvis);
 				
 			}		
@@ -83,9 +83,9 @@
 			<h3>Security and Authentication</h3>
 			
 				<label for="security\auth_method">User Authentication Methods</label>
-				<p><input type="checkbox" id="_OPENID" />OpenID <input type="text" id="openid" name="security\use_openID" /></p>
-				<p><input type="checkbox" id="_LDAP" />LDAP (Windows Active Directory) <input type="text" id="ldap" name="security\use_ldap" /></p>
-				<p><input type="checkbox" id="_LOCAL" />Accounts defined within this server<input type="text" id="local" name="security\use_local" /></p>
+				<p><input type="checkbox" id="_OPENID" />OpenID <input type="hidden" id="openid" name="security\use_openID" /></p>
+				<p><input type="checkbox" id="_LDAP" />LDAP (Windows Active Directory) <input type="hidden" id="ldap" name="security\use_ldap" /></p>
+				<p><input type="checkbox" id="_LOCAL" />Accounts defined within this server<input type="hidden" id="local" name="security\use_local" /></p>
 			
 			<p class="formRow ldap_option"><label for="security\ldap_domain">LDAP Domain</label><input type="text" name="security\ldap_domain" /></p>
 			<p class="formRow ldap_option"><label for="security\ldap_ug">Active Directory Group (optional)</label><input type="text" name="security\ldap_ug" /></p>

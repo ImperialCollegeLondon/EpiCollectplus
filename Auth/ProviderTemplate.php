@@ -9,6 +9,10 @@
 		abstract public function getDetails();
 		public function getCredentialString()
 		{
+			if(is_string($this->data))
+			{
+				return $this->data;
+			}
 			if(function_exists("json_encode"))
 			{
 				return json_encode($this->data);

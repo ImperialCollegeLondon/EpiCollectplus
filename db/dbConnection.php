@@ -14,6 +14,7 @@
 		public function __construct($un = false, $pwd = false)
 		{
 			global $cfg;
+			
 			if($un)
 			{
 				$this->username = $un;
@@ -53,7 +54,7 @@
 			}
 			else
 			{
-				return "START TRANSACTION;\r\n" . $this->con->errno() . " : " . $this->con->error();
+				return "START TRANSACTION;\r\n" . $this->con->errno . " : " . $this->con->error;
 			}
 		}
 		
@@ -65,7 +66,7 @@
 			}
 			else
 			{
-				return "COMMIT;\r\n" . $this->con->errno() . " : " .$this->con->error();
+				return "COMMIT;\r\n" . $this->con->errno . " : " .$this->con->error;
 			}
 		}
 		
@@ -77,7 +78,7 @@
 			}
 			else
 			{
-				return "ROLLBACK;\r\n" . $this->con->errno() . " : " .$this->con->error();
+				return "ROLLBACK;\r\n" . $this->con->errno . " : " .$this->con->error;
 			}
 		}
 		
@@ -103,7 +104,7 @@
 			else
 			{
 				//echo $qry .  "\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
-				return $qry .  "\r\n" . $this->con->errno() . " : " .$this->con->error();
+				return $qry .  "\r\n" . $this->con->errno. " : " .$this->con->error;
 			}
 		}
 		
@@ -118,7 +119,7 @@
 			else
 			{
 				//echo $qry .  "\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
-				return $qry .  "\r\n" . $this->con->errno() . " : " .$this->con->error();
+				return $qry .  "\r\n" . $this->con->errno . " : " .$this->con->error;
 			}
 		}
 		
@@ -146,7 +147,7 @@
 			}
 			else
 			{
-				return $qry . "\r\n" .$this->con->errno() . " : " . $this->con->error();
+				return $qry . "\r\n" .$this->con->errno . " : " . $this->con->error;
 			}
 			
 		}

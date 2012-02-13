@@ -46,7 +46,7 @@
 		
 		public function toXML()
 		{
-			$xml = "\n\t<form num=\"{$this->number}\" name=\"{$this->name}\" key=\"{$this->key}\" main=\"{$this->isMain}\"> ";
+			$xml = "\n\t<form num=\"{$this->number}\" name=\"{$this->name}\" key=\"{$this->key}\" main=\"". ($this->isMain ? "true" : "false")."\"> ";
 			foreach($this->fields as $fld)
 			{
 				$xml .= $fld->toXML();
@@ -106,6 +106,7 @@
 					$this->name = $arr["name"];
 					$this->number = $arr["table_num"];
 					$this->version = $arr["version"];
+					$this->isMain = $arr["isMain"] == "1";
 				}
 				
 			}
@@ -472,7 +473,7 @@
 			global $db;// = new dbConnection();
 			
 			$db->beginTransaction();
-			$sql = "UPDATE form set version = {$this->version}, name = '{$this->name}', keyField = '{$this->key}', main = " . ($this->isMain ? 1 : 0) . " WHERE project = {$this->survey->id} AND table_num = {$this->number};";
+			$sql = "UPDATE form set version = {$this->version}, name = '{$this->name}', keyField = '{$this->key}', isMain = " . ($this->isMain ? 1 : 0) . " WHERE project = {$this->survey->id} AND table_num = {$this->number};";
 			$res = $db->do_query($sql);
 			if($res !== true){
 				$db->rollbackTransaction();

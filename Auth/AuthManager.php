@@ -53,6 +53,9 @@
   	function requestlogin($requestedUrl, $provider = "")
   	{
   		global $cfg;
+  		
+  		$provider = strtoupper($provider);
+  		
   		$_SESSION["url"] = $requestedUrl;
   		if($provider != "" && array_key_exists($provider, $this->providers))
   		{
@@ -61,8 +64,10 @@
   		else
   		{
   			global $url;
-  			$frm =  "<p>Please Choose a Method to login</p><a class=\"provider\" href=\"$url?provider=local\">EpiCollect Account</a><a class=\"provider\" href=\"$url?provider=OPENID\">Google/Gmail</a>";
-			if(array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "")
+  			$frm =  "<p>Please Choose a Method to login</p>";
+  			if($this->localEnabled)$frm .= "<a class=\"provider\" href=\"$url?provider=LOCAL\">EpiCollect Account</a>";
+  			if($this->openIdEnabled) $frm .= "<a class=\"provider\" href=\"$url?provider=OPENID\">Google/Gmail</a>";
+			if($this->ldapEnabled && array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "")
 			{
 					$frm .= "<a class=\"provider\" href=\"$url?provider=LDAP\">LDAP ({$cfg->settings["security"]["ldap_domain"]})</a>";
 			}
@@ -73,17 +78,24 @@
   
   	function callback($provider = "")
   	{
-  		global  $cfg;
+  		global  $cfg, $db;
   		
-  		if(!array_key_exists($provider, $this->providers)) return false;
+  		if(array_key_exists("provider", $_SESSION))
+  		{
+  			$provider = $_SESSION["provider"];
+  		}
   		
-  		$db = new dbConnection();
+  		if(!array_key_exists($provider, $this->providers)) {
+  			return false;
+  			//echo "provider error";
+  		}
+  		  		
   		$res = $this->providers[$provider]->callback();
+  		//echo "***$res***";
   		if($res === true)
   		{
   			$uid = false;
-  			$sql = "SELECT idUsers FROM user where details = '" . $this->provider->getCredentialString() . "'";
-  		  	
+  			$sql = "SELECT idUsers FROM user where details = '" . $this->providers[$provider]->getCredentialString() . "'";
   			$res = $db->do_query($sql);
   			if($res !== true) die($res . "\n" . $sql);
   			while($arr = $db->get_row_array())
@@ -92,7 +104,7 @@
   			}
   			if(!$uid)
   			{
-  				$sql = "INSERT INTO user (FirstName, LastName, Email, details, language) VALUES ('{$this->provider->firstName}','{$this->provider->lastName}','{$this->provider->email}','" . $this->provider->getCredentialString() . "','{$this->provider->language}')";
+  				$sql = "INSERT INTO user (FirstName, LastName, Email, details, language) VALUES ('{$this->firstName}','{$this->lastName}','{$this->email}','" . $this->getCredentialString() . "','{$this->language}')";
   				$db->do_query($sql);
   				$uid = $db->last_id();
   			}
@@ -102,24 +114,31 @@
   			$sql = "INSERT INTO ecsession (id, user, expires) VALUES ('" . session_id() . "', $uid, " . $dat->getTimestamp() . ");";
   			
   			$res = $db->do_query($sql);
-  			if($res !== true) die($res . "\n" . $sql);
+  			if($res !== true && !preg_match("/Duplicate Key/i", $res)) die($res . "\n" . $sql);
   			header("location: {$_SESSION["url"]}");
   		}
   		else
   		{
-  			echo $res;
+  			flash("Login failed, please try again");
+  			header("location: {$_SERVER["REQUEST_URI"]}");
   		}
   	}
   	
   	function logout($provider = "")
   	{
-  		if(!array_key_exists($provider, $this->providers)) return false;
+  		//if(!array_key_exists($provider, $this->providers)) return false;
+  		global $db;
+  		if(!$db) $db = new dbConnection();
+  		  		
+  		$res = $db->do_query("DELETE FROM ecsession WHERE id = '" . session_id() . "'");
+  		if(!$res) die("$res - $sql");
+  		
   		$params = session_get_cookie_params();
 	    setcookie(session_name(), '', time() - 42000,
 	        $params["path"], $params["domain"],
 	        $params["secure"], $params["httponly"]
 	    );
-  		$this->providers[$provider]->logout();
+  		//$this->providers[$provider]->logout();
 
   	}
   
@@ -193,17 +212,27 @@
   	function getServerManagers()
   	{
   		global $db;
-  		
-  		$qry = "SELECT firstName, lastName, Email FROM User WHERE serverManager = 1";
-  		$res = $db->do_query($qry);
-  		if($db->do_query($qry) !== true) die("$res");
-  		
-  		$men = array();
-  		while($arr = $db->get_row_array())
-  		{
-  			array_push($men, $arr);
+  		try{
+  			$men = array();
+  			if($db)
+  			{
+		  		$qry = "SELECT firstName, lastName, Email FROM User WHERE serverManager = 1";
+		  		$res = $db->do_query($qry);
+		  		if($db->do_query($qry) !== true) die("$res");
+		  		
+		  		
+		  		while($arr = $db->get_row_array())
+		  		{
+		  			array_push($men, $arr);
+		  		}
+  			}
+  			
+	  		return $men;
   		}
-  		return $men;
+	  	catch(ErrorException $err)
+	  	{
+	  		return array();
+	  	}
   	}
   	
   	private function populateSesssionInfo()
@@ -227,7 +256,7 @@
 	  {
 	  	if($this->localEnabled)
 	  	{
-	  	 	return $this->provider->createUser($username, $pass, $email, $firstName, $lastName, $language);
+	  	 	return $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language);
 	  	}
 	  	else
 	  	{
