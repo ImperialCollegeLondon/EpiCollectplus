@@ -10,6 +10,7 @@
 	public $firstName;
 	public $lastName;
 	public $email;
+	public $language = "en";
 	
 	private $openIdEnabled = true;
 	private $ldapEnabled = true;
@@ -96,6 +97,12 @@
   		{
   			$uid = false;
   			$sql = "SELECT idUsers FROM user where details = '" . $this->providers[$provider]->getCredentialString() . "'";
+  			
+  			$this->firstName = $this->providers[$provider]->firstName;
+  			$this->lastName = $this->providers[$provider]->lastName;
+  			$this->email = $this->providers[$provider]->email;
+  			$this->language = $this->providers[$provider]->language;
+  			
   			$res = $db->do_query($sql);
   			if($res !== true) die($res . "\n" . $sql);
   			while($arr = $db->get_row_array())
@@ -104,9 +111,11 @@
   			}
   			if(!$uid)
   			{
-  				$sql = "INSERT INTO user (FirstName, LastName, Email, details, language) VALUES ('{$this->firstName}','{$this->lastName}','{$this->email}','" . $this->getCredentialString() . "','{$this->language}')";
-  				$db->do_query($sql);
+  				$sql = "INSERT INTO user (FirstName, LastName, Email, details, language, serverManager) VALUES ('{$this->firstName}','{$this->lastName}','{$this->email}','" . $this->providers[$provider]->getCredentialString() . "','{$this->language}', " . (count($this->getServerManagers()) == 0) . ")";
+  				$res = $db->do_query($sql);
+  				if($res !== true) die($res);
   				$uid = $db->last_id();
+  				if(!$uid) die("user creation failed $sql");
   			}
   			
   			$dat = new DateTime();
@@ -160,7 +169,7 @@
   		$dat = new DateTime();
   		$qry = "DELETE FROM ecsession WHERE expires < ". $dat->getTimestamp();
   		$res = $db->do_query($qry);
-  		if($res !== true) die($res . "\n" . $sql);
+  		if($res !== true) return false;
   		
   		$this->user = false;
   		

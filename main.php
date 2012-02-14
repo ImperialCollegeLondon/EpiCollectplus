@@ -98,7 +98,7 @@
 		
 	}
 	
-	function setupDb()
+	function setupDB()
 	{
 		global $cfg, $auth;
 		
@@ -147,7 +147,8 @@
 				}
 			}
 		}
-		siteHome();
+		flash("Please sign in to register as the first administartor of this server. $res");
+		loginHandler();
 	}
 	
 	function assocToDelimStr($arr, $delim)
@@ -1996,7 +1997,7 @@
 			$men = "";
 			foreach($mans as $man)
 			{
-				$men = "<form method=\"POST\" action=\"user/manager\"><p>{$man["firstName"]} {$man["lastName"]} ({$man["Email"]})<input type=\"hidden\" name=\"email\" value=\"{$man["Email"]}\" /> <input type=\"submit\" name=\"remove\" value=\"Remove\" /></form></p>";
+				$men = "<form method=\"POST\" action=\"user/manager\"><p>{$man["firstName"]} {$man["lastName"]} ({$man["Email"]})<input type=\"hidden\" name=\"email\" value=\"{$man["Email"]}\" />" .($auth->getUserEmail() == $man["Email"] ? "" : "<input type=\"submit\" name=\"remove\" value=\"Remove\" />" ) ."</form></p>";
 			}
 			
 			$arr = "{";
@@ -2037,7 +2038,7 @@
 			flash("Could not create the user", "err");
 		}
 		
-		header("location: $SITE_ROOT/userAdmin.html");
+		header("location: $SITE_ROOT/admin.html");
 		return;
 	}
 	
@@ -2071,7 +2072,7 @@
 		}
 		
 		
-		header("location: {$SITE_ROOT}/userAdmin#manage");
+		header("location: {$SITE_ROOT}/admin#manage");
 	}
 	
 	function createProject()
@@ -2476,7 +2477,7 @@
 		//forTesting
 		"uploadTest.html" => new PageRule(null, 'defaultHandler', true),
 		"test" => new PageRule(null, 'siteTest', false),
-		"createDB" => new PageRule(null, 'setupDB', true),
+		"createDB" => new PageRule(null, 'setupDB',  count($auth->getServerManagers()) > 0),
 		"writeSettings" => new PageRule(null, 'writeSettings', count($auth->getServerManagers()) > 0)
 	);
 	
