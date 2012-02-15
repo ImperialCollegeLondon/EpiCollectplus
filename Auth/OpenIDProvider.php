@@ -7,7 +7,7 @@
 	
 		public function __construct($url)
 		{
-			$this->openid = new LightOpenID($url);
+			$this->openid = new LightOpenID;
 			$this->openid->identity = array_key_exists("openid", $_SESSION) ? $_SESSION["openid"] : "";
 			$this->openid->required = array('namePerson/first', 'namePerson/last', 'contact/email', 'contact/country/home', 'pref/language');
 		}
