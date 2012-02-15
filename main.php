@@ -63,7 +63,7 @@
 	
 	$cfg = new ConfigManager("ec/epicollect.ini");
 
-	if(!ldap_connect)
+	if(!function_exists("ldap_connect"))
 	{
 		$cfg->settings["security"]["use_ldap"] = false;
 	}
