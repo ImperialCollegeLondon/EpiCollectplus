@@ -128,8 +128,8 @@
   		}
   		else
   		{
-  			flash("Login failed, please try again");
-  			header("location: {$_SERVER["REQUEST_URI"]}");
+  			flash("Login failed, please try again ($res)");
+  			header("location: {$_SESSION["url"]}");
   		}
   	}
   	

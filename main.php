@@ -10,6 +10,19 @@
 	
 	@session_start();
 	
+	function getValIfExists($array, $key)
+	{
+		if(array_key_exists($key, $array))
+		{
+			return $array[$key];
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	
 	if(preg_match("/main.php/", $_SERVER["SCRIPT_NAME"]))
 	{
 		//IIS
@@ -27,7 +40,6 @@
 	include ("./Auth/AuthManager.php");
 	include './db/dbConnection.php';
 
-	
 	$url = preg_replace("/\\$SITE_ROOT\/|\?.*$/i", "", (array_key_exists("REQUEST_URI", $_SERVER) ? $_SERVER["REQUEST_URI"] : $_SERVER["HTTP_X_ORIGINAL_URL"])); //strip off site root and GET query
 	$url = rtrim($url, "/");
 	$url = urldecode($url);
@@ -180,6 +192,8 @@
 		$template = file_get_contents("./html/$baseUri");
 		$templateVars["SITE_ROOT"] = ltrim($SITE_ROOT, "\\");
 		$templateVars["uid"] = md5($_SERVER["HTTP_HOST"]);
+		
+		
 		// Is there a user logged in?
 	
 		$flashes = "";
@@ -206,6 +220,7 @@
 			{
 				$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $template);
 			}
+			$templateVars["userEmail"] = $auth->getUserEmail();
 		}
 		// else show the login link
 		else
@@ -325,7 +340,7 @@
 		if(array_key_exists("provider", $_GET))
 		{
 			$_SESSION["provider"] = $_GET["provider"];
-			$auth = new AuthManager($_GET["provider"]);
+			$auth = new AuthManager();
 			$frm = $auth->requestlogin($cb_url);
 		}
 		if(!$auth) $auth = new AuthManager();
@@ -342,6 +357,8 @@
 	
 	function loginCallback()
 	{
+		header("Cache-Control: no-cache, must-revalidate");
+		
 		global $auth, $cfg, $db;
 		$db = new dbConnection();
 		if(!$auth) $auth = new AuthManager($cfg->settings["security"]["auth_method"]);
@@ -802,11 +819,11 @@
 		
 		if($i == 0)
 		{
-			$vals["projects"] = "<p>No projects exist on this server put the project definition in the <b>xml</b> folder and then <a href=\"createProject.html	\">create a project</a></p>";
+			$vals["projects"] = "<p>No projects exist on this server, <a href=\"createProject.html	\">create a new project</a></p>";
 		}
 		else
 		{
-			
+			$vals["projects"] .= "<p style=\"margin-top:1.2em;\"> <a href=\"createProject.html	\">create a new project</a></p>";
 		}
 		
 		echo applyTemplate("base.html","./index.html",$vals);
@@ -1692,6 +1709,9 @@
 		global $SITE_ROOT;
 		
 		$prj = new EcProject();
+		
+		if(!file_exists("ec/xml")) mkdir("ec/xml");
+		
 		$newfn = "ec/xml/" . $_FILES["projectXML"]["name"];
 		move_uploaded_file($_FILES["projectXML"]["tmp_name"], $newfn);
 		$prj->parse(file_get_contents($newfn));
@@ -1716,11 +1736,18 @@
 		global $url, $SITE_ROOT;
 		
 		$prj = new EcProject();
-		$xmlFn = "ec/xml/{$_GET["xml"]}";
+		$xmlFn = "ec/xml/{$_REQUEST["xml"]}";
 		
 		$prj->parse(file_get_contents($xmlFn));
-		
+		$prj->isListed = $_REQUEST["listed"] == "true";
+		$prj->isPublic = $_REQUEST["public"] == "true";
+		$prj->publicSubmission = true;
 		$res = $prj->post();
+		
+		$prj->setManagers($_POST["managers"]);
+		$prj->setCurators($_POST["curators"]);
+		// TODO : add submitter $prj->setProjectPermissions($submitters,1);
+		
 		if($res === true)
 		{
 			$server = trim($_SERVER["HTTP_HOST"], "/");
@@ -1737,7 +1764,7 @@
 	function listXml()
 	{
 		//List XML files
-		
+		if(!file_exists("ec/xml")) mkdir("ec/xml");
 		$h = opendir("ec/xml");
 		$tbl =  "<table id=\"projectTable\"><tr><th>File</th><th>Validation Result</th><th>Create</th><td>&nbsp;</td></tr>";
 		$n = "";
@@ -1770,11 +1797,17 @@
 		{
 			move_uploaded_file($_FILES["xml"]["tmp_name"], "ec/xml/{$_FILES["xml"]["name"]}");
 		}
-		
-		$vals = array();
-		$vals["xmlFolder"] = getcwd() . "/xml";
-		$vals["projects"] = listXML();
-		echo applyTemplate("base.html","create.html", $vals);
+		if(getValIfExists($_REQUEST, "json"))
+		{
+			echo validate("{$_FILES["xml"]["name"]}"); 
+		}
+		else 
+		{
+			$vals = array();
+			$vals["xmlFolder"] = getcwd() . "/xml";
+			$vals["projects"] = listXML();
+			echo applyTemplate("base.html","create.html", $vals);
+		}
 	}
 	
 	function validate($fn = false, &$name = null)
@@ -1928,53 +1961,13 @@
 			}
 		}
 		$name = $prj->name;
-		return count($msgs) == 0 ? true : "<ol><li>" . implode("</li><li>", $msgs) . "</li></ol>";
-	}
-	
-	function uploadProjectXMLUpdate()
-	{
-		global $SITE_ROOT,  $url;
-		
-		//get project details
-		$prj = new EcProject();
-		if(array_key_exists ( "name" ,  $_GET)) $prj->name = $_GET["name"];
-		else
+		if(getValIfExists($_POST, "json"))
 		{
-			$pNameEnd = strpos($url, "/");
-			$prj->name = substr($url, 0, $pNameEnd);
-		};
-		
-		$prj->fetch();
-	
-		$uId = $auth->getEcUserId();
-		$uLvl = $uId ? $prj->checkPermission($uId) : 0;
-		if($uLvl == 3)		
-		{
-			$newfn = "ec/uploads/xml/" . $_FILES["projectXML"]["name"];
-			move_uploaded_file($_FILES["projectXML"]["tmp_name"], $newfn);
-			$prj->parse(file_get_contents($newfn));
-			
-			$pNameEnd = strpos($url, "/");
-			$prj->name = substr($url, 0, $pNameEnd);
-			
-			$res = $prj->push();
-			if($res === true)
-			{
-				$server = trim($_SERVER["HTTP_HOST"], "/");
-				$root = trim($SITE_ROOT, "/");
-				header("location: http://$server/$root/editProject.html?name={$prj->name}");
-				return;
-			}
-			else
-			{
-				$vals = array("error" => $res);
-				echo applyTemplate("./base.html","./error.html",$vals);
-			}
+			echo "{\"valid\" : " . (count($msgs) == 0 ? "true" : "false") . ", \"msgs\" : [ \"" .implode("\",\"", $msgs)  . "\" ], \"name\" : \"$name\", \"file\" :\"$fn\" }";	
 		}
 		else
 		{
-			echo applyTemplate("./base.html","./error.html",array("error" => "You do not have permission to update this project"));
-			return;
+			return count($msgs) == 0 ? true : "<ol><li>" . implode("</li><li>", $msgs) . "</li></ol>";
 		}
 	}
 	
@@ -2082,83 +2075,85 @@
 		header("Cache-Control: no-cache, must-revalidate");
 		
 		$vals =  array(
-			"title" =>  "Create Project", 
-			"projectId" => "",
-			"projectName" => "",
-			"projectDescription" => "",
-			"projectImage" => "",
-			"projectIsPublic" => "1",
-			"projectIsListed" => "1",
-			"projectPublicSubmission" =>"1",
-			"projectAdmins" => "['{$_SESSION["Email"]}', true]",
-			"projectUsers" => "",
-			"projectSubmitters" => "",
-			"xmlUrl" => "/uploadProject"
+			
 		);
 		
 		echo applyTemplate("./base.html","./createProject.html",$vals);
 	
 	}
 	
-	
-	function editProject()
+	function updateProject()
 	{
 		global  $url, $auth;
 		
-		//get project details
+		$pNameEnd = strrpos($url, "/");
+		$oldName = substr($url, 0, $pNameEnd);
 		$prj = new EcProject();
-		if(array_key_exists ( "name" ,  $_GET)) $prj->name = $_GET["name"];
+		$prj->name = $oldName;
+		$prj->fetch();
+		
+		if($prj->checkPermission($auth->getEcUserId()) < 3)
+		{
+			header("Cache-Control: no-cache; must-revalidate;");
+			flash ("You do not have permission to manage this project", "err");
+			$url = str_replace("update", "", $url);
+			header("location: {$SITE_ROOT}/$url");
+		}
 		else
 		{
-			$pNameEnd = strpos($url, "/");
-			$prj->name = substr($url, 0, $pNameEnd);
-		}
-		
-		$vals = array();
-		
-		try{
-			$prj->fetch();
-			$auth->isLoggedIn();
-			$uId = $auth->getEcUserId();
-			$uLvl = $uId ? $prj->checkPermission($uId) : 0;
-			if($uLvl == 3) //if the user is a project administator
+			header("Cache-Control: no-cache; must-revalidate;");
+			if($_SERVER["REQUEST_METHOD"] == "POST")
 			{
-				$admins = "";
-				foreach($prj->getAdmins() as $adm) $admins .= "['$adm', true],";
-				$users = "";
-				foreach($prj->getUsers() as $usr) $users .= "['$usr', true],";
-				$submitters = "";
-				foreach($prj->getSubmitters() as $sub) $submitters .= "['$sub', true],";
-				$vals =  array(
-					"title" =>  "Update {$prj->name}", 
-					"projectId" => $prj->id,
-					"projectName" => $prj->name,
-					"projectDescription" => str_replace("\"", "\\\"", $prj->description),
-					"projectImage" => $prj->image,
-					"projectIsPublic" => $prj->isPublic,
-					"projectIsListed" => $prj->isListed,
-					"projectPublicSubmission" => $prj->publicSubmission,
-					"projectAdmins" => rtrim($admins, ","),
-					"projectUsers" => rtrim($users, ","),
-					"projectSubmitters" => rtrim($submitters, ","),
-					"xmlUrl" => $prj->name . "/updateProject"
-				);
-				
-				echo applyTemplate("./base.html","./createProject.html",$vals);
+			 	$xml = getValIfExists($_POST, "xml");
+			 	$managers = getValIfExists($_POST, "managers");
+			 	$curators = getValIfExists($_POST, "curators");
+			 	$public = getValIfExists($_POST, "public");
+			 	$listed = getValIfExists($_POST, "listed");
+
+			 	$drty = false;
+			 	if($xml)
+			 	{
+			 		$prj->parse($xml);
+			 		$drty = true;
+			 	}
+			 	if($public !== false)
+			 	{
+			 		$prj->isPublic = $public === "true";
+			 		$drty = true;
+			 	}
+			 	if($listed !== false)
+			 	{
+			 		$prj->isListed = $listed === "true";
+			 		$drty = true;
+			 	}
+			 	if($drty)
+			 	{
+			 		$prj->publicSubmission = true;
+			 		$prj->put($oldName);
+			 	}
+			 	if($curators) $prj->setCurators($curators);
+			 	if($managers) $prj->setManagers($managers);
+			 	
 			}
 			else
 			{
-				echo applyTemplate("./base.html","./error.html",array("error" => "You do not have permission to update this project"));
-				return;
+				$managers = $prj->getManagers();
+				if(is_array($managers))
+				{
+					$managers = implode(",", $managers);
+				}else{print($managers);}
+				
+				$curators = $prj->getCurators();
+				if(is_array($curators))
+				{
+					$curators = implode(",", $curators);
+				}else{print($curators);}
+				
+				echo applyTemplate("./base.html", "./updateProject.html", array("projectName" => $prj->name, "managers" => $managers, "curators" => $curators, "public" => $prj->isPublic, "listed" => $prj->isListed ));	
 			}
-		}
-		catch(Exception $e)
-		{
-			
-			$vals = array("error" => $e);
-			echo applyTemplate("./base.html","./error.html",$vals);
-		}
+		} 
 	}
+	
 	
 	function formBuilder()
 	{
@@ -2427,13 +2422,15 @@
 		"Ext/.+" => new PageRule(),
 		"js/.+" => new PageRule(),
 		"css/.+" => new PageRule(),
-		"EpiCollect2.js" => new PageRule(),
+		
+		"html/projectIFrame.html" => new PageRule(),
 		
 		//project handlers		
 		"createProject.html" => new PageRule(null, 'projectCreator', true),
 		"create" => new PageRule(null, 'createFromXml', true),
+		"p" => new PageRule(null, 'createProject', true),
 		"projectHome.html" => new PageRule(null, 'projectHome'),
-		"editProject.html" => new PageRule(null, 'editProject'),
+		
 		"createOrEditForm.html" => new PageRule(null ,'defaultHandler', true),
 		"uploadProject" =>new PageRule(null, 'uploadProjectXML', true),
 		"getForm" => new PageRule(null, 'getXML',	 true),
@@ -2467,7 +2464,8 @@
 		"[a-zA-Z0-9_-]*/summary" =>new PageRule(null, 'projectSummary'),
 		"[a-zA-Z0-9_-]*/usage" =>  new PageRule(null, 'projectUsage'),
 		"[a-zA-Z0-9_-]*/formBuilder(\.html)?" =>  new PageRule(null, 'formBuilder'),
-		"[a-zA-Z0-9_-]*/updateProject" =>new PageRule(null, 'uploadProjectXMLUpdate', true),
+		
+		"[a-zA-Z0-9_-]*/update" =>new PageRule(null, 'updateProject', true),
 		"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/uploadMedia" =>new PageRule(null, 'uploadMedia'),
 		"[a-zA-Z0-9_-]*/editProject.html" =>new PageRule(null, 'editProject', true),
 		"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*(\.xml|\.json|\.tsv|\.csv|\.js|\.css|/)?" => new PageRule(null, 'formHandler'),
@@ -2546,7 +2544,7 @@
 	{
 		
 		$parts = explode("/", $url);	
-		echo applyTemplate("./base.html", "./404.html");
+		echo applyTemplate("./base.html", "./error.html");
 	}
 	
 	$d = new DateTime();

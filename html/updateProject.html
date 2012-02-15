@@ -55,15 +55,30 @@
   	var listOpts;
   	var curEmail = "{#userEmail#}";
   	
+  	var curators = "{#curators#}".split(",");
+  	var managers = "{#managers#}".split(",");
+  	var projectName = "{#projectName#}"
+  	var isPublic = {#public#};
+  	var isListed = {#listed#};
+  	
   	$(function(){
+  		$(".projectName").text(projectName);
+  		
   		publicOpts = $('#public').buttonset();
   		listOpts = $('#listed').buttonset();
   		$('.panelSwitcher, .button').button();
-		$('#pdNext').button("disable");
-		
-		$('#s_managers tbody').append("<tr><td>" + curEmail + "</td></tr>");
-		$('#managers').val(curEmail);
+  		
+  		for(var i = 0; i < curators.length; i++)
+  		{
+  			addUser("curators", curators[i]);
+  		}
+  		
+  		for(var i = 0; i < managers.length; i++)
+  		{
+  			addUser("managers", managers[i]);
+  		}
  		
+		$('form').tabs();
 		
 		$('#uploadxml').load(function(){
 			if($('#uploadxml')[0].contentDocument.forms[0])
@@ -99,7 +114,7 @@
 	  		});
 		})
   		
-  		goTo('projectDef');
+  		//goTo('projectDef');
 		
 		
   	});
@@ -114,15 +129,19 @@
   	{
   		if(email.match(/^[A-Z0-9\._%+-]+@[A-Z0-9\.-]+\.[A-Z]{2,4}$/i))
   		{
+  			var rm = "";
+  			
   			if(!$("#" + uType).val().match(new RegExp(email, "i")))
   			{
-  				$("#s_" + uType + " tbody").append("<tr><td>" + email + "</td><td><a class=\"remove\" href=\"javascript:removeUser('" + uType + "','" + email + "')\">Remove</a></td></tr>");
+  				if(email != curEmail) rm = "<a class=\"remove\" href=\"javascript:removeUser('" + uType + "','" + email + "')\">Remove</a>";
+  				$("#s_" + uType + " tbody").append("<tr><td>" + email + "</td><td>"  + rm + "</td></tr>");
   			}
   			updateUField(uType);
+  			
   		}
   		else
   		{
-  			$('#message').empty().append("<p class=\"flash err\">" + uType + " must be added using their email address, <em>" + email+ "</em> is not an email address</p>")	
+  			$('#message').empty().append("<p class=\"flash err\">" + uType + " must be added using their email address, <em>" + email+ "</em> is not an email address</p>");
   		}
   	}
   	
@@ -146,6 +165,26 @@
   		});
   	}
   	
+  	function showMessage(msg, type)
+  	{
+  		$('#message').empty().append("<p class=\"flash " + type + "\">" + msg + "</p>");
+  	}
+  	
+  	function save()
+  	{
+  		$.ajax({
+  			url : location.href,
+  			type : 'POST',
+  			data : $('form').serialize(),
+  			success: function(data, status, xhr){
+  				showMessage("Project updates saved", "go");  				
+  			},
+  			error : function(xhr, status, err){
+  				showMessage("Project update failed", "err");		  				
+  			}
+  		});
+  	}
+  	
   </script>
 {{/script}}
 {{breadcrumbs}}
@@ -155,13 +194,20 @@
 	  <h1 id="title">Create a Project - <span class="projectName"></span></h1>
 	  <div id="message"></div>
 	  <form id="projectOptions" action="create" method="POST">
+	  		<ul>
+	  			<li><a href="#projectDef">Project Definition</a></li>
+	  			<li><a href="#visibility">Visibility</a></li>
+	  			<li><a href="#listing">Listing</a></li>
+	  			<li><a href="#s_managers">Managers</a></li>
+	  			<li><a href="#s_curators">Curators</a></li>
+	  		</ul>
 		  	<section id="projectDef">
 			  	<h2>1. Project Definition</h2>
 			  	<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
 		  		<div id="uploadStatus" class="flash"></div>
 		 		<input type="hidden" name="xml"/>
-		 		<br/>
-		 		<a class="panelSwitcher" id="pdNext" href="javascript:goTo('visibility');"> Continue </a>
+		 		<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
+		 		
 	 		</section>
 		 	<section id="visibility">
 				<h2>2. Visibility</h2>
@@ -170,9 +216,7 @@
 					<input type="radio" name="public" id="isPublic" value="true" checked="checked"/><label for="isPublic">I would like anyone to be able <br />to view the data in this project.</label>
 					<input type="radio" name="public" id="isPrivate" value="false" /><label for="isPrivate">I only want people I specify to be able<br /> to view the data in this project.</label>
 				</div>
-				<br/>
-				<a class="panelSwitcher" href="javascript:goTo('listing');"> Continue </a>	
-				<a class="panelSwitcher" href="javascript:goTo('projectDef');"> Back </a>
+				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 				
 			</section>
 			<section id="listing">
@@ -182,9 +226,7 @@
 					<input type="radio" name="listed" id="isListed" value="true" checked="checked" /><label for="isListed">I would like this project to appear <br />on the list on the homepage of this server.</label>
 					<input type="radio" name="listed" id="notListed" value="false" /><label for="notListed">I would not like this project to appear <br />on the list on the homepage of this server.</label>
 				</div>
-				<br/>
-				<a class="panelSwitcher" href="javascript:goTo('s_managers');"> Continue </a>	
-				<a class="panelSwitcher" href="javascript:goTo('visibility');"> Back </a>
+				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 			</section>
 			<section id="s_managers">
 				<h2>4. Project Managers</h2>
@@ -199,9 +241,7 @@
 				</table>
 				<label for="newmanager">Enter the email address for the manager you wish to add </label><input type="email" id="newmanager" /><a class="button" href="javascript:addUser('managers', $('#newmanager').val())">Add manager</a>
 				<input type="hidden" name="managers" id="managers"/>
-				<br/>
-				<a class="panelSwitcher" href="javascript:goTo('s_curators');"> Continue </a>	
-				<a class="panelSwitcher" href="javascript:goTo('listing');"> Back </a>
+				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 			</section>
 			<section id="s_curators">
 				<h2>5. Project Curators</h2>
@@ -216,10 +256,9 @@
 				</table>
 				<label for="newcurator">Enter the email address for the curator you wish to add </label><input type="email" id="newcurator" /><a class="button" href="javascript:addUser('curators', $('#newcurator').val())">Add curator</a>
 				<input type="hidden" name="curators" id="curators"/>
-				<br/>
-				<a class="panelSwitcher" href="javascript:document.forms[0].submit();"> Create Project </a>	
-				<a class="panelSwitcher" href="javascript:goTo('s_managers');"> Back </a>
+				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 			</section>
+			
 	</form>
   
 {{/main}}

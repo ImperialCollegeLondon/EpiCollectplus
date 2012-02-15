@@ -264,9 +264,15 @@ class EcProject{
 		{
 			$db = new dbConnection();
 			$res = $db->exec_sp("checkProjectPermission", array($uid?$uid:0, $this->id));
-			if($res !== true) echo $res;
-			$obj = $db->get_row_object();
-			return $obj ? $obj->role : $this->isPublic;
+			if($res !== true) die($res);
+			if($obj = $db->get_row_object()) // if no one has any permissions on the project
+			{
+				return $obj->role;
+			}
+			else 
+			{
+				return 3;
+			}
 		}
 		
 		public function getNextTable($tblName, $mainOnly)
@@ -389,26 +395,26 @@ class EcProject{
 				}
 		}
 		
-		public function setAdmins($emails)
+		public function setManagers($emails)
 		{
 				return $this->setPermission($emails, 3);
 		}
 		
-		public function setUsers($emails)
+		public function setCurators($emails)
 		{
-				return $this->setPermission($emais, 2);
+				return $this->setPermission($emails, 2);
 		}
 		
 		public function setSubmitters($emails)
 		{
 				return $this->setPermission($emails, 1);
 		}
-		public function getAdmins()
+		public function getManagers()
 		{
 				return $this->getPermission(3);
 		}
 		
-		public function getUsers()
+		public function getCurators()
 		{
 				return $this->getPermission(2);
 		}
@@ -421,8 +427,8 @@ class EcProject{
 		{
 			global $auth;
 			$db=new dbConnection();
-//			$uid = (int) $auth->getEcUserId();
-			$res = $db->do_query("INSERT INTO project(name, submission_id, description, image, isPublic, isListed, publicSubmission, uploadToLocalServer, downloadFromLocalServer) VALUES ('{$this->name}', '{$this->submission_id}', '{$this->description}', '{$this->image}', 1, 2, 1, '{$this->uploadToLocalServer}', '{$this->downloadFromLocalServer}')");
+
+			$res = $db->do_query("INSERT INTO project(name, submission_id, description, image, isPublic, isListed, publicSubmission, uploadToLocalServer, downloadFromLocalServer) VALUES ('{$this->name}', '{$this->submission_id}', '{$this->description}', '{$this->image}', " . ($this->isPublic ? "1" : "0") . ", " . ($this->isListed ? "1" : "0") . ", " . ($this->publicSubmission ? "1" : "0") . ", '{$this->uploadToLocalServer}', '{$this->downloadFromLocalServer}')");
 			if($res === true)
 			{
 				$this->fetch();
@@ -444,7 +450,7 @@ class EcProject{
 			
 		}
 		
-		public function push()
+		public function put($oldName)
 		{
 			global $auth, $log, $db;
 			
@@ -452,7 +458,7 @@ class EcProject{
 			$log->write('info', 'Starting project update');
 			
 			$db = new dbConnection();
-			if($this->checkPermission($auth->getEcUserId()) >= 2)
+			if($this->checkPermission($auth->getEcUserId()) == 3)
 			{
 				$log->write('info', 'User has permission');
 				$res = $db->beginTransaction();
@@ -462,8 +468,27 @@ class EcProject{
 				
 				$res = $db->do_query("UPDATE project SET description = " . $db->stringVal($this->description).", image = " . $db->stringVal($this->image).",
 									 isPublic  = " . $db->boolVal($this->isPublic) . ", isListed = " . $db->boolVal($this->isListed) . ",
-									publicSubmission = " . $db->boolVal($this->publicSubmission) . ", uploadToLocalServer = '{$this->uploadToLocalServer}', downloadFromLocalServer = '{$this->downloadFromLocalServer}' WHERE id = {$this->id} AND name = '{$this->name}'");
+									publicSubmission = " . $db->boolVal($this->publicSubmission) . ", uploadToLocalServer = '{$this->uploadToLocalServer}', downloadFromLocalServer = '{$this->downloadFromLocalServer}' WHERE id = {$this->id} AND name = '$oldName'");
 				if($res !== true) return $res;
+				
+				//update form
+				$sql = "UPDATE form SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+				$res = $db->do_query($sql);
+				if($res !== true) return $res;
+				//update fields
+				$sql = "UPDATE field SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+				$res = $db->do_query($sql);
+				if($res !== true) return $res;
+				//update entries
+				$sql = "UPDATE entry SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+				$res = $db->do_query($sql);
+				if($res !== true) return $res;
+				//update entryvalues
+				$sql = "UPDATE entryvalue SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+				$res = $db->do_query($sql);
+				if($res !== true) return $res;
+				
+				
 				
 				$log->write('info', 'Project details updated');
 				

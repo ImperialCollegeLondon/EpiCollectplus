@@ -15,7 +15,12 @@ h1
 	color: #808080;
 	font-size : 20px;
 	padding-bottom : 5px;
-	margin-bottom : 1; 
+	margin-bottom : 0.2em; 
+}
+
+h4
+{
+	margin-top: 0.7em;	
 }
 
 a	
@@ -64,15 +69,25 @@ th
 .flash
 {
 	border-radius: 0.5em;
-	background-color :#CCCCFF;
-	color : #0000FF;
 	padding: 0.5em 0.5em 0.5em 0.5em; 
+}
+
+.msg
+{
+	background-color :#EEEEFF;
+	color : #0000AA;
 }
 
 .err
 {
-	background-color :#FFCCCC;
-	color : #FF0000;
+	background-color :#FFEEEE;
+	color : #AA0000;
+}
+
+.go
+{
+	background-color :#EEFFEE;
+	color : #00AA00;
 }
 
 .projectImage

@@ -1,5 +1,8 @@
 {{style}}
 	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />
+	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/jquery-ui-1.8.17.custom.css" />
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui-1.8.17.custom.min.js"></script>
 	<style type="text/css">
 	ol 
 	{
@@ -57,6 +60,19 @@
 		background : #EEEEEE;
 	}
 	
+	#dialog
+	{
+		display : none;
+		background-color : #FFFFFF;
+		text-align: center;
+	}
+	
+	form div
+	{
+		margin-top : 0.5em;
+	
+	}
+	
 </style>
 {{/style}}
 {{script}}
@@ -89,8 +105,21 @@
 				tbl.rows[i].className = "";
 			}
 		}
-		
 	}
+	
+	function createOptions()
+	{
+		$('#public').buttonset();
+		$('#listed').buttonset();
+		$('#dialog').dialog({
+			modal:true,
+			width : $(document.body).innerWidth() * 0.8,
+			height : $(document.body).innerHeight() * 0.8
+			
+			
+		});
+	}
+	
 </script>
 
 {{/script}}
@@ -100,6 +129,22 @@
 
 		{#projects#} <div id="validationMessages" class="infobox"> </div>
 		
+		<div id="dialog" title="Project Options">
+			<h3>Please let us know how you'd like your project to be set up</h3>
+			<form>
+				<h4>Visibility</h4>
+				<div id="public">
+					<input type="radio" name="public" id="isPublic" value="isPublic" /><label for="isPublic">I would like anyone to be able <br />to view the data in this project.</label>
+					<input type="radio" name="public" id="isPrivate" value="isPrivate" /><label for="isPrivate">I only want people I specify to be able<br /> to view the data in this project.</label>
+				</div>
+				<h4>Listing on the Homepage</h4>
+				<div id="listed">
+					<input type="radio" name="listed" id="isListed" value="isListed" /><label for="isListed">I would like this project to appear <br />on the list on the homepage of this server.</label>
+					<input type="radio" name="listed" id="notListed" value="notListed" /><label for="notListed">I would not like this project to appear <br />on the list on the homepage of this server.</label>
+				</div>
+			</form>
+		</div>
+			
 	<h3 style="margin-top:20px">Upload a new XML project</h3>
 	<form method="post" enctype="multipart/form-data" action="{#SITE_ROOT#}/createProject.html" >
 		Choose XML file to upload and validate <input type="file" name="xml" />
