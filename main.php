@@ -1,5 +1,6 @@
 <?php
 	if (isset($_REQUEST['_SESSION'])) die("Bad client request");
+	
 	//$tlog = fopen("./uploads/speedLog", "w");
 	date_default_timezone_set('UTC');
 	$dat = new DateTime('now');
@@ -62,6 +63,11 @@
 	
 	$cfg = new ConfigManager("ec/epicollect.ini");
 
+	if(!ldap_connect)
+	{
+		$cfg->settings["security"]["use_ldap"] = false;
+	}
+	
 	if(!array_key_exists("salt",$cfg->settings["security"]) || $cfg->settings["security"]["salt"] == "")
 	{
 		$str = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
