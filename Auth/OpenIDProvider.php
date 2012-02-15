@@ -16,12 +16,12 @@
 		
 		public function requestLogin($callbackUrl)
 		{
-			if(!$this->openid->mode)
-			{
+			/*if(!$this->openid->mode)
+			{*/
 				if(!$this->openid->identity)$this->openid->identity = 'https://www.google.com/accounts/o8/id';
 				header('Location: ' . $this->openid->authUrl());
 				return false;
-			}
+			/*}
 			else if ($this->openid->mode === "cancel")
 			{
 				return false;
@@ -29,7 +29,7 @@
 			else
 			{
 				return true;
-			}
+			}*/
 		}
 		
 		public function callback()
@@ -41,7 +41,7 @@
 				
 				$this->data["openid"] = $this->openid->identity;
 				$this->firstName = $arr["namePerson/first"];
-				$this->surnameName = $arr["namePerson/last"];
+				$this->lastName = $arr["namePerson/last"];
 				$this->email = $arr["contact/email"];
 				$this->language = $arr["pref/language"];
 // 				$_SESSION["openid"] = $this->openid->identity;
