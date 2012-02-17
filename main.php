@@ -2432,9 +2432,9 @@
 		"html/projectIFrame.html" => new PageRule(),
 		
 		//project handlers		
-		"createProject.html" => new PageRule(null, 'projectCreator', true),
+		"pc" => new PageRule(null, 'projectCreator', true),
 		"create" => new PageRule(null, 'createFromXml', true),
-		"p" => new PageRule(null, 'createProject', true),
+		"createProject.html" => new PageRule(null, 'createProject', true),
 		"projectHome.html" => new PageRule(null, 'projectHome'),
 		
 		"createOrEditForm.html" => new PageRule(null ,'defaultHandler', true),
