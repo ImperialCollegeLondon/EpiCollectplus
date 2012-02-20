@@ -44,6 +44,7 @@
 	$url = preg_replace("/\\$SITE_ROOT\/|\?.*$/i", "", (array_key_exists("REQUEST_URI", $_SERVER) ? $_SERVER["REQUEST_URI"] : $_SERVER["HTTP_X_ORIGINAL_URL"])); //strip off site root and GET query
 	$url = rtrim($url, "/");
 	$url = urldecode($url);
+
 		
 	include "./Classes/PageSettings.php";
 	include ("./Classes/configManager.php");
@@ -1996,7 +1997,7 @@
 			$men = "";
 			foreach($mans as $man)
 			{
-				$men = "<form method=\"POST\" action=\"user/manager\"><p>{$man["firstName"]} {$man["lastName"]} ({$man["Email"]})<input type=\"hidden\" name=\"email\" value=\"{$man["Email"]}\" />" .($auth->getUserEmail() == $man["Email"] ? "" : "<input type=\"submit\" name=\"remove\" value=\"Remove\" />" ) ."</form></p>";
+				$men .= "<form method=\"POST\" action=\"user/manager\"><p>{$man["firstName"]} {$man["lastName"]} ({$man["Email"]})<input type=\"hidden\" name=\"email\" value=\"{$man["Email"]}\" />" .($auth->getUserEmail() == $man["Email"] ? "" : "<input type=\"submit\" name=\"remove\" value=\"Remove\" />" ) ."</form></p>";
 			}
 			
 			$arr = "{";
@@ -2028,16 +2029,16 @@
 		{
 			flash("This server is not configured to user Local Accounts", "err");
 		}
-		elseif($auth->createUser($_POST["username"], $_POST["password"], $_POST["email"], $_POST["fname"], $_POST["lname"], $_POST["email"]))
+		elseif($auth->createUser($_POST["username"], $_POST["password"], $_POST["email"], $_POST["fname"], $_POST["lname"],"en"))
 		{
-			flash("User Added");
+		 flash("User Added");
 		}
 		else 
 		{
 			flash("Could not create the user", "err");
 		}
 		
-		header("location: $SITE_ROOT/admin.html");
+		header("location: http://{$_SERVER["HTTP_HOST"]}$SITE_ROOT/admin");
 		return;
 	}
 	
@@ -2050,7 +2051,7 @@
 			if(array_key_exists("remove", $_POST) && $_POST["remove"] == "Remove")
 			{
 				$auth->removeServerManager($_POST["email"]);	
-				flash("{$_POST["email"]} is not longer a server manager.");
+				flash("{$_POST["email"]} is no longer a server manager.");
 			}
 			else
 			{
@@ -2071,7 +2072,8 @@
 		}
 		
 		
-		header("location: {$SITE_ROOT}/admin#manage");
+		header("location:  http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/admin#manage");
+		return;
 	}
 	
 	function createProject()
