@@ -438,7 +438,7 @@ var EcTable = function(conf)
 	this.branchForms = [];
 	this.groupForms = [];
     this.store = {};
-	this.hasGps = false;
+
 	this.hasMedia = false;
 	this.gpsFlds = [];
 	
@@ -862,7 +862,7 @@ var EcTable = function(conf)
 					e.preventDefault();								
 				}
 			},
-			bbar :(this.hasGps ? null : new Ext.PagingToolbar({
+			bbar :(this.gpsFlds.length > 0 ? null : new Ext.PagingToolbar({
 				pageSize: 25,
 				store: this.store,
 				displayInfo: true,
@@ -874,7 +874,7 @@ var EcTable = function(conf)
 				listeners : {
 					'change' : function(tb, data)
 					{
-						if(this.hasGps) this.drawPoints();
+						if(this.gpsFlds.length > 0) this.drawPoints();
 					},
 					scope: this
 				}
@@ -891,7 +891,7 @@ var EcTable = function(conf)
 		//pars[filterField] = filterValue;
 		this.store.load({params: pars}); // change this one!!<<<<
 		
-		if(this.hasGps)
+		if(this.gpsFlds.length > 0)
 		{
 			var fldGrpArr = [['DeviceID', 'Device ID', 'input']];
 			for(this.fld in this.fields )
@@ -1067,7 +1067,7 @@ var EcTable = function(conf)
 					listeners : {
 						'change' : function(tb, data)
 						{
-							if(this.hasGps) this.drawPoints();
+							if(this.gpsFlds.length > 0) this.drawPoints();
 						},
 						scope: this
 					}
