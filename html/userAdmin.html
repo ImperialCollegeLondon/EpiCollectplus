@@ -144,7 +144,7 @@
 			<h1>Add a new user</h1>
 			{#flashes#}
 			<p>You only need to use this form to add a user that doesn't have an account in another protocol</p>
-			<form method="POST" action="userAdmin">
+			<form method="POST" action="admin">
 				<p>
 					<label for="fname">First Name</label>
 					<input type="text" name="fname" />
@@ -184,7 +184,7 @@
 				{#serverManagers#}
 			</div>
 			<h3>Add a new Manager</h3>
-			<form method="POST" action="admin">
+			<form method="POST" action="user/manager/">
 				<label for="email">Email address</label><input name="email" type="email"/><input type="submit" value="Add Admin" />
 			</form>
 		</div>
