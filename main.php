@@ -2667,6 +2667,7 @@ $pageRules = array(
 
 //to API
 
+
 		"[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|/)?" =>new PageRule(null, 'projectHome'),
 		"[a-zA-Z0-9_-]+/upload" =>new PageRule(null, 'uploadData'),
 		"[a-zA-Z0-9_-]+/download" =>new PageRule(null, 'downloadData'),
