@@ -291,7 +291,7 @@ BEGIN
 	DELETE FROM `option` where field in (SELECT idField FROM field WHERE projectName = prjName);
 	DELETE FROM field where projectName = prjName;
 	DELETE FROM form where projectName = prjName;
-	DELETE FROM userProjectPermuission where project in (select id from project where name = prjName);
+	DELETE FROM userProjectPermission where project in (select id from project where name = prjName);
 	DELETE FROM project where name = prjName;
 END ~
 
