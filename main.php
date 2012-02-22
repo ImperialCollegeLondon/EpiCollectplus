@@ -1024,7 +1024,6 @@
 	
 	function downloadData()
 	{
-		//TODO: Dowload data from server, including zipped media files
 		global  $url, $SITE_ROOT;
 		header("Cache-Control: no-cache,  must-revalidate");
 		
@@ -1475,6 +1474,53 @@
 						echo $prj->tables[$frmName]->toXml();
 						break;
 					}
+				case "kml":
+				case "kmz":
+					header("Cache-Control: no-cache, must-revalidate");
+					header("Content-Type: application/vnd.google-earth.kml+xml");
+					echo '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://earth.google.com/kml/2.0"><Document><name>EpiCollect</name><Folder><name>';
+					echo "{$prj->name} - {$frmName}";
+					echo '</name><visibility>1</visibility>';
+					
+					$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
+					
+					foreach($arr["$frmName"] as $ent)
+					{
+						echo "<Placemark>";
+						$desc = "";
+						$title = "";	
+						foreach($prj->tables[$frmName]->fields as $name => $fld)
+						{
+							if($fld->type == "location" || $fld->type == "gps")
+							{
+								//<name>cheis1 (1265378876592)</name>
+								$loc = json_decode($ent[$name]);
+								echo "<Point><coordinates>{$loc->longitude},{$loc->latitude}</coordinates></Point>";
+							}
+							elseif($fld->title)
+							{
+								$title = ($title == "" ? $ent[$name] : "$title\t{$ent[$name]}");
+							}
+							else 
+							{
+								$desc = "$name : {$ent[$name]}";
+							}
+						}
+						if($title == "") $title = $arr[$prj->tables[$frmName]->key];
+						
+						echo "<name>$title</name>";
+						echo "<description><![CDATA[$desc]]></description>";
+						echo "</Placemark>";
+					}
+					echo '</Folder></Document></kml>';
+					
+					if($format == "kmz")
+					{
+						//TODO: enable zipping of KML
+					}
+					
+					break;
+				
 				case "csv":
 						header("Cache-Control: no-cache, must-revalidate");
 						header("Content-Type: text/csv");
@@ -1581,7 +1627,7 @@
 					break;
 				default:
 					header("Cache-Control: no-cache, must-revalidate");
-					//TODO: xml get/add/update for forms/tables from the website
+	
 					global $SITE_ROOT;
 					$referer = array_key_exists("HTTP_REFERER", $_SERVER) ? $_SERVER["HTTP_REFERER"] : "";
 					if(!array_key_exists("formCrumbs", $_SESSION) || !$prj->getPreviousTable($frmName) || !preg_match("/{$prj->name}\//", $referer))
@@ -1638,7 +1684,7 @@
 		$ent->key = $entId;
 		$r = $ent->fetch();
 	
-		//TODO: xml get/add/update for records from the website
+		
 		if($_SERVER["REQUEST_METHOD"] == "DELETE")
 		{
 			if($r === true)
@@ -1877,7 +1923,7 @@
 					$isValid = false;
 					array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has no label. All fields must have a label and the label must not be null. If you have added a label to the field please make sure the tags are all in lower case i.e. <label>...</label> not <Label>...</Label>");
 				}
-				//TODO: check ID and Label are both set and that the Id is unique
+
 				if($fld->jump)
 				{
 					//break the jump up into it's parts
@@ -2476,7 +2522,7 @@
 		"[a-zA-Z0-9_-]*/update" =>new PageRule(null, 'updateProject', true),
 		"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/uploadMedia" =>new PageRule(null, 'uploadMedia'),
 		"[a-zA-Z0-9_-]*/editProject.html" =>new PageRule(null, 'editProject', true),
-		"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*(\.xml|\.json|\.tsv|\.csv|\.js|\.css|/)?" => new PageRule(null, 'formHandler'),
+		"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*(\.xml|\.json|\.tsv|\.csv|\.js|\.css|\.kml|/)?" => new PageRule(null, 'formHandler'),
 		//"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage" => new  => new PageRule(null, formUsage),
 		"[^/\.]*/[^/\.]*/[^/\.]*(\.xml|\.json|/)?" => new PageRule(null, 'entryHandler'),
 		
