@@ -41,11 +41,13 @@
 	include ("./Auth/AuthManager.php");
 	include './db/dbConnection.php';
 
-	$url = preg_replace("/\\$SITE_ROOT\/|\?.*$/i", "", (array_key_exists("REQUEST_URI", $_SERVER) ? $_SERVER["REQUEST_URI"] : $_SERVER["HTTP_X_ORIGINAL_URL"])); //strip off site root and GET query
-	$url = rtrim($url, "/");
-	$url = urldecode($url);
+	$url = (array_key_exists("REQUEST_URI", $_SERVER) ? $_SERVER["REQUEST_URI"] : $_SERVER["HTTP_X_ORIGINAL_URL"]); //strip off site root and GET query
+	if($SITE_ROOT != "") $url = str_replace($SITE_ROOT, "", $url);
 
-		
+	if(strpos($url, "?")) $url = substr($url, 0, strpos($url, "?"));
+	$url = trim($url, "/");
+	$url = urldecode($url);
+			
 	include "./Classes/PageSettings.php";
 	include ("./Classes/configManager.php");
 	include ("./Classes/Logger.php");
@@ -241,6 +243,7 @@
 		$sections = array();
 		if($targetUri)
 		{
+	
 			if(file_exists("./html/$targetUri"))
 			{
 				$data = file_get_contents("./html/$targetUri");
@@ -439,8 +442,8 @@
 	{
 		global $url, $SITE_ROOT, $auth;
 		
-		
 		$url = preg_replace("/\/$/", "", $url);
+		$url = ltrim($url, "/");
 		
 		$prj = new EcProject();
 		if(array_key_exists('name', $_GET))
@@ -492,6 +495,8 @@
 					header("Cache-Control: no-cache, must-revalidate");
 					header ("Content-type: text/html;");
 				
+								
+							
 					try{
 						//$userMenu = '<h2>View Data</h2><span class="menuItem"><img src="images/map.png" alt="Map" /><br />View Map</span><span class="menuItem"><img src="images/form_view.png" alt="List" /><br />List Data</span>';
 						//$adminMenu = '<h2>Project Administration</h2><span class="menuItem"><a href="./' . $prj->name . '/formBuilder.html"><img src="'.$SITE_ROOT.'/images/form_small.png" alt="Form" /><br />Create or Edit Form(s)</a></span><span class="menuItem"><a href="editProject.html?name='.$prj->name.'"><img src="'.$SITE_ROOT.'/images/homepage_update.png" alt="Home" /><br />Update Project</a></span>';
@@ -523,12 +528,14 @@
 							"userMenu" => ""
 						);
 						
+						
 						echo applyTemplate("base.html","./projectHomeUser.html",$vals);
 						break;
 				}
 				catch(Exception $e)
 				{
-					$vals = array("error" => $e);
+					
+					$vals = array("error" => $e->getMessage());
 					echo applyTemplate("base.html","./error.html",$vals);
 				}
 			}
@@ -1337,8 +1344,10 @@
 	
 	function formHandler()
 	{
-		
+
 		global $url,  $log, $auth;		
+		
+	
 		
 		$format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "/") + 1);
 		$ext = substr($url, strrpos($url, ".") + 1);
@@ -1346,6 +1355,7 @@
 		
 		$prj = new EcProject();
 		$pNameEnd = strpos($url, "/");
+		
 		$prj->name = substr($url, 0, $pNameEnd);
 		$prj->fetch();
 		
@@ -2549,6 +2559,7 @@
 		}
 		else
 		{
+			
 			//static files
 			header("Content-type: " . mimeType($url));
 			header("Cache-Control: public; max-age=100000;");
