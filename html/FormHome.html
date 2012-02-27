@@ -1,8 +1,4 @@
 {{style}}
-	
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/Ext/resources/css/ext-all.css" />
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/js/fileuploadfield.css" />
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />
 	<style type="text/css">
 		.cp-item {
 			vertical-align: top;
@@ -44,7 +40,28 @@
 			width : 30%;
 		}
 		
+		#mapTab
+		{
+			position : relative;
+		}
 		
+		#map
+		{
+			position : relative;
+			margin-left : 10em;
+			height : 30em;
+			right : 0px;
+		}
+		
+		#sidebar 
+		{
+			position : absolute;
+			left : 0;
+			top : 1em;
+			height : 30em;
+			width : 10em;
+			border: 1px solid #CCCCCC;
+		}
 		
 		.button:active
 		{
@@ -55,39 +72,144 @@
 {{/style}}
 
 {{script}}
-	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/adapter/ext/ext-base.js"></script>
-	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-all.js"></script>
-	<script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollect2.js"></script>
 	{#mapScript#}
 	<!-- <script type="text/javascript" src="{#formName#}.js"></script>-->
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui-1.8.17.custom.min.js"></script>
+
 	<script type="text/javascript">
-		var survey;
-		var table;
-		
-		var uid = 'web_{#uid#}';
-		
-		function init()
-		{
-			survey = new EcSurvey;
-			//table = new EcTable();
-			Ext.Ajax.request({
-				url: location.pathname.substring(0, location.pathname.lastIndexOf('/')) + ".xml",
-				success: function (res)
+			var formName = "";
+			var map = null;
+			
+			$(function()
+			{
+				url = location.href.trim("/");
+				
+				formName = url.substr(url.lastIndexOf("/") + 1).replace(/#.*$/, "");
+				url = url.substr(0, url.lastIndexOf("/"));
+				
+				EpiCollect.loadProject(url + ".xml", loadCallback);
+				
+				
+			});
+	
+			
+			function createMap(div)
+			{
+				map = new google.maps.Map(document.getElementById(div), {
+					center : new google.maps.LatLng(0,0),
+					mapTypeId: google.maps.MapTypeId.HYBRID,
+					zoom : 2,
+					panControl: true,
+					rotateControl: true,
+					zoomControl: true
+				});
+			}
+			
+			function loadCallback(prj){
+				project = prj;		
+				
+				hasMap = (project.forms[formName].gpsFlds.length > 0);
+				
+				$("#tabs").tabs({
+					show : function(event, tab)
+					{
+						if(tab.panel.id == "mapTab")
+						{
+							 cen = map.getCenter();
+							 google.maps.event.trigger(map, 'resize');
+							 map.setCenter(cen);
+						}
+					}
+				});
+				
+				if(hasMap)
 				{
-					survey.parse(res.responseXML);
-					table = survey.tables[location.pathname.substring(location.pathname.lastIndexOf('/') + 1)]
-					drawPage();
+					createMap("map");			
 				}
-			})
-		}
-		
-		function drawPage(){
-			var tbl = table.getTable({#curate#}, {#curate#}, {#curate#});
-			tbl.render('tabPanel');
-		}
-		
-		Ext.onReady(init);
-		
+				else
+				{
+					$("#tabs li")[1].style.display = "none"; 
+				}
+				
+				
+				$("#tableTab .toolbar").after("<table class=\"data\"><thead><tr></tr></thead><tbody></tbody></table>");
+				
+				for(f in project.forms[formName].fields)
+				{
+					fld = project.forms[formName].fields[f];
+					$(".data tr").append("<th class=\"" + f + "\">" + fld.text + "</th>");	
+					$(".data th").resizable({
+						handles : "e",
+						resize	: function(event, ele)
+						{
+							window.e = event;
+							window.ele = ele;
+						
+			
+							
+							$("td." + ele.element[0].className.substring(0, ele.element[0].className.indexOf(" "))).css({ "max-width" : (ele.element.width()-5) + "px"});
+						}
+					});
+				}
+				
+				getData("", "", "", 0, 0);
+			};	
+			
+			
+			function getData(criteria, sortby, dir, offset, limit)
+			{
+				if(!criteria) criteria = "";
+				if(!offset) offset = 0;
+				if(!sortby) sortby = "";
+				if(!dir) dir = "";
+				if(!limit) limit = 0;
+				
+				$.getJSON(location.href.trim("/") + ".json?mode=list&offset=0&limit=10", dataLoad);
+				$('#start').text(offset);
+			}
+			
+			function dataLoad(entries)
+			{
+				$(".data tbody").empty();
+				
+				$('#end').text(Number($('#start').text()) + Number(entries[formName].length));
+				$('#total').text(entries.count);
+				
+				for(var i = 0; i < entries[formName].length; i++)
+				{
+					html = "<tr>";
+					for(f in project.forms[formName].fields)
+					{	
+						fld = project.forms[formName].fields[f];
+						html += "<td class=\"" + f + "\">";
+						if(fld.type == "location" || fld.type == "gps")
+						{
+							if(entries[formName][i][f] == undefined)
+							{
+								html += "&nbsp;";
+							}
+							else
+							{
+								val = JSON.parse(entries[formName][i][f]);
+								html +=  val.latitude + "," + val.longitude;
+							}
+						
+						}
+						else
+						{
+							html += entries[formName][i][f] == undefined ? "&nbsp;" : entries[formName][i][f];
+						}
+						html += "</td>"					
+					}
+					html += "</tr>";
+					$(".data tbody").append(html);
+				}
+				
+				for(f in project.forms[formName].fields)
+				{
+					$('.' + f).css({"max-width" : $('th.' + f).width() + "px"});
+				}
+			}
 		
 	</script>
 	
@@ -97,6 +219,20 @@
 {{/breadcrumbs}}
 {{main}}
 	<h1>{#projectName#} - {#formName#}</h1>
-	<div id="tabPanel"></div>
-	<div id="ecMap"></div>
+	<div id="tabs">
+		<ul>
+			<li><a href="#tableTab">Table View</a>
+			<li><a href="#mapTab">Map</a>
+		</ul>
+		<div id="tableTab">
+			<p class="toolbar"><a href=""><img src={#SITE_ROOT#}/images/glyphicons/glyphicons_200_download.png" title="Dowload Data" alt="Download"></a></p>
+			
+			<p>Showing <span id="start"></span> to <span id="end"></span> of <span id="total"></span></p>	
+		</div>
+		<div id="mapTab">
+			<div id="sidebar"></div>
+			<div id="map"></div>
+		</div>
+		
+	</div>
 {{/main}}

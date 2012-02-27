@@ -1,4 +1,5 @@
 <?php
+
 if (isset($_REQUEST['_SESSION'])) die("Bad client request");
 
 //$tlog = fopen("./uploads/speedLog", "w");
@@ -14,6 +15,7 @@ $SITE_ROOT = "";
 function getValIfExists($array, $key)
 {
 	if(array_key_exists($key, $array))
+
 	{
 		return $array[$key];
 	}
@@ -539,14 +541,15 @@ function projectHome()
 							"tables" => $tblList,
 							"adminMenu" => "",
 							"userMenu" => ""
-				);
 
+						);
+						
 
-				echo applyTemplate("base.html","./projectHomeUser.html",$vals);
-				break;
-			}
-			catch(Exception $e)
-			{
+						echo applyTemplate("base.html","./projectHome.html",$vals);
+						break;
+				}
+				catch(Exception $e)
+				{
 					
 				$vals = array("error" => $e->getMessage());
 				echo applyTemplate("base.html","./error.html",$vals);
@@ -1401,6 +1404,7 @@ function formHandler()
 	}
 
 
+
 	$extStart = strpos($url, ".");
 	$frmName = rtrim(substr($url, $pNameEnd + 1, ($extStart > 0 ?  $extStart : strlen($url)) - $pNameEnd - 1), "/");
 
@@ -1468,6 +1472,7 @@ function formHandler()
 							
 						}
 						$arr = $prj->tables[$frmName]->get($arr, $offset, $limit, $_GET["sort"], $_GET["dir"]);
+
 						echo json_encode($arr);
 						break;
 					}

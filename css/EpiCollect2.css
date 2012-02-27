@@ -46,9 +46,27 @@ p
 th
 {
 	background: #EEEEEE;
-	border-bottom : 2px solid #CCCCCC;
+	padding : 0.5em 0.5em 0.5em 0.5em;
+	
 }
 
+tr
+{
+	
+}
+
+td
+{
+	padding : 0.5em 0.5em 0.5em 0.5em;
+	overflow : hidden;
+	word-wrap: break-word;
+}
+
+.proivider
+{
+	padding: 0.75em 0.25em 0.75em 0.25em;
+	margin: 0.75em 0.25em 0.75em 0.25em;
+}
 
 
 .alt td
@@ -64,6 +82,11 @@ th
 	border:none;
 	margin-right : 3px !important;
 	padding : 2px 2px 2px 2px;
+}
+
+.data
+{
+	width : 100%;
 }
 
 .flash
