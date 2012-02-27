@@ -1746,7 +1746,13 @@ function formHandler()
 			break;
 		}
 	}
+
 }
+
+	
+	function kmlHome(){}
+	
+
 
 function entryHandler()
 {
@@ -2684,7 +2690,8 @@ $pageRules = array(
 		"[a-zA-Z0-9_-]+/updateStructure" =>new PageRule(null, 'updateXML', true),
 		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia" =>new PageRule(null, 'uploadMedia'),
 		"[a-zA-Z0-9_-]+/editProject.html" =>new PageRule(null, 'editProject', true),
-		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.js|\.css|/)?" => new PageRule(null, 'formHandler'),
+		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.js|\.css|\.kml|/)?" => new PageRule(null, 'formHandler'),
+		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/feed\.kml?" => new PageRule(null, 'kmlFeed'),
 
 //"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage" => new  => new PageRule(null, formUsage),
 		"[^/\.]*/[^/\.]+/[^/\.]*(\.xml|\.json|/)?" => new PageRule(null, 'entryHandler')
