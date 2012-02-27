@@ -801,7 +801,8 @@
 		}
 		catch(Exception $e)
 		{
-			header("location: http://$server/$root/test?redir=true");
+			$rurl = str_replace("//", "", "http://$server/$root/test?redir=true");
+			header("location: $rurl");
 			return;
 		}
 		
@@ -811,7 +812,8 @@
 			
 			//$vals["projects"] = "<p class=\"error\">Database is not set up correctly, go to the <a href=\"test\">test page</a> to establish the problem.</p>";
 			//echo applyTemplate("base.html","./index.html",$vals);
-			header("location: http://$server/$root/test?redir=true");
+			$rurl = str_replace("//", "", "http://$server/$root/test?redir=true");
+			header("location: $rurl");
 			return;
 		}
 		$vals["projects"] = "<h1>Projects on this server</h1>" ;
@@ -2465,33 +2467,38 @@
 		"ec/uploads/.+\.(jpg)|(mp4)$" => new PageRule(null, 'getMedia'),
 		"ec/uploads/.+" => new PageRule(null, null),
 			
-		//to API
-		"[a-zA-Z0-9_-]*(\.xml|\.json|\.tsv|\.csv|/)?" =>new PageRule(null, 'projectHome'),
-		"[a-zA-Z0-9_-]*/upload" =>new PageRule(null, 'uploadData'),
-		"[a-zA-Z0-9_-]*/download" =>new PageRule(null, 'downloadData'),
-		"[a-zA-Z0-9_-]*/summary" =>new PageRule(null, 'projectSummary'),
-		"[a-zA-Z0-9_-]*/usage" =>  new PageRule(null, 'projectUsage'),
-		"[a-zA-Z0-9_-]*/formBuilder(\.html)?" =>  new PageRule(null, 'formBuilder'),
-		
-		"[a-zA-Z0-9_-]*/update" =>new PageRule(null, 'updateProject', true),
-		"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/uploadMedia" =>new PageRule(null, 'uploadMedia'),
-		"[a-zA-Z0-9_-]*/editProject.html" =>new PageRule(null, 'editProject', true),
-		"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*(\.xml|\.json|\.tsv|\.csv|\.js|\.css|/)?" => new PageRule(null, 'formHandler'),
-		//"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage" => new  => new PageRule(null, formUsage),
-		"[^/\.]*/[^/\.]*/[^/\.]*(\.xml|\.json|/)?" => new PageRule(null, 'entryHandler'),
-		
-		//forTesting
 		"uploadTest.html" => new PageRule(null, 'defaultHandler', true),
 		"test" => new PageRule(null, 'siteTest', false),
 		"createDB" => new PageRule(null, 'setupDB',  count($auth->getServerManagers()) > 0),
-		"writeSettings" => new PageRule(null, 'writeSettings', count($auth->getServerManagers()) > 0)
+		"writeSettings" => new PageRule(null, 'writeSettings', count($auth->getServerManagers()) > 0),
+		
+		//to API
+		"[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|/)?" =>new PageRule(null, 'projectHome'),
+		"[a-zA-Z0-9_-]+/upload" =>new PageRule(null, 'uploadData'),
+		"[a-zA-Z0-9_-]+/download" =>new PageRule(null, 'downloadData'),
+		"[a-zA-Z0-9_-]+/summary" =>new PageRule(null, 'projectSummary'),
+		"[a-zA-Z0-9_-]+/usage" =>  new PageRule(null, 'projectUsage'),
+		"[a-zA-Z0-9_-]+/formBuilder(\.html)?" =>  new PageRule(null, 'formBuilder'),
+		
+		"[a-zA-Z0-9_-]+/update" =>new PageRule(null, 'updateProject', true),
+		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia" =>new PageRule(null, 'uploadMedia'),
+		"[a-zA-Z0-9_-]+/editProject.html" =>new PageRule(null, 'editProject', true),
+		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.js|\.css|/)?" => new PageRule(null, 'formHandler'),
+		//"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage" => new  => new PageRule(null, formUsage),
+		"[^/\.]*/[^/\.]+/[^/\.]*(\.xml|\.json|/)?" => new PageRule(null, 'entryHandler')
+		
+		//forTesting
+		
 	);
 	
 	$d = new DateTime();
 	$i = $dat->format("su") - $d->format("su");
 	
 	$rule = false;
+	
+	
 
+	
 	if(array_key_exists($url, $pageRules))
 	{
 		$rule = $pageRules[$url];
