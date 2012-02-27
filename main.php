@@ -1,5 +1,6 @@
 <?php
 
+
 if (isset($_REQUEST['_SESSION'])) die("Bad client request");
 
 //$tlog = fopen("./uploads/speedLog", "w");
@@ -15,6 +16,7 @@ $SITE_ROOT = "";
 function getValIfExists($array, $key)
 {
 	if(array_key_exists($key, $array))
+
 
 	{
 		return $array[$key];
@@ -1549,6 +1551,7 @@ function formHandler()
 						else
 						{
 							$desc = "$name : {$ent[$name]}";
+
 						}
 					}
 					if($title == "") $title = $arr[$prj->tables[$frmName]->key];
@@ -1750,7 +1753,38 @@ function formHandler()
 }
 
 	
-	function kmlHome(){}
+	function kmlFeed(){
+		global $SITE_ROOT, $url;
+
+		header("Cache-Control: no-cache, must-revalidate");
+		header("Content-Type: application/vnd.google-earth.kml+xml");
+		
+		$server = trim($_SERVER["HTTP_HOST"], "/");
+		$root = trim($SITE_ROOT, "/");
+		
+		$prj = new EcProject();
+		$pNameEnd = strpos($url, "/");
+		$prj->name = substr($url, 0, $pNameEnd);
+		$prj->fetch();
+		
+		$extStart = strrpos($url, "/feed");
+		$frmName = rtrim(substr($url, $pNameEnd + 1, ($extStart > 0 ?  $extStart : strlen($url)) - $pNameEnd - 1), "/");
+		
+		echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\" xmlns:kml=\"http://www.opengis.net/kml/2.2\" xmlns:atom=\"http://www.w3.org/2005/Atom\">
+<NetworkLink>
+	<name>EpiCollect</name>
+	<open>1</open>
+	<Link>
+		<href>http://$server/$root/{$prj->name}/$frmName.kml</href>
+		<refreshMode>onInterval</refreshMode>
+		<refreshInterval>30</refreshInterval>
+	</Link>
+</NetworkLink>
+</kml>";
+		
+		
+	}
 	
 
 
@@ -2691,7 +2725,7 @@ $pageRules = array(
 		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia" =>new PageRule(null, 'uploadMedia'),
 		"[a-zA-Z0-9_-]+/editProject.html" =>new PageRule(null, 'editProject', true),
 		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.js|\.css|\.kml|/)?" => new PageRule(null, 'formHandler'),
-		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/feed\.kml?" => new PageRule(null, 'kmlFeed'),
+		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/feed\.kml" => new PageRule(null, 'kmlFeed'),
 
 //"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage" => new  => new PageRule(null, formUsage),
 		"[^/\.]*/[^/\.]+/[^/\.]*(\.xml|\.json|/)?" => new PageRule(null, 'entryHandler')
@@ -2717,6 +2751,7 @@ else
 
 	foreach(array_keys($pageRules) as $key)
 	{
+
 		if(preg_match("/^".regexEscape($key)."$/", $url))
 		{
 			//echo $key;
