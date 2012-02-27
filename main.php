@@ -801,7 +801,7 @@
 		}
 		catch(Exception $e)
 		{
-			$rurl = str_replace("//", "", "http://$server/$root/test?redir=true");
+			$rurl = "http://$server/$root/test?redir=true";
 			header("location: $rurl");
 			return;
 		}
@@ -812,7 +812,7 @@
 			
 			//$vals["projects"] = "<p class=\"error\">Database is not set up correctly, go to the <a href=\"test\">test page</a> to establish the problem.</p>";
 			//echo applyTemplate("base.html","./index.html",$vals);
-			$rurl = str_replace("//", "", "http://$server/$root/test?redir=true");
+			$rurl = "http://$server/$root/test?redir=true";
 			header("location: $rurl");
 			return;
 		}
