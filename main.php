@@ -2586,9 +2586,9 @@
 		{
 			header("location: https://{$_SERVER["HTTP_HOST"]}/{$SITE_ROOT}/{$url}");
 		}
-		else
+		elseif($rule->secure)
 		{
-			//flash("Warning: this page is not secure as HTTPS is not avaiable", "err");
+			flash("Warning: this page is not secure as HTTPS is not avaiable", "err");
 		}
 		
 		
