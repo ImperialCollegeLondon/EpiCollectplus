@@ -5,7 +5,7 @@
 		public $data;
 		public $language;
 		
-		abstract public function requestLogin($callbackurl);
+		abstract public function requestLogin($callbackurl, $firstLogin = false);
 		abstract public function getDetails();
 		public function getCredentialString()
 		{

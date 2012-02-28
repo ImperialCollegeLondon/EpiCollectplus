@@ -97,7 +97,7 @@
 	$db = false;
 
 	$auth = new AuthManager();
-	
+	try{$db = @new dbConnection();}catch(Exception $err){}
 	/* class and function definitions */
 	
 	function escapeTSV($string)
@@ -114,8 +114,13 @@
 		{
 			$_SESSION["flashes"] = array();
 		}
+		$nflash = array("msg" => $msg, "type" => $type);
 		
-		array_push($_SESSION["flashes"], array("msg" => $msg, "type" => $type));
+		foreach($_SESSION["flashes"] as $flash)
+		{
+			if($flash == $nflash )return;
+		}
+		array_push($_SESSION["flashes"], $nflash);
 		
 	}
 	
@@ -371,8 +376,8 @@
 		
 		global $auth, $cfg, $db;
 		$db = new dbConnection();
-		if(!$auth) $auth = new AuthManager($cfg->settings["security"]["auth_method"]);
-		$auth->callback();
+		if(!$auth) $auth = new AuthManager();
+		$auth->callback($_SESSION["provider"]);
 	}
 	
 	function logoutHandler()
@@ -2037,13 +2042,13 @@
 		
 		header("Cache-Control: no-cache; must-revalidate;");
 		
-		if(!$cfg->settings["security"]["use_local"])
+		if($cfg->settings["security"]["use_local"] != "true")
 		{
 			flash("This server is not configured to user Local Accounts", "err");
 		}
 		elseif($auth->createUser($_POST["username"], $_POST["password"], $_POST["email"], $_POST["fname"], $_POST["lname"],"en"))
 		{
-		 flash("User Added");
+		 	flash("User Added");
 		}
 		else 
 		{
@@ -2458,8 +2463,8 @@
 		//"listXML" => new PageRule(null, 'listXML',false),
 		//login handlers
 		//"Auth/loginCallback.php" => new PageRule(null,'loginCallbackHandler'),
-		"login.php" => new PageRule(null,'loginHandler'),
-		"loginCallback" => new PageRule(null,'loginCallback'),
+		"login.php" => new PageRule(null,'loginHandler', false, true),
+		"loginCallback" => new PageRule(null,'loginCallback', false, true),
 		"logout" => new PageRule(null, 'logoutHandler'),
 		"chooseProvider.html" => new PageRule(null, 'chooseProvider'),
 		
@@ -2468,7 +2473,7 @@
 		"saveUser" =>new PageRule(null, 'saveUser', true),
 		"user/manager/?" => new PageRule(null, 'managerHandler', true),
 		"user/.*@.*?" => new PageRule(null, 'userHandler', true),
-		"admin" => new PageRule(null, 'admin', true),
+		"admin" => new PageRule(null, 'admin', count($auth->getServerManagers()) > 0),
 		
 		
 		//generic, dynamic handlers		
@@ -2529,6 +2534,17 @@
 	
 	if($rule)
 	{
+		if($rule->secure && !getValIfExists($_SERVER, "HTTPS") && file_exists("https://{$_SERVER["HTTP_HOST"]}/{$SITE_ROOT}/{$url}"))
+		{
+	
+			header("location: https://{$_SERVER["HTTP_HOST"]}/{$SITE_ROOT}/{$url}");
+		}
+		else
+		{
+			flash("Warning: this page is not secure as HTTPS is not avaiable", "err");
+		}
+		
+		
 		if($rule->login && !$auth->isLoggedIn())
 		{
 			header("Cache-Control: no-cache, must-revalidate");

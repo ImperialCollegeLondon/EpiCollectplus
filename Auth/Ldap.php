@@ -12,7 +12,7 @@
 			$this->ldap = ldap_connect("FI--DIDEDC2"); // from settings
 		}
 		
-		public function requestLogin($callbackUrl)
+		public function requestLogin($callbackUrl, $firstLogin = false)
 		{
 			//Check connection is secure and add LDAP Login form
 			return '<p>Please use the form below to log into EpiCollect+</p><form action="loginCallback" method="POST"><p><label for="uname">User name</label><input type="text" name="uname" /></p><p><label for="pwd">Password</label><input type="password" name="pwd" /></p><p><input type="Submit" name="Login" value="Login" /><input type="hidden" name="callback" value="'.$callbackUrl.'"</p></form>';

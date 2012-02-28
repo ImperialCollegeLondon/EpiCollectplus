@@ -22,17 +22,17 @@
 		
 		if(array_key_exists("use_openID", $cfg->settings["security"]))
 		{
-			$this->openIdEnabled = $cfg->settings["security"]["use_openID"];
+			$this->openIdEnabled = $cfg->settings["security"]["use_openID"] == "true";
 		}
 
 		if(array_key_exists("use_ldap", $cfg->settings["security"]))
 		{
-			$this->ldapEnabled = $cfg->settings["security"]["use_ldap"];
+			$this->ldapEnabled = $cfg->settings["security"]["use_ldap"] == "true";
 		}
 		
 		if(array_key_exists("use_local", $cfg->settings["security"]))
 		{
-			$this->localEnabled = $cfg->settings["security"]["use_local"];
+			$this->localEnabled = $cfg->settings["security"]["use_local"] == "true";
 		}
 		
 		$this->providers = array();
@@ -60,7 +60,7 @@
   		$_SESSION["url"] = $requestedUrl;
   		if($provider != "" && array_key_exists($provider, $this->providers))
   		{
-  			return $this->providers[$provider]->requestLogin($requestedUrl);
+  			return $this->providers[$provider]->requestLogin($requestedUrl, count($this->getServerManagers()) == 0);
   		}
   		else
   		{
@@ -81,13 +81,8 @@
   	{
   		global  $cfg, $db;
   		
-  		if(array_key_exists("provider", $_SESSION))
-  		{
-  			$provider = $_SESSION["provider"];
-  		}
-  		
   		if(!array_key_exists($provider, $this->providers)) {
-  			return false;
+  			header("location: /");
   			//echo "provider error";
   		}
   		  		
@@ -95,14 +90,17 @@
   		//echo "***$res***";
   		if($res === true)
   		{
+  			
   			$uid = false;
   			$sql = "SELECT idUsers FROM user where details = '" . $this->providers[$provider]->getCredentialString() . "'";
   			
-  			$this->firstName = $this->providers[$provider]->firstName;
-  			$this->lastName = $this->providers[$provider]->lastName;
-  			$this->email = $this->providers[$provider]->email;
-  			$this->language = $this->providers[$provider]->language;
-  			
+  			if($provider != "LOCAL")
+  			{
+	  			$this->firstName = $this->providers[$provider]->firstName;
+	  			$this->lastName = $this->providers[$provider]->lastName;
+	  			$this->email = $this->providers[$provider]->email;
+	  			$this->language = $this->providers[$provider]->language;
+  			}
   			$res = $db->do_query($sql);
   			if($res !== true) die($res . "\n" . $sql);
   			while($arr = $db->get_row_array())
@@ -128,8 +126,17 @@
   		}
   		else
   		{
-  			flash("Login failed, please try again ($res)");
-  			header("location: {$_SESSION["url"]}");
+  			flash("Login failed, please try again");
+  			if(!array_key_exists("tries", $_SESSION))
+  			{
+  				$_SESSION["tries"] = 1;
+  			}  			
+  			else
+  			{
+  				$_SESSION["tries"]++;
+  			}
+  			sleep($_SESSION["tries"] * $_SESSION["tries"]);
+  			header("location: /login.php");
   		}
   	}
   	
@@ -221,6 +228,7 @@
   	function getServerManagers()
   	{
   		global $db;
+  		
   		try{
   			$men = array();
   			if($db)
@@ -265,7 +273,7 @@
 	  {
 	  	if($this->localEnabled)
 	  	{
-	  	 	return $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language);
+	  	 	return $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language, count($this->getServerManagers()) == 0);
 	  	}
 	  	else
 	  	{

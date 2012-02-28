@@ -1,5 +1,5 @@
 <?php
-	require_once "ProviderTemplate.php";
+	@include "./ProviderTemplate.php";
 	
 	class LocalLoginProvider extends AuthProvider
 	{
@@ -11,9 +11,17 @@
 			$this->db = $db;
 		}
 		
-		public function requestLogin($callbackUrl)
+		public function requestLogin($callbackUrl, $firstLogin = false)
 		{
-			return '<p>Please use the form below to log into EpiCollect+</p><form action="loginCallback" method="POST"><p><label for="uname">User name</label><input type="text" name="uname" /></p><p><label for="pwd">Password</label><input type="password" name="pwd" /></p><p><input type="Submit" name="Login" value="Login" /><input type="hidden" name="callback" value="'.$callbackUrl.'"</p></form>';
+		
+			if($firstLogin)
+			{
+				return '<p>Please create the account for the server administrator</p>			<form method="POST" action="admin">				<p>					<label for="fname">First Name</label>					<input type="text" name="fname" />				</p>				<p>					<label for="lname">Last Name</label>					<input type="text" name="lname" />				</p>				<p>					<label for="email">Email</label>					<input type="email" name="email" />				</p>				<p>					<label for="username">User Name</label>					<input type="text" name="username" />				</p>				<p>					<label for="password">Password</label>					<input type="password" name="password" />				</p>				<p>					<label for="password_check">Repeat Password</label>					<input type="password" name="password_check" />				</p>				<p>					<input type="submit" value="Create User"/>				</p>			</form>';	
+			}
+			else
+			{
+				return '<p>Please use the form below to log into EpiCollect+</p><form action="loginCallback" method="POST"><p><label for="uname">User name</label><input type="text" name="uname" /></p><p><label for="pwd">Password</label><input type="password" name="pwd" /></p><p><input type="Submit" name="Login" value="Login" /><input type="hidden" name="callback" value="'.$callbackUrl.'"</p></form>';
+			}
 		}
 		
 		public function callback()
@@ -43,7 +51,7 @@
 			return false;			
 		}
 		
-		public function createUser($username, $pass, $email, $firstName, $lastName, $language)
+		public function createUser($username, $pass, $email, $firstName, $lastName, $language, $serverManager = false)
 		{
 			global $cfg;
 			//don't use MD5!
@@ -52,6 +60,8 @@
 			{
 				global $db;
 				$this->db = $db;
+ 				include_once("db/dbConnection.php");
+				if(!$this->db) $this->db = new dbConnection();
 			}
 			
 			$username = $this->db->escapeArg($username);
@@ -65,7 +75,9 @@
 			$enc_data = crypt($pass, "$2a$08$".$salt ."$");
 			$this->data = "{\"username\" : \"{$username}\" \"auth\" : \"$enc_data\" }";
 			
-			$res = $this->db->do_query("INSERT INTO user (FirstName, LastName, Email, details, language) VALUES ('$firstName', '$lastName', '$email', '{$this->data}', '$language')");
+			$sman = $serverManager ? "1" : "0";
+			
+			$res = $this->db->do_query("INSERT INTO user (FirstName, LastName, Email, details, language, serverManager) VALUES ('$firstName', '$lastName', '$email', '{$this->data}', '$language', $sman)");
 			if($res !== true) die($res);
 			return true;
 		}
