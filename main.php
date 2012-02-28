@@ -2584,12 +2584,11 @@
 	{
 		if($rule->secure && !getValIfExists($_SERVER, "HTTPS") && file_exists("https://{$_SERVER["HTTP_HOST"]}/{$SITE_ROOT}/{$url}"))
 		{
-	
 			header("location: https://{$_SERVER["HTTP_HOST"]}/{$SITE_ROOT}/{$url}");
 		}
 		else
 		{
-			flash("Warning: this page is not secure as HTTPS is not avaiable", "err");
+			//flash("Warning: this page is not secure as HTTPS is not avaiable", "err");
 		}
 		
 		
