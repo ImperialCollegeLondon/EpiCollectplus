@@ -183,6 +183,7 @@
   		}
   		$dat = new DateTime();
   		$qry = "DELETE FROM ecsession WHERE expires < ". $dat->getTimestamp();
+  		 		
   		$res = $db->do_query($qry);
   		if($res !== true) return false;
   		

@@ -1,5 +1,29 @@
 {{style}}
 	<style type="text/css">
+		img.desc
+		{
+			display : none;
+			float : right;
+			margin-top: 0.25em;
+		}
+		
+		.desc img.desc
+		{
+			display : inline-block;
+		}
+		
+		img.asc
+		{
+			display : none;
+			float : right;
+			margin-top: 0.25em;
+		}
+		
+		.asc img.asc
+		{
+			display : inline-block;
+		}
+	
 		.cp-item {
 			vertical-align: top;
 			display: inline-block;
@@ -80,15 +104,36 @@
 			var formName = "";
 			var map = null;
 			
+			var qry = location.search.trim("?");
+			var sortCol = "created";
+			var sortDir = "asc";
+			var pageNo = 0;
+			var numEnts = 10;
+			
 			$(function()
 			{
 				url = location.href.trim("/");
-				
+				if(url.indexOf("?") > 0)url = url.substr(0, url.indexOf("?"));
 				formName = url.substr(url.lastIndexOf("/") + 1).replace(/#.*$/, "");
 				url = url.substr(0, url.lastIndexOf("/"));
 				
+				
 				EpiCollect.loadProject(url + ".xml", loadCallback);
 				
+				$.fn.disableSelection = function() {
+				    return this.each(function() {           
+				        $(this).attr('unselectable', 'on')
+				               .css({
+				                   '-moz-user-select':'none',
+				                   '-webkit-user-select':'none',
+				                   'user-select':'none',
+				                   '-ms-user-select':'none'
+				               })
+				               .each(function() {
+				                   this.onselectstart = function() { return false; };
+				               });
+				    });
+				};
 				
 			});
 	
@@ -150,23 +195,46 @@
 							$("td." + ele.element[0].className.substring(0, ele.element[0].className.indexOf(" "))).css({ "max-width" : (ele.element.width()-5) + "px"});
 						}
 					});
+
 				}
 				
-				getData("", "", "", 0, 0);
+				$(".data th").append("<img src=\"../../images/uparrow.png\" class=\"asc\" width=\"12\" /><img src=\"../../images/downarrow.png\" class=\"desc\" width=\"12\" />")
+					$(".data th").click(function(evt){
+						
+							var newSortCol = evt.target.classList[0];
+							
+							
+							$(".data th").removeClass("desc");
+							$(".data th").removeClass("asc");
+				
+							console.debug(sortCol + " " + sortDir);
+							window.evt = evt;
+							if(newSortCol == sortCol && sortDir == "asc")
+							{
+								$(evt.target).addClass("desc");
+								sortDir = "desc";
+							}
+							else
+							{
+								$(evt.target).addClass("asc");
+								sortDir = "asc";
+							}
+							sortCol = newSortCol;
+							getData();
+							evt.preventDefault();
+						
+					});
+				getData();
 			};	
 			
 			
-			function getData(criteria, sortby, dir, offset, limit)
+			function getData()
 			{
-				if(!criteria) criteria = "";
-				if(!offset) offset = 0;
-				if(!sortby) sortby = "";
-				if(!dir) dir = "";
-				if(!limit) limit = 0;
-				
-				$.getJSON(location.href.trim("/") + ".json?mode=list&offset=0&limit=10", dataLoad);
+				offset = pageNo * numEnts
+				$.getJSON(url + "/" + formName + ".json?mode=list&offset=" + offset + "&limit=" + numEnts + "&sort=" + sortCol + "&dir=" +sortDir + "&" + location.search.substr(1) , dataLoad);
 				$('#start').text(offset);
 			}
+			
 			
 			function dataLoad(entries)
 			{
@@ -181,7 +249,7 @@
 					for(f in project.forms[formName].fields)
 					{	
 						fld = project.forms[formName].fields[f];
-						html += "<td class=\"" + f + "\">";
+						html += "<td class=\"" + f  + (i % 2 == 1 ? " alt": "") + "\">";
 						if(fld.type == "location" || fld.type == "gps")
 						{
 							if(entries[formName][i][f] == undefined)
@@ -225,7 +293,7 @@
 			<li><a href="#mapTab">Map</a>
 		</ul>
 		<div id="tableTab">
-			<p class="toolbar"><a href=""><img src={#SITE_ROOT#}/images/glyphicons/glyphicons_200_download.png" title="Dowload Data" alt="Download"></a></p>
+			<p class="toolbar"><a href=""><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_200_download.png" title="Dowload Data" alt="Download"></a></p>
 			
 			<p>Showing <span id="start"></span> to <span id="end"></span> of <span id="total"></span></p>	
 		</div>

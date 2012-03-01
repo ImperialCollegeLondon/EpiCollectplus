@@ -45,9 +45,18 @@ p
 
 th
 {
-	background: #EEEEEE;
-	padding : 0.5em 0.5em 0.5em 0.5em;
-	
+	color: #EEEEEE;
+	background: #444444;
+	-moz-user-select:none;
+	-webkit-user-select:none;
+	user-select:none;
+	-ms-user-select:none;
+	cursor : pointer;
+}
+
+th:hover
+{
+	background-color:#444488;
 }
 
 tr
@@ -57,12 +66,30 @@ tr
 
 td
 {
-	padding : 0.5em 0.5em 0.5em 0.5em;
+	
 	overflow : hidden;
 	word-wrap: break-word;
 }
 
-.proivider
+th, td
+{
+	padding : 0.25em 0.25em 0.25em 0.25em;
+	border-right : 1px solid #CCCCCC;
+	border-left : 1px solid #CCCCCC;
+	text-align : left;
+}
+
+table
+{
+	border : 1px solid #CCCCCC;
+}
+
+td.alt
+{
+	background-color : #EEEEEE;
+}
+
+.provider
 {
 	padding: 0.75em 0.25em 0.75em 0.25em;
 	margin: 0.75em 0.25em 0.75em 0.25em;
