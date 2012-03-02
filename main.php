@@ -1831,6 +1831,38 @@
 		}
 	}
 	
+	function updateXML()
+	{
+		global $url, $SITE_ROOT;
+		
+		$prj = new EcProject();
+		$xmlFn = "ec/xml/{$_REQUEST["xml"]}";
+		$prj->name = substr($url, 0, strpos($url, "/"));
+		$prj->fetch();
+		
+		$prj->parse(file_get_contents($xmlFn));
+		$prj->isListed = $_REQUEST["listed"] == "true";
+		$prj->isPublic = $_REQUEST["public"] == "true";
+		$prj->publicSubmission = true;
+		$res = $prj->put($prj->name);
+		
+		$prj->setManagers($_POST["managers"]);
+		$prj->setCurators($_POST["curators"]);
+		// TODO : add submitter $prj->setProjectPermissions($submitters,1);
+		
+		if($res === true)
+		{
+			$server = trim($_SERVER["HTTP_HOST"], "/");
+			$root = trim($SITE_ROOT, "/");
+			header ("location: http://$server/$root/" . preg_replace("/updateStructure.*$/", $prj->name, $url));
+		}
+		else
+		{
+			$vals = array("error" => $res);
+			echo applyTemplate("base.html","error.html",$vals);
+		}
+	}
+	
 	function listXml()
 	{
 		//List XML files
@@ -2543,6 +2575,7 @@
 		"[a-zA-Z0-9_-]+/formBuilder(\.html)?" =>  new PageRule(null, 'formBuilder'),
 		
 		"[a-zA-Z0-9_-]+/update" =>new PageRule(null, 'updateProject', true),
+		"[a-zA-Z0-9_-]+/updateStructure" =>new PageRule(null, 'updateXML', true),
 		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia" =>new PageRule(null, 'uploadMedia'),
 		"[a-zA-Z0-9_-]+/editProject.html" =>new PageRule(null, 'editProject', true),
 		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.js|\.css|/)?" => new PageRule(null, 'formHandler'),

@@ -173,7 +173,7 @@
   	function save()
   	{
   		$.ajax({
-  			url : location.href,
+  			url : location.href + 'Structure',
   			type : 'POST',
   			data : $('form').serialize(),
   			success: function(data, status, xhr){
@@ -193,7 +193,7 @@
 {{main}}
 	  <h1 id="title">Create a Project - <span class="projectName"></span></h1>
 	  <div id="message"></div>
-	  <form id="projectOptions" action="create" method="POST">
+	  <form id="projectOptions" action="updateStructure" method="POST">
 	  		<ul>
 	  			<li><a href="#projectDef">Project Definition</a></li>
 	  			<li><a href="#visibility">Visibility</a></li>

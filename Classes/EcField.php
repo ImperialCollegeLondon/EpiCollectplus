@@ -94,7 +94,7 @@ class EcField{
 			$xml = "\n\t\t<{$this->type} ref=\"{$this->name}\"";
 			if($this->required) $xml .= ' required="true"';
 			if($this->isInt) $xml .= ' integer="true"';
-			if($this->isDouble) $xml .= ' double="true"';
+			if($this->isDouble) $xml .= ' decimal="true"';
 			if($this->regex) $xml .= " regex=\"{$this->regex}\"";
 			if($this->title) $xml .= ' title="true"';
 			if($this->doubleEntry) $xml .= ' verify="true"';
@@ -183,7 +183,7 @@ class EcField{
 						setdate  = " . $db->stringVal($this->setDate) .", settime  = " . $db->stringVal($this->setTime) .", position = {$this->position}, min = " . $db->numVal($this->min) . ", max = " . $db->numVal($this->max) . ", defaultValue = " . $db->stringVal($this->defaultValue) . " WHERE idField = {$this->idField};";
 				$res = $db->do_query($sql);
 				if($res !== true) return $res;
-				if($db->affectedRows() == 0) return "field not fouund";
+				if($db->affectedRows() == 0) return "field not found";
 				
 				if(count($this->options) != 0){
 				

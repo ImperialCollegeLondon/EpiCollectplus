@@ -489,7 +489,7 @@
 			
 			foreach($this->fields as $fld)
 			{
-				if($fld->idField){
+				if($fld->id){
 					$res = $fld->update();
 				}
 				else

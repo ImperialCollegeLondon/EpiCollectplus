@@ -151,7 +151,7 @@ class EcProject{
 				for($t = 0; $t < count($root->form); $t++)
 				{
 						$atts = $root->form[$t]->attributes();
-						if(!array_key_exists((string)$atts['name'], $this->tables))
+						if(!array_key_exists((string)$atts['name'], $this->tables) || $this->id)
 						{
 							 $tbl = new EcTable($this);
 						}
@@ -454,15 +454,20 @@ class EcProject{
 		{
 			global $auth, $log, $db;
 			
+			/**
+			 * 
+			 */
+			
 			//$log = new Logger('Ec2');
 			$log->write('info', 'Starting project update');
 			
-			$db = new dbConnection();
+			//$db = new dbConnection();
+			
 			if($this->checkPermission($auth->getEcUserId()) == 3)
 			{
 				$log->write('info', 'User has permission');
-				$res = $db->beginTransaction();
-				if($res !== true) return $res;
+				//$res = $db->beginTransaction();
+				//if($res !== true) return $res;
 				
 				$log->write('info', 'transaction started');
 				
@@ -495,15 +500,16 @@ class EcProject{
 				foreach($this->tables as $tbl)
 				{
 						$log->write('info', "Updating form {$tbl->name}");
-						$res = $tbl->update();
+						echo $tbl->id ? "Update\n" : "Add\n";
+						$res = $tbl->id ? $tbl->update() : $tbl->addToDb();
 						if($res !== true) {
 								$log->write('error', "Updating form {$tbl->name} failed $res");
-								$db->rollbackTransaction();
+								//$db->rollbackTransaction();
 								return $res;
 						}
 						$log->write('info', "Updated form {$tbl->name}");
 				}
-				$db->commitTransaction();
+				//$db->commitTransaction();
 				$log->write('info', "Update done");
 				return true;
 			}	
