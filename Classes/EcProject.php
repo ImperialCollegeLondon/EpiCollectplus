@@ -96,7 +96,7 @@ class EcProject{
 		}
 		
 		
-		public function parse($xml)
+		public function parse($xml, $edit=false)
 		{
 			$root = simplexml_load_string($xml);
 			$model = $root->model[0];
@@ -151,15 +151,21 @@ class EcProject{
 				for($t = 0; $t < count($root->form); $t++)
 				{
 						$atts = $root->form[$t]->attributes();
-						if(!array_key_exists((string)$atts['name'], $this->tables) || $this->id)
+						
+						if(!array_key_exists((string)$atts['name'], $this->tables))
 						{
 							 $tbl = new EcTable($this);
 						}
+						elseif($this->tables[(string)$atts['name']]->id)
+						{
+							$tbl = $this->tables[(string)$atts['name']];
+						}
 						else
 						{
-								throw new Exception("Table names must be unique. More that one table called " .(string)$atts['name'] . "in {$this->name}" );
+								throw new Exception("Table names must be unique. More that one table called " .(string)$atts['name'] . " in {$this->name}" );
 								//$tbl = $this->tables[(string)$atts['name']]; 
 						}
+						
 						
 						$tbl->parse($root->form[$t]);
 						$this->tables[$tbl->name] = $tbl;
@@ -175,7 +181,7 @@ class EcProject{
 				}
 				for($t = 0; $t < count($root->table); $t++)
 				{
-						if(!array_key_exists((string) $root->table[$t]->name, $this->tables))
+						if(!array_key_exists((string) $root->table[$t]->name, $this->tables)|| $this->tables[(string) $root->table[$t]->name]->id)
 						{
 							 $tbl = new EcTable($this);
 						}
@@ -235,7 +241,8 @@ class EcProject{
 		
 		public function getLastUpdated()
 		{
-			$db = new dbConnection();
+			//$db = new dbConnection();
+			global $db;
 			$sql = "SELECT max(uploaded) as Uploaded, max(lastEdited) as Edited, count(1) as ttl from entry WHERE projectName = '{$this->name}'";
 			$res = $db->do_query($sql);
 			
@@ -248,15 +255,17 @@ class EcProject{
 			
 			$tz = new DateTimeZone('UTC');
 			
-			//ignore created as it will, by definition, be earlier than uploaded!
-			//$created = new DateTime('now', $tz);
-			//$created->setTimestamp($arr["Created"]);
-			
 			$uploaded = new DateTime($arr["Uploaded"], $tz);
-			$edited = new DateTime($arr["Edited"],$tz);
-			
-			//$dat = $created > $uploaded ? $created : $uploaded;
-			$dat = $uploaded > $edited ? $uploaded : $edited;
+			if($arr["Edited"] != "")
+			{
+				$edited = new DateTime($arr["Edited"],$tz);
+			}
+			else
+			{
+				$edited = null;
+			}		
+
+			$dat = $uploaded > $edited  ? $uploaded : $edited;
 			return $dat->getTimestamp() . $arr["ttl"];
 		}
 		
@@ -500,16 +509,16 @@ class EcProject{
 				foreach($this->tables as $tbl)
 				{
 						$log->write('info', "Updating form {$tbl->name}");
-						echo $tbl->id ? "Update\n" : "Add\n";
+				
 						$res = $tbl->id ? $tbl->update() : $tbl->addToDb();
 						if($res !== true) {
 								$log->write('error', "Updating form {$tbl->name} failed $res");
-								//$db->rollbackTransaction();
+								$db->rollbackTransaction();
 								return $res;
 						}
 						$log->write('info', "Updated form {$tbl->name}");
 				}
-				//$db->commitTransaction();
+				$db->commitTransaction();
 				$log->write('info', "Update done");
 				return true;
 			}	

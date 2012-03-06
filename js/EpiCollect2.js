@@ -624,7 +624,13 @@ var EcTable = function(conf)
 			{
 				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 					
-					var gps = Ext.decode(value);
+					try{
+						var gps = Ext.decode(value);
+					}
+					catch(err)
+					{
+						return value;
+					}
 					if(gps.accuracy == "-1")
 					{
 						return "<i>no position</i>";
@@ -855,7 +861,7 @@ var EcTable = function(conf)
 			store: this.store,
 			tbar: tBtns,
 			width: Ext.getBody().getWidth() - 25,
-			height: Ext.getBody().getHeight() * 0.75,
+			height: 600,
 			listeners : {
 				'contextmenu': function(e)
 				{

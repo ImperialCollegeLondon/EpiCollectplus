@@ -39,7 +39,14 @@
 		
 		if($this->openIdEnabled)
 	  	{
-	   		$this->providers["OPENID"] = new OpenIDProvider("http://test.mlst.net/index.php");
+	  		try{
+	   			$this->providers["OPENID"] = new OpenIDProvider("http://test.mlst.net/index.php");
+	  		}catch(Exception $err)
+	  		{
+	  			$err = null;
+	  			$this->openIdEnabled = false;
+	  			
+	  		}
 	  	}
 	   	if($this->ldapEnabled)
 	   	{
@@ -136,7 +143,8 @@
   				$_SESSION["tries"]++;
   			}
   			sleep($_SESSION["tries"] * $_SESSION["tries"]);
-  			header("location: /login.php");
+  			global $SITE_ROOT;
+  			header("location: $SITE_ROOT/login.php");
   		}
   	}
   	
@@ -273,7 +281,15 @@
 	  {
 	  	if($this->localEnabled)
 	  	{
-	  	 	return $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language, count($this->getServerManagers()) == 0);
+	  	 	$res =  $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language, count($this->getServerManagers()) == 0);
+	  	 	if($res === true)
+	  	 	{
+	  	 		return true;
+	  	 	}
+	  	 	elseif(preg_match("/Duplicate entry '.*' for key 'Email'/", $res))
+	  	 	{
+	  	 		flash("A user already exists with that email address", "err");
+	  	 	}
 	  	}
 	  	else
 	  	{

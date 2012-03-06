@@ -54,7 +54,7 @@
 		
 		public function post() // add!
 		{
-			global $auth;
+			global $auth, $db;
 						
 			if(!$this->created)
 			{
@@ -75,7 +75,7 @@
 			
 			//TODO: need to get the user details from the phone
 			try{
-				$db = new dbConnection();
+				//$db = new dbConnection();
 				$res = $db->beginTransaction();
 				if($res !== true) return $res;
 				//check that the entry doesn't already exist

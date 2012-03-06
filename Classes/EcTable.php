@@ -49,7 +49,8 @@
 			$xml = "\n\t<form num=\"{$this->number}\" name=\"{$this->name}\" key=\"{$this->key}\" main=\"". ($this->isMain ? "true" : "false")."\"> ";
 			foreach($this->fields as $fld)
 			{
-				$xml .= $fld->toXML();
+				if($fld->active)
+					$xml .= $fld->toXML();
 			}
 			$xml .= "\n\t</form>";
 			return $xml;
@@ -85,6 +86,7 @@
 		public function fetch()
 		{
 			$db = new dbConnection();
+			//global $db;
 			
 			$qry = "SELECT * from form WHERE";
 			if(is_numeric($this->id))
@@ -111,7 +113,7 @@
 				
 			}
 			
-			$qry = "SELECT f.idField as idField, f.key, f.name, f.label, ft.name as type, f.required, f.jump, f.isinteger as isInt, f.isDouble, f.title, f.regex, f.doubleEntry, f.search, f.group_form, f.branch_form, f.display, f.genkey, f.date, f.time, f.setDate, f.setTime, f.min, f.max, f.crumb, f.`match` FROM field f LEFT JOIN fieldtype ft on ft.idFieldType = f.type WHERE ";
+			$qry = "SELECT f.idField as idField, f.key, f.name, f.label, ft.name as type, f.required, f.jump, f.isinteger as isInt, f.isDouble, f.title, f.regex, f.doubleEntry, f.search, f.group_form, f.branch_form, f.display, f.genkey, f.date, f.time, f.setDate, f.setTime, f.min, f.max, f.crumb, f.`match`, f.active FROM field f LEFT JOIN fieldtype ft on ft.idFieldType = f.type WHERE ";
 			if(is_numeric($this->id))
 			{
 				$qry = "$qry f.form = {$this->id} ORDER BY f.position";
@@ -165,8 +167,8 @@
 		
 		public function addToDb()
 		{
-			global $auth;
-			$db = new dbConnection();
+			global $auth, $db;
+			//$db = new dbConnection();
 			
 			//print_r($this->fields);
 			
@@ -268,11 +270,17 @@
 						throw new Exception("Every form field must have a ref attribute, which cannot be blank");
 					}
 					
-					if(array_key_exists((string)$atts['ref'], $this->fields))
+					if(!array_key_exists((string)$atts['ref'], $this->fields))
+					{
+						$fld = new EcField();
+					}
+					elseif($this->fields[(string)$atts['ref']]->idField)
+					{
+						$fld = $this->fields[(string)$atts['ref']];
+					}
+					else
 					{
 						throw new Exception("duplicate field name " . (string)$atts['ref'] . " in the form {$this->name}");
-					}else{
-						$fld = new EcField();
 					}
 					
 					$fld->parse($field);
@@ -286,7 +294,7 @@
 							$fld->fkField = $tbl->key;
 						}
 					}
-					
+					$fld->active = true;
 					$fld->position = $p;
 					$this->fields[$fld->name] = $fld;
 					if($fld->type == "branch") array_push($this->branches, $fld->branch_form);
@@ -301,11 +309,174 @@
 			$this->fields[$this->key]->key = true;
 		}
 		
+		public function ask($args = false, $offset = 0, $limit = 0, $sortField = "created", $sortDir = "asc", $exact = false)
+		{
+			global $db;
+			$db = new dbConnection();
+			$select = "SELECT DISTINCT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded ";
+			$join = "FROM entry e ";
+			$where = " WHERE e.projectName = '{$this->survey->name}' AND e.formName = '{$this->name}' ";
+			foreach($this->fields as $name => $field)
+			{
+				if($field->active)
+				{
+					$select .= ", ev$name.value as `$name` ";
+					$join .= "LEFT JOIN entryValue ev$name ON e.idEntry = ev$name.entry and ev$name.fieldName = '$name' " ;
+				}
+			}
+			
+			if($args)
+			{
+				foreach($args as $k => $v)
+				{
+					if(array_key_exists($k, $this->fields))
+					{
+						if($exact)
+						{
+							$where .= " AND ev$k.value = '$v'";
+						}
+						else
+						{
+							$where .= " AND ev$k.value LIKE '%$v%'";
+						}
+					}
+				}
+			}
+// 			if($this->survey->getNextTable($this->name, true))
+// 			{
+// 				$child = $this->survey->getNextTable($this->name, true);
+// 				$join .= "LEFT JOIN (select value from entryValue where projectName = '{$this->survey->name}' AND formName = '{$this->name}' AND fieldName = '{$this->key}') ev{$child->name}_entries ON  ";
+// 			}
+			
+			
+			$order = " ORDER BY e.$sortField $sortDir";
+			
+			$qry = "$select $join $where $order";
+			
+			return $db->do_query($qry);
+				
+		}
+		
+		public function recieve($n = 1, $format = "object")
+		{
+			global $db;
+			$ret = null;
+			
+			for($i = 0; ($n > $i) && ($arr = $db->get_row_array()) ; $i++)
+			{
+				
+				//print_r($arr);
+				if($format == "object")
+				{
+					if($ret == null) $ret = array();
+					array_push($ret, $arr);						
+				}
+				elseif($format == "tsv")
+				{
+					if($ret == null) $ret = "";
+					foreach($arr as $key => $val)
+					{
+						if(strlen($ret) != 0 && $ret[strlen($ret)-1] != "\n") $ret .=  "\t";
+						if(array_key_exists($key, $this->fields) && ($this->fields[$key]->type == "location" || $this->fields[$key]->type == "gps" ))
+						{
+							if($val != "")
+							{
+								$val = json_decode($val);
+								$ret .=  str_replace("\n", " ","{$val->latitude}\t{$val->longitude}\t{$val->altitude}\t{$val->accuracy}\t{$val->provider}");
+							}
+							else
+							{
+								$ret .= "0\t0\t0\t-1\tNone";
+							}
+						}
+						else
+						{
+							$ret .= str_replace("\n", " ", $val);
+						}
+					}
+					$ret .= "\n";
+				}  
+				elseif($format == "csv") 
+				{
+					if($ret == null) $ret = "";
+					foreach($arr as $key => $val)
+					{
+						if(strlen($ret) != 0 && $ret[strlen($ret)-1] != "\n") $ret .=  ",";
+						if(array_key_exists($key, $this->fields) && ($this->fields[$key]->type == "location" || $this->fields[$key]->type == "gps" ))
+						{
+							if($val != "")
+							{
+								$val = json_decode($val);
+								$ret .=  str_replace("\n", " ","{$val->latitude},{$val->longitude},{$val->altitude},{$val->accuracy},{$val->provider}");
+							}
+							else
+							{
+								$ret .= "0,0,0,-1,None";
+							}
+						}
+						else
+						{
+							$ret .=  str_replace("\n", " ",$val);
+						}
+					}
+					$ret .= "\n";
+				}
+				elseif($format == "json")
+				{
+					if($ret == null) $ret = "";
+					if($i > 0) $ret .= ",";
+					$ret .= "{";
+				
+					foreach($arr as $key => $val)
+					{
+						if(array_key_exists($key, $this->fields) && ($this->fields[$key]->type == "location" || $this->fields[$key]->type == "gps" ))
+						{
+							$ret .= "\"$key\" : $val,";
+						}
+						else
+						{
+							$ret .= "\"$key\" : \"$val\",";
+						}
+					}
+					
+					$ret = trim($ret, ",") . "}";
+					
+				}
+				elseif($format == "xml")
+				{
+					if($ret == null) $ret = "";
+					$ret .= "<entry>";
+					foreach($arr as $key => $val)
+					{
+						if(array_key_exists($key, $this->fields) && ($this->fields[$key]->type == "location" || $this->fields[$key]->type == "gps" ))
+						{
+							if($val != "")
+							{
+								$val = json_decode($val);
+								$ret .= "<{$key}_lat>{$val->latitude}</{$key}_lat><{$key}_lon>{$val->longitude}</{$key}_lon><{$key}_alt>{$val->altitude}</{$key}_alt><{$key}_acc>{$val->accuracy}</{$key}_acc><{$key}_provider>{$val->provider}</{$key}_provider>";
+							}
+							else
+							{
+								$ret .= "<{$key}_lat>0</{$key}_lat><{$key}_lon>0</{$key}_lon><{$key}_alt>0</{$key}_alt><{$key}_acc>-1</{$key}_acc><{$key}_provider>None</{$key}_provider>";
+							}
+						}
+						else 
+						{
+							$ret .= "<$key>$val</$key>";
+						}
+					}
+					$ret .= "</entry>";
+				}
+			}
+			
+			return $ret;
+		}
+		
 		public function get($args = false, $offset = 0, $limit = 0, $sortField = "created", $sortDir = "asc", $exact = false)
 		{
 			//global $auth;
-			
-			$db = new dbConnection();
+			global $db;
+			//$db = new dbConnection();
 			if(preg_match("/created|deviceId|lastEdited|uploaded/i", $sortField))
 			{
 				$sql = "SELECT DISTINCT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded FROM entry e {{joinclause}} WHERE e.projectName = '{$this->survey->name}' AND e.formName = '{$this->name}' {{whereclause}} ORDER BY e.$sortField $sortDir";
@@ -489,7 +660,7 @@
 			
 			foreach($this->fields as $fld)
 			{
-				if($fld->id){
+				if($fld->idField){
 					$res = $fld->update();
 				}
 				else
@@ -555,8 +726,9 @@
 					break;
 			}
 			
-			$db = new dbConnection();
-			$sql->do_query($sql);
+			//$db = new dbConnection();
+			global $db; 
+			$db->do_query($sql);
 		}
 		
 		public function parseEntries($xml) //recieves a table XMLSimpleElement

@@ -86,20 +86,20 @@ CREATE TABLE IF NOT EXISTS `field` (
   `title` tinyint(1) NOT NULL DEFAULT '0',
   `key` tinyint(1) NOT NULL DEFAULT '0',
   `isinteger` tinyint(1) NOT NULL DEFAULT '0',
-  `isdouble` bit(1) NOT NULL DEFAULT b'0',
+  `isdouble` tinyint(1) NOT NULL DEFAULT b'0',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `doubleEntry` tinyint(1) NOT NULL DEFAULT '0',
   `jump` varchar(1024) DEFAULT NULL,
-  `required` bit(1) NOT NULL,
-  `search` bit(1) NOT NULL DEFAULT b'0',
-  `display` bit(1) NOT NULL DEFAULT b'1',
+  `required` tinyint(1) NOT NULL,
+  `search` tinyint(1) NOT NULL DEFAULT b'0',
+  `display` tinyint(1) NOT NULL DEFAULT b'1',
   `group_form` varchar(255) DEFAULT NULL,
   `branch_form` varchar(255) DEFAULT NULL,
   `date` varchar(255) DEFAULT NULL,
   `time` varchar(255) DEFAULT NULL,
   `settime` varchar(255) DEFAULT NULL,
   `setdate` varchar(255) DEFAULT NULL,
-  `genkey` bit(1) NOT NULL DEFAULT b'0',
+  `genkey` tinyint(1) NOT NULL DEFAULT b'0',
   `min` double DEFAULT NULL,
   `max` double DEFAULT NULL,
   `crumb` varchar(255) DEFAULT NULL,
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS `form` (
   `projectName` varchar(255) NOT NULL,
   `version` float NOT NULL DEFAULT '1',
   `name` varchar(100) NOT NULL,
-  `isMain` bit(1) NOT NULL DEFAULT b'1',
+  `isMain` tinyint(1) NOT NULL DEFAULT b'1',
   `table_num` int(11) NOT NULL DEFAULT '1',
   `keyField` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`idForm`),
@@ -174,7 +174,7 @@ CREATE TABLE IF NOT EXISTS `submissionhistory` (
   `firstUploaded` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `request` text,
   `attempts` int(11) NOT NULL DEFAULT '1',
-  `result` bit(1) NOT NULL DEFAULT b'0',
+  `result` tinyint(1) NOT NULL DEFAULT b'0',
   `message` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ~
@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `Email` varchar(255) NOT NULL,
   `details` TEXT DEFAULT NULL,
   `language` varchar(8) DEFAULT NULL,
-  `serverManager` bit(1) DEFAULT b'0',
+  `serverManager` tinyint(1) DEFAULT b'0',
   PRIMARY KEY (`idUsers`),
   UNIQUE KEY `Email` (`Email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ~
@@ -230,7 +230,7 @@ BEGIN
 END ~
 
 CREATE PROCEDURE `addField`(pName varchar(255), formName varchar(255), fieldId varchar(255), fieldLabel varchar(255), typeName varchar(255), labelLanguage varchar(2),
-    regex varchar(255), isTitle bit, isKey bit, isInt bit, isDouble bit, isActive bit, isDoubelEntry bit, jump varchar(255))
+    regex varchar(255), isTitle tinyint, isKey tinyint, isInt tinyint, isDouble tinyint, isActive tinyint, isDoubelEntry tinyint, jump varchar(255))
 BEGIN
     declare prjId int;
     declare frmId int;
@@ -258,7 +258,7 @@ BEGIN
     INSERT INTO `option` (`index`, `label`, `value`, `field`) VALUES (idx, lbl, val, fldId);
 END ~
 
-CREATE PROCEDURE `addproject`(pName VARCHAR(255), submissionId varchar(255), pDescription TEXT, pImage varchar(255), pIsPublic BIT, pIsListed BIT, pPublicSubmission BIT, creator INT)
+CREATE PROCEDURE `addproject`(pName VARCHAR(255), submissionId varchar(255), pDescription TEXT, pImage varchar(255), pIsPublic tinyint, pIsListed tinyint, pPublicSubmission tinyint, creator INT)
 BEGIN
     INSERT INTO project (`name`, `submission_id`, `description`, `image`, `isPublic`, `isListed`, `publicSubmission`) VALUES (pName, submissionId, pDescription, pImage, pIsPublic, pIsListed,pPublicSubmission);
 END ~
@@ -347,7 +347,7 @@ BEGIN
     UPDATE `user` SET `Name` = RealName, Email = newemail where idUsers = id;
 END ~
 
-CREATE PROCEDURE `updateProject`(pId int, pName VARCHAR(255), pDescription TEXT, pImage varchar(255), pIsPublic BIT, pIsListed BIT, pPublicSubmission BIT)
+CREATE PROCEDURE `updateProject`(pId int, pName VARCHAR(255), pDescription TEXT, pImage varchar(255), pIsPublic tinyint, pIsListed tinyint, pPublicSubmission tinyint)
 BEGIN
     UPDATE project set `name` = pName, `description` = pDescription, `image` = pImage, `isPublic` = pIsPublic, `isListed` = pIsListed, `publicSubmission` = pPublicSubmission
         WHERE `id`= pId;

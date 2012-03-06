@@ -55,8 +55,8 @@
   	var listOpts;
   	var curEmail = "{#userEmail#}";
   	
-  	var curators = "{#curators#}".split(",");
-  	var managers = "{#managers#}".split(",");
+  	var curators = {#curators#}.split(",");
+  	var managers = {#managers#}.split(",");
   	var projectName = "{#projectName#}"
   	var isPublic = {#public#};
   	var isListed = {#listed#};
@@ -70,12 +70,14 @@
   		
   		for(var i = 0; i < curators.length; i++)
   		{
-  			addUser("curators", curators[i]);
+  			if(curators[i] != "")
+  				addUser("curators", curators[i]);
   		}
   		
   		for(var i = 0; i < managers.length; i++)
   		{
-  			addUser("managers", managers[i]);
+  			if(managers[i] != "")
+  				addUser("managers", managers[i]);
   		}
  		
 		$('form').tabs();
@@ -131,7 +133,7 @@
   		{
   			var rm = "";
   			
-  			if(!$("#" + uType).val().match(new RegExp(email, "i")))
+  			if(!$("#s_" + uType).val().match(new RegExp(email, "i")))
   			{
   				if(email != curEmail) rm = "<a class=\"remove\" href=\"javascript:removeUser('" + uType + "','" + email + "')\">Remove</a>";
   				$("#s_" + uType + " tbody").append("<tr><td>" + email + "</td><td>"  + rm + "</td></tr>");
@@ -188,10 +190,10 @@
   </script>
 {{/script}}
 {{breadcrumbs}}
-  &gt; <a href="createProject.html">{#title#}</a>
+  &gt; <a href="../{#projectName#}">{#projectName#}</a> &gt; <a href="../{#projectName#}/update">Manage Project</a>
 {{/breadcrumbs}}
 {{main}}
-	  <h1 id="title">Create a Project - <span class="projectName"></span></h1>
+	  <h1 id="title">Manage <span class="projectName"></span></h1>
 	  <div id="message"></div>
 	  <form id="projectOptions" action="updateStructure" method="POST">
 	  		<ul>

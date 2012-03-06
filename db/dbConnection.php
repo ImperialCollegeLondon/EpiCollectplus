@@ -38,7 +38,7 @@
 		
 		public function __destruct()
 		{
-			mysqli_close($this->con);
+			$this->con->close();
 		}
 		
 		public function boolVal($val) {return $val === true || $val === "true" ? "1" : "0";}
@@ -96,9 +96,10 @@
 		{
 			if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
 			$this->resSet = $this->con->query($qry);
+			$this->numRows = $this->con->affected_rows;
 			if($this->resSet)
 			{
-				$this->numRows = $this->con->affected_rows;
+				
 				return true;
 			}
 			else

@@ -46,6 +46,8 @@ class EcField{
 		public $fkTable = false;
 		public $fkField = false;
 		
+		public $active = true;
+		
 		public $dateTimeBlocks = array(
 				"dd" => "d",
 				"MM" => "m",
@@ -177,13 +179,13 @@ class EcField{
 					$fieldType = $arr["idFieldType"];
 				}
 				
-				$sql = "UPDATE field SET type = {$fieldType}, name = " . $db->stringVal($this->name) .", label = " . $db->stringVal($this->label) .", language = " . $db->stringVal($this->language) .", regex = " . $db->stringVal($this->regex) .", title = " . $db->boolVal($this->title) . "
-						, `key` = " . $db->boolVal($this->key) . ", isinteger= " . $db->boolVal($this->isInt) . ", isdouble= " . $db->boolVal($this->isDouble) . ", active = 1, doubleentry = " . $db->boolVal($this->doubleEntry) . ", jump= " . $db->stringVal($this->jump) . ", required = " . $db->boolVal($this->required) . ", search = " . $db->boolVal($this->search) . ",
-						group_form=  " . $db->stringVal($this->group_form) . ", branch_form=  " . $db->stringVal($this->branch_form) . ", display= " . $db->boolVal2($this->display) . ", genkey = " . $db->boolVal($this->genkey) . ", date = " . $db->stringVal($this->date) .", time = " . $db->stringVal($this->time) .",
-						setdate  = " . $db->stringVal($this->setDate) .", settime  = " . $db->stringVal($this->setTime) .", position = {$this->position}, min = " . $db->numVal($this->min) . ", max = " . $db->numVal($this->max) . ", defaultValue = " . $db->stringVal($this->defaultValue) . " WHERE idField = {$this->idField};";
+				$sql = "UPDATE field SET type = {$fieldType}, name = " . $db->stringVal($this->name) .", label = " . $db->stringVal($this->label) .", language = " . $db->stringVal($this->language) .", regex = " . $db->stringVal($this->regex) .", title = " . $db->boolVal($this->title) . 
+						", `key` = " . $db->boolVal($this->key) . ", isinteger= " . $db->boolVal($this->isInt) . ", isdouble= " . $db->boolVal($this->isDouble) . ", active = 1, doubleentry = " . $db->boolVal($this->doubleEntry) . ", jump= " . $db->stringVal($this->jump) . ", required = " . $db->boolVal($this->required) . ", search = " . $db->boolVal($this->search) . 
+						",group_form=  " . $db->stringVal($this->group_form) . ", branch_form=  " . $db->stringVal($this->branch_form) . ", display= " . $db->boolVal2($this->display) . ", genkey = " . $db->boolVal($this->genkey) . ", date = " . $db->stringVal($this->date) .", time = " . $db->stringVal($this->time) .
+						",setdate  = " . $db->stringVal($this->setDate) .", settime  = " . $db->stringVal($this->setTime) .", position = {$this->position}, min = " . $db->numVal($this->min) . ", max = " . $db->numVal($this->max) . ", defaultValue = " . $db->stringVal($this->defaultValue) . ", active = " . $db->boolVal($this->active). " WHERE idField = {$this->idField};";
 				$res = $db->do_query($sql);
 				if($res !== true) return $res;
-				if($db->affectedRows() == 0) return "field not found";
+				//if($db->affectedRows() == 0) return "field {$this->name} ({$this->idField}) not found -- $sql";
 				
 				if(count($this->options) != 0){
 				
