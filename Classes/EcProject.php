@@ -294,7 +294,7 @@ class EcProject{
 			{
 				if($t->number == $num)
 				{
-					if($t->isMain === "true" || !$mainOnly)
+					if($t->isMain === true || !$mainOnly)
 					{
 						$tbl = $t;
 						break;

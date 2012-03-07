@@ -1319,7 +1319,7 @@ function downloadData()
 				$nxtCVals[$ent[$survey->tables[$tbls[$t]]->key]] = true;
 			}
 
-			fflush($fxml);
+			fflush($xml ? $fxml : $tsv);
 		}
 		
 		if($dataType == "data" && $xml)

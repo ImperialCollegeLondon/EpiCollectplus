@@ -499,7 +499,7 @@
 			{
 				$sql = "SELECT DISTINCT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded FROM entry e {{joinclause}} WHERE e.projectName = '{$this->survey->name}' AND e.formName = '{$this->name}' {{whereclause}} ORDER BY e.$sortField $sortDir";
 			}
-			elseif (preg_match("/childEntries/i", $sortField))
+			elseif (preg_match("/" .$this->survey->getNextTable($this->name, true)->name . "Entries/i", $sortField))
 			{
 				$childForm = $this->survey->getNextTable($this->name, true);
 				$sql = "SELECT DISTINCT idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded, c.childEntries FROM entry e LEFT JOIN entryvalue ev ON ev.entry = e.idEntry LEFT JOIN (SELECT Value, count(1) as childEntries FROM EntryValue where projectName = '{$this->survey->name}' AND formName = '{$childForm->name}' and fieldName = '{$this->key}' GROUP BY value) c ON c.value = ev.value {{joinclause}} WHERE ev.projectName = '{$this->survey->name}' AND ev.formName = '{$this->name}' and ev.fieldName = '{$this->key}' {{whereclause}} ORDER BY c.childEntries $sortDir";
@@ -611,6 +611,7 @@
 					}
 				}
 				
+		
 				if($this->survey->getNextTable($this->name, true))
 				{
 					$sql = "SELECT FormName, value, count(1) as count from entryvalue WHERE projectName = '{$this->survey->name}' AND formName = '" . $this->survey->getNextTable($this->name, true)->name . "' AND fieldName = '{$this->key}' Group By FormName, value";
