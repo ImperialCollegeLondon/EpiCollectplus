@@ -349,9 +349,27 @@
 // 			}
 			
 			
-			$order = " ORDER BY e.$sortField $sortDir";
-			
-			$qry = "$select $join $where $order";
+			if(array_key_exists($sortField, $this->fields))
+			{
+				$order = " ORDER BY ev$sortField.value $sortDir";
+			}
+			else
+			{
+				$order = " ORDER BY e.$sortField $sortDir";
+			}
+			if($limit && $offset)
+			{
+				$limit = " LIMIT $limit, $offset";
+			}
+			elseif ($limit)
+			{
+				$limit = " LIMIT $limit";	
+			}
+			else 
+			{
+				$limit = "";
+			}
+			$qry = "$select $join $where $order $limit";
 			
 			return $db->do_query($qry);
 				

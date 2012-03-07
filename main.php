@@ -476,7 +476,7 @@ function projectHome()
 		return;
 	}
 
-	if(!$prj->isPublic && !$auth->isLoggedIn())
+	if(!$prj->isPublic && !$auth->isLoggedIn() && !preg_match("/\.xml$/",$url))
 	{
 		flash("The is a private project, please log in to view the project.");
 		loginHandler($url);
@@ -1453,57 +1453,67 @@ function formHandler()
 		$limit = array_key_exists('limit', $_GET) ? $_GET['limit'] : 0;;
 			
 		switch($format){
-			case "json":
-				header("Cache-Control: no-cache, must-revalidate");
-				header("Content-Type: application/json");
-				//if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
-				//{
-					$arr = array();
-					foreach($_GET as $k => $v)
+		case "json":
+					header("Cache-Control: no-cache, must-revalidate");
+					header("Content-Type: application/json");
+					if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
 					{
-						if(array_key_exists($k, $prj->tables[$frmName]->fields))
+						$arr = array();
+						foreach($_GET as $k => $v)
 						{
-							$arr[$k] = $v;
-						}
+							if(array_key_exists($k, $prj->tables[$frmName]->fields))
+							{
+								$arr[$k] = $v;
+							}
 							
+						}
+						$arr = $prj->tables[$frmName]->get($arr, $offset, $limit, $_GET["sort"], $_GET["dir"]);
+						echo json_encode($arr);
+						break;
 					}
-					$res = $prj->tables[$frmName]->ask(false, $offset, $limit);
-					if($res !== true) return;
-					while($xml = $prj->tables[$frmName]->recieve(1, "json"))
+					else
 					{
-						echo $xml;
+						
+						echo $prj->tables[$frmName]->toJson();
+						break;
 					}
 					break;
-
-				/*}
-				else
-				{
-
-					echo $prj->tables[$frmName]->toJson();
-					break;
-				}*/
-				break;
-			case "xml":
-				header("Cache-Control: no-cache, must-revalidate");
-				header("Content-Type: text/xml");
-				//if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
-				//{
-					echo '<?xml version="1.0" encoding="UTF-8"?>';
-					echo "<entries><table><table_name>$frmName</table_name>";
-					$res = $prj->tables[$frmName]->ask(false, $offset, $limit);
-					if($res !== true) return;
-					while($xml = $prj->tables[$frmName]->recieve(1, "xml"))
+				case "xml":
+					header("Cache-Control: no-cache, must-revalidate");
+					header("Content-Type: text/xml");
+					if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
 					{
-						echo $xml;
+						
+						$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
+						foreach($arr["$frmName"] as $ent)
+						{
+						
+							echo "<entry>";
+							foreach($ent as $key => $value)
+							{
+								if(array_key_exists($key, $prj->tables[$frmName]->fields) && ($prj->tables[$frmName]->fields[$key]->type == "gps" || $prj->tables[$frmName]->fields[$key]->type == "location" ))
+								{
+									$gps = json_decode($value);
+									foreach($gps as $gkey => $gval)
+									{
+										$suf = ($gkey != "provider" ? substr($gkey, 0, 3) : $key);
+										echo "\t\t\t<{$key}_{$suf}>" . str_replace("&", "&amp;", $gval) . "</{$key}_{$suf}>\n";
+									}
+								}
+								else
+								{
+									echo "<$key>$value</$key>";
+								}
+							}
+							echo "</entry>";
+						}
+						break;
 					}
-					echo "</table></entries>";
-					break;
-				/*}
-				else
-				{
-					echo $prj->tables[$frmName]->toXml();
-					break;
-				}*/
+					else
+					{
+						echo $prj->tables[$frmName]->toXml();
+						break;
+					}
 			case "kml":
 			case "kmz":
 				header("Cache-Control: no-cache, must-revalidate");
@@ -2711,7 +2721,7 @@ if($rule)
 	}
 	elseif($rule->secure)
 	{
-		flash("Warning: this page is not secure as HTTPS is not avaiable", "err");
+		//flash("Warning: this page is not secure as HTTPS is not avaiable", "err");
 	}
 
 
