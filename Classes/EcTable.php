@@ -312,8 +312,13 @@
 		public function ask($args = false, $offset = 0, $limit = 0, $sortField = "created", $sortDir = "asc", $exact = false)
 		{
 			global $db;
+			
+			if(!$sortField) $sortField = "created";
+			if(!$sortDir) $sortDir = "asc";
+			
 			$db = new dbConnection();
 			$select = "SELECT DISTINCT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded ";
+			$group = " GROUP BY e.idEntry, e.DeviceID, e.created, e.lastEdited, e.uploaded ";
 			$join = "FROM entry e ";
 			$where = " WHERE e.projectName = '{$this->survey->name}' AND e.formName = '{$this->name}' ";
 			foreach($this->fields as $name => $field)
@@ -321,6 +326,7 @@
 				if($field->active)
 				{
 					$select .= ", ev$name.value as `$name` ";
+					$group .= ", ev$name.value";
 					$join .= "LEFT JOIN entryValue ev$name ON e.idEntry = ev$name.entry and ev$name.fieldName = '$name' " ;
 				}
 			}
@@ -342,18 +348,25 @@
 					}
 				}
 			}
-// 			if($this->survey->getNextTable($this->name, true))
-// 			{
-// 				$child = $this->survey->getNextTable($this->name, true);
-// 				$join .= "LEFT JOIN (select value from entryValue where projectName = '{$this->survey->name}' AND formName = '{$this->name}' AND fieldName = '{$this->key}') ev{$child->name}_entries ON  ";
-// 			}
+ 			if($this->survey->getNextTable($this->name, true))
+ 			{
+ 			
+ 				$child = $this->survey->getNextTable($this->name, true);
+ 				$select .= ", COUNT(ev{$child->name}_entries.value) as {$child->name}_entries ";
+ 				$join .= "LEFT JOIN (select value from entryValue where projectName = '{$this->survey->name}' AND formName = '{$child->name}' AND fieldName = '{$this->key}') ev{$child->name}_entries ON ev{$child->name}_entries.value = ev{$this->key}.value ";
+ 				
+ 			}
+ 			else 
+ 			{
+ 				$group = "";
+ 			}
 			
 			
 			if(array_key_exists($sortField, $this->fields))
 			{
 				$order = " ORDER BY ev$sortField.value $sortDir";
 			}
-			else
+			elseif($sortField)
 			{
 				$order = " ORDER BY e.$sortField $sortDir";
 			}
@@ -369,8 +382,8 @@
 			{
 				$limit = "";
 			}
-			$qry = "$select $join $where $order $limit";
-			
+			$qry = "$select $join $where $group $order $limit";
+
 			return $db->do_query($qry);
 				
 		}
@@ -449,6 +462,7 @@
 					{
 						if(array_key_exists($key, $this->fields) && ($this->fields[$key]->type == "location" || $this->fields[$key]->type == "gps" ))
 						{
+							if(!$val) $val = "null";
 							$ret .= "\"$key\" : $val,";
 						}
 						else
@@ -696,25 +710,44 @@
 			return $res;
 		}
 		
-		public function post($args) //$args should be an assocaitive array of arguments
+		function getSummary($args, $exact = false)
 		{
+			//TODO : filter summary based on $args
+			global $db;
+			//$qry = "SELECT count(1) as ttl, max(created) as lastCreated, max(uploaded) as uploaded, max(lastEdited) as lastEdited, count(DISTINCT deviceID) as devices, count(distinct user) as users from entry where projectName = '{$this->projectName}' and formName = '{$this->name}' Group By projectName, formName";
 			
-		}
-		
-		public function delete($args, &$response)
-		{
+			$sql2 = "SELECT count(DISTINCT entry) as ttl FROM entryvalue WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
+			if(is_array($args) && count($args) > 0)
+			{
+				//If we have search criteria
+				$sql2 .= "AND (";
+				$joinClause = " ";
+				$whereClause = " ";
+				foreach($args as $k => $v)
+				{
+					$joinClause .= " JOIN entryvalue ev$k on e.idEntry = ev$k.Entry ";
+					if($exact)
+					{
+						$whereClause .= "AND (ev$k.fieldName = '$k' AND ev$k.value Like '$v') ";
+						$sql2 .= "(fieldName = '$k' AND value Like '$v') OR";
+					}
+					else
+					{
+						$whereClause .= "AND (ev$k.fieldName = '$k' AND ev$k.value Like '%$v%') ";
+						$sql2 .= "(fieldName = '$k' AND value Like '%$v%') OR";
+					}
+				}
+				$whereClause = substr($whereClause, 0, count($whereClause) - 3). ")";
+				$sql2 = substr($sql2, 0, count($sql2) - 3). ");";
+			}
 			
+			$res = $db->do_query($sql2);
 			
-		}
-		
-		public function toSQL()
-		{
-			
-		}
-		
-		function getSummary()
-		{
-			
+			if($res !== true) return $res;
+			$arr = array();	
+			while($a = $db->get_row_array()){$arr = $a;}
+
+			return $arr;
 		}
 		
 		function getUsage($res = "day", $from = NULL, $to = NULL)
@@ -731,19 +764,6 @@
 			
 			$periods = array();
 			
-			switch($res)
-			{
-				case "hour":
-					break;
-				case "day":
-					break;
-				case "week":
-					break;
-				case "month":
-					break;
-				case "year":
-					break;
-			}
 			
 			//$db = new dbConnection();
 			global $db; 
@@ -799,6 +819,43 @@
 				if($res !== true) return $res;
 			}
 			return $res;
+		}
+		
+		public function autoComplete($field, $val)
+		{
+			global $db;
+			
+			$fld = "";
+			if(array_key_exists($field, $this->fields))
+			{
+				$qry = "SELECT DISTINCT value FROM entryValue WHERE projectName = '{$this->projectName}' AND formName = '{$this->name}' AND fieldName = '$field' AND Value LIKE '$val%'";
+				$fld = "value";
+			}
+			else
+			{
+				$qry = "SELECT DISTINCT $field FROM entry WHERE projectName = '{$this->projectName}' AND formName = '{$this->name}' AND $field LIKE '$val%'";
+				$fld = $field;
+			}
+			
+			$res = $db->do_query($qry);
+			if($res !== true) return "[]";
+			
+			$result = "[";
+			while($arr = $db->get_row_array())
+			{
+				if($result != "[") $result .= ",";
+				if($this->fields[$field]->type == "location" || $this->fields[$field]->type == "gps")
+				{
+					$result .= "{$arr[$fld]}";
+				}
+				else
+				{
+					$result .= "\"{$arr[$fld]}\"";
+				}
+			}
+			
+			$result .= "]";
+			return $result;
 		}
 		
 	}

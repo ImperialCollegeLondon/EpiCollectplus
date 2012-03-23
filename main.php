@@ -1,6 +1,5 @@
 <?php
 
-
 if (isset($_REQUEST['_SESSION'])) die("Bad client request");
 
 //$tlog = fopen("./uploads/speedLog", "w");
@@ -17,13 +16,12 @@ function getValIfExists($array, $key)
 {
 	if(array_key_exists($key, $array))
 
-
 	{
 		return $array[$key];
 	}
 	else
 	{
-		return false;
+		return null;
 	}
 }
 
@@ -72,17 +70,23 @@ include ("./Classes/EcEntry.php");
 
 $cfg = new ConfigManager("ec/epicollect.ini");
 
+function genStr()
+{
+	$str = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	$str = str_shuffle($str);
+	$str = substr($str, -22);
+}
+
 if($cfg->settings["security"]["use_ldap"] && !function_exists("ldap_connect"))
 {
 	$cfg->settings["security"]["use_ldap"] = false;
 	$cfg->writeConfig();
 }
 
+
 if(!array_key_exists("salt",$cfg->settings["security"]) || $cfg->settings["security"]["salt"] == "")
 {
-	$str = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	$str = str_shuffle($str);
-	$str = substr($str, -22);
+	$str = genStr();
 	$cfg->settings["security"]["salt"] = $str;
 	$cfg->writeConfig();
 }
@@ -541,7 +545,7 @@ function projectHome()
 							"imageWidth" => $imgSize[0],
 							"imageHeight" =>$imgSize[1],
 							"tables" => $tblList,
-							"adminMenu" => "",
+							"adminMenu" => "<a href=\"{$prj->name}/manage\" class=\"manage\">Manage Project</a>",
 							"userMenu" => ""
 
 						);
@@ -813,6 +817,47 @@ function siteTest()
 	}
 }
 
+
+function getClusterMarker()
+{
+	include "/utils/markers.php";
+	$colours = getValIfExists($_GET, "colours");
+	$counts = getValIfExists($_GET, "counts");
+	
+	
+	if(!$colours)
+	{
+		$colours = array("#FF0000");
+	}
+	else
+	{
+		$colours = explode("|", $colours);
+	}
+
+	if(!$counts)
+	{
+		$counts = array(111);
+	}
+	else
+	{
+		$counts = explode("|", $counts);
+	}
+		
+	header("Content-type: image/svg+xml");
+	echo getGroupMarker($colours, $counts);
+}
+
+function getPointMarker()
+{
+	include "/utils/markers.php";
+	
+	$colour = getValIfExists($_GET, "colour");
+	if(!$colour) $colour = "FF0000";
+	$colour = trim($colour, "#");
+	header("Content-type: image/svg+xml");
+	echo getMapMaker($colour);
+}
+
 function siteHome()
 {
 	header("Cache-Control: no-cache, must-revalidate");
@@ -835,7 +880,7 @@ function siteHome()
 	$res = $db->do_query("SELECT name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name");
 	if($res !== true)
 	{
-
+			
 		//$vals["projects"] = "<p class=\"error\">Database is not set up correctly, go to the <a href=\"test\">test page</a> to establish the problem.</p>";
 		//echo applyTemplate("base.html","./index.html",$vals);
 		$rurl = "http://$server/$root/test?redir=true";
@@ -1262,7 +1307,7 @@ function downloadData()
 						foreach(array_keys($ent) as $fld)
 						{
 							if($fld == "childEntries") continue;
-							if(array_key_exists($fld, $survey->tables[$tbls[$t]]->fields) && preg_match("/^(gps|location)$/i", $survey->tables[$tbls[$t]]->fields[$fld]->type))
+							if(array_key_exists($fld, $survey->tables[$tbls[$t]]->fields) && preg_match("/^(gps|location)$/i", $survey->tables[$tbls[$t]]->fields[$fld]->type) && $ent[$fld] != "")
 							{
 								$gpsObj = json_decode($ent[$fld]);
 								fwrite($tsv,"{$fld}_lat{$delim}{$gpsObj->latitude}{$delim}");
@@ -1390,6 +1435,13 @@ function formHandler()
 	$prj->name = substr($url, 0, $pNameEnd);
 	$prj->fetch();
 	
+	if(!$prj->id)
+	{
+		echo applyTemplate("./base.html", "./error.html", array("errorType" => "404 ", "error" => "The project {$prj->name} does not exist on this server"));
+		return;
+	}
+	
+	
 	$permissionLevel = 0;
 
 	if($auth->isLoggedIn()) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
@@ -1401,7 +1453,7 @@ function formHandler()
 	}
 	else if(!$prj->isPublic &&  $permissionLevel < 2)
 	{
-		echo "access denied";
+		echo applyTemplate("./base.html", "./error.html", array("errorType" => "403 ", "error" => "You do not have permission to view this project"));
 		return;
 	}
 
@@ -1410,6 +1462,12 @@ function formHandler()
 	$extStart = strpos($url, ".");
 	$frmName = rtrim(substr($url, $pNameEnd + 1, ($extStart > 0 ?  $extStart : strlen($url)) - $pNameEnd - 1), "/");
 
+	if(!array_key_exists($frmName, $prj->tables))
+	{
+		echo applyTemplate("./base.html", "./error.html", array("errorType" => "404 ", "error" => "The project {$prj->name} does not contain the form $frmName"));
+		return;
+	}
+	
 	if($_SERVER["REQUEST_METHOD"] == "POST")
 	{
 		$log->write("debug", json_encode($_POST));
@@ -1462,35 +1520,26 @@ function formHandler()
 		case "json":
 					header("Cache-Control: no-cache, must-revalidate");
 					header("Content-Type: application/json");
-					if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
+					
+					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"));
+					echo "[";		
+					$i = 0;			
+					while($str = $prj->tables[$frmName]->recieve(1, "json"))
 					{
-						$arr = array();
-						foreach($_GET as $k => $v)
-						{
-							if(array_key_exists($k, $prj->tables[$frmName]->fields))
-							{
-								$arr[$k] = $v;
-							}
-							
-						}
-						$arr = $prj->tables[$frmName]->get($arr, $offset, $limit, $_GET["sort"], $_GET["dir"]);
-
-						echo json_encode($arr);
-						break;
+					
+						echo ($i > 0 ? ",$str" : $str);
+						$i++;
 					}
-					else
-					{
-						
-						echo $prj->tables[$frmName]->toJson();
-						break;
-					}
+					echo "]";
 					break;
+					
+					
 				case "xml":
 					header("Cache-Control: no-cache, must-revalidate");
 					header("Content-Type: text/xml");
 					if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
 					{
-						
+						echo "<entries>";
 						$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
 						foreach($arr["$frmName"] as $ent)
 						{
@@ -1514,6 +1563,7 @@ function formHandler()
 							}
 							echo "</entry>";
 						}
+						echo "</entries>";
 						break;
 					}
 					else
@@ -1522,36 +1572,34 @@ function formHandler()
 						break;
 					}
 			case "kml":
-			case "kmz":
 				header("Cache-Control: no-cache, must-revalidate");
 				header("Content-Type: application/vnd.google-earth.kml+xml");
 				echo '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://earth.google.com/kml/2.0"><Document><name>EpiCollect</name><Folder><name>';
 				echo "{$prj->name} - {$frmName}";
 				echo '</name><visibility>1</visibility>';
 					
-				$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
+				$arr = $prj->tables[$frmName]->ask(false, $offset, $limit);
 					
-				foreach($arr["$frmName"] as $ent)
+				while($ent = $prj->tables[$frmName]->recieve(1))
 				{
 					echo "<Placemark>";
 					$desc = "";
 					$title = "";
 					foreach($prj->tables[$frmName]->fields as $name => $fld)
 					{
+						if(!$fld->active)continue;
 						if($fld->type == "location" || $fld->type == "gps")
 						{
-							//<name>cheis1 (1265378876592)</name>
-							$loc = json_decode($ent[$name]);
+							$loc = json_decode($ent[0][$name]);
 							echo "<Point><coordinates>{$loc->longitude},{$loc->latitude}</coordinates></Point>";
 						}
 						elseif($fld->title)
 						{
-							$title = ($title == "" ? $ent[$name] : "$title\t{$ent[$name]}");
+							$title = ($title == "" ? $ent[0][$name] : "$title\t{$ent[0][$name]}");
 						}
 						else
 						{
-							$desc = "$name : {$ent[$name]}";
-
+							$desc = "$name : {$ent[0][$name]}";
 						}
 					}
 					if($title == "") $title = $arr[$prj->tables[$frmName]->key];
@@ -1562,10 +1610,6 @@ function formHandler()
 				}
 				echo '</Folder></Document></kml>';
 					
-				if($format == "kmz")
-				{
-					//TODO: enable zipping of KML
-				}
 					
 				break;
 
@@ -1602,7 +1646,7 @@ function formHandler()
 			case "tsv":
 				header("Cache-Control: no-cache, must-revalidate");
 				header("Content-Type: text/tsv");
-				$headers =  "entry\tDeviceID\tcreated\tedited\tuploaded\t" .implode("\t", array_keys($prj->tables[$frmName]->fields));
+				$headers =  "entry\tDeviceID\tcreated\tedited\tuploaded\t" .implode("\t", array_keys($prj->tables[$frmName]->fields)); 
 				
 				foreach($prj->tables[$frmName]->fields as $name => $fld)
 				{
@@ -1615,14 +1659,13 @@ function formHandler()
 						$headers = str_replace("\t$name", "\t{$name}_lattitude\t{$name}_longitude\t{$name}_altitude\t{$name}_accuracy\t{$name}_provider", $headers);
 					}
 				}	
-				echo "$headers\n";	
+				echo "$headers\r\n";	
 				$res = $prj->tables[$frmName]->ask(false, $offset, $limit);
 				if($res !== true) return;
 				while($xml = $prj->tables[$frmName]->recieve(1, "tsv"))
 				{
-					echo $xml;
+					echo $xml . "\r\n";
 				}
-				break;
 				break;
 			case "js" :
 				global $SITE_ROOT;
@@ -1743,50 +1786,15 @@ function formHandler()
 				}
 			}
 				
-			$mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>" : "";
+			$mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>
+				<script type=\"text/javascript\" src=\"{$SITE_ROOT}/js/markerclusterer.js\"></script>
+			<script src=\"http://www.google.com/jsapi\"></script>" : "";
 			$vars = array("prevForm" => $p,"projectName" => $prj->name, "formName" => $frmName, "curate" =>  $permissionLevel > 1 ? "true" : "false", "mapScript" => $mapScript );
 			echo applyTemplate("base.html", "./FormHome.html", $vars);
 			break;
 		}
 	}
-
 }
-
-	
-	function kmlFeed(){
-		global $SITE_ROOT, $url;
-
-		header("Cache-Control: no-cache, must-revalidate");
-		header("Content-Type: application/vnd.google-earth.kml+xml");
-		
-		$server = trim($_SERVER["HTTP_HOST"], "/");
-		$root = trim($SITE_ROOT, "/");
-		
-		$prj = new EcProject();
-		$pNameEnd = strpos($url, "/");
-		$prj->name = substr($url, 0, $pNameEnd);
-		$prj->fetch();
-		
-		$extStart = strrpos($url, "/feed");
-		$frmName = rtrim(substr($url, $pNameEnd + 1, ($extStart > 0 ?  $extStart : strlen($url)) - $pNameEnd - 1), "/");
-		
-		echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\" xmlns:kml=\"http://www.opengis.net/kml/2.2\" xmlns:atom=\"http://www.w3.org/2005/Atom\">
-<NetworkLink>
-	<name>EpiCollect</name>
-	<open>1</open>
-	<Link>
-		<href>http://$server/$root/{$prj->name}/$frmName.kml</href>
-		<refreshMode>onInterval</refreshMode>
-		<refreshInterval>30</refreshInterval>
-	</Link>
-</NetworkLink>
-</kml>";
-		
-		
-	}
-	
-
 
 function entryHandler()
 {
@@ -1849,11 +1857,24 @@ function entryHandler()
 			}
 
 			$r = $ent->put();
-			if($r !== true) echo $r;
+			if($r !== true)
+			{ 
+				echo "{ \"false\" : true, \"msg\" : \"$r\"}";
+			}
+			else 
+			{
+				echo "{ \"success\" : true, \"msg\" : \"\"}";
+			}
 		}
 		else{
-			echo $r;
+			echo "{ \"success\" : false, \"msg\" : \"$r\"";
 		}
+	}
+	else if($_SERVER["REQUEST_METHOD"] == "GET")
+	{
+		$val = getValIfExists($_GET, "term");
+		echo $prj->tables[$frmName]->autoComplete($entId, $val);
+		
 	}
 }
 
@@ -1977,6 +1998,23 @@ function updateXML()
 	{
 		echo "{ \"result\": \"error\" , \"message\" : \"$res\" }";
 	}
+}
+
+function tableStats()
+{
+	global  $url, $log;
+
+	header("Cache-Control: no-cache, must-revalidate");
+
+	$prjEnd = strpos($url, "/");
+	$frmEnd =  strpos($url, "/", $prjEnd+1);
+	$prjName = substr($url,0,$prjEnd);
+	$frmName = substr($url,$prjEnd + 1,$frmEnd - $prjEnd - 1);
+
+	$prj = new EcProject();
+	$prj->name = $prjName;
+	$prj->fetch();
+	echo json_encode($prj->tables[$frmName]->getSummary($_GET));
 }
 
 function listXml()
@@ -2221,7 +2259,7 @@ function admin()
 		}
 		$arr = trim($arr, ",") . "}";
 			
-		echo applyTemplate("./base.html", "./userAdmin.html", array("serverManagers" => $men, "vals" => $arr));
+		echo applyTemplate("./base.html", "./admin.html", array("serverManagers" => $men, "vals" => $arr));
 
 	}
 	else if($_SERVER["REQUEST_METHOD"] == "POST")
@@ -2403,26 +2441,6 @@ function getControlTypes()
 	}
 }
 
-function ask()
-{
-	global $db;
-	
-	$project = new EcProject();
-	$project->name = "VID_TEST2";
-	$project->fetch();
-	$res = $project->tables["Second_Form"]->ask();
-	if($res !== true) echo $res;
-	// and ye shall ...
-	echo "";
-	$i = 0;
-	while ($s = $project->tables["Second_Form"]->recieve(3, "csv")) {
-		echo  $i > 0 ? "$s" : "$s";
-		$i++;
-	}
-	echo "";
-
-}
-
 function uploadMedia()
 {
 	global $url, $SITE_ROOT;
@@ -2593,7 +2611,14 @@ function writeSettings()
 		
 	$cfg->writeConfig();
 	header("Cache-Control: no-cache, must-revalidate");
-	header("location: $SITE_ROOT/test?edit=true");
+	if(getValIfExists($_POST, "edit"))
+	{
+		header("location: $SITE_ROOT/admin");
+	}
+	else
+	{
+		header("location: $SITE_ROOT/test?edit=true");
+	}
 }
 
 function packFiles($files)
@@ -2609,6 +2634,118 @@ function packFiles($files)
 	}
 
 	return $str;
+}
+
+function listUsers()
+{
+	global $auth;
+	
+	if($auth->isLoggedIn())
+	{
+		if($auth->isServerManager())
+		{
+			header("Cache-Control: no-cache, must-revalidate");
+			header("Content-Type: application/json");
+			
+			echo "{\"users\":[";
+			$usrs = $auth->getUsers();
+			for($i = 0; $i < count($usrs); $i++)
+			{
+				if($i > 0) echo ",";
+				echo "{
+					\"userId\" : \"{$usrs[$i]["userId"]}\",
+					\"firstName\" : \"{$usrs[$i]["FirstName"]}\",
+					\"lastName\" : \"{$usrs[$i]["LastName"]}\",
+					\"email\" : \"{$usrs[$i]["Email"]}\",
+					\"active\" : {$usrs[$i]["active"]}
+				}";
+			}
+			echo "]}";
+		}
+		else
+		{
+			echo applyTemplate("./base.html", "./error.html", array("errorType" => 403, "error" => "Permission denied"));
+		}
+	}
+	else
+	{
+		loginHandler($url);
+	}
+}
+
+function enableUser()
+{
+	global $auth;
+	
+	$user = getValIfExists($_POST, "user");
+	
+	if($auth->isLoggedIn() && $auth->isServerManager() && $_SERVER["REQUEST_METHOD"] == "POST" && $user)
+	{
+		header("Cache-Control: no-cache, must-revalidate");
+		header("Content-Type: application/json");
+		$res = $auth->setEnabled($user, true);
+		if($res === true)
+		{
+			
+			echo "{\"result\" : true}";
+		}
+		else
+		{
+			echo $res;
+			echo "{\"result\" : false}";
+		}
+	}
+	else
+	{
+		header("HTTP/1.1 403 Access Denied",null,403);	
+	}
+}
+
+function disableUser()
+{
+	global $auth;
+	
+	$user = getValIfExists($_POST, "user");
+	
+	if($auth->isLoggedIn() && $auth->isServerManager() && $_SERVER["REQUEST_METHOD"] == "POST" && $user)
+	{
+		header("Cache-Control: no-cache, must-revalidate");
+		header("Content-Type: application/json");
+		if($auth->setEnabled($user, false))
+		{
+			
+			echo "{\"result\" : true}";
+		}
+		else
+		{
+			echo "{\"result\" : false}";
+		}
+	}
+	else
+	{
+		header("HTTP/1.1 403 Access Denied",null,403);
+	}
+}
+
+function resetPassword()
+{
+	global $auth;
+	
+	$user = getValIfExists($_POST, "user");
+	
+	if($auth->isLoggedIn() && $auth->isServerManager() && $_SERVER["REQUEST_METHOD"] == "POST" && $user && preg_match("/[0-9]+/", $user))
+	{
+		$res = $auth->resetPassword($user);
+		
+		header("Cache-Control: no-cache, must-revalidate");
+		header("Content-Type: application/json");
+		echo "{\"result\" : \"$res\"}";
+		
+	}
+	else
+	{
+		header("HTTP/1.1 403 Access Denied",null,403);
+	}
 }
 
 function userHandler()
@@ -2695,8 +2832,12 @@ $pageRules = array(
 		"user/manager/?" => new PageRule(null, 'managerHandler', true),
 		"user/.*@.*?" => new PageRule(null, 'userHandler', true),
 		"admin" => new PageRule(null, 'admin', count($auth->getServerManagers()) > 0),
-
-
+		"listUsers" => new PageRule(null, 'listUsers', count($auth->getServerManagers()) > 0),
+		"disableUser" => new PageRule(null, 'disableUser',true),
+		"enableUser" => new PageRule(null, 'enableUser',true),
+		"resetPassword" => new PageRule(null, 'resetPassword',true),
+		
+		
 //generic, dynamic handlers
 		"getControls" =>  new PageRule(null, 'getControlTypes'),
 		"uploadFile.php" => new PageRule(null, 'uploadHandlerFromExt'),
@@ -2707,25 +2848,24 @@ $pageRules = array(
 		"test" => new PageRule(null, 'siteTest', false),
 		"createDB" => new PageRule(null, 'setupDB',  count($auth->getServerManagers()) > 0),
 		"writeSettings" => new PageRule(null, 'writeSettings', count($auth->getServerManagers()) > 0),
-
-		"ask" => new PageRule(null, 'ask'),
-
+		
+		"markers/point" => new PageRule(null, 'getPointMarker'),
+		"markers/cluster" => new PageRule(null, 'getClusterMarker'),
 //to API
-
-
 		"[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|/)?" =>new PageRule(null, 'projectHome'),
 		"[a-zA-Z0-9_-]+/upload" =>new PageRule(null, 'uploadData'),
 		"[a-zA-Z0-9_-]+/download" =>new PageRule(null, 'downloadData'),
 		"[a-zA-Z0-9_-]+/summary" =>new PageRule(null, 'projectSummary'),
 		"[a-zA-Z0-9_-]+/usage" =>  new PageRule(null, 'projectUsage'),
 		"[a-zA-Z0-9_-]+/formBuilder(\.html)?" =>  new PageRule(null, 'formBuilder'),
-
-		"[a-zA-Z0-9_-]+/update" =>new PageRule(null, 'updateProject', true),
-		"[a-zA-Z0-9_-]+/updateStructure" =>new PageRule(null, 'updateXML', true),
-		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia" =>new PageRule(null, 'uploadMedia'),
 		"[a-zA-Z0-9_-]+/editProject.html" =>new PageRule(null, 'editProject', true),
-		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.js|\.css|\.kml|/)?" => new PageRule(null, 'formHandler'),
-		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/feed\.kml" => new PageRule(null, 'kmlFeed'),
+		"[a-zA-Z0-9_-]+/update" =>new PageRule(null, 'updateProject', true),
+		"[a-zA-Z0-9_-]+/manage" =>new PageRule(null, 'updateProject', true),
+		"[a-zA-Z0-9_-]+/updateStructure" =>new PageRule(null, 'updateXML', true),
+		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__stats" =>new PageRule(null, 'tableStats'),
+		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia" =>new PageRule(null, 'uploadMedia'),
+		
+		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.kml|\.js|\.css|/)?" => new PageRule(null, 'formHandler'),
 
 //"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage" => new  => new PageRule(null, formUsage),
 		"[^/\.]*/[^/\.]+/[^/\.]*(\.xml|\.json|/)?" => new PageRule(null, 'entryHandler')
@@ -2751,7 +2891,6 @@ else
 
 	foreach(array_keys($pageRules) as $key)
 	{
-
 		if(preg_match("/^".regexEscape($key)."$/", $url))
 		{
 			//echo $key;

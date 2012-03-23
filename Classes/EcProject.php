@@ -290,7 +290,7 @@ class EcProject{
 			
 			$tbl = false;
 			
-			foreach($this->tables as $t)
+			foreach($this->tables as $n => $t)
 			{
 				if($t->number == $num)
 				{

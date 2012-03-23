@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `entry` (
   KEY `fk_Entry_User1` (`user`),
   KEY `projectName` (`projectName`),
   KEY `formName` (`formName`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=11960 ~
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ~
 
 CREATE TABLE IF NOT EXISTS `entryvalue` (
   `idEntryValue` int(11) NOT NULL AUTO_INCREMENT,
@@ -50,7 +50,28 @@ CREATE TABLE IF NOT EXISTS `entryvalue` (
   KEY `fieldname` (`fieldName`) USING HASH,
   KEY `formname` (`formName`) USING HASH,
   KEY `entry` (`entry`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=74778 ~
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ~
+
+CREATE TABLE IF NOT EXISTS `entryGeoValue` (
+	`id` int(11) NOT NULL AUTO_INCREMENT,
+	`field` int(11) NOT NULL,
+	`projectName` varchar(255) NOT NULL,
+  	`formName` varchar(100) NOT NULL,
+  	`fieldName` varchar(45) NOT NULL,
+  	`entry` int(11) NOT NULL,
+  	`entryValueId` int(11) NOT NULL,
+  	`latitude` double NOT NULL,
+  	`longitude` double NOT NULL,
+  	`altitude` double NOT NULL,
+  	`accuracy` double NOT NULL,
+  	`provider` varchar(255),
+  	`country` varchar(150),
+  	`admin_1` varchar(255),
+  	`admin_2` varchar(255),
+  	`admin_3` varchar(255)
+  	PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 ~
+
 CREATE TRIGGER `EntryInsert` AFTER INSERT ON `entryvalue`
  FOR EACH ROW BEGIN
 	INSERT INTO entryvaluehistory (idEntryValue, projectName, formName, fieldName, value, entry, field, updated)
@@ -186,7 +207,8 @@ CREATE TABLE IF NOT EXISTS `user` (
   `Email` varchar(255) NOT NULL,
   `details` TEXT DEFAULT NULL,
   `language` varchar(8) DEFAULT NULL,
-  `serverManager` tinyint(1) DEFAULT b'0',
+  `serverManager` tinyint(1) DEFAULT 0,
+  `active` tinyint(1) DEFAULT 1,
   PRIMARY KEY (`idUsers`),
   UNIQUE KEY `Email` (`Email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ~

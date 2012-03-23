@@ -83,10 +83,36 @@
   		}
    		
   	}
+  	
+  	function setEnabled($uid, $enabled)
+  	{
+  		global $db;
+  		
+  		$enabled = $enabled ? "1" : "0";
+  		if($uid != $this->getEcUserId())
+  		{
+  			$qry = "UPDATE user SET active = $enabled where idUsers = $uid";
+  			return $db->do_query($qry);
+  		}
+  		return false;
+  	}
+  	
+  	function resetPassword($uid)
+  	{
+  		if($this->localEnabled)
+  		{
+  			return $this->providers["LOCAL"]->resetPassword($uid);
+  		}
+  		else
+  		{
+  			 
+  			return false;
+  		}
+  	}
   
   	function callback($provider = "")
   	{
-  		global  $cfg, $db;
+  		global  $cfg, $db, $SITE_ROOT, $ur;
   		
   		if(!array_key_exists($provider, $this->providers)) {
   			header("location: /");
@@ -99,7 +125,7 @@
   		{
   			
   			$uid = false;
-  			$sql = "SELECT idUsers FROM user where details = '" . $this->providers[$provider]->getCredentialString() . "'";
+  			$sql = "SELECT idUsers, active FROM user where details = '" . $this->providers[$provider]->getCredentialString() . "'";
   			
   			if($provider != "LOCAL")
   			{
@@ -112,7 +138,16 @@
   			if($res !== true) die($res . "\n" . $sql);
   			while($arr = $db->get_row_array())
   			{
-  				$uid = $arr["idUsers"];
+  				if($arr["active"])
+  				{ 
+  					$uid = $arr["idUsers"];
+  				}
+  				else 
+  				{
+  					flash ("Account is disabled", "err");  	
+  					header("location: {$_SESSION["url"]}");
+  					return;
+  				}
   			}
   			if(!$uid)
   			{
@@ -144,7 +179,7 @@
   			}
   			sleep($_SESSION["tries"] * $_SESSION["tries"]);
   			global $SITE_ROOT;
-  			header("location: $SITE_ROOT/login.php");
+  			header("location: http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/login.php");
   		}
   	}
   	
@@ -242,7 +277,7 @@
   			$men = array();
   			if($db)
   			{
-		  		$qry = "SELECT firstName, lastName, Email FROM User WHERE serverManager = 1";
+		  		$qry = "SELECT firstName, lastName, Email FROM User WHERE serverManager = 1 and active = 1";
 		  		$res = $db->do_query($qry);
 		  		if($db->do_query($qry) !== true) die("$res");
 		  		
@@ -298,6 +333,27 @@
 	  		
 	  		return false;
 	  	}
+	  }
+	  
+	  function getUsers($order = "FirstName", $dir = "asc")
+	  {
+	  		global $db, $log;
+	  		$query = "SELECT idUsers as userId, FirstName, LastName, Email, active FROM user ORDER BY $order $dir";
+	  		$res = $db->do_query($query);
+	  		if(!$res === true)
+	  		{
+	  			$log->write("err", $res);
+	  			return false;
+	  		}
+	  		else
+	  		{
+	  			$ret = array();
+	  			while($arr = $db->get_row_array())
+	  			{
+	  				array_push($ret, $arr);
+	  			}
+	  			return $ret;
+	  		}
 	  }
 	  
 	  function getUserNickname()

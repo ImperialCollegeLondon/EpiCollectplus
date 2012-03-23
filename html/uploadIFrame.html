@@ -1,13 +1,14 @@
 <html>
   <head>
 	<title>Media uploader</title>
+	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollectPlus.css" />
  	</head>
- 	<body>
+ 	<body style="margin:0;padding:0;min-width:0;">
 		<form enctype="multipart/form-data" action="{#SITE_ROOT#}/{#project#}/{#form#}/uploadMedia" method="POST">
 			<input type="file" name="newfile" onchange="document.forms[0].submit();" value="{#fn#}"/>
 		</form>
-		<div>
-			{#mediaTag#}
+		<div style="width:100px;height:100px;border:1px solid #CCCCCC">
+			&nbsp;{#mediaTag#}
 		</div>
   </body>
 </html>

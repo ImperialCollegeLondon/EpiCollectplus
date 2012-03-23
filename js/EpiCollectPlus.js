@@ -2,23 +2,39 @@ var map;
 var completed;
 var succeeded;
 
+var baseUrl = (location.href.indexOf("?") > 0 ? location.href.substr(0, location.href.indexOf("?")) :location.href );
+
 EpiCollect = {};
 
 String.prototype.pluralize = function(str)	
-		{
-			if(str[str.length-1] != "s")
-			{
-				str += "s";
-			}
-			return str;
-		};
+{
+	if(str[str.length-1] != "s")
+	{
+		str += "s";
+	}
+	return str;
+};
+
+String.prototype.padLeft = function(length, char)	
+{
+	str = this
+	while(str.length < length) { str = char + str; }
+	return str;
+};
+
+String.prototype.padRight = function(length, char)	
+{
+	str = this
+	while(str.length < length) { str = str + char; }
+	return str;
+};
 
 String.prototype.trim = function(chars)
 {
 	// Extends the string class to incluide the trim method.
+	str = this;
 	for(char in chars)
 	{
-		str = this;
 		if(chars[char] == this[0])
 		{
 			str = str.substr(1);
@@ -31,6 +47,18 @@ String.prototype.trim = function(chars)
 	}
 	return str.toString();
 };
+
+Date.prototype.format = function(fmt)
+{
+	var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+	
+	return fmt.replace("dd", this.getDate())
+		.replace("MM" , months[this.getMonth()])
+		.replace("yyyy", this.getFullYear())
+		.replace("hh", this.getHours().toString().padLeft(2, "0"))
+		.replace("mm", this.getMinutes().toString().padLeft(2, "0"))
+		.replace("ss", this.getSeconds().toString().padLeft(2, "0"));
+}
 
 EpiCollect.onload = null;
 
@@ -63,271 +91,6 @@ function createHandler(obj, func)
 	return (function(e, f){obj[func](e, f);})
 }
 
-//var EcCheckboxGroup = Ext.extend(Ext.form.CheckboxGroup, {
-//	setValue:function(val){
-//		this.eachItem(function(item){ if(item.getXType()=="checkbox")item.setValue(false);})
-//		if (!val) return;
-//		var checkedBoxes = val.split(",");
-//		for(var i = 0; i < checkedBoxes.length; i++)
-//		{
-//			box = this.getBox(checkedBoxes[i]); 
-//			if(box) box.setValue(true);
-//		}
-//	},
-//	getValue:function()
-//	{	
-//		var res = "";
-//		this.eachItem(function(box)
-//		{
-//			if(box.getValue() && box.getXType()=="checkbox")
-//			{
-//				res += (res == "" ? "" : ",") + box.name;
-//			}
-//		});
-//		return res;
-//	}
-//});
-//
-//var BranchPanel = Ext.extend(Ext.Panel, {
-//	
-//	initComponent : function()
-//	{
-//		
-//		Ext.apply(this, {
-//			items : survey.forms[this.form].getTable(true, this.parentKey, this.parentKeyValue),
-//			collapsed : true,
-//			collapsible : true,
-//			title : "Click the arrow to expand"
-//		});
-//		
-//		BranchPanel.superclass.initComponent.call(this);
-//	}
-//});
-//
-//var mediaPanel = Ext.extend(Ext.Panel, {
-//	initComponent :function()
-//	{
-//		
-//		Ext.apply(this, {
-//			id : this.id,
-//			border: false,
-//			height : 150
-//	
-//		})
-//
-//		mediaPanel.superclass.initComponent.call(this);
-//		
-//	},
-//	setValue: function(newVal)
-//	{
-//		this.value = newVal;
-//		
-//		document.getElementById(this.id + "fld").value = this.value;
-//
-//		document.getElementById(this.id + "_iframe").src = location.pathname + "/uploadMedia?fn=" + newVal;
-//		
-//	},
-//	getValue: function() {
-//		if(!this.value)
-//		{
-//			if(document.getElementById(this.id + "_iframe").contentDocument.getElementsByTagName("img").length > 0)
-//			{
-//				var path = document.getElementById(this.id + "_iframe").contentDocument.getElementsByTagName("img")[0].src.replace('~tn~','~');
-//				var fnstart = path.indexOf("~");
-//				
-//				this.value = path.substring(fnstart+1);
-//				document.getElementById(this.id).value = this.value;
-//			}
-//		}
-//		return this.value;
-//	},
-//	render : function(cmp)
-//	{
-//		if(location.pathname.indexOf(this.parent) >= 0)
-//		{
-//			this.html = "<iframe id=\"" + this.id + "_iframe\" style=\"border:0\" onload=\"if(document.getElementById('" + this.id + "_iframe').contentDocument.getElementsByTagName('img').length > 0) document.getElementById('" + this.id+ "fld').value = document.getElementById('" + this.id + "_iframe').contentDocument.getElementsByTagName('img')[0].src.match(/~.*/).toString().replace('~tn~', '')\" src=\"" + location.pathname + "/uploadMedia" + (this.value ? "?fn=" + this.value : "") +"\" width=\"100%\" height=\"100%\"> </iframe><input type=\"hidden\" id=\"" + this.id + "fld\" name=\"" + this.id+ "\">";
-//		}
-//		else
-//		{
-//			this.html = "<iframe id=\"" + this.id + "_iframe\" style=\"border:0\" onload=\"if(document.getElementById('" + this.id + "_iframe').contentDocument.getElementsByTagName('img').length > 0) document.getElementById('" + this.id+ "fld').value = document.getElementById('" + this.id + "_iframe').contentDocument.getElementsByTagName('img')[0].src.match(/~.*/).toString().replace('~tn~', '')\" src=\"" + location.pathname + "/" + this.parent + "/uploadMedia" + (this.value ? "?fn=" + this.value : "") +"\" width=\"100%\" height=\"100%\"> </iframe><input type=\"hidden\" id=\"" + this.id + "fld\" name=\"" + this.id+ "\">";
-//		}
-//		mediaPanel.superclass.render.call(this,cmp);
-//	}
-//});
-//	
-//var GPSPanel = Ext.extend(Ext.Panel,{
-//	initComponent :function()
-//	{
-//		Ext.apply(this, {
-//			border:false,
-//			bodyStyle: "1px solid #EEEEEE",
-//			html: "<div id=\"" + this.id + "_map\" width=\"100%\" style=\"height: 175px;width: 50%;display:inline-block;vertical-align:top;\"></div><div class=\"GPSInputs\" style=\"display: inline-block;vertical-align:top;padding:5px 5px 5px 5px;\">"
-//				+ "<table>" + " <tr> <td>Accuracy</td><td><input type=\"text\" id=\"" + this.id + "_acc\" name=\"" + this.id+ "_acc\" onchange=\"Ext.getCmp('" + this.id + "').accCircle.setRadius(Number(this.value));\"/></td></tr>"
-//				+ " <tr> <td>Altitude</td><td><input type=\"text\" id=\"" + this.id + "_alt\" name=\"" + this.id+ "_alt\"></td></tr>"
-//				+ " <tr> <td>Provider</td><td><input type=\"text\" id=\"" + this.id + "_src\" name=\"" + this.id+ "_src\"></td></tr></table><input type=\"hidden\" name=\""+this.id + "\" id=\"" + this.id + "fld\" /></div><div id=\"" + this.id + "_searchcontatiner\">"
-//				+ "<h4>To change the location click and drag the marker or search using the text box below</h4> <input id=\"" + this.id + "_search\" style=\"width:60%\"/><span class=\"button\" onclick=\"Ext.getCmp('" + this.id + "container').locationSearch();\">Search</span></div>",
-//
-//			listeners: {
-//				'afterrender' : function()
-//				{
-//					mkr = this.marker;
-//					
-//					this.gMap = new google.maps.Map(document.getElementById(this.id + "_map"),{
-//						backgroundColor: '#FFFFFF',
-//						center : new google.maps.LatLng(0,0),
-//						zoom : 1,
-//						mapTypeId : google.maps.MapTypeId.ROADMAP,
-//						streetViewControl : false,
-//						mapTypeControl : false
-//					});
-//										
-//					this.marker = new google.maps.Marker({icon:"../images/mapMarkers/redCircle.png", draggable: true});
-//					
-//					d = this;
-//					
-//					google.maps.event.addListener(this.marker, 'dragend', function()
-//						{
-//							d.accCircle.setCenter(d.marker.getPosition());
-//							d.updateElevation();
-//							document.getElementById(d.id + "_src").value = "marker drop";
-//							d.updateControl();
-//						}
-//					)
-//					
-//					this.accCircle = new google.maps.Circle({fillColor: "#8888FF", strokeColor: "#8888FF"});
-//						d = this;
-//					if(!this.value)
-//					{
-//						if(navigator.geolocation)
-//						{
-//							navigator.geolocation.getCurrentPosition(d.updatePos,null,{enableHighAccuracy: true});
-//						}
-//						else
-//						{
-//							d.updatePos({coords : {latitude:0, longitude:0, altitude:0,accuracy:1000000}});
-//						}
-//					}
-//					
-//					
-//					document.getElementById(this.id + "_search").onchange = function(e){d.locationSearch()};
-//					if(this.value) this.setValue(this.value);
-//				}
-//			}
-//		})
-//		GPSPanel.superclass.initComponent.call(this);
-//	},
-//	setValue: function(newVal)
-//	{
-//		if(!d) d = this;
-//		document.getElementById(this.id + "fld").value = newVal;
-//		var obj = Ext.decode(newVal);
-//		
-//		p = new google.maps.LatLng(obj.latitude, obj.longitude);
-//		
-//		d.marker.setPosition(p);
-//		d.marker.setMap(d.gMap);
-//		
-//		d.accCircle.setCenter(p);
-//		d.accCircle.setRadius(Number(obj.accuracy));
-//		d.accCircle.setMap(d.gMap);
-//		
-//		document.getElementById(d.id + "_alt").value = obj.altitude;
-//		document.getElementById(d.id + "_acc").value = obj.accuracy;
-//		document.getElementById(d.id + "_src").value = obj.provider;
-//	},
-//	getValue : function()
-//	{
-//		d.updateControl();
-//		return document.getElementById(this.id + "fld").value;
-//	},
-//	updateControl : function()
-//	{
-//		if(!d) d = this;
-//		var val = {};
-//		
-//		var pos = d.marker.getPosition();
-//		val.latitude = pos.lat();
-//		val.longitude = pos.lng();
-//		
-//		val.altitude = Number(document.getElementById(d.id + "_alt").value);
-//		val.accuracy = Number(document.getElementById(d.id + "_acc").value);
-//		val.provider = document.getElementById(d.id + "_src").value;
-//		
-//		Ext.get(d.id  + "fld").dom.value = Ext.encode(val);
-//		
-//	},
-//	updatePos: function(position)
-//	{
-//		if(!d) d = this;
-//		accCtrl = document.getElementById(d.id + "_acc");
-//		altCtrl = document.getElementById(d.id + "_alt");
-//		srcCtrl = document.getElementById(d.id + "_src");
-//		
-//		accCtrl.value = position.coords.accuracy;
-//		altCtrl.value = position.coords.altitude;
-//		srcCtrl.value = "HTML5 geolocation";
-//	
-//		d.marker.setPosition(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
-//		d.marker.setMap(d.gMap);
-//		
-//		d.gMap.setCenter(d.marker.getPosition());
-//		d.gMap.setZoom(5);
-//		
-//		d.accCircle.setCenter(d.marker.getPosition());
-//		d.accCircle.setRadius(position.coords.accuracy);
-//		d.accCircle.setMap(d.gMap);
-//		//d.updateControl();
-//		if(!position.coords.altitude)
-//		{
-//			d.updateElevation()
-//		}
-//	},
-//	updateElevation : function()
-//	{
-//		d = this;
-//		function elevationCallback(result, status)
-//		{
-//			if(status == google.maps.ElevationStatus.OK)
-//			{
-//			
-//				document.getElementById(d.id + "_alt").value = result[0].elevation;
-//				d.updateControl();
-//			}
-//		}
-//		
-//		var elv = new google.maps.ElevationService();
-//		elv.getElevationForLocations({locations:[this.marker.getPosition()]}, elevationCallback);
-//		
-//		
-//	},
-//	locationSearch : function()
-//	{
-//		d = this;
-//		function geocodeCallback(results, status)
-//		{
-//			if(status == google.maps.GeocoderStatus.OK)
-//			{	
-//				d.marker.setPosition(results[0].geometry.location);
-//				d.accCircle.setCenter(results[0].geometry.location);
-//				
-//				//alert(Ext.encode(results[0]));
-//				//bnds = results[0].geometry.bounds;
-//				//d.accCircle.setRadius(Math.min(bnds.getNorthEast().lat() - bnds.getSouthWest().lat(),bnds.getNorthEast().lng() - bnds.getSouthWest().lng()) / 2)
-//		
-//				d.gMap.setCenter(d.marker.getPosition());
-//				d.gMap.setZoom(5);
-//				document.getElementById(d.id + "_src").value = "geocoder search";
-//				
-//				d.updateElevation();
-//			}
-//		}
-//		
-//		gcoder = new google.maps.Geocoder();
-//		gcoder.geocode({address : document.getElementById(this.id + "_search").value}, geocodeCallback);
-//		d.updateControl();
-//	}
-//})
-
 EpiCollect.Project = function()
 {
     this.forms = {};
@@ -356,7 +119,7 @@ EpiCollect.Project = function()
 		return tbl;
 	}
 	
-	this.getPrevTable = function(tblName)
+	this.getPrevForm = function(tblName)
 	{
 		var n = Number(this.forms[tblName].num) - 1;
 		var tbl = false;
@@ -404,13 +167,11 @@ EpiCollect.Project = function()
         for(var i = 0 ; i < tbls.length; i++){
             frm = new EpiCollect.Form();
             frm.parse(tbls[i]);
-            
-            
-            
+
             this.forms[frm.name] = frm;
 			keys[frm.key] = frm.name;
-			if(this.getPrevTable(frm.name)){
-				t = this.getPrevTable(frm.name);
+			if(this.getPrevForm(frm.name)){
+				t = this.getPrevForm(frm.name);
 				t.cols.push(frm.name + "Entries");
 			}
         }
@@ -540,583 +301,25 @@ EpiCollect.Form = function()
 				{
 					this.groupForms.push(field.connectedForm);
 				}
-				
-				
+
 			}
 		}
-		//if(survey.getNextTable(this.name)) this.cols.push(survey.getNextTable(this.name).name + "Entries");
+		
+		this.fields[this.key].isKey = true;
+		this.fields[this.key].required = true;
     }
-
-    this.getTable = function(curate)
+		
+    this.validate = function(formEle)
     {
-		var cols = [];
-		var tBtns = [];
-		path = location.href;
-		var path = location.pathname ;//+ ".json"
-		if(path.indexOf(survey.name) < 0) path = path + "/" + survey.name;
-		if(path.indexOf(this.name) < 0) path = path + "/" + this.name;
-		
-		this.store = new Ext.data.JsonStore({
-			autoLoad : false,
-			baseParams : {
-				limit : 25,
-				start : 0,
-				mode : 'list'
-			},
-			remoteSort : true,
-			storeId : this.name + "_store",
-			idProperty : this.key,
-			id :this.key,
-			fields : this.cols,
-			proxy: new Ext.data.HttpProxy({
-				method: 'GET',
-				url : path + '.json' + location.search
-			}),
-			root : this.name,
-			totalProperty : 'count'
-		});
-		this.store.setDefaultSort(this.key, 'asc');
-	
-		for(this.fld in this.fields)
-		{
-			if(this.fld == "created")
-			{
-				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-						var d = new Date(Number(value));
-						return d.toLocaleString();
-				}, dataIndex: this.fields[this.fld].id, sortable:true});
-			}
-			else if(this.fld == "lastEdited" || this.fld == "uploaded")
-			{
-				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-					if(value != "" && value != "0" && value != null)
-					{
-						var d = Date.parseDate(value, "Y-m-d H:i:s");
-						return d.toLocaleString();
-					}
-					else
-					{
-						return "";
-					}
-				}, dataIndex: this.fields[this.fld].id, sortable:true});
-			}
-			else if(this.fields[this.fld].type == "photo")
-			{
-				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-					if(value)
-						return "<a href=\"../ec/uploads/" + survey.name + "~" + value + "\" target=\"__blank\"><img src=\"../ec/uploads/" + survey.name + "~tn~" + value + "\" height=\"64\" width=\"64\" /></a>";
-					else
-						return "<i>no picture </i>";
-				}, dataIndex: this.fields[this.fld].id, sortable:true});
-			}
-			else if(this.fields[this.fld].type == "video")
-			{
-			
-				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-					if(value != "" && value != "0" && value != null)
-					{
-						return "<a href=\"../ec/uploads/"+ survey.name + "~" + value + "\" target=\"__blank\">" + value + "</a>";
-					}
-					else
-					{
-						return "<i>no video</i>";
-					}
-				}, dataIndex: this.fields[this.fld].id, sortable:true});
-			}
-			else if(this.fields[this.fld].type == "audio" && value != null)
-			{
-				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-					if(value != "" && value != "0")
-					{
-						return "<a href=\"../uploads/" + survey.name + "~" + value + "\">" + value + "</a>";
-					}
-					else
-					{
-						return "<i>no audio</i>";
-					}
-				}, dataIndex: this.fields[this.fld].id, sortable:true});
-			}
-			else if(this.fields[this.fld].type == "gps" ||this.fields[this.fld].type == "location")
-			{
-				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-					
-					var gps = Ext.decode(value);
-					if(gps.accuracy == "-1")
-					{
-						return "<i>no position</i>";
-					}
-					else
-					{
-						return gps.latitude + "," + gps.longitude;
-					}
-					
-				}, dataIndex: this.fields[this.fld].id, sortable:true});
-			}
-			else if(this.fields[this.fld].type == "branch")
-			{
-				var ff = this.fields[this.fld].form;
-				var fk = this.key;
-				var fn = this.name;
-				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, sortable:false, menuDisabled: true, renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-					
-					if(!value ||value == "")
-					{
-						return "<i>no entries</i>";
-					}
-					else
-					{
-						return value + " <a href=\"" + ff + "?" + fk + "=" + record.data[fk] +"&prevForm=" + fn + "\">View entries</a>";
-					}
-				}, dataIndex: this.fields[this.fld].id, sortable:true});
-			}
-			else 
-			{
-				cols.push({id : this.fields[this.fld].id, header : this.fields[this.fld].text, dataIndex: this.fields[this.fld].id, hidden : (this.branchOf && this.fld == survey.forms[this.branchOf].key),sortable:true});
-			}
-		}
-		if(!this.branchOf && survey.getNextTable(this.name).main)
-		{
-			var ff = survey.getNextTable(this.name).name;
-			var fk = this.key;
-			var fn = this.name;
-			cols.push({
-				id: survey.getNextTable(this.name).name + 'Entries', header : survey.getNextTable(this.name).name + ' Entries', dataIndex : survey.getNextTable(this.name).name + 'Entries', sortable:true,  menuDisabled: true, renderer: function(value, metaData, record, rowIndex, colIndex, store)
-				{		
-					if(value == "" || value == null)
-					{
-						return "<i>no entries</i>";
-					}
-					else
-					{
-						return value + " <a href=\"" + ff + "?" + fk + "=" + record.data[fk] +"&prevForm=" + fn + "\">View entries</a>";
-					}
-				}
-			});
-		}
-	
-		tBtns = [];
-		
-		if(curate) tBtns.push({
-			//xtype: 'button',
-			id:'addEntry_' + this.name,
-			text: 'Add Entry',
-			listeners :{
-				'click' : function(){
-					this.getForm();
-					this.frm.anchor = "100% 100%";
-					this.win = new Ext.Window({
-						title: "Add Entry",
-						items:[this.frm],
-						layout : 'anchor',
-						modal:true,
-						width: Ext.getBody().getWidth() * 0.95,
-						height: Ext.getBody().getHeight() * 0.95,
-					});
-					this.frm.getFooterToolbar().get(this.name + 'cnl').on('click', function(){this.win.close()}, this);
-					this.frm.getFooterToolbar().get(this.name + 'sub').on('click', function(){this.addEntry(this.frm.getForm().getValues(),function(scope){scope.win.close()}, this);}, this);
-					
-					this.win.show();
-				},
-				scope : this
-			}
-		},
-		{
-			id:'editEntry_' + this.name,
-			text: 'Edit Entry',
-			disabled: true,
-			listeners :{
-				'click' : function(){
-					rec = grid.getSelectionModel().getSelected();
-					this.frm = this.getForm(rec);
-					this.frm.anchor = "100% 100%";
-					this.win = new Ext.Window({
-						title: "Edit Entry",
-						items:[this.frm],
-						layout : 'anchor',
-						modal:true,
-						width: Ext.getBody().getWidth() * 0.95,
-						height: Ext.getBody().getHeight() * 0.95,
-						listeners : {
-							"show" : function(win)
-							{
-								for(i = 0; win.getComponent(0).getComponent(i); i++)
-								{
-									fld = win.getComponent(0).getComponent(i)
-									
-									if(fld.doJump)
-									{
-										if(fld.getStore)
-										{
-											fld.doJump(fld, {}, fld.getStore().indexOfId(fld.getValue()));
-										}
-										else
-										{
-											
-											fld.doJump(fld, {}, -1);
-										}
-									
-									}
-									
-								}
-							}
-						}
-					});
-					this.frm.getFooterToolbar().get(this.name + 'cnl').on('click', function(){this.win.close()}, this);
-					this.frm.getFooterToolbar().get(this.name + 'sub').on('click', function(){this.editEntry(rec.data[this.key],this.frm.getForm().getValues(), function(scope){scope.win.close()}, this);}, this);
-					this.win.show();
-				},
-				scope : this
-			}
-		},
-		{
-			id:'deleteEntry_' + this.name,
-			text:'Delete Entry',
-			disabled : true,
-			listeners :{
-				'click' : function(){
-					if(confirm ("Are you sure you want to delete this entry."))
-					{
-						this.deleteEntry(grid.getSelectionModel().getSelected().data[this.key]);
-					}
-				},
-				scope: this
-			}
-		},
-		{
-			xtype : 'tbseparator'
-		});
-		
-		tBtns.push({
-			xtype: 'tbtext',
-			text : 'Search for Entry by ID'
-		},
-		{
-			id: 'idSearchField',
-			xtype: 'textfield',
-			text : 'Search for Entry by ID',
-			value: this.searchValue ? this.searchValue : "",
-			listeners: {
-				'change' : function(f){
-					try{
-					if(f.getValue() != "")
-					{
-						var r = Ext.getCmp(this.name + '_grid').getStore().find(Ext.getCmp(this.name + '_grid').getStore().idProperty, f.getValue(), 0, true,false);
-						if(r >= 0)
-						{
-							Ext.getCmp(this.name + '_grid').getView().focusRow(r);
-							Ext.getCmp(this.name + '_grid').getSelectionModel().selectRow(r, false, false);
-						}
-					}}catch(err){alert(err);}
-				},
-				scope:this
-			}
-		},
-		{
-			xtype: 'button',
-			text : 'Find',
-			listeners: {
-				'click' : function(){
-					try{
-					if(Ext.getCmp('idSearchField').getValue() != "")
-					{
-						pars = {start : 0, limit : 25};
-						pars[this.key] = Ext.getCmp('idSearchField').getValue();
-						grid.getStore().load({params : pars})
-					}}catch(err){alert(err);}
-				},
-				scope:this
-			}
-		},
-		{
-			xtype : 'tbseparator'
-		},
-		{
-			xtype: 'button',
-			text : 'Clear Filter',
-			listeners: {
-				'click' : function(){
-					
-					this.filterField = false;
-					this.filterValue = false;
-					Ext.getCmp('idSearchField').setValue("");
-
-					grid.getStore().load({params:{start : 0, limit : 25}});
-				}
-			},
-			scope:this
-		},
-		{
-			xtype : 'tbseparator'
-		},
-		{
-			type: 'splitbutton',
-			text: 'Download this data as ',
-			menu: new Ext.menu.Menu ({
-				items : [
-					{text: 'Comma separated', handler: function () {
-						window.open(Ext.getCmp(this.name + '_grid').getStore().proxy.url.replace(".json", ".csv") + (this.filterValue ? "?" + this.filterField + "=" + this.filterValue : ""));
-					}, scope: this},
-					{text: 'Tab separated', handler: function () {
-						window.open(Ext.getCmp(this.name + '_grid').getStore().proxy.url.replace(".json", ".tsv") + (this.filterValue ? "?" + this.filterField + "=" + this.filterValue : ""));
-					}, scope: this}
-				]
-			})
-		
-		});
-		
-		var grid = new Ext.grid.GridPanel({
-			id: this.name + '_grid',
-			border: true,
-			columns: cols,
-			store: this.store,
-			tbar: tBtns,
-			width: Ext.getBody().getWidth() - 25,
-			height: Ext.getBody().getHeight() * 0.75,
-			listeners : {
-				'contextmenu': function(e)
-				{
-					e.preventDefault();								
-				}
-			},
-			bbar :(this.gpsFlds.length > 0 ? null : new Ext.PagingToolbar({
-				pageSize: 25,
-				store: this.store,
-				displayInfo: true,
-				displayMsg: 'Displaying ' + this.name + ' {0} - {1} of {2}',
-				emptyMsg: "No " + this.name + " to display",
-				items:[
-					
-				],
-				listeners : {
-					'change' : function(tb, data)
-					{
-						if(this.gpsFlds.length > 0) this.drawPoints();
-					},
-					scope: this
-				}
-			}))	
-		});
-		
-		grid.getSelectionModel().on('selectionchange', function(selMdl){
-			var dis = grid.getSelectionModel().getCount() != 1;
-			if(grid.getTopToolbar().get('deleteEntry_' + this.name)) grid.getTopToolbar().get('deleteEntry_' + this.name).setDisabled(dis);
-			if(grid.getTopToolbar().get('editEntry_' + this.name)) grid.getTopToolbar().get('editEntry_' + this.name).setDisabled(dis);
-		}, this)
-		
-		var pars = {start : 0, limit: 25, mode: 'list'};
-		//pars[filterField] = filterValue;
-		this.store.load({params: pars}); // change this one!!<<<<
-		
-		if(this.gpsFlds.length > 0)
-		{
-			var fldGrpArr = [['DeviceID', 'Device ID', 'input']];
-			for(this.fld in this.fields )
-			{
-				
-				if(this.fields[this.fld].name == "created" || this.fields[this.fld].type == "group" || this.fields[this.fld].type == "radio" || this.fields[this.fld].type == "select1" || this.fields[this.fld].fkField != false)
-				{
-					fldGrpArr.push([this.fld, this.fields[this.fld].text, this.fields[this.fld].type]);
-					
-				}
-				else
-				{
-					for(tbl in survey.forms)
-					{
-						if(tbl == this.name) continue;
-						if(this.fld == survey.forms[tbl].key)
-						{
-							fldGrpArr.push([this.fld, this.fields[this.fld].text, this.fields[this.fld].type]);
-						}
-					}
-				}
-			}
-			
-			this.tPanel = new Ext.TabPanel({
-				activeTab:0,
-				items : [{
-					anchor: "100% 100%",
-					title: "Table",
-					items: [grid]
-				},
-				{
-					title: 'Map',
-					width: Ext.getBody().getWidth() * 0.6,
-					height: 800,
-					items : [{
-							id: 'mapPnl',
-							region:'center',
-							title: "Map",
-							contentEl : "ecMap"
-						},
-						{
-							region : 'west',
-							title: 'Entries',
-							split: true,
-							width: 150,
-							collapsible : true,
-							items : [
-								{
-									id: 'entryList',
-								}
-							]
-						},{
-							region: 'south',
-							title : 'Footer',
-							split: true,
-							collapsible : true,
-							height: 100,
-							defaults:
-							{
-								cls: 'cp-item'
-							},
-							items: [
-								{
-									border: false,
-									items : [
-										{
-											xtype:'label',
-											text : 'Filter By Time'
-										},
-										{
-											style : '',
-											xtype: 'multislider',
-											id: 'timeSlider',
-											minValue : 0,
-											maxValue : 100,
-											values : [0, 100],
-											increment: 1,
-											width : 200,
-											listeners : {
-												'change' : function(slider, newVal, thumb)
-												{
-													
-													if(map){
-														//map.removeAllFilters();
-														//	map.addFilter('date', 'le', slider.getValue(1));
-														//	map.addFilter('date', 'ge', slider.getValue(0));
-														//	map.doFilter();
-														for(var mkr in this.markers)
-														{
-															this.markers[mkr].setVisible(this.markerData[mkr].date <= slider.getValue(1) && this.markerData[mkr].date >= slider.getValue(0))
-														}
-														
-													}
-													Ext.get('timeText').update("From " + new Date(slider.getValue(0)).toLocaleString() + " to " + new Date(slider.getValue(1)).toLocaleString())
-												},
-												scope : this
-											}
-										
-										},
-										{
-											border: false,
-											html: '<p id="timeText">From x to y</p>'
-										}
-									]
-								},
-								{
-									border: false,
-									items: [
-									{
-										xtype: 'label',
-										text : 'Colour points by field'
-									},{
-										xtype: 'combo',
-										id:'fieldCombo',
-										lazyRender:true,
-										mode: 'local',
-										//store:this.store,
-										typeAhead: false,
-										typeAheadDelay:false,
-										triggerAction: 'all',
-										
-										store: new Ext.data.ArrayStore({
-											autoLoad: true,
-											//url: location.href + '.json',
-											//root: 'fields',
-											idField : 'name',
-											fields:[
-												'name',
-												'label',
-												'type'
-											],
-											data: fldGrpArr
-										}),
-										displayField : 'label',
-										valueField : 'name',
-										listeners : {
-											'select': function(cbo, rec, idx) {
-												this.setGroupField(rec.data['name']);
-											},
-											scope: this	
-										},
-										value : 'DeviceID'
-									}
-									]
-								}
-								]
-							}
-							],
-							
-					
-					layout: {
-						type:'border'
-					}
-					
-				}],
-				listeners:{
-					render : function(t)
-					{
-						t.setActiveTab(1);
-						t.setActiveTab(0);
-					}
-				},
-				scope : this,
-				bbar : new Ext.PagingToolbar({
-					pageSize: 25,
-					store: this.store,
-					displayInfo: true,
-					displayMsg: 'Displaying ' + this.name + ' {0} - {1} of {2}',
-					emptyMsg: "No " + this.name + " to display",
-					items:[
-						
-					],
-					listeners : {
-						'change' : function(tb, data)
-						{
-							if(this.gpsFlds.length > 0) this.drawPoints();
-						},
-						scope: this
-					}
-				})
-			});
-			
-			this.timeSlider = Ext.getCmp('timeSlider');
-			this.tPanel.on('tabchange', createHandler(this, "createMap"), this);
-			
-			Ext.EventManager.onWindowResize(function (){
-				grid.setSize(Ext.getBody().getWidth() - 25, Ext.getBody().getHeight() * 0.65);
-			}, this);
-			
-			return this.tPanel;
-				
-		}
-		else
-		{
-			
-			Ext.EventManager.onWindowResize(function (){
-				grid.setSize(Ext.getBody().getWidth() - 25, Ext.getBody().getHeight() * 0.65);
-			}, this);
-			return grid;
-		}
-    }
-		
+    	
+    };
 		
 	this.nextMkr = function()
 	{
 		this.currentMkr++;
 		if(this.currentMkr >= this.mkrs.length) this.currentMkr = 0;
 		return this.mkrs[this.currentMkr];
-	}
+	};
 		
 	this.setGroupField = function(grpField)
 	{
@@ -1180,6 +383,8 @@ EpiCollect.Form = function()
 		}
 		while(i < this.legend.childNodes.length) this.legend.removeChild(this.legend.childNodes[i]);
 	}
+	
+	
 	
 	this.showAndFocus = function(key)
 	{
@@ -1420,458 +625,380 @@ EpiCollect.Form = function()
 		this.drawMapLegend();
 	}
 	
-	this.getForm = function(rec)
-	{
-		Ext.QuickTips.init();
-		this.ctrs = [];
-		
-		var hidden = false;
-		
-		for(this.fld in this.fields)
-		{
-
-			ctrl = false;
-			
-			if(this.fields[this.fld].fkTable)//Detect if the field is a foreign key
-			{
-				var url = location.href;
-				if(url.indexOf("?") > 0) url = url.substring(0, url.indexOf("?"));
-				url = url.replace("/" + this.name, "");
-
-				if(url.indexOf(survey.name) < 0)
-				{
-					if(url.charAt(url.length -1) != "/") url += "/";
-					url += survey.name;
-				}
-				
-				
-				if(this.branchOf) continue;
-				ctrl = {};
-				ctrl.id = this.fld;
-				ctrl.fieldLabel = this.fields[this.fld].text;
-				ctrl.xtype = "combo";
-				ctrl.store = new Ext.data.JsonStore({
-					autoLoad : false,
-					baseParams : {
-						limit : 25,
-						start : 0,
-						mode : 'list',
-						sort : 'created',
-						dir : 'asc'
-					},
-					storeId : this.fld + "_store",
-					idProperty : this.fld,
-					id : this.fld + "_store",
-					fields : [this.fld],
-					proxy: new Ext.data.HttpProxy({
-						method: 'GET',
-						url : url + (url.charAt(url.length -1) == "/" ? "" : "/")  + this.fields[this.fld].fkTable + '.json'
-					}),
-					root : this.fields[this.fld].fkTable,
-					totalProperty : 'count'
-				});
-				
-				ctrl.mode = "remote";
-				ctrl.pageSize = 25;
-				ctrl.triggerAction = "all";
-				ctrl.queryParam = this.fld;
-				ctrl.lazyRender = true;
-				ctrl.allowBlank = false;
-				ctrl.typeAhead = true;
-				ctrl.displayField = this.fld;
-				ctrl.valueField = this.fld;
-				ctrl.forceSelection = true;
-				ctrl.fkParentField = this.fields[this.fld].fkParentField;
-				ctrl.fkParentTbl = this.fields[this.fld].fkParentTbl;
-				ctrl.fkChildField = this.fields[this.fld].fkChildField;
-				ctrl.fkChildTbl = this.fields[this.fld].fkChildTbl;
-				
+	/**
+	 * @author Chris I Powell
+	 * 
+	 * 
+	 */
 	
-				ctrl.listeners = {
-					'expand' : function(cbo)
-					{
-						if(Ext.getCmp(this.fkParentField))
-						{
-							
-							if(Ext.getCmp(this.fkParentField).getValue()){
-								cbo.store.load({
-									callback : function (recs, opts, success) {
-									
-										if(recs.length == 0)
-										{
-											Ext.MessageBox.alert("Validation Message", "The " + survey.forms[this.fkParentTbl].key + " that you selected has not had any " + pluralize(this.fieldLabel) + " added to it yet.");
-										}
-									},
-									scope: this
-								});
-							}
-							else
-							{
-								Ext.MessageBox.alert("Validation Message",'Please choose the value of ' + Ext.getCmp(this.fkParentField).fieldLabel + ' before you choose the value of this field');
-								this.collapse();
-							}	
-						}
-						
-					},
-					'select' : function(cbo, rec,idx)
-					{
-						cbo2 = Ext.getCmp(cbo.fkChildField)
-						if(cbo2)
-						
-						{
-							cbo2.disable();
-							if(cbo.getValue())
-							{
-								cbo2.setValue("");
-								cbo2.store.baseParams[cbo.id] = cbo.getValue();
-								cbo2.store.load({
-									callback : function (recs, opts, success) {
-										if(recs.length == 0)
-										{
-											Ext.MessageBox.alert("Validation Message","The " + this.fieldLabel + " that you selected has not had any " + pluralize(survey.forms[this.fkChildTbl].name) + " added to it yet.");
-										}
-									},
-									scope: cbo
-								});
-							}
-							else
-							{
-								Ext.getCmp(cbo.fkChildField).store.clearFilter();
-							}
-						
-							Ext.getCmp(cbo.fkChildField).enable();
-						}
-					},
-					scope: ctrl
-				};
+	
+	
+	/**
+	 * @author Chris I Powell
+	 * 
+	 *  JQuery function to render the EpiCollect+ form
+	 *  @param {String|HTMLElement|Null}  ele [Optional] An element or the id of an element which will contain the form, leaving out this param will generate a pop-up.
+	 *  @param {Object} data [Optional] an object containing the entry data.
+	 *  @param {Boolean} vertica [Optional] true to display the form in a line-by-line as opposed to one-at-a-time format
+	 */
+	this.displayForm = function(ele, data, vertical)
+	{
+		this.formIndex = 0;
+		
+		if(data) data["updated"] = new Date().getTime().toString();
+		
+		var popup = false;
+		if(typeof ele == "string" && ele[0] != "#" && ele[0] != ".")
+		{
+			ele  = "#" + ele; 
+		}
+		else if(typeof ele == "object")
+		{
+			ele = "#" + ele.id;
+		}	
+		else
+		{
+			$(document.body).append("<div id=\"ecplus-form-" + this.name + "\"></div>");
+			ele = "#ecplus-form-" + this.name;
+			popup = true;
+		}
+		
+		this.formElement = ele;
+		
+		$(ele).dialog("option", "title", "Add Location")
+
+		
+		$(ele)
+			.empty()
+			.attr("title", (data ? "Edit " : "Add ") + this.name)
+			.addClass(vertical ? "ecplus-vertical-form" :"ecplus-form")
+			.removeClass(vertical ? "ecplus-form" :"ecplus-vertical-form")
+			.append("<div class=\"ecplus-form-next\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].moveNext();\">Next</a></div>")
+			.append("<div class=\"ecplus-form-previous\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].movePrevious();\">Previous</a></div>")
+			.append("<div class=\"ecplus-form-pane\"><form name=\"" + this.name + "\"></form></div>");
+				
+		/*$(".ecplus-form-next a, .ecplus-form-previous a").mouseover(function(evt)
+		{
+			window.evt = evt;
+			$(evt.target.parentElement).clearQueue();
+			$(evt.target.parentElement).animate({width : 110});
+		});
+		
+		$(".ecplus-form-next a, .ecplus-form-previous a").mouseout(function(evt)
+		{
+			$(evt.target.parentElement).clearQueue();
+			$(evt.target.parentElement).animate({width : 26});
+		});*/
+		
+		for(field in this.fields)
+		{
+			if(this.fields[field].type == "" || !this.fields[field].display)
+			{
+				$(ele + " form").append("<div class=\"ecplus-question-hidden\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
+				$("#ecplus-question-" + field).append(this.fields[field].getInput(data ? data[field] : undefined));
 			}
 			else
 			{
-				var cfg = {id :  this.name + '_' + this.fld, parentKey : this.key};
-				if(rec && this.fields[this.fld].type == "branch")  {
-					cfg.parentKeyValue = rec.data[this.key];
-				};
-				
-				ctrl =this.fields[this.fld].getControl(cfg);
-				
+				$(ele + " form").append("<div class=\"ecplus-question\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
+				$("#ecplus-question-" + field).append(this.fields[field].getInput(data ? data[field] : undefined));
+				$("#ecplus-question-" + field).append("<div  id=\"" + field + "-messages\" class=\"ecplus-messages\"></div>");
 			}
-			try{
-				if(this.fields[this.fld].hidden && this.key == this.fld)
+		}
+		
+		$(ele + " form").append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /></div>");
+		if(data)
+		{
+			$("#ecplus-save-button").append("<a href=\"javascript:project.forms[formName].editEntry();\">Save Entry</a>");
+		}
+		else
+		{
+			$("#ecplus-save-button").append("<a href=\"javascript:project.forms[formName].addEntry();\">Save Entry</a>");
+		}
+		
+		$(".ecplus-form-pane form").css("width", ($(".ecplus-question").width() * $(".ecplus-question").length + 1) + "px");
+		
+		if(popup)
+		{
+			w = window.innerWidth ? window.innerWidth * 0.75 : 500;
+			h = window.innerHeight ? window.innerHeight * 0.75 : 400;
+			$(ele).dialog({
+				width: w,
+				height: h,
+				modal : true,
+				resizable : false,
+				title : (data ? "Edit " : "Add ") + this.name
+			});
+			$(".ecplus-question").width($(".ecplus-form-pane").width())
+			$(".ecplus-form-pane form").css("width", ($(".ecplus-question").width() * $(".ecplus-question").length + 1) + "px");
+		}
+		
+		$("input[type=date]").each(function(idx, ele) { 
+			var fmt = project.forms[formName].fields[ele.name].date;
+			if(project.forms[formName].fields[ele.name].setDate)
+			{
+				fmt = project.forms[formName].fields[ele.name].setDate;
+			}
+			fmt = fmt.replace("MM", "mm").replace("yyyy", "yy");
+			
+			$(ele).datepicker({ dateFormat : fmt });
+		});
+		if(this.gpsFlds.length > 0) $(".locationControl").gpsPicker()
+		$(".ecplus-radio-group, .ecplus-check-group, select").controlgroup();
+		
+		if(data)
+		{
+			for(field in data)
+			{
+				$("#" + field).val(data[field]);
+			}
+		}
+		
+		$("select[childcontrol]").change(function(evt){
+			var ctrl = $(evt.target);
+			var child = $("#" + ctrl.attr("childcontrol"));
+			
+			$("option", child).hide();
+			$("option[parentvalue=" + ctrl.val() + "]", child).show();
+			
+			// if this means the current value is hidden
+			if($("option[value=" + child.val() + "]", child).css("display") == "none")
+			{
+				opts = $("option", child);
+				
+				for(var i = 0; i < opts.length; i++)
 				{
-					ctrl.value = getID();	
+					if($(opts[i]).css("display") != "none") child.val(opts[i].value);
+				}
+			}
+		});
+		
+		$(".ecplus-input").blur(function(evt){
+			if(!project.forms[formName].moveNext(true)) $(evt.target).focus();
+		});
+		
+		this.jumpFormTo(this.formIndex);
+	}
+	
+	this.doJump = function(fieldName)
+	{
+		var start = this.formIndex;
+		var done = false;
+
+		var _frm = this;
+		
+		$(".ecplus-question").each(function(idx, ele){
+			if(idx <= start || !_frm.fields[ele.id.replace("ecplus-question-", "")] ) return;
+		
+			if(fieldName && ele.id == "ecplus-question-" + fieldName)
+			{
+				done = true;
+			}
+			else if(fieldName && !done)
+			{
+				$(ele).hide();
+			}
+			else if(!_frm.fields[ele.id.replace("ecplus-question-", "")].jump)
+			{
+				$(ele).show();
+			}
+			else
+			{
+				$(ele).hide();
+			}
+		});
+		
+	}
+	
+	this.jumpFormTo = function(idx)
+	{
+		this.formIndex = idx;
+		$(".ecplus-form-pane").scrollLeft(idx * $(".ecplus-question").width());
+	}
+	
+	this.moveFormTo = function(idx)
+	{
+		if($(".ecplus-form").length == 0) return;
+		
+		if(window["interval"]) clearInterval(interval);
+		if(idx < 0 || idx > $(".ecplus-question").length)
+		{
+			this.formIndex = 0;
+			return;
+		}
+		this.formIndex = idx;
+		
+		step = $(".ecplus-question").width() / 15;
+		
+		interval = setInterval(function()
+		{
+			if(Math.abs($(".ecplus-form-pane").scrollLeft() - idx * $(".ecplus-question").width()) < step)
+			{
+				$(".ecplus-form-pane").scrollLeft(idx * $(".ecplus-question").width());
+				clearInterval(interval);
+			}
+			
+			if($(".ecplus-form-pane").scrollLeft() == idx * $(".ecplus-question").width())
+			{
+				clearInterval(interval);
+			}
+			else if($(".ecplus-form-pane").scrollLeft() < (idx * $(".ecplus-question").width()))
+			{
+				$(".ecplus-form-pane").scrollLeft($(".ecplus-form-pane").scrollLeft() + step);
+			}
+			else if($(".ecplus-form-pane").scrollLeft() > (idx * $(".ecplus-question").width()))
+			{
+				$(".ecplus-form-pane").scrollLeft($(".ecplus-form-pane").scrollLeft() - step);
+			}
+		}, 5)
+		
+	}
+	
+	this.moveNext = function(preventBlur)
+	{
+		if(this.formIndex == $('.ecplus-question').length - 1) return;
+		//validate answer to previous question
+		fldName = $('.ecplus-question')[this.formIndex].id.replace("ecplus-question-", "");
+		val = $("#" + fldName).val();
+		valid = project.forms[formName].fields[fldName].validate(val);
+		$("#" + fldName + "-messages").empty();
+		
+		if(!preventBlur)
+		{
+			$("#" + fldName)
+				.unbind("blur")
+				.blur()
+				.blur(function(evt){
+					project.forms[formName].moveNext(true);
+				});
+		}
+		
+
+		
+		if(valid === true)
+		{
+			if(this.fields[fldName].jump)
+			{
+				var jumped = false; // is a jump required
+				jbits = this.fields[fldName].jump.split(",");
+												
+				for(var j = 0; j < jbits.length; j+=2)
+				{
+					if(jbits[j+1] == $("#" + this.fields[fldName].id).idx() + 1)
+					{
+						this.doJump(jbits[j]);
+						jumped = true;
+					}
+				}
+				
+				if(!jumped)
+				{
+					this.doJump(false);
+				}
+			}
+			
+			this.formIndex++;
+			this.moveFormTo(this.formIndex);
+			return true;
+		}
+		else
+		{
+			for (msg in valid)
+			{
+				$("#" + fldName + "-messages").append("<p class=\"err\">" + valid[msg] + "<p>");
+			}
+			return  false;
+		}
+	}
+	
+	this.movePrevious = function()
+	{
+		this.formIndex--;
+		this.moveFormTo(this.formIndex);
+	}
+		
+	this.getValues = function()
+	{
+		vals = {};
+		for(fld in this.fields)
+		{
+			vals[fld] = $("#" + fld).val();
+		}
+		return vals;
+	}
+	
+	this.deleteEntry = function(key)
+	{
+		if(confirm("Are you sure you want to delete this entry?"))
+		{
+			$.ajax(baseUrl + "/" + key, {
+				type : "DELETE",
+				success:function()
+				{
+					getData();
+				}
+			});
+		}
+	}
+	
+	this.addEntry = function()
+	{
+		var frm = this;
+		$.ajax(location.href, {
+			type : "POST",
+			data : this.getValues(),
+			success:function(data, status, xhr)
+			{
+				var obj = JSON.parse(data);
+				if(obj.success)
+				{
+					$(frm.formElement).dialog("close");
+					getData();
 				}
 				else
 				{
-					ctrl.readOnly = false;
+					alert(obj.msg);
 				}
-			}catch(e){alert(ctrl.id)}
-			if(rec){
-				//if the form is being used for an edit give the control it's value
-				ctrl.value = rec.data[this.fld];
-				//if the form is being used for an edit and this is the key field make it readonly so the user cannot edit it and break the reference to it's backend object
-				ctrl.readOnly = this.fields[this.fld].id == this.key;
-				ctrl.parentID = this.fields[this.key].value;
-			}
-			else
-			{
-				
-				if(ctrl.id == this.name + "_DeviceID") ctrl.value = uid;
-				if(ctrl.id == this.name + "_created")
-				{
-					var date = new Date();
-					ctrl.value = date.getTime();
-				}
-			}
-			
-			ctrl.hidden = hidden || ctrl.hidden;
-		    hidden = hidden || !!ctrl.jump;
-			
-			this.ctrs.push(ctrl);
-		}
-		
-		lst = {};
-		if(rec)
-		{
-			lst =  {
-					"show" : function (e){
-					
-						
-					} ,
-					scope: this.frm
-				};
-		}
-		
-		this.frm = new Ext.form.FormPanel({
-			//title: this.name,
-			id: this.name + "form",
-			autoScroll : true, 
-			monitorValid: true,
-			padding: 10,
-			items:this.ctrs,
-			labelSeparator: "",
-			html: "<p>Update 5 Dec 2011 - if the form contains jumps then not all questions will be immediately visible. Fill in the visible questions to expose the other relevant fields.</p>",
-			defaultMargins:
-				{
-					 top: '0',
-					 bottom: '8',
-					 left: '0',
-					 right: '0'
-				},
-			buttons:[{
-				id:this.name + 'sub',
-				text:'Submit',
-				formBind: true
-			},{
-				id: this.name + 'cnl',
-				text:'Cancel'
-			}],
-			defaults:{
-				anchor : "95%"
 			},
-			listeners : lst
+			failure:function()
+			{
+				alert("Add request failed");
+			}	
 		});
-		
-		return this.frm;
-	}
-
-	this.deleteEntry = function(key)
-	{
-		if(this.branchOf)
-		{
-			if(!this.deletedBranches) this.deletedBranches = [];
-			this.store.remove(this.store.getById(key));
-			this.deletedBranches.push(key);
-		}
-		else
-		{
-			Ext.Ajax.request({
-				url: "./" + this.name + "/" + key,
-				method: 'DELETE',
-				success: function(res, opts){
-					if(res.responseText.match(/^Message\s?:/))
-					{
-						Ext.MessageBox.alert("Validation Message",res.responseText.replace(/^Message\s?:/, ""));
-					}
-					else
-					{
-						this.store.load();
-					}
-				},
-				failure : function(res, opts)
-				{
-					if(res.responseText.match(/^Message\s?:/))
-					{
-						Ext.MessageBox.alert("Validation Message",res.responseText.replace(/^Message\s?:/, ""));
-					}
-				},
-				scope: this
-			});
-		}
 	}
 	
-	this.addEntry = function(args, callback, scope)
+	this.saveBranches = function()
 	{
-		newArgs = {};
-		for(a in args)
-		{
-			newArgs[a.replace(this.name + "_", "")] = args[a];
-		}
-		newArgs["created"] = new Date().getTime();
-		newArgs["DeviceID"] = uid;
- 		
-		if(this.branchOf)
-		{
-			newArgs[survey.forms[this.branchOf].key] = Ext.getCmp(this.branchOf + "_" + survey.forms[this.branchOf].key).getValue();
-			var recT = Ext.data.Record.create(this.store.fields);
-			var rec = new recT(newArgs, newArgs[this.key]);
-			this.store.add(rec);
-			callback(scope);
-		}
-		else
-		{
-			pars = {}
-			pars["mode"] = "list";
-			pars["sort"] = "created";
-			pars["dir"] = "asc";
-			pars[this.key] = newArgs[this.key]; 
-			
-			var ct = this;
-			
-			var path = location.pathname ;//+ ".json"
-			if(path.indexOf(survey.name) < 0) path = path + "/" + survey.name;
-			if(path.indexOf(this.name) < 0) path = path + "/" + this.name;
-			path += ".json";
-			
-			var sx = this;
-			
-			Ext.Ajax.request({
-				url: path,
-				method: 'GET',
-				params : pars,
-				success : function(res, opts)
-				{
-					
-					var at = Ext.decode(res.responseText);
-						
-					if(at.count == 0 || confirm("You have entered the same primary key as another record. Do you wish to overwrite the previous record"))
-					{
-						try
-						{
-							Ext.Ajax.request({
-								url: path,
-								method: 'POST',
-								params: newArgs,
-								success: function(res, opts){
-																		
-									if(this.branchForms.length > 0)
-									{
-										this.saveBranches(false, callback, scope);
-									}
-									else
-									{
-										if(this.store.load) this.store.load({params: {start : 0, limit: 25, mode: 'list'}});
-										callback(this);
-									}
-									//callback(scope);
-								},
-								failure : function(res, opts)
-								{
-									Ext.MessageBox.alert("Validation Message",res.responseText.replace(/Message\s?:/,""));
-								},
-								scope: this
-							});
-						}
-						catch(e) {alert(e);}
-					}
-				},
-				scope: sx
-			});
-		}
-	}
-	
-	this.saveBranches = function(edit, callback, scope)
-	{
-		completed = 0; succeeded = 0;
-		for(var i = 0; i < this.branchForms.length; i++)
-		{
-			var dbs =  survey.forms[this.branchForms[i]].deletedBranches;
-			if(dbs && dbs.length > 0)
-			{
-				for(var j = 0; j < dbs.length; j++)
-				{
-					Ext.Ajax.request({
-						url: "./" + this.branchForms[i] + "/" + dbs[j],
-						method: 'DELETE',
-						success: function(res, opts){
-							completed++;
-							succeeded++;
-							if(succeeded == bfs.length+ dbs.length)
-							{
-								scope.store.load({params: {start : 0, limit: 25, mode: 'list'}});
-								callback(scope);
-							}
-							else if(completed == bfs.length+ dbs.length)
-							{
-								alert("oops");
-							}
-						},
-						failure : function(res, opts)
-						{
-							completed++;
-							if(completed == bfs.length+ dbs.length)
-							{
-								alert("oops");
-							}
-						}
-					});
-				}
-			}
-			
-			var bfs = survey.forms[this.branchForms[i]].store.getRange();
-			if(bfs.length > 0)
-			{
-				for(var j = 0; j < bfs.length; j++)
-				{
-					
-					bfs[j].data[this.key] = newArgs[this.key];
-					Ext.Ajax.request({
-						url: "./" + this.branchForms[i] + (edit && bfs[j].dirty ? "/" + bfs[j].data[survey.forms[this.branchForms[i]].key] : ""),
-						method: edit && bfs[j].dirty ? 'PUT' : 'POST',
-						params: bfs[j].data,
-						success: function(res, opts){
-							completed++;
-							succeeded++;
-							if(succeeded == bfs.length + dbs.length)
-							{
-								this.store.load({params: {start : 0, limit: 25, mode: 'list'}});
-								callback(scope);
-							}
-							else if(completed == bfs.length+ dbs.length)
-							{
-								alert("oops");
-							}
-						},
-						failure : function(res, opts)
-						{
-							completed++;
-							if(completed == bfs.length+ dbs.length)
-							{
-								alert("oops");
-							}
-						}
-					});
-				}
-			}
-			else
-			{
-				//this.store.load({params: {start : 0, limit: 25, mode: 'list'}});
-				callback(scope);			
-			}
-		}
+		
 	}
 		
-	this.editEntry = function(key, args, callback, scope)
+	this.editEntry = function()
 	{
-		newArgs = {};
-		for(a in args)
-		{
-			newArgs[a.replace(this.name + "_", "")] = args[a];
-		}
-		newArgs["lastEdited"] = new Date().getTime();
-
-		if(this.branchOf)
-		{
-			var rec = this.store.getById(key);
-			for(a in newArgs)
+		vals = this.getValues();
+		vals["lastEdited"] = new Date().getTime();
+		
+		var frm = this;
+		
+		$.ajax(baseUrl + "/" + vals[this.key], {
+			type : "PUT",
+			data : vals,
+			success:function(data, status, xhr)
 			{
-				rec.data[a] = newArgs[a];
-			}
-			//this.store.add(rec);
-			rec.markDirty();
-			Ext.getCmp(this.name + "_grid").getView().refresh();
-			callback(scope);
-		}
-		else
-		{
-			
-			Ext.Ajax.request({
-				url: "./" + this.name + "/" + key ,
-				method: 'PUT',
-				params: newArgs,
-				success: function(res, opts){
-					if(scope.branchForms.length > 0)
-					{
-						scope.saveBranches(true, callback, scope);
-					}
-					else
-					{
-						scope.store.load({params: {start : 0, limit: 25, mode: 'list'}});
-						callback(scope);
-					}
-				},
-				scope: this
-			});
-		}
+				var obj = JSON.parse(data);
+				if(obj.success)
+				{
+					$(frm.formElement).dialog("close");
+					getData();
+				}
+				else
+				{
+					alert(obj.msg);
+				}
+			},
+			failure:function()
+			{
+				alert("Edit request failed");
+			}	
+		});
 	}
 	
 
@@ -1929,11 +1056,12 @@ EpiCollect.Field = function()
     this.parse = function(xml)
     {
 		this.type = xml.tagName;
+		if(this.type == "gps") this.type = "location";
 		this.id = xml.getAttribute('name');
 		if(!this.id) this.id = xml.getAttribute('ref');
 		this.title = Boolean(xml.getAttribute('title'));
 		this.required = xml.getAttribute('required') == "true";
-		this.integer = xml.getAttribute('integer') == "true";
+		this.isinteger = xml.getAttribute('integer') == "true";
 		this.isdouble = xml.getAttribute('decimal') == "true";
 		this.local = xml.getAttribute("local") == "true";
 		this.regex = xml.getAttribute('regex');
@@ -1972,8 +1100,8 @@ EpiCollect.Field = function()
 				if(survey.forms[t].key == this.id)
 				{
 					//FUTURE-PROOF : if we want to allow the foreign key field to have a differnt name to the primary key field
-					this.fkParentTbl = survey.getPrevTable(survey.forms[t].name).name;
-					this.fkParentField = survey.getPrevTable(survey.forms[t].name).key;
+					this.fkParentTbl = survey.getPrevForm(survey.forms[t].name).name;
+					this.fkParentField = survey.getPrevForm(survey.forms[t].name).key;
 					this.fkChildTbl = survey.getNextTable(survey.forms[t].name).name;
 					this.fkChildField = survey.getNextTable(survey.forms[t].name).key;
 					
@@ -1987,258 +1115,357 @@ EpiCollect.Field = function()
 		var opts = xml.getElementsByTagName('item');
 		for(var o = 0; o < opts.length; o++)
 		{
-			this.options.push([opts[o].getElementsByTagName('value')[0].firstChild.data,opts[o].getElementsByTagName('label')[0].firstChild.data]);  
+			this.options.push({value : opts[o].getElementsByTagName('value')[0].firstChild.data, label : opts[o].getElementsByTagName('label')[0].firstChild.data});  
 		}
+		
+		if(this.title) this.required = true;
     }
+
     
+   this.getInput = function(val)
+   {
+	   pre = "";
+	   
+	   if(!val)
+	   {
+		   if(this.id == "created" || this.id == "uploaded")
+		   {
+			   val = new Date().getTime().toString();
+		   }
+		   else if(this.id == "DeviceID")
+		   {
+			   val = "web";
+		   }
+		   else
+		   {
+			   val = "";
+		   }
+	   }
+	   
+	   if(this.crumb) pre = "<p>" + this.crumb + "</p>";
+	   
+	   //recursively check to see if this field is a key field from another form
+	   //also need to make sure that 
+	   var fkfrm;
+	   var fkfld;
+	   for(var frm = this.form; frm; frm = project.getPrevForm(frm.name))
+	   {
+		   if(frm.name == this.form.name) continue;
+		   if(this.id == frm.key)
+		   {
+			   var pfield;
+			   var pfrm = project.getPrevForm(frm.name);
+			   if(pfrm && this.form.fields[pfrm.key])
+			   {
+				   pfield = pfrm.key;
+			   }
+			   else
+			   {
+				   pfield = false;
+			   }
+			   
+			   this.required = true;
+			   ctrl = "<select name=\""  + this.id + "\" id=\""  + this.id + "\"" + (fkfld ? " childcontrol=\"" + fkfld + "\"" : "") + " class=\"ecplus-input\" >";
+			   //get options;
+			   var cname = this.id;
+			   var key = frm.key;
+			   var title = frm.titleField;
+			   
+			   if(!this.callbacks) this.callbacks = {};
+			   var cb = frm.name + new Date().getTime(); 
+			   
+			   window[cb] = function(data)
+			   {
+				  
+				   for(var i = 0; i < data.length; i++)
+				   {
+					   $('#' + cname +'').append("<option value=\"" + data[i][key] +  "\" " + (pfield ? " parentvalue=\"" + data[i][pfield] + "\" " : "" ) + (val == data[i][key] ? " SELECTED" : "") + " >" +  data[i][title] + "</option>");
+				   }
+				   delete window[cb];
+			   }
+			   
+			   $.getJSON("./" + frm.name + ".json", undefined, window[cb]);
+			   ctrl += "</select>";
+			   return pre + ctrl;
+		   }
+		   else
+		   {
+			   fkfrm = frm.name;
+			   fkfld = frm.key;
+		   }
+	   }
+		   
+	   if(this.type == "branch")
+	   {
+		   return pre + "<div id=\"" + this.id + "\" class=\"ecplus-input\"><a>Add Branch</a><p>This entry currently has <span>0</span> branch entries</p></div>";
+	   }
+	   else if(this.type == "select1")
+	   {
+		   ret =  "<select name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input\" > ";
+		   for(var i = 0; i < this.options.length; i++)
+		   {
+			   ret += "<option value=\"" + this.options[i].value + "\" " + (this.options[i].value == val ? "SELECTED" : "")  + ">" + this.options[i].label + "</option>";
+		   }
+		   ret +="</select>";
+		   return pre +  ret;
+	   }
+	   else if(this.type == "select")
+	   {
+		   ret =  "";
+		   for(var i = 0; i < this.options.length; i++)
+		   {
+			   ret = "<p id=\"" + this.id + "\"  class=\"ecplus-check-group ecplus-input\"><input type=\"checkbox\" name=\"" + this.name + "\" value=\"" + this.options[i].value + "\" " + (this.options[i].value == val ? "checked=\"checked\"" : "") + "><label>" + this.options[i].label + "</label></p>";
+		   }
+		   return pre + ret;
+	   }
+	   else if(this.type == "radio")
+	   {
+		   ret =  "<p id=\"" + this.id + "\" class=\"ecplus-radio-group ecplus-input\">";
+		   for(var i = 0; i < this.options.length; i++)
+		   {
+			   ret += "<input type=\"radio\" name=\"" + this.id + "\" value=\"" + this.options[i].value + "\" " + (this.options[i].value == val ? "checked=\"checked\"" : "") + "><label>" + this.options[i].label + "</label><br />";
+		   }
+		   return pre + "</p>" + ret;
+	   }
+	   else if(this.type == "textarea")
+	   {
+		   return pre + "<textarea name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input\">" + val + "</textarea>";
+	   }
+	   else if(this.date || this.setDate)
+	   {
+		   //Custom Date Picker
+		   return pre + "<input type=\"date\" name=\"" + this.id + "\" value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input\" />";
+	   }
+	   else if(this.time || this.setTime)
+	   {
+		   return pre + "<input type=\"time\" name=\"" + this.id + "\" value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input\" />";
+	   }
+	   else if(this.type == "input" || this.type == "barcode")
+	   {
+		   return pre + "<input type=\"text\" name=\"" + this.id + "\" value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input\" />";
+	   }
+	   else if(this.type == "video" || this.type == "audio" || this.type == "photo")
+	   {
+		   return pre + "<iframe id=\"" + this.id + "_iframe\" src=\"" + this.form.name + "/uploadMedia\" class=\"ecplus-input\" ></iframe><input type=\"hidden\" name=\"" + this.id + "\" value=\"" + val + "\" />";
+	   }
+	   if(this.type == "location")
+	   {
+		   return pre + "<div id=\"" + this.id+ "\" class=\"locationControl ecplus-input\" ></div>";
+	   }
+	   else
+	   {
+		   return pre + "<input type=\"hidden\"id=\"" + this.id + "\" class=\"ecplus-input\" name=\"" + this.id + "\" value=\"" + val + "\" />";
+	   }
+   }
+	
+   this.populateControl = function(data)
+   {
+	   for(var i = 0; i < data.length; i++)
+	   {
+		   $('#' + this.id +'').append("<option value=\"" + data[i][this.id] +  "\" "   + " >" +  data[i][this.id] + "</option>");
+	   }
+	   
+   }
    
-    
-    this.getControl = function(cfg)
-    {
-		var xtypes = {
-			"input" : Ext.form.TextField,
-			"textarea": Ext.form.TextArea,
-			"select": EcCheckboxGroup,
-			"select1": Ext.form.ComboBox,
-			"barcode" : Ext.form.TextField,
-			"photo" : mediaPanel,
-			"video" : mediaPanel,
-			"audio" : mediaPanel,
-			"gps": GPSPanel,
-			"location" : GPSPanel,
-			"radio" :  Ext.form.ComboBox,
-			"branch" : BranchPanel,
-			"group" : Ext.form.ComboBox,
-			"" : Ext.form.TextField
-		}
-		
-		var constructor = xtypes[this.type];
-		
-		var ctrl = {
-			id: this.id,
-			fieldLabel : this.text,
-			readOnly:  this.hidden,
-			parent : this.parent
-		};
-		
-		if(this.type == "")
-		{
-			ctrl.hidden = true;
-		}
-		else
-		{
-			ctrl.hidden = false;
-		}
-		
-		if(this.type == "select1" || this.type == "radio")
-		{
-			ctrl.forceSelection = true;
-			ctrl.lazyRender = true;
-		}
-		
-		if(this.integer){
-			constructor = Ext.form.NumberField;
-			ctrl.allowDecimals = false;
-			if(this.min) ctrl.minValue = this.min;
-			if(this.max) ctrl.maxValue = this.max;
-		}
-		
-		if(this.isdouble)
-		{
-			constructor = Ext.form.NumberField;
-			ctrl.allowDecimals = true;
-			if(this.min) ctrl.minValue = this.min;
-			if(this.max) ctrl.maxValue = this.max;
-		}
-		
-		if(this.date || this.setDate)
-		{
-			constructor = Ext.form.DateField;
-			format = this.setDate ? this.setDate : this.date;
-			format = format.replace(/D+/i, "d").replace(/M+/i, "m").replace(/Y+/i, "Y");
-			ctrl.format = format;
-			if(this.setDate)ctrl.value = new Date().format(format);
-		}
-		
-		if(this.time || this.setTime)
-		{
-			constructor = Ext.form.TimeField;
-			format = this.setTime ? this.setTime : this.time;
-			format = format.replace(/H+/i, "H").replace(/M+/i, "i").replace(/S+/i, "s");
-			ctrl.format = format;
-			if(this.setTime)ctrl.value = new Date().format(format);
-		}
-		
-		if(this.regex)
-		{
-			ctrl.regex = new RegExp(this.regex);
-			ctrl.regexText = this.text + " must conform to the format specified by the form designer";
-		}
-		
-		if(this.options.length > 0 && (this.type == "select1" || this.type == "radio")){
-			ctrl.store = new Ext.data.ArrayStore({
-				autoDestroy: true,
-				idIndex : 1,
-				fields : [
-					'key',
-					'value'
-				],
-				data:this.options,
-			});
-			ctrl.displayField = 'value';
-			ctrl.valueField = 'key'
-		}
-		
-		if(this.options.length > 0 && (this.type == "select")){
-			ctrl.items = [{columnWidth : 1, items: []}];
-			ctrl.columns = ["one"];
-			
-			for (var o = 0; o < this.options.length; o++)
-			{
-				ctrl.items[0].items.push({
-					fieldLabel : this.options[o][0], value : this.options[o][1]
-				});
-			}
-		}
-		
-		if(this.type == "radio" || this.type == "select1" || this.fkField)
-		{
-			ctrl.mode = "local";
-			ctrl.triggerAction = "all";
-			ctrl.lazyRender = "true"
-		}
-		
-		if(this.type == "group" || this.type == "branch")
-		{
-			ctrl.form = this.form;
-		}
-			
-		if(this.match)
-		{
-			ctrl.match = this.match;
-			ctrl.validator = function(value)
-			{
-				if(value == "") return false;
-				mParts = this.match.split(",");
-				var pVal = Ext.getCmp(mParts[1]).getValue();
-				if(!pVal)
-				{
-					//alert("Please select a value for " + Ext.getCmp('Person_ID').label.dom.firstChild.data + " before filling out " + this.label.dom.firstChild.data)
-					return false;
-				}
-				var rex = new RegExp(mParts[2]);
-				
-				if(pVal.match(rex) && value.match(rex) && pVal.match(rex)[0] == value.match(rex)[0])
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-		}
-		
-		ctrl.listeners = {};
-		if(this.verify)
-		{
-			ctrl.listeners['change'] = function(fld, newVal, oldVal)
-			{
-				if(!this.isValid()) return false;
-				if(prompt("Please re-enter the value for " + fld.label.dom.firstChild.data) != newVal)
-				{
-					Ext.MessageBox.alert("Validation Message", "Values did not match, please try again");
-					fld.setValue(oldVal);
-				}
-			}
-		}
-		
-		if(this.jump)
-		{
-			ctrl.jump = this.jump;
-			var evt = (this.type == 'select1' || this.type == 'radio' ? 'select' : 'valid' );
-			ctrl.jumpEvent = evt;
-			
-			ctrl.doJump = function(fld, rec, idx)
-		    {
-				if(fld.hidden) return;
-				
-		    	var jumpParts = fld.jump.split(",");
-				var jField = false;
-				
-				idx++;//idx is zero indexed, jump is 1 indexed
-				for(var i = 0; i < jumpParts.length ; i += 2)
-				{
-					if(jumpParts[i+1].match(/^All$/i) != null || jumpParts[i+1] == idx || (jumpParts[i+1].match(/^![0-9]+$/) && jumpParts[i+1] != "!" + idx))
-					{
-						
-						jField = jumpParts[i];
-						break;
-					}
-				}
-	
-				var start = false;
-				var end = !jField;
-				var x = false
-				for(var f in table.fields)
-				{
-					
-					if(table.name + "_" + f == fld.id) 
-					{
-						start = true;
-						
-					}
-					else if(start && f == jField)
-					{
-						
-						Ext.getCmp(table.name + "_" + f).show();
-						end = true;
-						if(Ext.getCmp(table.name + "_" + f).jump) {start = false; x=true} 
-						//return;
-					}
-					else if(start && !end && f != jField)
-					{
-						//console.log(table.name + "_" + f);
-						Ext.getCmp(table.name + "_" + f).hide();
-					}
-					else if(start)
-					{
-						if(Ext.getCmp(table.name + "_" + f))
-						{
-							//console.log(table.name + "_" + f);
-							Ext.getCmp(table.name + "_" + f).show();
-							if(end && Ext.getCmp(table.name + "_" + f).jump)
-							{
-								start = false;
-								x=true;
-							}
-						}
-					}
-					else if(x)
-					{
-						if(Ext.getCmp(table.name + "_" + f))
-						{	Ext.getCmp(table.name + "_" + f).hide();}
-					}
-				}
-		    }
-			
-			ctrl.listeners[evt] = ctrl.doJump;
-		}
-		
-		ctrl.msgTarget = "under";
-		
-		Ext.apply(ctrl, cfg);
-		return new constructor(ctrl);
-	}
-	
 	this.formatValue = function(value)
 	{
 		if(this.type == "photo"){
 			return "<img src=\""+value+"\" alt=\""+value+"\"/>";
+		}else if(this.type == "location" || this.type == "gps"){
+			return value.latitude + ", " + value.longitude;
 		}
-		else{ return value;}
 		
+		else{ return value;}
 	}
+	
+	this.validate = function(value)
+	{
+		var msgs = []
+		if(this.required && !value) msgs.push("This field is required");
+		if(value && value != "")
+	    {
+			if(this.isinteger){
+				if(!value.match(/^[0-9]+$/))
+				{
+					msgs.push("This field must be an Integer");
+				}
+			}
+			if(this.isdouble){
+				if(!value.match(/^[0-9]+(\.[0-9]+)?$/))
+				{
+					msgs.push("This field must be an decimal");
+				}
+			}
+			
+			if(this.date || this.setDate){
+				// will consist of dd MM and yyyy
+				var fmt = this.date + this.setDate; 
+				var sep = null;
+				
+				var day = null;
+				var month = null
+				var year = null;
+				
+				for(var i = 0; i < fmt.length; i ++)
+				{
+					if(fmt[i] == "d")
+					{
+						if(fmt[i+1] == "d")
+						{
+							day = Number(value.substr(i,2));
+							if(day == NaN) msgs.push("Day is not a number");
+							i++
+						}
+						else
+						{
+							throw "Invalid date format";
+						}
+					}
+					else if(fmt[i] == "M")
+					{
+						if(fmt[i+1] == "M")
+						{
+							month = Number(value.substr(i,2));
+							if(month == NaN) msgs.push("Month is not a number");
+							i++
+						}
+						else
+						{
+							throw "Invalid date format";
+						}
+					}
+					else if(fmt[i] == "y")
+					{
+						if(fmt[i+1] == "y" && fmt[i+2] == "y" && fmt[i+3] == "y" )
+						{
+							year = Number(value.substr(i,4));
+							if(year == NaN) msgs.push("Year is not a number");
+							i+=3
+						}
+						else
+						{
+							throw "Invalid date format";
+						}
+					}
+					else
+					{
+						if(!sep) sep = fmt[i];
+					}
+					
+					if(day)
+					{
+						if(day < 1 || day > 31)	msgs.push("Day is out of range");
+						else if(month && (month == 4 || month == 6 || month == 9 || month == 11) && day > 30) msgs.push("Day is out of range");
+						else if(month && month == 2 && day > 29 && (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))) msgs.push("Day is out of range");
+						else if(month && month == 2 && day > 28) msgs.push("Day is out of range");
+					}
+					if(month)
+					{
+						if(month < 1 ||  month > 12) msgs.push("Month is out of range");
+					}
+					
+				}
+			}
+			
+			if(this.time || this.setTime){
+				var fmt = this.date + this.setDate; 
+				var sep = null;
+				
+				var hours = null;
+				var minutes = null
+				var seconds = null;
+				
+				for(var i = 0; i < fmt.length; i ++)
+				{
+					if(fmt[i] == "H")
+					{
+						if(fmt[i+1] == "H")
+						{
+							hours = Number(value.substr(i, 2));
+							if(hours == NaN) msgs.push("Hours are not a number");
+							if(hours < 0 || hours > 23) msgs.push("Hours out of range");
+							i++;
+							
+						}
+						else
+							throw "Time Format is invalid";
+							
+					}
+					else if(fmt[i] == "m")
+					{
+						if(fmt[i+1] == "m")
+						{
+							minutes == Number(value.substr(i,2));
+							if(minutes == NaN) msgs.push("Minutes are not a number");
+							if(minutes < 0 || minutes > 59) msgs.push("Minutes out of range");
+							i++
+						}
+					}
+					else if(fmt[i] == "s")
+					{
+						if(fmt[i+1] == "s")
+						{
+							seconds == Number(value.substr(i,2));
+							if(seconds == NaN) msgs.push("Seconds are not a number");
+							if(seconds < 0 || seconds > 59) msgs.push("Seconds out of range");
+							i++
+						}
+					}
+				}
+			}
+			
+			if(this.regex){
+				if(!value.match(new RegExp(this.regex))) msgs.push(this.regexMessage ? this.regexMessage : "The value you have entered is not in the right format.");
+			}
+			
+			if(this.max){
+				if(Number(Value) > this.max) msgs.push("Value must be less than  or equal to" + this.max);
+			}
+			
+			if(this.min){
+				if(Number(Value) < this.min) msgs.push("Value must be greater than or equal to " + this.min);
+			}
+			
+			if(this.match){
+				//in this version the match field must be present on the page and filled in
+				info = this.match.split(",");
+				
+				matchStr = $("#" + info[1]).val().match(new RegExp(info[2]));
+				valStr = value.match(new RegExp(info[2]));
+				
+				if(valStr != matchStr) msgs.push("The value does not match the string from the parent field");
+			}
+			
+			if(this.verify)
+			{
+				if(!$("#" + this.id).hasClass("ecplus-valid"))
+				{
+					$("#" + this.id).hide();
+					if(prompt("Please re-enter the value for " + this.text + " to confirm the value") != value)
+					{
+						msgs.push("field values must match");
+						$("#" + this.id).val("");
+					}
+					$("#" + this.id).show();
+				}
+				
+			}
+	    }
+		
+		if(msgs.length == 0)
+		{
+			$("#" + this.id).removeClass("ecplus-invalid");
+			$("#" + this.id).addClass("ecplus-valid");
+		}
+		else
+		{
+			$("#" + this.id).removeClass("ecplus-valid");
+			$("#" + this.id).addClass("ecplus-invalid");
+		}	
+		
+		return msgs.length == 0 ? true : msgs;		
+	};
+	
 	
 	
 }

@@ -10,6 +10,39 @@
 			global $db;
 			$this->db = $db;
 		}
+
+		function resetPassword($uid)
+		{
+			global $db, $cfg;
+			
+			$str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+			$str = str_shuffle($str);
+			$str = substr($str, -10);
+			
+			$qry = "select details from user where idUsers = $uid";
+			$res = $db->do_query($qry);
+			if($res !== true) return $res;
+			
+			$creds = "";
+			
+			while($arr = $db->get_row_array())
+			{
+				$creds = json_decode($arr["details"]);
+			}
+			
+			$salt = $cfg->settings["security"]["salt"];
+			$enc_data = crypt($str, "$2a$08$".$salt ."$");
+			
+			$creds->auth = $enc_data; 
+			
+			$data = "{\"username\" : \"{$creds->username}\", \"auth\" : \"$enc_data\" }";
+			
+			$qry = "UPDATE user SET details = '$data' WHERE idUsers = $uid";
+			if($db->do_query($qry) == true)
+			{
+				return $str;
+			} 
+		}
 		
 		public function requestLogin($callbackUrl, $firstLogin = false)
 		{
@@ -40,7 +73,7 @@
 			$data =  $this->db->escapeArg($_POST["pwd"]);
 			$username =  $this->db->escapeArg($_POST["uname"]);
 			$enc_data = crypt($data, "$2a$08$".$salt."$");
-			$this->data = "{\"username\" : \"$username\" \"auth\" : \"$enc_data\" }";
+			$this->data = "{\"username\" : \"$username\", \"auth\" : \"$enc_data\" }";
 			
 			$res = $this->db->do_query("SELECT idUsers FROM user WHERE details = '$this->data';");
 			if($res !== true) die("!!!$res");
@@ -74,7 +107,7 @@
 			
 			$salt = $cfg->settings["security"]["salt"];
 			$enc_data = crypt($pass, "$2a$08$".$salt ."$");
-			$this->data = "{\"username\" : \"{$username}\" \"auth\" : \"$enc_data\" }";
+			$this->data = "{\"username\" : \"{$username}\", \"auth\" : \"$enc_data\" }";
 			
 			$sman = $serverManager ? "1" : "0";
 			

@@ -1,0 +1,427 @@
+/* RESET!!! */
+html, body, div, img, h1, h2, h3, h4, h5, h6, ul, ol, dl, li, dt, dd, p, blockquote, pre, form, fieldset, table, th, td { margin: 0; padding: 0; border-spacing:0; }  
+
+textarea, input, a{ outline:none;}
+
+img{ border:0;}
+body{
+	font-family: "Arial";
+	font-size: 14px;
+	margin : 10px 10px 10px 10px;
+	min-width: 760px;
+}
+
+h1
+{
+	border-bottom : 1px solid #CCCCCC;
+	color: #808080;
+	font-size : 20px;
+	padding-bottom : 5px;
+	margin-bottom : 0.2em; 
+}
+
+h4
+{
+	margin-top: 0.7em;	
+}
+
+a	
+{
+	text-decoration : none;
+}
+
+a:hover
+{
+	text-decoration : underline;
+}
+
+a:visited
+{
+	color : #0000FF;
+}
+
+fieldset
+{
+	border : 0;
+}
+
+p
+{
+	margin : 0.5em 0 0.5em 0;	
+}
+
+th
+{
+	color: #EEEEEE;
+	background: #444444;
+	-moz-user-select:none;
+	-webkit-user-select:none;
+	user-select:none;
+	-ms-user-select:none;
+	cursor : pointer;
+}
+
+th:hover
+{
+	background-color:#444488;
+}
+
+tr
+{
+	
+}
+
+td
+{
+	
+	overflow : hidden;
+	word-wrap: break-word;
+}
+
+th, td
+{
+	padding : 0.25em 0.25em 0.25em 0.25em;
+	border-right : 1px solid #CCCCCC;
+	border-left : 1px solid #CCCCCC;
+	text-align : left;
+}
+
+table
+{
+	border : 1px solid #CCCCCC;
+}
+
+.provider
+{
+	padding: 0.75em 0.25em 0.75em 0.25em;
+	margin: 0.75em 0.25em 0.75em 0.25em;
+}
+
+
+tr.alt
+{
+	background: #EEEEEE;
+	padding: 5px 5px 5px 5px;
+}
+
+.bubbleth
+{
+	background: transparent;
+	font-weight : bold;
+	border:none;
+	margin-right : 3px !important;
+	padding : 2px 2px 2px 2px;
+}
+
+.ecplus-data
+{
+	width : 100%;
+}
+
+.ecplus-data tr:hover, .ecplus-data tr.alt:hover
+{
+	cursor: pointer;
+	background-color: #CCCCFF;
+}
+
+.ecplus-data tr.selected, .ecplus-data tr.alt.selected
+{
+	cursor: pointer;
+	background-color: #d8e2fe;
+}
+
+.ecplus-toolbar 
+{
+	height: 3em;
+}
+
+.ecplus-toolbar a
+{
+	display: inline-block;
+	margin : 0 0.25em 0 0.25em;
+	vertical-align: middle;
+}
+
+/* For slidy form */
+
+.ecplus-form, .ecplus-form-pane
+{
+	position: relative;
+	overflow: hidden !important;
+	
+}
+
+.ecplus-form form
+{
+	display: block;
+	height: 400px;
+	width: auto;
+	overflow: hidden;
+}
+
+.ecplus-form .ecplus-question
+{
+	position:relative;
+	display : inline-block;
+	width: 475px;
+	height: 400px;
+	text-align : center;
+	vertical-align: middle;
+}
+
+.ecplus-question iframe
+{
+	border : 0;
+}
+.ecplus-form .ecplus-question label
+{
+	display : block;
+	font-size: 12pt;
+	font-weight : bold;
+	margin-bottom: 2em;
+}
+
+.ecplus-form .ecplus-question p label
+{
+	width : auto;
+	display : inline-block;
+	font-size: 12pt;
+	font-weight : normal;
+	margin-bottom: 0;
+}
+
+.ecplus-question .err
+{
+	padding : 0.25em 0.25em 0.25em 0.25em;
+}
+
+.ecplus-form .ecplus-question input, .ecplus-form .ecplus-question button, .ecplus-form .ecplus-question textarea, .ecplus-form .ecplus-question select
+{
+	font-size: 12pt;
+	text-align : left;
+}
+
+
+.ecplus-form .ecplus-form-next, .ecplus-form .ecplus-form-previous
+{
+	border : 1em solid #EEEEEE;
+	position: absolute;
+	width : 100px;
+	height : 2em;
+	margin-top: -1.25em;
+	padding-top: 0.5em;
+	vertical-align : middle;
+	overflow : hidden;
+	z-index: 100;
+}
+
+.ecplus-form .ecplus-form-next
+{	
+	bottom: 0;
+	right : 0.25em;
+	border-top-left-radius: 1em;
+	border-bottom-left-radius: 1em;
+	background : #EEEEEE url('../images/glyphicons/glyphicons_223_thin_right_arrow.png') no-repeat left center;
+}
+
+.ecplus-form .ecplus-form-previous
+{
+	bottom: 0;
+	left : 0.25em;
+	border-top-right-radius: 1em;
+	border-bottom-right-radius: 1em;
+	background : #EEEEEE url('../images/glyphicons/glyphicons_224_thin_arrow_left.png')  no-repeat right center;
+}
+
+.ecplus-form .ecplus-form-next a, .ecplus-form .ecplus-form-previous a
+{
+	position: absolute;
+	display : block;
+	width : 100px;
+}
+
+.ecplus-form .ecplus-form-next a
+{
+	padding-left: 2em;
+	text-align : left;
+	left: 0px;
+	
+}
+
+.ecplus-form .ecplus-form-previous a
+{
+	padding-right: 2em;
+	text-align: right;
+	right: 2px;
+
+}
+
+/* vertical form  */
+
+.ecplus-vertical-form .ecplus-question
+{
+	position: relative;
+	display : block;
+}
+
+.ecplus-vertical-form .ecplus-form-next, .ecplus-vertical-form .ecplus-form-previous {display:none;}
+
+.ecplus-vertical-form .ecplus-question label{
+	display : inline-block;
+	font-weight: bold;
+	width : 10em;
+}
+
+.ecplus-vertical-form .ecplus-question fieldset label
+{
+	display : inline-block;
+	width : 50%;
+	font-size: 12pt;
+	font-weight : normal;
+	margin-bottom: 0;
+}
+
+.ecplus-vertical-form .ecplus-question .ecplus-messages, .ecplus-vertical-form .ecplus-question .ecplus-messages p
+{
+	display : inline;
+}
+
+.ecplus-vertical-form .ecplus-question p
+{
+	display : inline-block;
+	vertical-align : top;
+}
+
+/* general */
+
+.locationControl
+{
+	text-align : left;
+}
+
+.ecplus-form .ecplus-question fieldset label
+{
+	display : inline-block;
+	width : 50%;
+	font-size: 12pt;
+	font-weight : normal;
+	margin-bottom: 0;
+}
+
+.ecplus-question-hidden
+{
+	display:none;
+}
+
+.ecplus-map
+{
+	position: relative;
+	display : inline-block;
+	width : 50%;
+	min-height: 16em;
+	left:2px;		
+}
+
+.ecplus-map-controls
+{
+	position: absolute;
+	display : inline-block;
+	top:30px;
+	left: 52%;
+	right: 2px;
+	bottom : 2px;
+	
+}
+
+.flash
+{
+	border-radius: 0.5em;
+	padding: 0.5em 0.5em 0.5em 0.5em; 
+}
+
+.msg
+{
+	background-color :#EEEEFF;
+	color : #0000AA;
+}
+
+.err
+{
+	background-color :#FFEEEE;
+	color : #AA0000;
+}
+
+.go
+{
+	background-color :#EEFFEE;
+	color : #00AA00;
+}
+
+.projectImage
+{
+	float:right;
+}
+
+.hMenu
+{
+	width : 75%;
+	text-align : center;
+	
+}
+
+.menuItem
+{
+	display : inline-block;
+	width: 150px;
+}
+
+.rightie
+{
+	float: right;
+}
+
+.leftie
+{
+	float: left;
+}
+
+#loginStatus{
+	float:right;
+	margin-top: -2px;
+	/*display: none;*/
+}
+
+#main
+{
+	min-height: 400px;
+	border: 1px solid #cccccc;
+	padding: 10px 10px 10px 10px;
+}
+
+#nav{
+	float: right;
+	margin-top : -15px;
+}
+
+#nav a{
+	padding: 0px 5px 0px 5px;
+}
+
+.ui-slider-horizontal
+{
+	border: 1px solid #CCCCCC;
+	background : #EEEEEE;
+}
+
+/*.ui-slider-horizontal .ui-widget-header, .ui-slider-handle
+{
+	background : #CCCCFF	
+}*/
+
+#breadcrumbs
+{
+	margin : 5px 0px 0px 0px;
+	padding : 5px 2px 5px 2px;
+	border-top: 1px solid #CCCCCC;
+	/*border-bottom: 1px solid #CCCCCC;*/
+}

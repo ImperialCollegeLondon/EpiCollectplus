@@ -89,7 +89,7 @@
 				while($arr = $db->get_row_array()) array_push($ents, $arr);
 				if(count($ents) > 0)
 				{
-					if($this->form->survey->allowDownloadEdits || $ents[0]["deviceId"] == $this->deviceId)
+					if($this->form->survey->allowDownloadEdits || ($ents[0]["deviceId"] == $this->deviceId && $this->deviceId != "web"))
 					{
 						$res = $this->put();
 						return $res;
@@ -142,17 +142,17 @@
 				
 				$res = $db->do_query($qry);
 				if($res !== true){
-					echo $res;
+					//echo $res;
 					$res = $db->commitTransaction();
 					
-					return 0;//$res;
+					return $res;
 				}
 				$res = $db->commitTransaction();
 				//echo $res;
 				return $res;
 			}catch(Exception $e)
 			{
-				return 0; //$e->getMessage();
+				return $e->getMessage();
 			}
 		}
 		

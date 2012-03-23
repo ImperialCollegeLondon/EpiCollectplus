@@ -1,0 +1,518 @@
+{{style}}
+	<style type="text/css">
+		.invalid
+		{
+			border: 1px solid #FFAAAA;
+		}
+		
+		label
+		{
+			display: inline-block;
+			width: 10em;
+		}
+		
+		input[type=submit]
+		{
+			magin-top: .2em;
+			margin-left:11em;
+		}
+		
+		#users section
+		{
+			vertical-align: top;
+			display:inline-block;
+			width : 49%;
+		}
+		
+		#users section table
+		{	
+			width : 100%;
+		}
+	
+		.disabled
+		{
+			color : #888888;
+		}
+	
+		.reset
+		{
+			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_240_rotation_lock.png") 2px 2px no-repeat;
+		}
+		
+		.disable
+		{
+			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_007_user_remove.png") 2px 2px no-repeat;
+		}
+		
+		.enable
+		{
+			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_006_user_add.png") 2px 2px no-repeat;
+		}
+	
+		.reset, .disable, .enable
+		{
+			padding : 0;
+			height : 26px;
+		}
+		
+		.reset a, .disable a, .enable a
+		{
+			margin: 0;
+			display: inline-block;
+			height: 26px;
+			padding-left : 30px;
+			padding-top: 5px;
+		}
+		
+		.reset a:hover, .disable a:hover, .enable a :hover
+		{
+			background-color : rgba(255,255,255,0.4);
+		}
+	</style>
+{{/style}}
+{{script}}
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript">
+		var userToEdit = 0;
+		var en = false
+	
+		function openResetForm(usr)
+		{
+			userToEdit = usr;
+			$("#resetConfirmDialog").dialog("open");
+		}
+		function openDisableForm(usr, enable)
+		{
+			userToEdit = usr;
+			en = enable;
+			if(en)
+			{
+				$("#enableConfirmDialog").dialog("open");
+			}
+			else
+			{$("#disableConfirmDialog").dialog("open");}
+		}
+		
+
+		function populateUsers()
+		{
+			$.getJSON("{#SITE_ROOT#}/listUsers", "", function(obj, status, request){
+				$("#users table tbody").empty();
+				for(var i = 0; i < obj.users.length; i++)
+				{
+					if(obj.users[i].active)
+					{
+						$("#users table tbody").append("<tr><td>" + obj.users[i].firstName + "</td><td>" + obj.users[i].lastName + "</td><td>" + obj.users[i].email + "</td><td class=\"disable\"><a href=\"javascript:openDisableForm(" + obj.users[i].userId + ")\">Disable User</a></td><td class=\"reset\"><a href=\"javascript:openResetForm(" + obj.users[i].userId + ")\">Reset password</a></td></tr>")
+					}
+					else
+					{
+						$("#users table tbody").append("<tr class=\"disabled\"><td>" + obj.users[i].firstName + "</td><td>" + obj.users[i].lastName + "</td><td>" + obj.users[i].email + "</td><td class=\"enable\"><a href=\"javascript:openDisableForm(" + obj.users[i].userId + ", true)\">Enable User</a></td><td class=\"reset\"><a href=\"javascript:openResetForm(" + obj.users[i].userId + ")\">Reset password</a></td></tr>")
+					}
+				}
+			});
+		}
+		
+	
+		$(function(){
+			$("#tabs").tabs();	
+			
+			populateUsers();
+			
+			$("#resetConfirmDialog").dialog({
+				autoOpen : false,
+				modal: true,
+				resize: false,
+				buttons:{
+					"Reset Password" : function(){
+						$.ajax("{#SITE_ROOT#}/resetPassword",
+							{
+								data : {"user" : userToEdit},
+								type : "POST",
+								success : function(data, status, xhr)
+								{
+								
+									if(data.result)
+									{
+										$("#resetConfirmDialog").dialog("close");
+										$("#dialog").attr("title", "Password Reset");
+										$("#dialog").html("The user's password has been reset and is now <b>" + data.result +"</b>");
+										$("#dialog").dialog({ 
+											modal : true,
+											resize : false,
+											buttons: {
+												"Close": function() {
+													$( this ).dialog( "close" );
+												}
+											}
+										});
+									}
+									else
+									{
+										$("#resetConfirmDialog").dialog("close");
+										$("#dialog")
+											.attr("title", "Reset Failed")
+											.html("Could not reset the user's password</div>")
+											.dialog({ 
+												modal : true,
+												resize : false,
+												buttons: {
+													"Close": function() {
+														$( this ).dialog( "close" );
+													}
+												}
+											});
+									}
+								},
+								error : function()
+								{
+									$("#resetConfirmDialog").dialog("close");
+									$("#dialog")
+										.attr("title", "Reset Failed")
+										.html("Could not reset the user's password</div>")
+										.dialog({ 
+											modal : true,
+											resize : false,
+											buttons: {
+												"Close": function() {
+													$( this ).dialog( "close" );
+												}
+											}
+										});
+								}
+						});
+						
+					},
+					"Cancel" : function (){$(this).dialog("close");}
+				}
+				
+			});
+			
+			$("#disableConfirmDialog").dialog({
+				autoOpen : false,
+				modal: true,
+				resize: false,
+				buttons:{
+					"Disable User" : function(){
+						$.ajax("{#SITE_ROOT#}/disableUser",
+								{
+									data : {"user" : userToEdit},
+									type : "POST",
+									success : function(data, status, xhr)
+									{
+									
+										if(data.result)
+										{
+											$("#disableConfirmDialog").dialog("close");
+											$("#dialog").attr("title", "User Disabled");
+											$("#dialog").html("The user has been disabled");
+											populateUsers();
+											$("#dialog").dialog({ 
+												modal : true,
+												resize : false,
+												buttons: {
+													"Close": function() {
+														$( this ).dialog( "close" );
+													}
+												}
+											});
+										}
+										else
+										{
+											$("#disableConfirmDialog").dialog("close");
+											$("#dialog")
+												.attr("title", "User enable failed")
+												.html("Could not enabled the user")
+												.dialog({ 
+													modal : true,
+													resize : false,
+													buttons: {
+														"Close": function() {
+															$( this ).dialog( "close" );
+														}
+													}
+												});
+										}
+									},
+									error : function()
+									{
+										$("#disableConfirmDialog").dialog("close");
+										$("#dialog")
+											.attr("title", "User enable failed")
+											.html("Could not enabled the user")
+											.dialog({ 
+												modal : true,
+												resize : false,
+												buttons: {
+													"Close": function() {
+														$( this ).dialog( "close" );
+													}
+												}
+											});
+									}
+									
+							});
+						
+					},
+					"Cancel" : function (){$(this).dialog("close");}
+				}
+				
+			});
+			
+			$("#enableConfirmDialog").dialog({
+				autoOpen : false,
+				modal: true,
+				resize: false,
+				buttons:{
+					"Enable User" : function(){
+						$.ajax("{#SITE_ROOT#}/enableUser",
+								{
+									data : {"user" : userToEdit},
+									type : "POST",
+									success : function(data, status, xhr)
+									{
+									
+										if(data.result)
+										{
+											$("#enableConfirmDialog").dialog("close");
+											$("#dialog").attr("title", "User Enabled");
+											$("#dialog").html("The user has been enabled");
+											populateUsers();
+											$("#dialog").dialog({ 
+												modal : true,
+												resize : false,
+												buttons: {
+													"Close": function() {
+														$( this ).dialog( "close" );
+													}
+												}
+											});
+										}
+										else
+										{
+											$("#enableConfirmDialog").dialog("close");
+											$("#dialog")
+												.attr("title", "User enable failed")
+												.html("Could not enabled the user")
+												.dialog({ 
+													modal : true,
+													resize : false,
+													buttons: {
+														"Close": function() {
+															$( this ).dialog( "close" );
+														}
+													}
+												});
+										}
+									},
+									error : function()
+									{
+										$("#enableConfirmDialog").dialog("close");
+										$("#dialog")
+											.attr("title", "User enable failed")
+											.html("Could not enabled the user")
+											.dialog({ 
+												modal : true,
+												resize : false,
+												buttons: {
+													"Close": function() {
+														$( this ).dialog( "close" );
+													}
+												}
+											});
+									}
+									
+							});						
+					},
+					"Cancel" : function (){$(this).dialog("close");}
+				}
+				
+			});
+			
+			$("input[type=\"password\"]").change(function(e){
+				var qs = true;
+				var ps = false;
+				
+				$("input[type=\"password\"]").each(function(idx, ele){
+					if(ps === false)
+					{
+						ps = $(ele).val();
+					}
+					else
+					{
+						if($(ele).val() != ps) qs = false;
+					}
+				});
+				
+				if(qs) 
+				{
+					$("input[type=\"password\"]").removeClass("invalid");
+				}
+				else
+				{
+					$("input[type=\"password\"]").addClass("invalid");
+				}
+			});
+			
+			var vals = {#vals#}
+			
+			$("#_LDAP").change(function(e){
+				var ldapvis = e.target.checked;
+				$(".ldap_option").toggle(ldapvis);
+			});
+			$(".session_comp").change(function(e){
+				$("#session_length").val(
+					$("#session_length_base").val() * $("#session_length_mutiplier").val()		
+				);
+			})
+			
+			$("select, input").each(function(idx, ele)
+			{
+				if(vals[ele.name])
+				{
+					$(ele).val(vals[ele.name]);
+				}
+			});
+			
+			$("input[type=\"checkbox\"]").each(function(idx, ele)
+			{
+				$(ele).attr("checked", $("#" + ele.id.replace("_", "").toLowerCase()).val() == "true" ? "checked" : null);
+			});
+			
+			$("input[type=\"checkbox\"]").change(function(e){
+				$("#" + e.target.id.replace("_", "").toLowerCase()).val(e.target.checked);
+				
+			});
+			
+			$("#session_length_base").val(
+					$("#session_length").val() / $("#session_length_mutiplier").val()				
+			);
+			
+			var ldapvis = $("#_LDAP").attr("checked") == "checked";
+			$(".ldap_option").toggle(ldapvis);
+		});
+		
+	</script>
+{{/script}}
+{{main}}
+	<div id="resetConfirmDialog" title="Reset password?">
+		<p>Are you sure you want to reset this user's password?</p>
+	</div>
+	<div id="disableConfirmDialog" title="Disable User?">
+		<p>Are you sure you want to disable this user?</p>
+	</div>
+	<div id="enableConfirmDialog" title="Disable User?">
+		<p>Are you sure you want to enable this user?</p>
+	</div>
+	<div id="dialog"></div>
+	<div id="tabs">
+		{#flashes#}
+		<ul>
+			<li><a href="#security">User Authentication Options</a></li>
+			<li><a href="#database">Database</a></li>
+			<li><a href="#users">User Administration</a></li>
+			<li><a href="#manage">Manage Server Admins</a></li>
+		</ul>
+		<div id="security">
+			<form method="POST" action="{#SITE_ROOT#}/writeSettings">
+				<h1>Security and Authentication</h1>
+				
+					<label for="security\auth_method">User Authentication Methods</label>
+					<p><input type="checkbox" id="_OPENID" />OpenID <input type="hidden" id="openid" name="security\use_openID" /></p>
+					<p><input type="checkbox" id="_LDAP" />LDAP (Windows Active Directory) <input type="hidden" id="ldap" name="security\use_ldap" /></p>
+					<p><input type="checkbox" id="_LOCAL" />Accounts defined within this server<input type="hidden" id="local" name="security\use_local" /></p>
+				
+				<p class="formRow ldap_option"><label for="security\ldap_domain">LDAP Domain</label><input type="text" name="security\ldap_domain" /></p>
+				<p class="formRow ldap_option"><label for="security\ldap_ug">Active Directory Group (optional)</label><input type="text" name="security\ldap_ug" /></p>
+				<p class="formRow"><label for="security\session_length_base">How long should a user be logged in before they have to re-enter their user name and password</label><input type="text" id="session_length_base" class="session_comp"/>
+					<select id="session_length_mutiplier" class="session_comp">
+						<option value="1">Seconds</option>
+						<option value="60">Minutes</option>
+						<option value="3600" selected="selected">Hours</option>
+						<option value="86400">Days</option>
+					</select>
+					<input type="hidden" id="session_length" name="security\session_length" /></p>
+					<input type="hidden" name="edit" value="true" />
+					<input type="submit" name="submit" Value="Save Settings" />
+					
+			</form>
+		</div>
+	
+		<div id="database">
+			<form method="POST" action="{#SITE_ROOT#}/writeSettings">
+				<h1>Database Settings</h1>
+				<p class="formRow"><label for="database\server">MySQL Server</label><input type="text" name="database\server" /></p>
+				<p class="note">The host name or IP address of the MySQL server you wish to store your EpiCollect data on.</p>
+				<p class="formRow"><label for="database\database">Database Name</label><input type="text" name="database\database" /></p>
+				<p class="note">The name of the database instance within MySQL that will store the EpiCollect data.</p>
+				<p class="formRow"><label for="database\user">User Name</label><input type="text" name="database\user" /></p>
+				<p class="note">The user name used to access the EpiCollect database (should have SELECT, UPDATE, INSERT and DELETE rights to the database)</p>
+				<p class="formRow"><label for="database\password">Password</label><input type="password" name="database\password" /></p>
+				<p class="note">The password that is associated with user name</p>
+				<p class="formRow"><label for="database\port">Port</label><input type="text" name="database\port" value="3306"/></p>
+				<input type="hidden" name="edit" value="true" />
+				<input type="submit" name="submit" Value="Save Settings" />
+			</form>
+		</div>
+		<div id="users">
+			<section name="manage">
+				<h1>Update and Delete users</h1>
+				<table>
+					<thead>
+						<tr>
+							<th>First Name</th><th>Last Name</th><th>Email</th><th>Disable User</th><th>Reset Password</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</section>
+			<section name="add">
+				<h1>Add a new user</h1>
+				<p>You only need to use this form to add a user that doesn't have an account in another protocol</p>
+				<form method="POST" action="admin#users">
+					<p>
+						<label for="fname">First Name</label>
+						<input type="text" name="fname" />
+					</p>
+					<p>
+						<label for="lname">Last Name</label>
+						<input type="text" name="lname" />
+					</p>
+					<p>
+						<label for="email">Email</label>
+						<input type="email" name="email" />
+					</p>
+	
+					<p>
+						<label for="username">User Name</label>
+						<input type="text" name="username" />
+					</p>
+	
+					<p>
+						<label for="password">Password</label>
+						<input type="password" name="password" />
+					</p>
+					<p>
+						<label for="password_check">Repeat Password</label>
+						<input type="password" name="password_check" />
+					</p>
+					<p>
+						<input type="submit" value="Create User"/>
+					</p>
+				</form>
+			</section>
+		</div>
+		<div id="manage">
+			<h1>Manage Users</h1>
+			{#flashes#}
+			<p>The following users are currently assigned as Server Managers</p>
+			<div>
+				{#serverManagers#}
+			</div>
+			<h3>Add a new Manager</h3>
+			<form method="POST" action="user/manager/">
+				<label for="email">Email address</label><input name="email" type="email"/><input type="submit" value="Add Admin" />
+			</form>
+		</div>
+	</div>
+{{/main}}
