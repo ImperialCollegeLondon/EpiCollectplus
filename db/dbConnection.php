@@ -48,38 +48,38 @@
 		
 		public function beginTransaction()
 		{
-			if($this->con->query("START TRANSACTION;"))
-			{
+			//if($this->con->query("START TRANSACTION;"))
+			//{
 				return true;
-			}
-			else
-			{
-				return "START TRANSACTION;\r\n" . $this->con->errno . " : " . $this->con->error;
-			}
+			//}
+			//else
+			//{
+			//	return "START TRANSACTION;\r\n" . $this->con->errno . " : " . $this->con->error;
+			//}
 		}
 		
 		public function commitTransaction()
 		{
-			if($this->con->query("COMMIT;"))
-			{
+			//if($this->con->query("COMMIT;"))
+			//{
 				return true;
-			}
-			else
-			{
-				return "COMMIT;\r\n" . $this->con->errno . " : " .$this->con->error;
-			}
+			//}
+			//else
+			//{
+			//	return "COMMIT;\r\n" . $this->con->errno . " : " .$this->con->error;
+			//}
 		}
 		
 		public function rollbackTransaction()
 		{
-			if($this->con->query( "ROLLBACK;"))
-			{
+			//if($this->con->query( "ROLLBACK;"))
+			//{
 				return true;
-			}
-			else
-			{
+			//}
+			//else
+			//{
 				return "ROLLBACK;\r\n" . $this->con->errno . " : " .$this->con->error;
-			}
+			//}
 		}
 		
 		public function affectedRows()

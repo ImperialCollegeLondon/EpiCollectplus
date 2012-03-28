@@ -340,7 +340,7 @@ class EcProject{
 				}
 		}
 		
-		public function getPreviousTable($tblName)
+		public function getPreviousTable($tblName, $mainOnly = false)
 		{
 			$tbl = false;
 			$num = $this->tables[$tblName]->number - 1;

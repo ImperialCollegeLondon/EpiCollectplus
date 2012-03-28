@@ -12,6 +12,7 @@
 		public $isMain = true;
 		public $branches = array();
 		public $branchOf = false;
+		public $group = false;
 		
 		public function __construct($s = null)
 		{
@@ -46,7 +47,7 @@
 		
 		public function toXML()
 		{
-			$xml = "\n\t<form num=\"{$this->number}\" name=\"{$this->name}\" key=\"{$this->key}\" main=\"". ($this->isMain ? "true" : "false")."\"> ";
+			$xml = "\n\t<form num=\"{$this->number}\" name=\"{$this->name}\" key=\"{$this->key}\" main=\"". ($this->isMain ? "true" : "false")."\" " . ($this->group ? "group=\"{$this->group}\"" : "") . "  > ";
 			foreach($this->fields as $fld)
 			{
 				if($fld->active)
@@ -108,6 +109,7 @@
 					$this->name = $arr["name"];
 					$this->number = $arr["table_num"];
 					$this->version = $arr["version"];
+					$this->group = $arr["group"];
 					$this->isMain = $arr["isMain"] == "1";
 				}
 				
@@ -146,9 +148,10 @@
 				
 				foreach($this->fields as $fld)
 				{
-					$db = new dbConnection();
-					$res = $db->exec_sp("getOptions", array($fld->idField));
-					while($res === true && $arr = $db->get_row_array())
+					//$db = new dbConnection();
+					$res = $db->do_query("SELECT `index`, `label`, `value` FROM `option` WHERE `field` = {$fld->idField}"); //$db2->exec_sp("getOptions", array($fld->idField));
+					if($res !== true) die($res);
+					while($arr = $db->get_row_array())
 					{
 						$opt = new EcOption();
 						$opt->fromArray($arr);
@@ -156,7 +159,9 @@
 						$fld->options[$opt->value] = $opt;
 					}
 					if($fld->type == "branch") array_push($this->branches, $fld->branch_form);
+					unset($db2);
 				}
+				
 				return true;
 			}
 			else
@@ -172,7 +177,7 @@
 			
 			//print_r($this->fields);
 			
-			$res = $db->do_query("INSERT INTO form(project, projectName, version, name, table_num, keyField, isMain) VALUES({$this->survey->id}, '{$this->survey->name}', {$this->version} , '{$this->name}', '{$this->number}', '{$this->key}', " . ($this->isMain ? "1" : "0") . ")");
+			$res = $db->do_query("INSERT INTO form(project, projectName, version, name, table_num, keyField, isMain, `group`) VALUES({$this->survey->id}, '{$this->survey->name}', {$this->version} , '{$this->name}', '{$this->number}', '{$this->key}', " . ($this->isMain ? "1" : "0") . ", " . $db->numVal($this->group) . ")");
 			if($res === true)
 			{
 				$this->fetch(); //need to get the form's id
@@ -210,6 +215,9 @@
 							break;
 						case 'main':
 							$this->isMain = parseBool((string)$val);
+							break;
+						case 'group':
+							$this->group = (int)$val;
 							break;
 					}
 				}
@@ -309,7 +317,7 @@
 			$this->fields[$this->key]->key = true;
 		}
 		
-		public function ask($args = false, $offset = 0, $limit = 0, $sortField = "created", $sortDir = "asc", $exact = false)
+		public function ask($args = false, $offset = 0, $limit = 0, $sortField = "created", $sortDir = "asc", $exact = false, $format = "json")
 		{
 			global $db;
 			
@@ -317,7 +325,7 @@
 			if(!$sortDir) $sortDir = "asc";
 			
 			$db = new dbConnection();
-			$select = "SELECT DISTINCT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded ";
+			$select = "SELECT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded ";
 			$group = " GROUP BY e.idEntry, e.DeviceID, e.created, e.lastEdited, e.uploaded ";
 			$join = "FROM entry e ";
 			$where = " WHERE e.projectName = '{$this->survey->name}' AND e.formName = '{$this->name}' ";
@@ -353,14 +361,12 @@
  			
  				$child = $this->survey->getNextTable($this->name, true);
  				$select .= ", COUNT(ev{$child->name}_entries.value) as {$child->name}_entries ";
- 				$join .= "LEFT JOIN (select value from entryValue where projectName = '{$this->survey->name}' AND formName = '{$child->name}' AND fieldName = '{$this->key}') ev{$child->name}_entries ON ev{$child->name}_entries.value = ev{$this->key}.value ";
- 				
+ 				$join .= "LEFT JOIN (select value from entryValue where projectName = '{$this->survey->name}' AND formName = '{$child->name}' AND fieldName = '{$this->key}') ev{$child->name}_entries ON ev{$child->name}_entries.value = ev{$this->key}.value ";	
  			}
  			else 
  			{
  				$group = "";
  			}
-			
 			
 			if(array_key_exists($sortField, $this->fields))
 			{
@@ -372,7 +378,7 @@
 			}
 			if($limit && $offset)
 			{
-				$limit = " LIMIT $limit, $offset";
+				$limit = " LIMIT  $offset, $limit";
 			}
 			elseif ($limit)
 			{
@@ -388,7 +394,7 @@
 				
 		}
 		
-		public function recieve($n = 1, $format = "object")
+		public function recieve($n = 1)
 		{
 			global $db;
 			$ret = null;
@@ -677,7 +683,7 @@
 			global $db;// = new dbConnection();
 			
 			$db->beginTransaction();
-			$sql = "UPDATE form set version = {$this->version}, name = '{$this->name}', keyField = '{$this->key}', isMain = " . ($this->isMain ? 1 : 0) . " WHERE project = {$this->survey->id} AND table_num = {$this->number};";
+			$sql = "UPDATE form set version = {$this->version}, name = '{$this->name}', keyField = '{$this->key}', isMain = " . ($this->isMain ? 1 : 0) . ", `group` = " . $db->numVal($this->group)  . " WHERE project = {$this->survey->id} AND table_num = {$this->number};";
 			$res = $db->do_query($sql);
 			if($res !== true){
 				$db->rollbackTransaction();
@@ -770,8 +776,47 @@
 			$db->do_query($sql);
 		}
 		
+		public function parseEntriesCSV($txt)
+		{
+			$lines = explode("\r\n", $txt);
+			
+			// assumes that the first line is the header
+			$lines[0] = trim($lines[0], ",");
+			$headers = explode(",", $lines[0]);
+			
+			for($i = count($headers); $i--;)
+			{
+				$headers[$i] = trim($headers[$i]);
+			}
+			
+			$len = count($lines);
+			
+			for ($i = $len; --$i;)
+			{
+				if(preg_match("/^,*$/", trim($lines[$i]))) continue;
+				$lines[$i] = trim($lines[$i], ",");
+				$vals = explode(",", $lines[$i]);
+
+				$entry = new EcEntry($this);
+				
+				$vlen = count($vals);
+
+				for($j = $vlen; $j--;)
+				{
+					if($headers[$j] == "") continue;
+					if($vals[$j] != "") $entry->values[$headers[$j]] = trim($vals[$j]);
+				}
+
+				$res = $entry->post();
+				if($res !== true) return $res;
+				
+			}
+			return true;
+		}
+		
 		public function parseEntries($xml) //recieves a table XMLSimpleElement
 		{
+			
 			$res = true;
 			for($i = 0; $i <  count($xml->entry); $i++)
 			{

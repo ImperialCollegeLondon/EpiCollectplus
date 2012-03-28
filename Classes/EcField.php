@@ -102,7 +102,7 @@ class EcField{
 			if($this->doubleEntry) $xml .= ' verify="true"';
 			if($this->jump) $xml .= " jump=\"{$this->jump}\"";
 			if($this->search) $xml .= " search=\"true\"";
-			if($this->group_form) $xml .= " group_form=\"{$this->group_form}\"";
+			if($this->group_form) $xml .= " group_num=\"{$this->group_form}\"";
 			if($this->branch_form) $xml .= " branch_form=\"{$this->branch_form}\"";
 			if(!$this->display) $xml .= " display=\"false\"";
 			if($this->genkey) $xml .= " genkey=\"true\"";
@@ -134,7 +134,7 @@ class EcField{
 			if($this->doubleEntry) $json .= ' "verify":true,';
 			if($this->jump) $json .= " \"jump\":\"{$this->jump}\",";
 			if($this->search) $json .= " \"search\":\"true\",";
-			if($this->group_form) $json .= " \"group_form\":\"{$this->group_form}\",";
+			if($this->group_form) $json .= " \"group\":\"{$this->group_form}\",";
 			if($this->branch_form) $json .= " \"branch_form\":\"{$this->branch_form}\",";
 			if(!$this->display) $json .= " \"display\":\"false\",";
 			if($this->genkey) $json .= " \"genkey\":\"true\",";
@@ -318,7 +318,7 @@ class EcField{
 						case 'search' :
 								$this->search = parseBool((string)$val);
 								break;
-						case 'group_form':
+						case 'group_num':
 								$this->group_form = (string)$val;
 								break;
 						case 'branch_form':

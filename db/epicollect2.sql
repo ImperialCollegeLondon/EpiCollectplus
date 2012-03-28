@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS `entryGeoValue` (
   	`country` varchar(150),
   	`admin_1` varchar(255),
   	`admin_2` varchar(255),
-  	`admin_3` varchar(255)
+  	`admin_3` varchar(255),
   	PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 ~
 
@@ -150,6 +150,7 @@ CREATE TABLE IF NOT EXISTS `form` (
   `name` varchar(100) NOT NULL,
   `isMain` tinyint(1) NOT NULL DEFAULT b'1',
   `table_num` int(11) NOT NULL DEFAULT '1',
+  `group` int(11) NULL DEFAULT NULL,
   `keyField` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`idForm`),
   KEY `fk_Form_Project1` (`project`)
@@ -342,7 +343,7 @@ END ~
 
 CREATE PROCEDURE `getOptions`(fld int)
 BEGIN
-select * from `option` where field = fld;
+	select * from `option` where field = fld;
 END ~
 
 CREATE PROCEDURE `getProject`(pName VARCHAR(255))

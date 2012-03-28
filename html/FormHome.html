@@ -83,7 +83,7 @@
 		
 		#bottombar
 		{
-			margin : 1em -1.5em 1em -1.5em;
+			margin : 1em 15em 1em -1.5em;
 			position : relative;
 			height : 10em;
 			padding: .5em .5em .5em .5em;
@@ -92,7 +92,7 @@
 		#bottombar div.filterControl, #bottombar div.colourControl
 		{
 			height: 100%;
-			width: 20em;
+			width: 30%;
 			display : inline-block;
 			border : 1px solid #CCCCCC;
 			padding: 0.5em;
@@ -139,13 +139,21 @@
 		
 		#graphbar 
 		{
-			border: 1px solid #CCCCCC;
-			bottom : 13.25em;
+			bottom : 0em;
 			right : 0;
 			overflow : auto;
 			position : absolute;
 			top : 1em;
 			width : 15em;
+		}
+		
+		.graphPanel
+		{
+			border: 1px solid #CCCCCC;
+			position : relative;
+			height : 32%;
+			margin-bottom: 1px;	
+			overflow: hidden;	
 		}
 		
 		.button:active
@@ -177,6 +185,10 @@
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/gpsPicker.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.controlgroup.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.settingspanel.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.categories.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.pie.js"></script>
 	<script type="text/javascript">
 			var formName = "";
 			var map = null;
@@ -203,6 +215,8 @@
 			
 			var dateFormat = " dd MM yyyy hh:mm:ss";
 			
+			var hiddenColumns = { created : false, uploaded : true, lastEdited : true, DeviceID : true};
+			
 			var colours = [
 				"rgba(255,0,0,1)",
 				"rgba(0,128,0,1)",
@@ -226,6 +240,27 @@
 				formName = url.substr(url.lastIndexOf("/") + 1).replace(/#.*$/, "");
 				url = url.substr(0, url.lastIndexOf("/"));
 				
+				$(".graphPanel").graphPanel(
+				{
+					form : "<fieldSet><label for=\"field\">Field Name</label><select name=\"field\" class=\"colourFieldList\"></select><h4>Chart Type</h4><p><input type=\"radio\" name=\"chartType\" value=\"pie\" /> <label>Pie</label></p>" 
+					+"<p><input type=\"radio\" name=\"chartType\" value=\"bar\" checked=\"checked\" /> <label>Bar</label></p> </fieldSet>",
+				});
+				
+				$("#tabs").tabs({
+					show : function(event, tab)
+					{
+						if(tab.panel.id == "mapTab")
+						{
+							 cen = map.getCenter();
+							 google.maps.event.trigger(map, 'resize');
+							 map.setCenter(cen);
+							 getMapData();
+						}
+					}
+				});
+				
+				
+				$("#showHideFields").append("<a href=\"javascript:toggleMenu('#showHideFields')\">Show/Hide Fields</a><div class=\"ecplus-dropdown-menu\" style=\"display:none;\"></div>");
 				
 				EpiCollect.loadProject(url + ".xml", loadCallback);
 				
@@ -243,16 +278,25 @@
 				               });
 				    });
 				};
-				
-				
 			});
 	
 			
+			function toggleMenu(selector)
+			{
+				var visible = $(selector + " .ecplus-dropdown-menu").css("display") != "none";
+				
+				if(visible) $(selector + " .ecplus-dropdown-menu").hide();
+				else $(selector + " .ecplus-dropdown-menu").show();
+			}
+			
 			function createMap(div)
 			{
-				map = new google.maps.Map(document.getElementById(div), {
-					center : new google.maps.LatLng(0,0),
-					mapTypeId: google.maps.MapTypeId.HYBRID,
+				var doc = document;
+				var _maps = google.maps;
+				
+				map = new _maps.Map(doc.getElementById(div), {
+					center : new _maps.LatLng(0,0),
+					mapTypeId:_maps.MapTypeId.HYBRID,
 					zoom : 2,
 					panControl: true,
 					rotateControl: true,
@@ -263,8 +307,7 @@
 			function loadCallback(prj){
 				project = prj;		
 				
-				
-				hasMap = (project.forms[formName].gpsFlds.length > 0);
+				var hasMap = (project.forms[formName].gpsFlds.length > 0);
 				if(hasMap) geoField = project.forms[formName].gpsFlds[0]
 				
 				for(nextForm = project.getNextForm(formName); nextForm; nextForm = project.getNextForm(nextForm.name))
@@ -276,18 +319,7 @@
 					}
 				}
 				
-				$("#tabs").tabs({
-					show : function(event, tab)
-					{
-						if(tab.panel.id == "mapTab")
-						{
-							 cen = map.getCenter();
-							 google.maps.event.trigger(map, 'resize');
-							 map.setCenter(cen);
-							 getMapData();
-						}
-					}
-				});
+				
 				
 				if(hasMap)
 				{
@@ -303,21 +335,26 @@
 				
 				for(f in project.forms[formName].fields)
 				{
-					fld = project.forms[formName].fields[f];
-					$(".ecplus-data tr").append("<th class=\"" + f + "\">" + fld.text + "</th>");	
+					var fld = project.forms[formName].fields[f];
 					
+					if(hiddenColumns[f] == undefined) {hiddenColumns[f] = false;}
 					
+				
+					$(".ecplus-data tr").append("<th class=\"" + f + "\" >" + fld.text + "</th>");	
 				}
-				if(nextFormName) $(".ecplus-data tr").append("<th class=\"" + f + "\">" + nextFormName + " Entries</th>");
+				
+				
+				if(nextFormName)
+				{
+					if(hiddenColumns[f] == undefined) hiddenColumns[f] = false;
+					
+					$(".ecplus-data tr").append("<th class=\"" + f + "\">" + nextFormName + " Entries</th>");
+				}
+				
 				$(".ecplus-data th").resizable({
 					handles : "e",
 					resize	: function(event, ele)
 					{
-						window.e = event;
-						window.ele = ele;
-					
-		
-						
 						$("td." + ele.element[0].className.substring(0, ele.element[0].className.indexOf(" "))).css({ "max-width" : (ele.element.width()-5) + "px"});
 					}
 				});
@@ -353,6 +390,8 @@
 				
 				for(fld in project.forms[formName].fields)
 				{
+					$('#showHideFields .ecplus-dropdown-menu').append("<input type=\"checkbox\" name=\"fldShowHide\" value=\"" + fld + "\" " + (hiddenColumns[fld] ? "" : "checked=\"checked\"") + " /><label for=\"fldShowHide\">" + project.forms[formName].fields[fld].text +  "</label><br />");
+					
 					if(project.forms[formName].fields[fld].type != "location" && project.forms[formName].fields[fld].type != "gps" && project.forms[formName].fields[fld].type != "branch"
 							&& project.forms[formName].fields[fld].type != "video" && project.forms[formName].fields[fld].type != "audio" && project.forms[formName].fields[fld].type != "photo")
 					{
@@ -364,6 +403,12 @@
 						}
 					}
 				}
+				
+				$('#showHideFields input').change(function(evt){
+					var ctrl = $(evt.target).val();
+					hiddenColumns[ctrl] = !evt.target.checked;
+					showHideColumns();
+				});
 				
 				$('#filter_value').autocomplete(
 				{
@@ -384,6 +429,8 @@
 					$('#mapFilterValue').autocomplete("option", "source" , baseUrl+ "/" + $('#mapFilterField').val());
 				});
 				
+				
+				
 				$('#filter_value').blur(function(){doFilter($('#filter_fields').val(), $('#filter_value').val())})
 				var t = new Date().getTime()
 				$( "#slider-range" ).slider({
@@ -391,7 +438,7 @@
 					min : 0,
 					max : t,
 					values: [0,  t],
-					slide : function (event, ui)
+					slide: function (event, ui)
 					{
 						filterMap(function(data){ return data["created"] >= ui.values[0] && data["created"] <= ui.values[1]; })
 						$("#timeFrom").text(new Date(ui.values[0]).format(dateFormat));
@@ -403,11 +450,35 @@
 				});
 			};	
 			
+			function firstPage()
+			{
+				pageNo = 0;
+				getData();
+			}
+			
+			function lastPage()
+			{
+				pageNo = Math.floor(Number($("#total").text()) / numEnts, numEnts);
+				getData()
+			}
+			
+			function turnPage()
+			{
+				pageNo++;
+				getData();
+			}
+			
+			function turnBackPage()
+			{
+				if(pageNo > 0) pageNo--;
+				getData();
+			}
 			
 			function getData()
 			{
+				
 				offset = pageNo * numEnts
-				var urlStr = url + "/" + formName + ".json?mode=list&offset=" + offset + "&limit=" + numEnts + "&sort=" + sortCol + "&dir=" +sortDir + "&" + location.search.substr(1);
+				var urlStr = url + "/" + formName + ".json?mode=list&start=" + offset + "&limit=" + numEnts + "&sort=" + sortCol + "&dir=" +sortDir + (location.search ? "&" + location.search.substr(1) : "");
 				var statUrl = url + "/" + formName + "/__stats?" + location.search.substr(1);;
 				
 				if(filterField && filterValue)
@@ -441,6 +512,14 @@
 			
 			function dataLoad(entries)
 			{
+				if(entries.length == 0)
+				{
+					if(pageNo > 0) pageNo--;
+					return;
+				}
+				
+				$(".ecplus-data th, .ecplus-data  td").show();
+				
 				window.ecplus_entries = entries;
 				
 				$(".ecplus-data tbody").empty();
@@ -448,13 +527,17 @@
 				$('#end').text(Number($('#start').text()) + Number(entries.length));
 				$('#total').text(entries.count);
 				
+				
+				var html = "";
 				for(var i = 0; i < entries.length; i++)
 				{
-					html = "<tr class=\"" + (i % 2 == 1 ? " alt": "") + "\">";
+					html += "<tr class=\"" + (i % 2 == 1 ? " alt": "") + "\">";
 					for(f in project.forms[formName].fields)
 					{	
-						fld = project.forms[formName].fields[f];
-						html += "<td class=\"" + f   + "\">";
+						var fld = project.forms[formName].fields[f];
+						
+						html += "<td class=\"" + f + "\">";
+						
 						if(fld.type == "location" || fld.type == "gps")
 						{
 							if(entries[i][f] == undefined)
@@ -466,7 +549,6 @@
 								val = entries[i][f];
 								html +=  val.latitude + "," + val.longitude;
 							}
-						
 						}
 						else
 						{
@@ -476,8 +558,8 @@
 					}
 					if(nextFormName) html += "<td>" + entries[i][nextFormName + "_entries"]  + "</td>";
 					html += "</tr>";
-					$(".ecplus-data tbody").append(html);
 				}
+				$(".ecplus-data tbody").append(html);
 				
 				for(f in project.forms[formName].fields)
 				{
@@ -489,6 +571,19 @@
 					$(".ecplus-data tr").removeClass("selected");
 					$(evt.target.parentNode).addClass("selected");
 				});
+				
+				showHideColumns();
+			}
+			
+			function showHideColumns()
+			{
+				for(var fld in hiddenColumns)
+				{
+					if(hiddenColumns[fld]) 
+						$("." + fld).hide();
+					else
+						$("." + fld).show();
+				}
 			}
 			
 			function statLoad(stats)
@@ -498,15 +593,17 @@
 			
 			function mapDataCallback(data, status, xhr)
 			{
-				delete mapData;
+		
 				mapData = data;
-				delete markers;
 				markers = [];
 				
 				var mincreated = new Date().getTime();
 				var maxcreated = 0;
 				
 				var keyField = project.forms[formName].key;
+				
+				var dlen = data.length;
+				var mlen = markers.length;
 				
 				for(var i = 0; i < data.length; i++)
 				{
@@ -524,7 +621,7 @@
 						showBubbleFor(getMarkerAt(evt.latLng).index);
 					});
 					
-					markers.push(mkr);
+					markers[i] = mkr;
 					addToSidebar(i, data[i][project.forms[formName].titleField])
 				}
 				
@@ -593,9 +690,11 @@
 			
 			function getMarkerAt(latlng)
 			{
+				var mkrs = markers	
+				
 				for(mkr in markers)
 				{
-					if(markers[mkr].getPosition() == latlng) return markers[mkr];
+					if(mkrs[mkr].getPosition() == latlng) return mkrs[mkr];
 				}
 			}
 			
@@ -629,10 +728,17 @@
 			function filterMap(filterFunction)
 			{
 				markerClusterer.setIgnoreHidden(true);
-				for(var i = 0; i < mapData.length; i++)
+				
+				var len = mapData.length;
+				var mkrs = markers;
+				var data = mapData;
+				
+				for(var i = len; i--;)
 				{
-					var vis = filterFunction(mapData[i]);
-					markers[i].setVisible(vis);
+					var d = data[i];
+					
+					var vis = filterFunction(data[i]);
+					mkrs[i].setVisible(vis);
 					
 				}
 				markerClusterer.repaint();
@@ -640,9 +746,12 @@
 			
 			function clearMapFilter()
 			{
-				for(var i = 0; i < markers.length; i++)
+				var mkrs= markers;
+				var len = markers.length
+				
+				for(var i = len; i--;)
 				{
-					markers[i].setVisible(true);
+					mkrs[i].setVisible(true);
 				}
 				markerClusterer.repaint();
 				
@@ -670,17 +779,149 @@
 				var colourGrps = {};
 				var colourIdx = 0;
 				
-				for(var i = 0; i < mapData.length; i++)
+				var len = mapData.length;
+				
+				for(var i = len; i--;)
 				{
-					if(!colourGrps[mapData[i][fld]])
+					var d = mapData[i];
+					var mkr = markers[i];
+					
+					if(!colourGrps[d[fld]])
 					{
-						colourGrps[mapData[i][fld]] = colours[colourIdx++ % colours.length];
+						colourGrps[d[fld]] = colours[colourIdx++ % colours.length];
 					}
-					markers[i].setIcon("{#SITE_ROOT#}/markers/point?colour=" + colourGrps[mapData[i][fld]])
-					markers[i].colour = colourGrps[mapData[i][fld]];
+					mkr.setIcon("{#SITE_ROOT#}/markers/point?colour=" + colourGrps[d[fld]])
+					mkr.colour = colourGrps[d[fld]];
 				}
 				
+				window.colourField = fld;
+				window.colourGrps = colourGrps;
+				
 				if(markerClusterer) markerClusterer.repaint();
+			}
+			
+			function drawBar(jq, data, field)
+			{
+				var d = data;
+				var s = [];
+				
+				var idx = 0;
+				var ser = [];
+				if(field == window.colourField)
+				{
+					for(var i in d)
+					{
+						ser.push({
+							data : [[i, d[i]]],
+							bars : {
+				                show: true,
+				                barWidth: 0.6,
+				                align: "center"
+				            },
+			                color : window.colourGrps[i]
+						});
+					}
+					
+				
+				}
+				else
+				{
+					for(var i in d)
+					{
+						s[idx++] = [i, d[i]];
+					}
+					
+					ser = [{
+							data : s,
+							bars : {
+				                show: true,
+				                barWidth: 0.6,
+				                align: "center" 
+				            }
+						}]
+					;
+				}
+				
+				
+				$.plot(jq , ser, {
+					xaxis: {
+						mode: "categories",
+			            tickLength: 0
+					}
+				});
+			}
+			
+			function drawPie(jq, data, field)
+			{
+				var len = data.length;
+				var d = data;
+				
+				var s = [];
+				var idx = 0;
+				if(field == window.colourField)
+				{
+					for(var i in d)
+					{
+						s[idx++] = { label : i, data : d[i], color : window.colourGrps[i]};
+					}
+				}
+				else
+				{
+					for(var i in d)
+					{
+						s[idx++] = { label : i, data : d[i]};
+					}
+				}
+				
+				$.plot(jq , s, {
+					series: {
+						pie: {
+							show : true ,
+							radius : 1,
+							label : {
+								formatter: function(label, series){
+				                        return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+label+'<br/>'+Math.round(series.percent)+'%</div>';
+			                    },
+			                    background: { 
+			                        opacity: 0.5,
+			                        color: '#000'
+			                    }
+							}
+						}
+					},
+					legend : {
+						show : false
+					}
+				});
+			}
+			
+			function drawGraph(div, field, type)
+			{
+				var jq = $(div);
+				
+				var d = mapData;
+				var len = d.length;
+				
+				var agg = {};
+				
+				for(var i = len; i--;)
+				{
+					var val = d[i][field];
+					
+					if(!agg[val]){ agg[val] = 1;} else {agg[val]++;}					
+				}
+				
+				var dat = [];
+				
+				if(type == "pie")
+				{
+					drawPie(jq, agg, field);
+				}
+				else
+				{
+					drawBar(jq, agg, field);
+				}
+				
 			}
 			
 	</script>
@@ -701,23 +942,34 @@
 				<a href="javascript:project.forms[formName].displayForm();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_248_asterisk.png" title="New Entry" alt="New Entry"></a>
 				<a href="javascript:project.forms[formName].displayForm(undefined, window.ecplus_entries[$('.ecplus-data tbody tr.selected').index()]);"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
 				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$('.ecplus-data tbody tr.selected').index()][project.forms[formName].key]);"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a>
-				<span class="ecplus-toobar-divider">&nbsp;</span> 
+				<span class="ecplus-toolbar-divider">&nbsp;</span> 
 				Filter List By <select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value).val());"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Filter" alt="Filter"></a>
 				<a href="javascript:doFilter('','');"><!--  <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Clear Filter" alt="Clear Filter">-->Clear Filter</a>
-				<span class="ecplus-toobar-divider">&nbsp;</span> 
+				<span class="ecplus-toolbar-divider">&nbsp;</span>
+				<span id ="showHideFields" class="ecplus-dropdown"></span> 
+				<span class="ecplus-toolbar-divider">&nbsp;</span> 
 				<a href="./{#formName#}.csv"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_200_download.png" title="Dowload Data as CSV" alt="Download CSV"></a>
 				<a href="./{#formName#}.tsv"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_200_download.png" title="Dowload Data as TSV" alt="Download TSV"></a>
 				<a href="./{#formName#}.xml" target="__blank"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_200_download.png" title="Dowload Data as XML" alt="Download XML"></a>
 			</p>
 			
-			<p>Showing <span id="start"></span> to <span id="end"></span> of <span id="total"></span></p>	
+			<p class="ecplus-table-footer"> <a href="javascript:firstPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_170_step_backward.png" alt="first"/></a> <a href="javascript:turnBackPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_350_playback.png" alt="previous"/></a><span id="start"></span> to <span id="end"></span> of <span id="total"></span><a href="javascript:turnPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/></a><a href="javascript:lastPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/></a></p>
+			
+			<form method="POST" enctype="multipart/form-data" >
+				<label for="upload">File to upload : </label><input type="file" name="upload" /><br />
+				<input type="submit" name="submit" value="Upload File" />
+			</form>	
 		</div>
 		<div id="mapTab">
 			<div id="sidebar">
 				
 			</div>
 			<div id="map"></div>
-			<div id="graphbar"></div>
+			<div id="graphbar">
+				<div id="graphOne" class="graphPanel"></div>
+				<div id="graphTwo" class="graphPanel"></div>
+				<div id="graphThree" class="graphPanel"></div>
+			</div>
 			<div id="bottombar">
 				<div id="timeFilter" class ="filterControl">
 					<h4>Filter By Time</h4>

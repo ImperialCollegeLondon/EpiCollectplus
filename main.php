@@ -1470,41 +1470,63 @@ function formHandler()
 	
 	if($_SERVER["REQUEST_METHOD"] == "POST")
 	{
+		
 		$log->write("debug", json_encode($_POST));
-			
 		header("Cache-Control: no-cache, must-revalidate");
-		$ent = $prj->tables[$frmName]->createEntry();
+		
+		$_f = getValIfExists($_FILES, "upload");
+		
+		if($_f)
+		{
 			
-		$ent->created = $_POST["created"];
-		$ent->deviceId = $_POST["DeviceID"];
-		$ent->uploaded = getTimestamp();
-		$ent->user = 0;
-		foreach(array_keys($ent->values) as $key)
-		{
-			if(array_key_exists($key, $_POST))
+			if(preg_match("/\.csv$/", $_f["name"]))
 			{
-				$ent->values[$key] = $_POST[$key];
+				ini_set("max_execution_time", 300);
+				$res = $prj->tables[$frmName]->parseEntriesCSV(file_get_contents($_f["tmp_name"]));
 			}
-			elseif (!$prj->tables[$frmName]->fields[$key]->required && !$prj->tables[$frmName]->fields[$key]->key)
+			elseif(preg_match("/\.xml$/", $_f["name"]))
 			{
-				$ent->values[$key] = "";
+				$res = $prj->tables[$frmName]->parseEntries(simplexml_load_string(file_get_contents($_f["tmp_name"])));
 			}
-			else
-			{
-				header("HTTP/1.1 405 Bad Request");
-				echo "{\"success\":false, \"msg\":\"$key is a required field\"}";
-				return;
-			}
-		}
-		try
-		{
-			$res = $ent->post();
 			echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
 		}
-		catch(Exception $e)
+		else
 		{
-			header("HTTP/1.1 409 Conflict");
-			echo $e->getMessage();
+		
+			$ent = $prj->tables[$frmName]->createEntry();
+				
+			$ent->created = $_POST["created"];
+			$ent->deviceId = $_POST["DeviceID"];
+			$ent->uploaded = getTimestamp();
+			$ent->user = 0;
+			
+			foreach(array_keys($ent->values) as $key)
+			{
+				if(array_key_exists($key, $_POST))
+				{
+					$ent->values[$key] = $_POST[$key];
+				}
+				elseif (!$prj->tables[$frmName]->fields[$key]->required && !$prj->tables[$frmName]->fields[$key]->key)
+				{
+					$ent->values[$key] = "";
+				}
+				else
+				{
+					header("HTTP/1.1 405 Bad Request");
+					echo "{\"success\":false, \"msg\":\"$key is a required field\"}";
+					return;
+				}
+			}
+			////try
+			//{
+				$res = $ent->post();
+				echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
+			//}
+			//catch(Exception $e)
+			//{
+			//	header("HTTP/1.1 500 Conflict");
+			//	echo $e->getMessage();
+			//}
 		}
 	}
 	elseif($_SERVER["REQUEST_METHOD"] == "DELETE")
@@ -1517,7 +1539,7 @@ function formHandler()
 		$limit = array_key_exists('limit', $_GET) ? $_GET['limit'] : 0;;
 			
 		switch($format){
-		case "json":
+			case "json":
 					header("Cache-Control: no-cache, must-revalidate");
 					header("Content-Type: application/json");
 					
@@ -2181,13 +2203,14 @@ function validate($fn = false, &$name = null)
 				//make sure the group form exists
 				if(!$fld->group_form)
 				{
-					array_push($msgs, "The field {$fld->name} is a group form but has no group_form attribute.");
+					$isValid = false;
+					array_push($msgs, "The field {$fld->name} is a group form but has no group attribute.");
 				}
-				elseif(!array_key_exists($fld->group_form, $prj->tables))
+				/*elseif(!array_key_exists($fld->group_form, $prj->tables))
 				{
 					$isValid = false;
 					array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has the form {$fld->group_form} set as it's group form, but the form {$fld->group_form} doesn not exist.");
-				}
+				}*/
 			}
 			if($fld->type == "branch")
 			{

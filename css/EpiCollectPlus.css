@@ -73,7 +73,6 @@ tr
 
 td
 {
-	
 	overflow : hidden;
 	word-wrap: break-word;
 }
@@ -292,11 +291,27 @@ tr.alt
 	vertical-align : top;
 }
 
+.ecplus-table-footer a
+{
+	display: inline-block;
+	margin : 0 0.25em 0 0.25em;
+	vertical-align: middle;
+}
+
 /* general */
 
 .locationControl
 {
 	text-align : left;
+}
+
+.ecplus-toolbar-divider
+{
+	display : inline-block;
+	width: 0.75em;
+	height : 1.5em;
+	border-right : 2px solid #CCCCCC;
+	margin-right : 0.75em;
 }
 
 .ecplus-form .ecplus-question fieldset label
@@ -311,6 +326,30 @@ tr.alt
 .ecplus-question-hidden
 {
 	display:none;
+}
+
+.ecplus-dropdown
+{
+	position: relative;
+	display: inline-block;
+	overflow: show;
+}
+
+.ecplus-dropdown div
+{
+	background: #FFFFFF;
+	position: absolute;
+	width : 15em;
+	top: 100%;
+	left : 0;
+	display : none;
+	border: 1px solid #CCCCCC;
+	z-index : 200;
+}
+
+.ecplus-dropdown-menu input
+{
+	margin : 0.5em 0.25em 0.5em 0.25em;
 }
 
 .ecplus-map
@@ -385,6 +424,40 @@ tr.alt
 	float: left;
 }
 
+.ecplus-settingspanel
+{
+	border-radius : 0.25em;
+	border: 0.25em solid #CCCCFF;
+	background-color : #CCCCFF;
+	
+	position: absolute;
+	
+	top: 0.125em;
+	left: 95%;
+	
+	height : 95%;
+	width: 100%;
+}
+
+.ecplus-settingspanel .ecplus-expansionbar
+{
+	height : 100%;
+	width : 5%;
+	float : left;
+}
+
+.ecplus-settingspanel .ecplus-expansionbar:hover
+{
+	background-color : #CCCCCC;
+	cursor : pointer;
+}
+
+.ecplus-pane
+{
+	width: 95%;
+	height : 100%;
+}
+
 #loginStatus{
 	float:right;
 	margin-top: -2px;
@@ -413,10 +486,11 @@ tr.alt
 	background : #EEEEEE;
 }
 
-/*.ui-slider-horizontal .ui-widget-header, .ui-slider-handle
+.ui-autocomplete
 {
-	background : #CCCCFF	
-}*/
+	border: 1px solid #CCCCCC;
+	background : #EEEEEE;
+}
 
 #breadcrumbs
 {

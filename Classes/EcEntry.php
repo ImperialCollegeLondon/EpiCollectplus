@@ -23,9 +23,10 @@
 		
 		public function fetch()
 		{
+			global $db;
 			if(!$this->key && $this->values[$this->form->key]) $this->key = $this->values[$this->form->key]; 
 			
-			$db = new dbConnection();
+			//$db = new dbConnection();
 			$sql = "SELECT * from entry e LEFT JOIN entryvalue v on e.idEntry = v.entry where e.projectName = '{$this->projectName}' AND e.formName = '{$this->formName}' AND v.fieldName = '{$this->form->key}' AND v.value = '{$this->key}'";
 			$res = $db->do_query($sql);
 			if($res !== true) return $res;
@@ -67,14 +68,17 @@
 				$this->deviceId = "web upload";
 			}
 				
-			$parent = $this->getParentEntry();
-			if($parent !== false && $parent["count"] == 0)
-			{
-				throw new Exception("Message: The parent of this entry is not present on the server.");
+			if($this->form->isMain){
+				$parent = $this->getParentEntry();
+			
+				if($parent !== false && $parent["count"] == 0)
+				{
+					throw new Exception("Message: The parent of this entry is not present on the server.");
+				}
 			} 
 			
 			//TODO: need to get the user details from the phone
-			try{
+			//try{
 				//$db = new dbConnection();
 				$res = $db->beginTransaction();
 				if($res !== true) return $res;
@@ -96,6 +100,7 @@
 					}
 					else 
 					{
+						$res = $db->rollbackTransaction();
 						return "Message : Duplicate Key for {$this->formName} > {$this->form->keyField} > {$this->values[$this->form->keyField]}";
 					}
 				}
@@ -115,7 +120,7 @@
 				$this->id = $db->last_id();
 				//$this->fetch(); //get id of entry
 								
-				$qry = "INSERT INTO entryvalue (field, projectName, formName, fieldName, value, entry) ";
+				$qry = "INSERT INTO entryvalue (field, projectName, formName, fieldName, value, entry) VALUES ";
 				$ins = array();
 				foreach(array_keys($this->values) as $key)
 				{
@@ -123,11 +128,11 @@
 					{
 						if(($this->form->fields[$key]->type == "gps" || $this->form->fields[$key]->type == "location") && !is_string($this->values[$key]))
 						{
-							array_push($ins, " SELECT {$this->form->fields[$key]->idField}, '{$this->form->survey->name}', '{$this->form->name}', '$key', " . $db->stringVal(json_encode($this->values[$key])) . ", {$this->id}");
+							array_push($ins, " ( {$this->form->fields[$key]->idField}, '{$this->form->survey->name}', '{$this->form->name}', '$key', " . $db->stringVal(json_encode($this->values[$key])) . ", {$this->id} )");
 						}
 						else
 						{
-							array_push($ins, " SELECT {$this->form->fields[$key]->idField}, '{$this->form->survey->name}', '{$this->form->name}', '$key', " . $db->stringVal($this->values[$key]) . ", {$this->id}");
+							array_push($ins, "( {$this->form->fields[$key]->idField}, '{$this->form->survey->name}', '{$this->form->name}', '$key', " . $db->stringVal($this->values[$key]) . ", {$this->id})");
 						}
 					}
 					else
@@ -138,31 +143,30 @@
 						
 					}
 				}
-				$qry .= join(" UNION ", $ins);
+				$qry .= join(" , ", $ins);
 				
 				$res = $db->do_query($qry);
 				if($res !== true){
 					//echo $res;
-					$res = $db->commitTransaction();
-					
+					$res = $db->rollbackTransaction();
 					return $res;
 				}
 				$res = $db->commitTransaction();
 				//echo $res;
 				return $res;
-			}catch(Exception $e)
-			{
-				return $e->getMessage();
-			}
+			//}catch(Exception $e)
+			//{
+			//	return $e->getMessage();
+			//}
 		}
 		
 		public function put() //edit!
 		{
 			//check that the entry does already exist
-			global $auth;
+			global $auth, $db;
 			//TODO: need to get the user details form the phone
 			
-			$db = new dbConnection();
+			//$db = new dbConnection();
 			$res = $db->beginTransaction();
 			if($res !== true) return $res;
 			//check that the entry does already exist
@@ -232,7 +236,8 @@
 		public function delete()
 		{
 			
-			$db = new dbConnection();
+			//$db = new dbConnection();
+			global $db;
 			
 			if(count($this->getChildEntries()) > 0 || count($this->getBranchEntries()) > 0)
 			{

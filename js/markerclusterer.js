@@ -294,9 +294,10 @@ ClusterIcon.prototype.setCenter = function (center) {
 ClusterIcon.prototype.createCss = function (pos) {
   var style = [];
   if (!this.cluster_.printable_) {
-	  console.debug('background-image:url("' + this.url_ + '?counts=' + this.sums_.counts + '&colours=' + this.sums_.colours + '");')
+	  
     style.push('background-image:url("' + this.url_ + '?counts=' + this.sums_.counts + '&colours=' + this.sums_.colours + '");');
     style.push('background-position:' + this.backgroundPosition_ + ';');
+    style.push('background-repeat: no-repeat;');
   }
 
   if (typeof this.anchor_ === 'object') {
@@ -1540,15 +1541,19 @@ MarkerClusterer.CALCULATOR = function (markers, numStyles) {
   
   var dv = 0;
   
-  for(var i = 0; i < markers.length; i++)
+  var len = markers.length;
+  
+  for(var i = len; i--;)
   {
-	  if(cols[markers[i].colour])
+	  var mkr = markers[i];
+	  
+	  if(cols[mkr.colour])
 	  {
-		  cols[markers[i].colour]++;
+		  cols[mkr.colour]++;
 	  }
 	  else
 	  {
-		  cols[markers[i].colour] = 1;
+		  cols[mkr.colour] = 1;
 	  }
 	  dv++;
   }
@@ -1560,13 +1565,9 @@ MarkerClusterer.CALCULATOR = function (markers, numStyles) {
 	  counts  += cols[l] + "|";
   }
 
-  
-  while (dv !== 0) {
-    dv = dv / 10;
-    index++;
-  }
-
-  index = Math.min(index, numStyles);
+  index = Math.floor(Math.log(dv) / Math.log(10), 1);
+  index = Math.min(index, numStyles - 1);
+   
   return {
     text: dv.toString(),
     index: index,
