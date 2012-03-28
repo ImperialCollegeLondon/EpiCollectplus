@@ -241,7 +241,7 @@
   			$men = array();
   			if($db)
   			{
-		  		$qry = "SELECT firstName, lastName, Email FROM User WHERE serverManager = 1";
+		  		$qry = "SELECT firstName, lastName, Email FROM user WHERE serverManager = 1";
 		  		$res = $db->do_query($qry);
 		  		if($db->do_query($qry) !== true) die("$res");
 		  		
