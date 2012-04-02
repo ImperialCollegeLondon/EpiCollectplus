@@ -215,7 +215,7 @@ function regexEscape($s)
 
 function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 {
-	global $SITE_ROOT, $auth;
+	global $db, $SITE_ROOT, $auth;
 
 	$template = file_get_contents("./html/$baseUri");
 	$templateVars["SITE_ROOT"] = ltrim($SITE_ROOT, "\\");
@@ -236,28 +236,33 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 	}
 
 
-
-	if($auth && $auth->isLoggedIn())
-	{
-		//if so put the user's name and a logout option in the login section
-		if($auth->isServerManager())
+	try{
+		if(isset($db) && $db->connected && $auth && $auth->isLoggedIn())
 		{
-			$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
+	
+			//if so put the user's name and a logout option in the login section
+			if($auth->isServerManager())
+			{
+				$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
+			}
+			else
+			{
+				$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $template);
+			}
+			$templateVars["userEmail"] = $auth->getUserEmail();
 		}
+		// else show the login link
 		else
 		{
-			$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $template);
+			echo "what...";
+			$template = str_replace("{#loggedIn#}", '<a href="{#SITE_ROOT#}/login.php">Sign in</a>', $template);
 		}
-		$templateVars["userEmail"] = $auth->getUserEmail();
-	}
-	// else show the login link
-	else
-	{
-		$template = str_replace("{#loggedIn#}", '<a href="{#SITE_ROOT#}/login.php">Sign in</a>', $template);
-	}
-	// work out breadcrumbs
-	//$template = str_replace("{#breadcrumbs#}", '', $template);
-
+		// work out breadcrumbs
+		//$template = str_replace("{#breadcrumbs#}", '', $template);
+	}catch(Exception $err){
+		siteTest();
+	}	
+	
 	$script = "";
 	$sections = array();
 	if($targetUri)
@@ -626,22 +631,22 @@ function siteTest()
 	{
 		if(array_key_exists("redir", $_GET) && $_GET["redir"] === "true") $res["redirMsg"] = "	<p class=\"message\">You have been brought to this page because of a fatal error opening the home page</p>";
 		if(array_key_exists("redir", $_GET) && $_GET["redir"] === "pwd") $res["redirMsg"] = "	<p class=\"message\">The username and password you entered were incorrect, please try again.</p>";
-			
-
-		try{
-
-			if(!$db) $db = new dbConnection();
+		
+		if(!$db) $db = new dbConnection();
+		
+		
+		if($db->connected)
+		{
 			$res["dbStatus"] = "succeed";
 			$res["dbResult"] = "Connected";
-		}
-		catch(Exception $ex)
-		{
-			if(preg_match('/28000\/1045/', $ex))
+		}else{
+			$ex = $db->errorCode;
+			if($ex == 1045)
 			{
 				$res["dbStatus"] = "fail";
 				$res["dbResult"] = "DB Server found, but the combination of the username and password invalid. <a href=\"./test?edit=true\">Edit Settings</a>";
 			}
-			elseif(preg_match('/42000\/1044/', $ex))
+			elseif($ex == 1044)
 			{
 				$res["dbStatus"] = "fail";
 				$res["dbResult"] = "DB Server found, but the database specified does not exist or the user specified does not have access to the database. <a href=\"./test?edit=true\">Edit Settings</a>";
@@ -652,8 +657,8 @@ function siteTest()
 				$res["dbResult"] =  "Could not find the DB Server ";
 			}
 		}
-			
-		if($db)
+		
+		if($db->connected)
 		{
 			$dbNameRes = $db->do_query("SHOW DATABASES");
 			if($dbNameRes !== true)
@@ -727,7 +732,7 @@ function siteTest()
 			}
 		}
 
-		if($db && $res["dbPermStatus"] == "succeed")
+		if($db->connected && $res["dbPermStatus"] == "succeed")
 		{
 
 			$tblTemplate = array(
@@ -796,7 +801,7 @@ function siteTest()
 		$res["endMsg"] = ($res["endStatus"] == "fail" ? "The MySQL database is not ready, please correct the errors in red above and refresh this page. <a href = \"/test?edit=true\">Configuration tool</a>" : "You are now ready to create EpiCollect projects, place xml project definitions in {$_SERVER["PHP_SELF"]}/xml and visit the <a href=\"createProject.html\">create project</a> page");
 		echo applyTemplate("base.html", "testResults.html", $res);
 	}
-	elseif(!$db)
+	else
 	{
 		$arr = "{";
 		foreach($cfg->settings as $k => $v)
@@ -810,11 +815,7 @@ function siteTest()
 			
 		echo applyTemplate("base.html", "setup.html", array("vals" => $arr));
 	}
-	else
-	{
-		global $SITE_ROOT;
-		//header("location: $SITE_ROOT/admin");
-	}
+	
 }
 
 
@@ -1255,14 +1256,13 @@ function downloadData()
 			
 			if($entry) $args[$cField] = $cVals[$c];
 				
-			$res = $survey->tables[$tbls[$t]]->ask($args);
+			$res = $survey->tables[$tbls[$t]]->ask($args,false, false, false, false,false, "object");
 
 			if($res !== true) echo $res;
 	
-			while ($ent = $survey->tables[$tbls[$t]]->recieve())
+			while ($ent = $survey->tables[$tbls[$t]]->recieve(1))
 			{
-				
-				$ent = $ent[0];
+				//$ent = $ent[0];
 				
 				if($dataType == "data")
 				{
@@ -1306,7 +1306,6 @@ function downloadData()
 						fwrite($tsv, "{$tbls[$t]}$delim");
 						foreach(array_keys($ent) as $fld)
 						{
-							if($fld == "childEntries") continue;
 							if(array_key_exists($fld, $survey->tables[$tbls[$t]]->fields) && preg_match("/^(gps|location)$/i", $survey->tables[$tbls[$t]]->fields[$fld]->type) && $ent[$fld] != "")
 							{
 								$gpsObj = json_decode($ent[$fld]);
@@ -1321,9 +1320,11 @@ function downloadData()
 								fwrite($tsv,  "$fld$delim" . escapeTSV($ent[$fld]). $delim);
 							}
 						}
+						//fwrite($tsv, $ent);
 						fwrite($tsv,  $rowDelim);
+						
 					}
-
+					
 				}
 				elseif(strtolower($_GET["type"]) == "thumbnail")
 				{
@@ -1361,7 +1362,6 @@ function downloadData()
 						}
 					}
 				}
-					
 			}
 				
 			if($ent && !array_key_exists($ent[$survey->tables[$tbls[$t]]->key], $nxtCVals))
@@ -1389,13 +1389,13 @@ function downloadData()
 	{
 		fwrite($fxml,  "</entries>");
 		fclose($fxml);
-		header("location: $fx_url");
+		//header("location: $fx_url");
 		return;
 	}
 	elseif ($dataType == "data")
 	{
 		fclose($tsv);
-		header("location: $ts_url");
+		//header("location: $ts_url");
 		return;
 	}
 	else
@@ -1414,7 +1414,7 @@ function downloadData()
 		}
 		//echo $zfn;
 		//echo $zrl;
-		header("Location: $zrl");
+		//header("Location: $zrl");
 		return;
 	}
 }
@@ -1543,10 +1543,11 @@ function formHandler()
 					header("Cache-Control: no-cache, must-revalidate");
 					header("Content-Type: application/json");
 					
-					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"));
+					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "json");
+					if($res !== true) die($res);
 					echo "[";		
 					$i = 0;			
-					while($str = $prj->tables[$frmName]->recieve(1, "json"))
+					while($str = $prj->tables[$frmName]->recieve(1))
 					{
 					
 						echo ($i > 0 ? ",$str" : $str);
@@ -1562,28 +1563,29 @@ function formHandler()
 					if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
 					{
 						echo "<entries>";
-						$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
-						foreach($arr["$frmName"] as $ent)
+						$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "xml");
+						if($res !== true) die($res);
+						while($ent = $prj->tables[$frmName]->recieve(1))
 						{
-						
-							echo "<entry>";
-							foreach($ent as $key => $value)
-							{
-								if(array_key_exists($key, $prj->tables[$frmName]->fields) && ($prj->tables[$frmName]->fields[$key]->type == "gps" || $prj->tables[$frmName]->fields[$key]->type == "location" ))
-								{
-									$gps = json_decode($value);
-									foreach($gps as $gkey => $gval)
-									{
-										$suf = ($gkey != "provider" ? substr($gkey, 0, 3) : $key);
-										echo "\t\t\t<{$key}_{$suf}>" . str_replace("&", "&amp;", $gval) . "</{$key}_{$suf}>\n";
-									}
-								}
-								else
-								{
-									echo "<$key>$value</$key>";
-								}
-							}
-							echo "</entry>";
+							echo $ent;
+// 							echo "<entry>";
+// 							foreach($ent as $key => $value)
+// 							{
+// 								if(array_key_exists($key, $prj->tables[$frmName]->fields) && ($prj->tables[$frmName]->fields[$key]->type == "gps" || $prj->tables[$frmName]->fields[$key]->type == "location" ))
+// 								{
+// 									$gps = json_decode($value);
+// 									foreach($gps as $gkey => $gval)
+// 									{
+// 										$suf = ($gkey != "provider" ? substr($gkey, 0, 3) : $key);
+// 										echo "\t\t\t<{$key}_{$suf}>" . str_replace("&", "&amp;", $gval) . "</{$key}_{$suf}>\n";
+// 									}
+// 								}
+// 								else
+// 								{
+// 									echo "<$key>$value</$key>";
+// 								}
+// 							}
+// 							echo "</entry>";
 						}
 						echo "</entries>";
 						break;
@@ -1657,11 +1659,12 @@ function formHandler()
 				
 				
 				echo $headers . "\n";
-				$res = $prj->tables[$frmName]->ask(false, $offset, $limit);
+				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "csv");
+				if($res !== true) die($res);
 				if($res !== true) return;
 				while($xml = $prj->tables[$frmName]->recieve(1, "csv"))
 				{
-					echo $xml;
+					echo "$xml\n";
 				}
 				break;
 			
@@ -1682,11 +1685,11 @@ function formHandler()
 					}
 				}	
 				echo "$headers\r\n";	
-				$res = $prj->tables[$frmName]->ask(false, $offset, $limit);
-				if($res !== true) return;
+				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "tsv");
+				if($res !== true) die($res);
 				while($xml = $prj->tables[$frmName]->recieve(1, "tsv"))
 				{
-					echo $xml . "\r\n";
+					echo "$xml\n";
 				}
 				break;
 			case "js" :
@@ -2477,7 +2480,7 @@ function uploadMedia()
 
 	if(array_key_exists("newfile", $_FILES) && $_FILES["newfile"]["error"] == 0)
 	{
-		if(preg_match("/\.(png|gif|jpe?g)$/", $_FILES["newfile"]["name"]))
+		if(preg_match("/\.(png|gif|jpe?g|bmp|tiff?)$/", $_FILES["newfile"]["name"]))
 		{
 			$fn = "ec/uploads/{$pname}~".$_FILES["newfile"]["name"];
 			move_uploaded_file($_FILES["newfile"]["tmp_name"], $fn);
@@ -2528,7 +2531,7 @@ function uploadMedia()
 
 			$tvals["mediaTag"] = "<img src=\"$SITE_ROOT/{$tnfn}\" />";
 		}
-		elseif(preg_match("/\.(mov||mpe?g?[34])$/", $_FILES["newfile"]["name"]))
+		elseif(preg_match("/\.(mov|wav|mpe?g?[34]|ogg|ogv)$/", $_FILES["newfile"]["name"]))
 		{
 			//audio/video handler
 			$fn = "ec/uploads/{$pname}~".$_FILES["newfile"]["name"];
@@ -2536,6 +2539,12 @@ function uploadMedia()
 
 			$tvals["mediaTag"] = "<a href=\"$SITE_ROOT/{$pname}~{$fn}\" >View File</a>";
 		}
+		else
+		{
+			echo "not supported";
+			return;
+		}
+		
 	}
 
 	if(array_key_exists("fn", $_GET))

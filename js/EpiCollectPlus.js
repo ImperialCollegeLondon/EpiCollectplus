@@ -641,10 +641,13 @@ EpiCollect.Form = function()
 	 *  @param {Object} data [Optional] an object containing the entry data.
 	 *  @param {Boolean} vertica [Optional] true to display the form in a line-by-line as opposed to one-at-a-time format
 	 */
-	this.displayForm = function(ele, data, vertical)
+	this.displayForm = function(ele, data, vertical, index, editMode)
 	{
-		this.formIndex = 0;
-		
+		if(index == undefined)
+			this.formIndex = 0;
+		else
+			this.formIndex = 1;
+			
 		if(data) data["updated"] = new Date().getTime().toString();
 		
 		var popup = false;
@@ -663,14 +666,12 @@ EpiCollect.Form = function()
 			popup = true;
 		}
 		
-		this.formElement = ele;
-		
-		$(ele).dialog("option", "title", "Add Location")
+		this.formElement = $(ele);
 
-		
-		$(ele)
+		this.formElement
+			.dialog("option", "title", "Add Location")
 			.empty()
-			.attr("title", (data ? "Edit " : "Add ") + this.name)
+			.attr("title", (editMode ? "Edit " : "Add ") + this.name)
 			.addClass(vertical ? "ecplus-vertical-form" :"ecplus-form")
 			.removeClass(vertical ? "ecplus-form" :"ecplus-vertical-form")
 			.append("<div class=\"ecplus-form-next\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].moveNext();\">Next</a></div>")
@@ -692,47 +693,51 @@ EpiCollect.Form = function()
 		
 		for(field in this.fields)
 		{
-			if(this.fields[field].type == "" || !this.fields[field].display)
+			if(this.fields[field].type == "" || this.fields[field].hidden)
 			{
-				$(ele + " form").append("<div class=\"ecplus-question-hidden\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
-				$("#ecplus-question-" + field).append(this.fields[field].getInput(data ? data[field] : undefined));
+				$("form", this.formElement).append("<div class=\"ecplus-question-hidden\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
+				$("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined));
 			}
 			else
 			{
-				$(ele + " form").append("<div class=\"ecplus-question\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
-				$("#ecplus-question-" + field).append(this.fields[field].getInput(data ? data[field] : undefined));
-				$("#ecplus-question-" + field).append("<div  id=\"" + field + "-messages\" class=\"ecplus-messages\"></div>");
+				$("form", this.formElement).append("<div class=\"ecplus-question\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
+				$("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined));
+				$("#ecplus-question-" + field, this.formElement).append("<div  id=\"" + field + "-messages\" class=\"ecplus-messages\"></div>");
 			}
 		}
 		
-		$(ele + " form").append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /></div>");
-		if(data)
+		$("form", this.formElement).append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /></div>");
+		if(editMode)
 		{
-			$("#ecplus-save-button").append("<a href=\"javascript:project.forms[formName].editEntry();\">Save Entry</a>");
+			$("#ecplus-save-button", this.formElement).append("<a href=\"javascript:project.forms['" + this.name +  "'].editEntry();\">Save Entry</a>");
 		}
 		else
 		{
-			$("#ecplus-save-button").append("<a href=\"javascript:project.forms[formName].addEntry();\">Save Entry</a>");
+			$("#ecplus-save-button", this.formElement).append("<a href=\"javascript:project.forms['" + this.name +  "'].addEntry();\">Save Entry</a>");
 		}
 		
-		$(".ecplus-form-pane form").css("width", ($(".ecplus-question").width() * $(".ecplus-question").length + 1) + "px");
+		$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question").width() * $(".ecplus-question").length + 1) + "px");
 		
 		if(popup)
 		{
 			w = window.innerWidth ? window.innerWidth * 0.75 : 500;
 			h = window.innerHeight ? window.innerHeight * 0.75 : 400;
-			$(ele).dialog({
+			this.formElement.dialog({
 				width: w,
 				height: h,
 				modal : true,
 				resizable : false,
-				title : (data ? "Edit " : "Add ") + this.name
+				title : (data ? "Edit " : "Add ") + this.name,
+				close : function(event, ui)
+				{
+					$(event.target).remove();
+				}
 			});
-			$(".ecplus-question").width($(".ecplus-form-pane").width())
-			$(".ecplus-form-pane form").css("width", ($(".ecplus-question").width() * $(".ecplus-question").length + 1) + "px");
+			$(".ecplus-question", this.formElement).width($(".ecplus-form-pane").width())
+			$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question", this.formElement).width() * $(".ecplus-question", this.formElement).length + 1) + "px");
 		}
 		
-		$("input[type=date]").each(function(idx, ele) { 
+		$("input[type=date]", this.formElement).each(function(idx, ele) { 
 			var fmt = project.forms[formName].fields[ele.name].date;
 			if(project.forms[formName].fields[ele.name].setDate)
 			{
@@ -742,18 +747,19 @@ EpiCollect.Form = function()
 			
 			$(ele).datepicker({ dateFormat : fmt });
 		});
-		if(this.gpsFlds.length > 0) $(".locationControl").gpsPicker()
-		$(".ecplus-radio-group, .ecplus-check-group, select").controlgroup();
+		if(this.gpsFlds.length > 0) $(".locationControl", this.formElement).gpsPicker()
+		$(".ecplus-radio-group, .ecplus-check-group, select", this.formElement).controlgroup();
+		$(".ecplus-media-input", this.formElement).mediainput();
 		
 		if(data)
 		{
 			for(field in data)
 			{
-				$("#" + field).val(data[field]);
+				$("#" + field, this.formElement).val(data[field]);
 			}
 		}
 		
-		$("select[childcontrol]").change(function(evt){
+		$("select[childcontrol]", this.formElement).change(function(evt){
 			var ctrl = $(evt.target);
 			var child = $("#" + ctrl.attr("childcontrol"));
 			
@@ -772,7 +778,7 @@ EpiCollect.Form = function()
 			}
 		});
 		
-		$(".ecplus-input").blur(function(evt){
+		$(".ecplus-input", this.formElement).blur(function(evt){
 			if(!project.forms[formName].moveNext(true)) $(evt.target).focus();
 		});
 		
@@ -859,7 +865,7 @@ EpiCollect.Form = function()
 		//validate answer to previous question
 		fldName = $('.ecplus-question')[this.formIndex].id.replace("ecplus-question-", "");
 		val = $("#" + fldName).val();
-		valid = project.forms[formName].fields[fldName].validate(val);
+		valid = this.fields[fldName].validate(val);
 		$("#" + fldName + "-messages").empty();
 		
 		if(!preventBlur)
@@ -926,6 +932,39 @@ EpiCollect.Form = function()
 		return vals;
 	}
 	
+	this.openBranch = function(branchName, rec)
+	{
+		var newEntry = !rec;
+		if(newEntry)
+		{
+			var data = this.getValues();
+			rec = {};
+			rec[this.key] = data[this.key];
+		}
+		this.saveEntry();
+		this.closeForm();
+		project.forms[branchName].displayForm(undefined, rec, false);
+		if(newEntry)
+		{
+			$("#" + this.key, project.forms[branchName].formElement).append('<option value="' + rec[this.key] + '" SELECTED>' + rec[this.key] + '</option>'  );
+			$("#ecplus-question-" + this.key, project.forms[branchName].formElement).removeClass("ecplus-question").addClass("ecplus-question-hidden");
+		}
+	}
+	
+	this.closeForm = function()
+	{
+		if(this.branchOf == formName)
+		{
+			
+			this.formElement.dialog("close");
+			project.forms[formName].displayForm(undefined, project.forms[formName].getSavedEntry(), false, project.forms[formName].formIndex)
+		}
+		else
+		{
+			this.formElement.dialog("close");
+		}
+	}
+	
 	this.deleteEntry = function(key)
 	{
 		if(confirm("Are you sure you want to delete this entry?"))
@@ -942,17 +981,58 @@ EpiCollect.Form = function()
 	
 	this.addEntry = function()
 	{
+		if(this.branchOf)
+		{
+			this.saveBranch();
+			this.closeForm();
+			return;
+		}
+		
 		var frm = this;
-		$.ajax(location.href, {
+		$.ajax(this.name, {
 			type : "POST",
 			data : this.getValues(),
 			success:function(data, status, xhr)
 			{
+				
 				var obj = JSON.parse(data);
 				if(obj.success)
 				{
-					$(frm.formElement).dialog("close");
-					getData();
+					if(window["entryQueue"])
+					{
+						for(var qfrm in entryQueue)
+						{
+						
+							var queue = entryQueue[qfrm];
+							var len = queue.length;
+							
+							if(!window.branches) window.branches = 0;
+							window.branches += len;
+							
+							for(var e = len; e--;)
+							{
+								$.ajax(qfrm, {
+									type : "POST",
+									data : queue[e],
+									success : function(data, status, xhr){
+										var obj = JSON.parse(data);
+										
+										if(!--window.branches)
+										{
+											$(frm.formElement).dialog("close");
+											getData();
+										}
+									}
+								});
+							}
+						}
+					}
+					else
+					{
+						$(frm.formElement).dialog("close");
+						getData();
+					}
+					
 				}
 				else
 				{
@@ -966,13 +1046,52 @@ EpiCollect.Form = function()
 		});
 	}
 	
-	this.saveBranches = function()
+	this.saveEntry = function()
 	{
+		if(!localStorage) localStorage = {};
+		localStorage[project.name + "_" + this.name] = JSON.stringify(this.getValues());
+	}
+	
+	this.getSavedEntry = function()
+	{
+		var ent = localStorage[project.name + "_" + this.name];
+		if(typeof ent == "string") ent = JSON.parse(ent);
+		return ent;
+	}
+	
+	this.saveBranch = function()
+	{
+		if(!window["entryQueue"]) entryQueue = {};
+		if(!entryQueue[this.name]) entryQueue[this.name] = [];
+		entryQueue[this.name].push(this.getValues());
 		
+		var ent = project.forms[formName].getSavedEntry();
+		var flds = project.forms[formName].fields;
+		
+		for(f in  flds)
+		{
+			if(flds[f].connectedForm == this.name) {
+				if(ent[f]){
+					ent[f]++;
+				}
+				else
+				{
+					ent[f] = 1;
+				}
+			}
+			localStorage[project.name + "_" + formName] = JSON.stringify(ent);
+		}
 	}
 		
 	this.editEntry = function()
 	{
+		if(this.branchOf)
+		{
+			this.saveBranch();
+			this.closeForm();
+			return;
+		}
+		
 		vals = this.getValues();
 		vals["lastEdited"] = new Date().getTime();
 		
@@ -1142,6 +1261,8 @@ EpiCollect.Field = function()
 		   }
 	   }
 	   
+	   if(!val && this.genkey) val = "web_" + new Date().getTime();
+	   
 	   if(this.crumb) pre = "<p>" + this.crumb + "</p>";
 	   
 	   //recursively check to see if this field is a key field from another form
@@ -1197,7 +1318,7 @@ EpiCollect.Field = function()
 		   
 	   if(this.type == "branch")
 	   {
-		   return pre + "<div id=\"" + this.id + "\" class=\"ecplus-input\"><a>Add Branch</a><p>This entry currently has <span>0</span> branch entries</p></div>";
+		   return pre + "<div id=\"" + this.id + "\" class=\"ecplus-input\"><a href=\"javascript:project.forms['"+ this.form.name+"'].openBranch('" + this.connectedForm + "')\">Add Branch</a><p>This entry currently has <span>" +(val ? val : 0) +"</span> branch entries</p></div>";
 	   }
 	   else if(this.type == "select1")
 	   {
@@ -1246,7 +1367,7 @@ EpiCollect.Field = function()
 	   }
 	   else if(this.type == "video" || this.type == "audio" || this.type == "photo")
 	   {
-		   return pre + "<iframe id=\"" + this.id + "_iframe\" src=\"" + this.form.name + "/uploadMedia\" class=\"ecplus-input\" ></iframe><input type=\"hidden\" name=\"" + this.id + "\" value=\"" + val + "\" />";
+		   return pre + "<iframe id=\"" + this.id + "_iframe\" src=\"" + this.form.name + "/uploadMedia\" class=\"ecplus-input ecplus-media-input\" ></iframe><input type=\"hidden\" id=\"" + this.id + "\" name=\"" + this.id + "\" value=\"" + val + "\" />";
 	   }
 	   if(this.type == "location")
 	   {
@@ -1270,12 +1391,30 @@ EpiCollect.Field = function()
 	this.formatValue = function(value)
 	{
 		if(this.type == "photo"){
-			return "<img src=\""+value+"\" alt=\""+value+"\"/>";
+			if(value)
+			{
+				return "<img src=\"../ec/uploads/"+value+"\" alt=\""+value+"\"/ height=\"125\">";
+			}
+			else
+			{
+				return "<i>No Image</i>";
+			}
+		}else if(this.type == "video" || this.type == "audio"){
+			if(value)
+			{
+				return "<a href=\"../ec/uploads/"+value+"\"> View Media </a>";
+			}
+			else
+			{
+				return "<i>No Media</i>";
+			}
 		}else if(this.type == "location" || this.type == "gps"){
 			return value.latitude + ", " + value.longitude;
 		}
-		
-		else{ return value;}
+		else
+		{ 
+			return value;
+		}
 	}
 	
 	this.validate = function(value)

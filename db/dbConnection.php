@@ -11,6 +11,9 @@
 		private $schema;// = $DBNAME;
 		private $port;// = 3306;
 		
+		public $connected;
+		public $errorCode;
+		
 		public function __construct($un = false, $pwd = false)
 		{
 			global $cfg;
@@ -30,6 +33,14 @@
 			$this->port = $cfg->settings["database"]["port"];
 			
 			$this->con = new mysqli($this->server, $this->username, $this->password, NULL,  $this->port);
+
+			if ($this->con->connect_errno) { 
+				$this->connected = false;
+				$this->errorCode = $this->con->connect_errno;
+				return;
+			}
+			
+			$this->connected = true;
 			$this->con->set_charset('utf-8');
 			try{
 				$this->con->select_db($this->schema);
@@ -38,7 +49,7 @@
 		
 		public function __destruct()
 		{
-			$this->con->close();
+			if($this->connected) $this->con->close();
 		}
 		
 		public function boolVal($val) {return $val === true || $val === "true" ? "1" : "0";}

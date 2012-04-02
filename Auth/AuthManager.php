@@ -151,7 +151,7 @@
   			}
   			if(!$uid)
   			{
-  				$sql = "INSERT INTO user (FirstName, LastName, Email, details, language, serverManager) VALUES ('{$this->firstName}','{$this->lastName}','{$this->email}','" . $this->providers[$provider]->getCredentialString() . "','{$this->language}', " . (count($this->getServerManagers()) == 0) . ")";
+  				$sql = "INSERT INTO user (FirstName, LastName, Email, details, language, serverManager) VALUES ('{$this->firstName}','{$this->lastName}','{$this->email}','" . $this->providers[$provider]->getCredentialString() . "','{$this->language}', " . (count($this->getServerManagers()) == 0 ?  "1" : "0") . ")";
   				$res = $db->do_query($sql);
   				if($res !== true) die($res);
   				$uid = $db->last_id();
@@ -213,9 +213,10 @@
   			catch(Exception $e)
   			{
   				return false;
-  			}
-  			
+  			}	
   		}
+  		
+  		if(!$db->connected) return false;
   		$dat = new DateTime();
   		$qry = "DELETE FROM ecsession WHERE expires < ". $dat->getTimestamp();
   		 		

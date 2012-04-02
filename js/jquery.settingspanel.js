@@ -45,7 +45,7 @@
 			  $(".ecplus-settingspanel", this).append("<form>" + cnf.form + "</form>");
 		  }
 		  
-		  $(".ecplus-settingspanel", this).append("<a>Draw Graph</a>");
+		  $(".ecplus-settingspanel", this).append("<a href=\"#\">Draw Graph</a>");
 		  	
 		  $("a", this).click(function(evt){
 			 var node = evt.target.parentNode.parentNode;

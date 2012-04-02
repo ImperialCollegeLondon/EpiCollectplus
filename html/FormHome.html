@@ -186,6 +186,7 @@
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/gpsPicker.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.controlgroup.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.settingspanel.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.mediainput.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.categories.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.pie.js"></script>
@@ -336,11 +337,13 @@
 				for(f in project.forms[formName].fields)
 				{
 					var fld = project.forms[formName].fields[f];
+					var text = fld.text;
+					if(text.length > 25) text = text.substr(0,22) + "..."; 
 					
 					if(hiddenColumns[f] == undefined) {hiddenColumns[f] = false;}
 					
 				
-					$(".ecplus-data tr").append("<th class=\"" + f + "\" >" + fld.text + "</th>");	
+					$(".ecplus-data tr").append("<th class=\"" + f + "\" >" + text + "</th>");	
 				}
 				
 				
@@ -390,16 +393,21 @@
 				
 				for(fld in project.forms[formName].fields)
 				{
-					$('#showHideFields .ecplus-dropdown-menu').append("<input type=\"checkbox\" name=\"fldShowHide\" value=\"" + fld + "\" " + (hiddenColumns[fld] ? "" : "checked=\"checked\"") + " /><label for=\"fldShowHide\">" + project.forms[formName].fields[fld].text +  "</label><br />");
+					var field = project.forms[formName].fields[fld];
+					var text = field.text;
+					if(text.length > 25) text = text.substr(0,22) + "...";
 					
-					if(project.forms[formName].fields[fld].type != "location" && project.forms[formName].fields[fld].type != "gps" && project.forms[formName].fields[fld].type != "branch"
-							&& project.forms[formName].fields[fld].type != "video" && project.forms[formName].fields[fld].type != "audio" && project.forms[formName].fields[fld].type != "photo")
+					$('#showHideFields .ecplus-dropdown-menu').append("<input type=\"checkbox\" name=\"fldShowHide\" value=\"" + fld + "\" " + (hiddenColumns[fld] ? "" : "checked=\"checked\"") + " /><label for=\"fldShowHide\">" + text +  "</label><br />");
+					
+					if(field.type != "location" && field.type != "gps" && field.type != "branch"
+							&& field.type != "video" && field.type != "audio" && field.type != "photo")
 					{
-						$('.fieldList').append("<option value=\"" + fld + "\">" + project.forms[formName].fields[fld].text +  "</option>")
-						if(project.forms[formName].fields[fld].type == "select" || project.forms[formName].fields[fld].type == "radio" ||project.forms[formName].fields[fld].type == "select1" 
+						$('.fieldList').append("<option value=\"" + fld + "\">" + text +  "</option>")
+						if(field.type == "select" || field.type == "radio" ||field.type == "select1" 
 								|| fld == project.getPrevForm(formName).key || fld == "DeviceID")
 						{
-							$('.colourFieldList').append("<option value=\"" + fld + "\">" + project.forms[formName].fields[fld].text +  "</option>");
+							
+							$('.colourFieldList').append("<option value=\"" + fld + "\">" + text +  "</option>");
 						}
 					}
 				}
@@ -538,22 +546,23 @@
 						
 						html += "<td class=\"" + f + "\">";
 						
-						if(fld.type == "location" || fld.type == "gps")
-						{
-							if(entries[i][f] == undefined)
-							{
-								html += "&nbsp;";
-							}
-							else
-							{
-								val = entries[i][f];
-								html +=  val.latitude + "," + val.longitude;
-							}
-						}
-						else
-						{
-							html += entries[i][f] == undefined ? "&nbsp;" : entries[i][f];
-						}
+						//if(fld.type == "location" || fld.type == "gps")
+						//{
+						//	if(entries[i][f] == undefined)
+						//	{
+						//		html += "&nbsp;";
+						//	}
+						//	else
+						//	{
+						//		val = entries[i][f];
+						//		html +=  val.latitude + "," + val.longitude;
+						//	}
+						//}
+						//else
+						//{
+						//	html += entries[i][f] == undzefined ? "&nbsp;" : entries[i][f];
+						//}
+						html += fld.formatValue(entries[i][f]);
 						html += "</td>"					
 					}
 					if(nextFormName) html += "<td>" + entries[i][nextFormName + "_entries"]  + "</td>";
@@ -630,7 +639,7 @@
 				markerClusterer = new MarkerClusterer(map, markers,
 				{
 					maxZoom : 12,
-					gridSize : 60,
+					gridSize : 40,
 					styles : [
 						{
 							url : "{#SITE_ROOT#}/markers/cluster",
@@ -940,7 +949,7 @@
 		<div id="tableTab">
 			<p class="ecplus-toolbar">
 				<a href="javascript:project.forms[formName].displayForm();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_248_asterisk.png" title="New Entry" alt="New Entry"></a>
-				<a href="javascript:project.forms[formName].displayForm(undefined, window.ecplus_entries[$('.ecplus-data tbody tr.selected').index()]);"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
+				<a href="javascript:project.forms[formName].displayForm(undefined, window.ecplus_entries[$('.ecplus-data tbody tr.selected').index()], false, undefined, true);"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
 				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$('.ecplus-data tbody tr.selected').index()][project.forms[formName].key]);"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a>
 				<span class="ecplus-toolbar-divider">&nbsp;</span> 
 				Filter List By <select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value).val());"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Filter" alt="Filter"></a>
