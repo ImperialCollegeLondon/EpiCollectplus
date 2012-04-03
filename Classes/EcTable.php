@@ -398,8 +398,8 @@
 					throw new Exception ("Format not yet implemented");
 				}elseif($format == "tskv"){
 					$select .= ",{$this->branchfields[$i]} , IFNULL(ev{$this->branches[$i]}_entries.count, 0)";
-				}else{
-					throw new Exception ("Format not specified");
+				}elseif($format != "object"){
+					//throw new Exception ("Format not specified");
 				}
 				
 				if(!strstr($join, "ev{$this->key}"))
@@ -426,8 +426,8 @@
  					throw new Exception ("Format not yet implemented");
  				}elseif($format == "tskv"){
  					$select .= ",{$child->name}_entries , IFNULL(ev{$child->name}_entries.count,0)";
- 				}else{
- 					throw new Exception ("Format not specified");
+ 				}elseif($format == "object"){
+ 					//throw new Exception ("Format not specified");
  				}
  				
  				
@@ -450,8 +450,8 @@
  				throw new Exception ("Format not yet implemented");
  			}elseif($format == "tskv"){
  				$select .= ") as data ";
- 			}else{
- 				throw new Exception ("Format not specified");
+ 			}elseif($format == "object"){
+ 				//throw new Exception ("Format not specified");
  			}
 
  			if(!strstr($join, "ev$sortField"))
@@ -503,7 +503,8 @@
 					for($j = count($vals); $j--;)
 					{
 						$kv =explode("::", $vals[$j]);
-						$arr[$kv[0]] = $kv[1];
+						if(count($kv) > 1) $arr[$kv[0]] = $kv[1];
+					
 					} 
 					$ret = $arr;
 				}

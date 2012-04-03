@@ -32,19 +32,29 @@
 			$this->schema = $cfg->settings["database"]["database"];;
 			$this->port = $cfg->settings["database"]["port"];
 			
-			$this->con = new mysqli($this->server, $this->username, $this->password, NULL,  $this->port);
-
-			if ($this->con->connect_errno) { 
-				$this->connected = false;
-				$this->errorCode = $this->con->connect_errno;
-				return;
+			if($this->server && $this->port && $this->schema && $this->username)
+			{
+				
+				$this->con = new mysqli($this->server, $this->username, $this->password, NULL,  $this->port);
+				$this->connected = true;
+				echo $this->con->connect_error;
+				if ($this->con->connect_errno) { 
+					
+					$this->connected = false;
+					$this->errorCode = $this->con->connect_errno;
+					return;
+				}
+				
+				
+				$this->con->set_charset('utf-8');
+				try{
+					$this->con->select_db($this->schema);
+				}catch(Exception $e){}
 			}
-			
-			$this->connected = true;
-			$this->con->set_charset('utf-8');
-			try{
-				$this->con->select_db($this->schema);
-			}catch(Exception $e){}
+			else
+			{
+				$this->connected = false;	
+			}
 		}
 		
 		public function __destruct()
@@ -105,63 +115,85 @@
 		
 		public function do_query($qry)
 		{
-			if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
-			$this->resSet = $this->con->query($qry);
-			$this->numRows = $this->con->affected_rows;
-			if($this->resSet)
+			if($this->connected)
 			{
-				
-				return true;
+				if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
+				$this->resSet = $this->con->query($qry);
+				$this->numRows = $this->con->affected_rows;
+				if($this->resSet)
+				{
+					
+					return true;
+				}
+				else
+				{
+					//echo $qry .  "\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
+					return $qry .  "\r\n" . $this->con->errno. " : " .$this->con->error;
+				}
 			}
 			else
 			{
-				//echo $qry .  "\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
-				return $qry .  "\r\n" . $this->con->errno. " : " .$this->con->error;
+				throw new Exception("Database not yet connected");
 			}
+			
 		}
 		
 		public function do_multi_query($qry)
 		{
-			if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
-			$this->resSet = $this->con->multi_query($qry);
-			if($this->resSet)
+			
+			if($this->connected)
 			{
-				return true;
+				if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
+				$this->resSet = $this->con->multi_query($qry);
+				if($this->resSet)
+				{
+					return true;
+				}
+				else
+				{
+					//echo $qry .  "\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
+					return $qry .  "\r\n" . $this->con->errno . " : " .$this->con->error;
+				}
 			}
 			else
 			{
-				//echo $qry .  "\r\n" . mysqli_errno($this->con) . " : " . mysqli_error($this->con);
-				return $qry .  "\r\n" . $this->con->errno . " : " .$this->con->error;
+				throw new Exception("Database not yet connected");
 			}
 		}
 		
 		public function exec_sp($spName, $args = Array())
 		{
-			//if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
-			for($i = 0; $i < count($args); $i++)
+			if($this->connected)
 			{
-				//$args[$i] = mysqli_escape_string($this->con, $args[$i]);
-				
-				if((is_string($args[$i]))){ $args[$i] = "'".str_replace("'", "\\\\'",$this->con->escape_string($args[$i]))."'"; }
-				
-				else if(!$args[$i]){
-					if(is_int($args[$i]) || is_double($args[$i]) || is_bool($args[$i])) $args[$i] = "0";
-					else $args[$i] = "NULL";
+				//if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
+				for($i = 0; $i < count($args); $i++)
+				{
+					//$args[$i] = mysqli_escape_string($this->con, $args[$i]);
+					
+					if((is_string($args[$i]))){ $args[$i] = "'".str_replace("'", "\\\\'",$this->con->escape_string($args[$i]))."'"; }
+					
+					else if(!$args[$i]){
+						if(is_int($args[$i]) || is_double($args[$i]) || is_bool($args[$i])) $args[$i] = "0";
+						else $args[$i] = "NULL";
+					}
 				}
-			}
-			
-			$qry = "CALL $spName (" . implode(", ", $args) . ")";
-			
-			$this->resSet = $this->con->query($qry);
-			if($this->resSet)
-			{
-				return true;
+				
+				$qry = "CALL $spName (" . implode(", ", $args) . ")";
+				
+				$this->resSet = $this->con->query($qry);
+				if($this->resSet)
+				{
+					return true;
+				}
+				else
+				{
+					return $qry . "\r\n" .$this->con->errno . " : " . $this->con->error;
+				}
 			}
 			else
 			{
-				return $qry . "\r\n" .$this->con->errno . " : " . $this->con->error;
+				throw new Exception("Database not yet connected");
 			}
-			
 		}
 		
 		public function get_row_array()

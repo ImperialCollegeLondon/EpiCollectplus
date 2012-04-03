@@ -254,12 +254,12 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 		// else show the login link
 		else
 		{
-			echo "what...";
 			$template = str_replace("{#loggedIn#}", '<a href="{#SITE_ROOT#}/login.php">Sign in</a>', $template);
 		}
 		// work out breadcrumbs
 		//$template = str_replace("{#breadcrumbs#}", '', $template);
 	}catch(Exception $err){
+		unset($db);
 		siteTest();
 	}	
 	
@@ -608,19 +608,19 @@ function siteTest()
 	global $cfg, $db;
 
 	$doit = true;
-	if(!array_key_exists("database", $cfg->settings) || !array_key_exists("server", $cfg->settings["database"]) ||$cfg->settings["database"]["server"] == "")
+	if(!array_key_exists("database", $cfg->settings) || !array_key_exists("server", $cfg->settings["database"]) ||trim($cfg->settings["database"]["server"]) == "")
 	{
 		$res["dbStatus"] = "fail";
 		$res["dbResult"] = "No database server specified, please amend the file ec/settings.php and so that \$DBSERVER equals the name of the MySQL server";
 		$doit = false;
 	}
-	else if(!array_key_exists("user", $cfg->settings["database"]) ||$cfg->settings["database"]["user"] == "")
+	else if(!array_key_exists("user", $cfg->settings["database"]) || trim($cfg->settings["database"]["user"]) == "")
 	{
 		$res["dbStatus"] = "fail";
 		$res["dbResult"] = "No database user specified, please amend the file ec/settings.php so that \$DBUSER and \$DBPASS equal the credentials for MySQL server";
 		$doit = false;
 	}
-	else if(!array_key_exists("database", $cfg->settings["database"]) ||$cfg->settings["database"]["database"] == "")
+	else if(!array_key_exists("database", $cfg->settings["database"]) ||trim($cfg->settings["database"]["database"]) == "")
 	{
 		$res["dbStatus"] = "fail";
 		$res["dbResult"] = "No database name specified, please amend the file ec/settings.php so that \$DBNAME equals the name of the MySQL database";
@@ -1139,7 +1139,7 @@ function downloadData()
 	$end = $endTbl ? $survey->tables[$endTbl]->number : count($survey->tables);
 
 	// if we're doing a select_table query we don't want the data from the first table, as we already have that entry.
-	if(array_key_exists('select_table', $_GET)) $n++;
+	if(array_key_exists('select_table', $_GET) && $entry) $n++;
 
 	//for each table between startTbl and end Tbl (or that is a branch of a table we want)
 	//we'll loop through the table array to establish which tables we need
@@ -1256,7 +1256,7 @@ function downloadData()
 			
 			if($entry) $args[$cField] = $cVals[$c];
 				
-			$res = $survey->tables[$tbls[$t]]->ask($args,false, false, false, false,false, "object");
+			$res = $survey->tables[$tbls[$t]]->ask($args);
 
 			if($res !== true) echo $res;
 	
@@ -1296,7 +1296,7 @@ function downloadData()
 							}
 							else
 							{
-								fwrite($fxml,"\t\t\t<$fld>" . str_replace("&", "&amp;", $ent[$fld]) . "</$fld>\n");
+								fwrite($fxml,"\t\t\t<$fld>" . str_replace(">", "&gt;", str_replace("<", "&lt;", str_replace("&", "&amp;", $ent[$fld]))) . "</$fld>\n");
 							}
 						}
 						fwrite($fxml, "\t\t</entry>\n");
@@ -1389,13 +1389,13 @@ function downloadData()
 	{
 		fwrite($fxml,  "</entries>");
 		fclose($fxml);
-		//header("location: $fx_url");
+		header("location: $fx_url");
 		return;
 	}
 	elseif ($dataType == "data")
 	{
 		fclose($tsv);
-		//header("location: $ts_url");
+		header("location: $ts_url");
 		return;
 	}
 	else
@@ -1414,7 +1414,7 @@ function downloadData()
 		}
 		//echo $zfn;
 		//echo $zrl;
-		//header("Location: $zrl");
+		header("Location: $zrl");
 		return;
 	}
 }
@@ -2074,6 +2074,8 @@ function listXml()
 
 function projectCreator()
 {
+	if(!file_exists("ec/xml")) mkdir("ec/xml");
+	
 	if(array_key_exists("xml", $_FILES))
 	{
 		move_uploaded_file($_FILES["xml"]["tmp_name"], "ec/xml/{$_FILES["xml"]["name"]}");
@@ -2826,6 +2828,7 @@ function userHandler()
 * as log files which may contain restricted data)
 */
 
+$hasManagers = $db->connected && count($auth->getServerManagers()) > 0;
 
 $pageRules = array(
 //static file handlers
@@ -2863,8 +2866,8 @@ $pageRules = array(
 		"saveUser" =>new PageRule(null, 'saveUser', true),
 		"user/manager/?" => new PageRule(null, 'managerHandler', true),
 		"user/.*@.*?" => new PageRule(null, 'userHandler', true),
-		"admin" => new PageRule(null, 'admin', count($auth->getServerManagers()) > 0),
-		"listUsers" => new PageRule(null, 'listUsers', count($auth->getServerManagers()) > 0),
+		"admin" => new PageRule(null, 'admin', $hasManagers),
+		"listUsers" => new PageRule(null, 'listUsers', $hasManagers),
 		"disableUser" => new PageRule(null, 'disableUser',true),
 		"enableUser" => new PageRule(null, 'enableUser',true),
 		"resetPassword" => new PageRule(null, 'resetPassword',true),
@@ -2878,8 +2881,8 @@ $pageRules = array(
 	
 		"uploadTest.html" => new PageRule(null, 'defaultHandler', true),
 		"test" => new PageRule(null, 'siteTest', false),
-		"createDB" => new PageRule(null, 'setupDB',  count($auth->getServerManagers()) > 0),
-		"writeSettings" => new PageRule(null, 'writeSettings', count($auth->getServerManagers()) > 0),
+		"createDB" => new PageRule(null, 'setupDB',$hasManagers),
+		"writeSettings" => new PageRule(null, 'writeSettings', $hasManagers),
 		
 		"markers/point" => new PageRule(null, 'getPointMarker'),
 		"markers/cluster" => new PageRule(null, 'getClusterMarker'),
