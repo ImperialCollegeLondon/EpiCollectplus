@@ -1222,7 +1222,9 @@ MarkerClusterer.prototype.removeMarkers = function (markers, opt_nodraw) {
   var i, r;
   var removed = false;
 
-  for (i = 0; i < markers.length; i++) {
+  var len = markers.length;
+  
+  for (i = len; i--;) {
     r = this.removeMarker_(markers[i]);
     removed = removed || r;
   }

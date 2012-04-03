@@ -112,6 +112,11 @@ tr.alt
 	padding : 2px 2px 2px 2px;
 }
 
+.ecplus-data-container
+{
+	overflow-x : auto;
+}
+
 .ecplus-data
 {
 	width : 100%;
@@ -328,6 +333,85 @@ tr.alt
 	display:none;
 }
 
+.ecplus-columns
+{
+	position: relative;
+}
+
+.ecplus-columns .column
+{
+	border-radius : 0.5em;
+	padding: 0.5em;
+	display: inline-block;
+	vertical-align:top;
+}
+
+.ecplus-columns .first, .ecplus-columns .last
+{
+	position: absolute;
+	top: 0;
+	width : 19em;
+}
+
+.ecplus-columns .first
+{
+	left : 0;
+	background : #FFEEEE;
+
+}
+
+.ecplus-columns .second
+{
+	display:block;
+	margin : 0 21em 0 21em;
+	background: #EEFFEE;
+}
+
+.ecplus-columns .last
+{
+	right:0;
+	background: #EEEEFF;
+}
+
+.ecplus-columns .last label
+{
+	display : inline-block;
+	width : 7em;
+}
+
+.ecplus-form-element
+{
+	
+}
+
+.first div.ecplus-form-element:hover
+{
+	background : #FFCCCC;
+}
+
+.second div.ecplus-form-element:hover, .ecplus-form-element .ui-sortable-placeholder
+{
+	visibility : show;
+	background : #CCFFCC;
+}
+
+.second div.ecplus-form-element.selected
+{
+	background-color : #EEEEFF;
+}
+
+.ecplus-form-element p
+{
+	font-weight : bold;
+	margin-bottom : 0;
+}
+
+.ecplus-form-element img
+{
+	height : 25px;
+}
+
+
 .ecplus-dropdown
 {
 	position: relative;
@@ -338,6 +422,8 @@ tr.alt
 .ecplus-dropdown div
 {
 	background: #FFFFFF;
+	height : 20em;
+	overflow-y: auto;
 	position: absolute;
 	width : 15em;
 	top: 100%;

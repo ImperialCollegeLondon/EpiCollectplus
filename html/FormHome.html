@@ -194,7 +194,7 @@
 			var formName = "";
 			var map = null;
 			
-			var mapData = null;
+			var mapData = [];
 			var markers = [];			
 			
 			var qry = location.search.trim("?");
@@ -284,10 +284,22 @@
 			
 			function toggleMenu(selector)
 			{
-				var visible = $(selector + " .ecplus-dropdown-menu").css("display") != "none";
 				
-				if(visible) $(selector + " .ecplus-dropdown-menu").hide();
-				else $(selector + " .ecplus-dropdown-menu").show();
+				var jq = $(selector + " .ecplus-dropdown-menu");
+				var visible = jq.css("display") != "none";
+				
+				if(visible) jq.hide();
+				else
+				{
+					$(document.body).click(function(evt){
+						
+						if($(evt.target).attr("type") != "checkbox" && $(evt.target)[0].tagName != "LABEL")
+							$(selector + " .ecplus-dropdown-menu").hide();
+					});
+					
+					jq.show();
+					
+				}
 			}
 			
 			function createMap(div)
@@ -332,7 +344,7 @@
 				}
 				
 				
-				$("#tableTab .ecplus-toolbar").after("<table class=\"ecplus-data\"><thead><tr></tr></thead><tbody></tbody></table>");
+				$("#tableTab .ecplus-toolbar").after("<div class=\"ecplus-data-container\"><table class=\"ecplus-data\"><thead><tr></tr></thead><tbody></tbody></table></div>");
 				
 				for(f in project.forms[formName].fields)
 				{
@@ -602,9 +614,18 @@
 			
 			function mapDataCallback(data, status, xhr)
 			{
-		
+				if(markerClusterer) markerClusterer.removeMarkers(markerClusterer.markers_);
+			
+				$('#sidebar').empty();
+				for(var mkr = markers.length; mkr--;){
+					markers[mkr].setMap(null);
+					markers.splice(mkr, 1);	
+					mapData.splice(mkr, 1);
+				}
+				
+
+				
 				mapData = data;
-				markers = [];
 				
 				var mincreated = new Date().getTime();
 				var maxcreated = 0;
@@ -636,45 +657,52 @@
 				
 				colourMarkersBy("DeviceID");
 				
-				markerClusterer = new MarkerClusterer(map, markers,
+				if(!markerClusterer)
 				{
-					maxZoom : 12,
-					gridSize : 40,
-					styles : [
-						{
-							url : "{#SITE_ROOT#}/markers/cluster",
-							height: 50,
-					        width: 50,
-					        anchor: [24, 24],
-					        textColor: 'transparent',
-					        textSize: 14
-						},
-						{
-							url : "{#SITE_ROOT#}/markers/cluster",
-							height: 50,
-					        width: 50,
-					        anchor: [24, 24],
-					        textColor: 'transparent',
-					        textSize: 14
-						},
-						{
-							url : "{#SITE_ROOT#}/markers/cluster",
-							height: 50,
-					        width: 50,
-					        anchor: [24, 24],
-					        textColor: 'transparent',
-					        textSize: 14
-						},
-						{
-							url : "{#SITE_ROOT#}/markers/cluster",
-							height: 50,
-					        width: 50,
-					        anchor: [24, 24],
-					        textColor: 'transparent',
-					        textSize: 14
-						}
-					]
-				});
+					markerClusterer = new MarkerClusterer(map, markers,
+					{
+						maxZoom : 12,
+						gridSize : 40,
+						styles : [
+							{
+								url : "{#SITE_ROOT#}/markers/cluster",
+								height: 50,
+						        width: 50,
+						        anchor: [24, 24],
+						        textColor: 'transparent',
+						        textSize: 14
+							},
+							{
+								url : "{#SITE_ROOT#}/markers/cluster",
+								height: 50,
+						        width: 50,
+						        anchor: [24, 24],
+						        textColor: 'transparent',
+						        textSize: 14
+							},
+							{
+								url : "{#SITE_ROOT#}/markers/cluster",
+								height: 50,
+						        width: 50,
+						        anchor: [24, 24],
+						        textColor: 'transparent',
+						        textSize: 14
+							},
+							{
+								url : "{#SITE_ROOT#}/markers/cluster",
+								height: 50,
+						        width: 50,
+						        anchor: [24, 24],
+						        textColor: 'transparent',
+						        textSize: 14
+							}
+						]
+					});
+				}
+				else
+				{
+					markerClusterer.addMarkers(markers);	
+				}
 
 				
 				$("#slider-range").slider("option", "min", mincreated);
