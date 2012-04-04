@@ -1,6 +1,7 @@
 var map;
 var completed;
 var succeeded;
+var project;
 
 var baseUrl = (location.href.indexOf("?") > 0 ? location.href.substr(0, location.href.indexOf("?")) :location.href );
 
@@ -133,6 +134,12 @@ EpiCollect.Project = function()
 			}
 		}
 		return tbl;
+	}
+	
+	this.validateFormName = function(name)
+	{
+		if(this.forms[name]) return false;
+		return !!name.match(/^[a-z0-9_\-]+$/gi);
 	}
 	
     this.parse = function(xml)
@@ -1128,29 +1135,27 @@ EpiCollect.Field = function()
 	
     this.text = '';
     this.id = '';
-    this.required = false;
+    this.required = undefined;
     this.type = '';
     this.isinteger = false;
 	this.isdouble = false;
     this.options = [];
     this.local = false;
     this.title = false;
-	this.regex = false;
+	this.regex = null;
 	this.verify = false;
-	this.date = false;
-	this.time = false;
 	this.genKey = false;
 	this.display = true;
 	this.edit = true;
 	
-	this.date = false;
-	this.time = false;
-	this.setDate = false;
-	this.setTime = false;
+	this.date = null;
+	this.time = null;
+	this.setDate = null;
+	this.setTime = null;
 	
-	this.min = undefined;
-	this.max = undefined;
-	this.defaultValue = undefined;
+	this.min = null;
+	this.max = null;
+	this.defaultValue = null;
 	
 	this.match = false;
 	this.crumb = false;
