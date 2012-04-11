@@ -193,6 +193,9 @@
 				           	<label for="inputRequired">Required</label>
 				           	<input type="checkbox" id="required" name="required" value="true" />
 				    </div>
+				    <div id="branchButton" allow="branch">
+				    	<a href="javascript:switchToBranch();" class="button">Edit branch form</a>
+				    </div>
 				    <div id="titleCtrl" allow="text,numeric,select1,radio,barcode">
 				           	<label for="inputTitle">Title</label> 
 				           	<input type="checkbox" id="title" name="title" value="true" />
@@ -201,7 +204,7 @@
 				           	<label for="inputKey">Key</label> 
 				           	<input type="checkbox" id="key" name="key" value="true" />
 				    </div>
-				    <div>
+				    <div allow="text,numeric,select1,radio,barcode">
 				        	<label>Searchable</label> 
 				        	<input type="checkbox" id="search" name="search" value="true" />
 				    </div>
@@ -242,30 +245,34 @@
 				     <div allow="key">
 				      	<label for="inputHidden">Hidden</label>
 				      	 <input type="checkbox" id="hidden" name="hidden" value="true" />
-				     </div>
-				     <div>
 				       	<label for="inputGenKey">Generate Key</label>
 				       	 <input type="checkbox" id="genkey" name="genkey" value="true" />
 					</div> 
 					<div id="options" allow="select,radio,select1">
-						 <input id="addSelectOneOption" value="Add Option" type="submit" />
-						 <div id="selectOneOption0" class="selectOption">
+						<hr />
+						<h3>Options</h3>
+						 <a id="addSelectOneOption" href="javascript:addOption();" class="button">Add Option</a>
+						 <div class="selectOption">
 									<hr />
-									<i>Option</i>: <a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Label</a><input name="oneOptionLabel" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Option &gt; Name', 'The label displayed to the user')">?</a></div>
-									<br /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Value</a><input name="oneOptionValue" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Option &gt; Value', 'The value entered into the database')">?</a></div>
-									<br><input name="removeSelectOneOption" value="Remove" type="submit">	 
+									<a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Label</a><input name="optLabel" />
+									<br /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Value</a><input name="optValue" />
+									<br><a href="javascript:void(0);" class="button removeOption">Remove Option</a>	 
 						 </div> 
 					</div>
 					<div id="jumps" allow="select,radio,select1">
+						<hr />
+						<h3>Jumps</h3>
+						<a href="javascript:addJump();updateJumps();" class="button">Add Jump</a>
 						<div class="jumpoption">
+							<hr />
 							<label>Jump on value</label> <select class="jumpvalues"></select>
-							<label>Jump to</label> <select class="jumpdestination"></select>
+							<br /><label>Jump to</label> <select class="jumpdestination"></select>
+							<br /><a href="javascript:void(0);" class="button remove" >Remove Jump</a>
 						</div>
 					</div>
 					<hr />
 					<div>
-					 	<button id="done" ></button>
-						<button id="delete" onclick="void(0);">Delete</button>
+						<a class="button removeControl" href="javascript:removeSelected();">Delete</a>
 					</div>
 				</form>
 		    </div>

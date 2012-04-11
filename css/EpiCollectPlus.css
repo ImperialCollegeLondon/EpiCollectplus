@@ -354,11 +354,13 @@ tr.alt
 	width : 19em;
 }
 
+
+
 .ecplus-columns .first
 {
 	left : 0;
 	background : #FFEEEE;
-	height: 100%;
+	height: 98%;
 }
 
 .ecplus-columns .second
@@ -373,7 +375,31 @@ tr.alt
 {
 	right:0;
 	background: #EEEEFF;
-	height: 100%;
+	height: 98%;
+}
+
+@media all and (max-width: 1024px){
+	.ecplus-columns .first, .ecplus-columns .last
+	{
+		width : 15em;
+	}
+	
+	.ecplus-columns .second
+	{
+		margin : 0 17em 0 17em;
+	}
+}
+
+@media all and (max-width: 800px){
+	.ecplus-columns .first, .ecplus-columns .last
+	{
+		width : 12em;
+	}
+	
+	.ecplus-columns .second
+	{
+		margin : 0 14em 0 14em;
+	}
 }
 
 .ecplus-columns .last label
@@ -472,6 +498,25 @@ tr.alt
 	right: 2px;
 	bottom : 2px;
 	
+}
+
+.button
+{
+	font-size : 10pt;
+	color: #444444;
+	display : inline-block;
+	padding : 0.25em;
+	border-radius: 0.5em;
+	background : #EEEEEE;
+	border: 1px solid #666666;
+}
+
+.button:hover
+{
+	color: #000000;
+	text-decoration : none;
+	border-color:black;
+	background-color: #DDDDDD;
 }
 
 .flash

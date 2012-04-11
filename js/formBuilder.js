@@ -72,6 +72,20 @@ $(function()
 			}
 		}
 	});
+	
+	$("#key").change(function(evt){
+		if(evt.target.checked)
+		{
+			$("[allow=key]").show();
+		}
+		else
+		{
+			$("[allow=key]").hide();
+		}
+	});
+	
+	$("#options .removeOption").unbind('click').bind('click', removeOption);
+	$("#jumps .remove").unbind('click').bind('click', removeOption);
 });
 
 function drawProject(project)
@@ -115,7 +129,7 @@ function addFormToList(name)
 }
 
 /**
- * Funtion to add the field representation onto the form
+ * Function to add the field representation onto the form
  * 
  * @param id the id of the element
  * @param text the text for the element
@@ -131,6 +145,38 @@ function addControlToForm(id, text, type)
 	jq.attr("id", id);
 	
 	$("#destination").append(jq);
+}
+
+function addOption()
+{
+	var panel = $("#options");
+	panel.append('<div class="selectOption"><hr /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Label</a><input name="optLabel" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),\'Option &gt; Name\', \'The label displayed to the user\')">?</a></div>	<br /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Value</a><input name="optValue" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),\'Option &gt; Value\', \'The value entered into the database\')">?</a></div>	<br><a href="javascript:void(0);" class="button removeOption" >Remove Option</a> </div>');
+	
+	$("#options .removeOption").unbind('click').bind('click', removeOption);
+}
+
+function removeOption(evt)
+{
+	var ele = evt.target;
+	while(ele.tagName != "DIV") ele = ele.parentNode;
+	
+	$(ele).remove();
+}
+
+function addJump()
+{
+	var panel = $("#jumps");
+	panel.append('<div class="jumpoption"><hr /><label>Jump on value</label> <select class="jumpvalues"></select><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >Remove Jump</a></div>');
+	
+	$("#jumps .remove").unbind('click').bind('click', removeJump);
+}
+
+function removeJump(evt)
+{
+	var ele = evt.target;
+	while(ele.tagName != "DIV") ele = ele.parentNode;
+	
+	$(ele).remove();
 }
 
 function drawFormControls(form)
@@ -192,7 +238,7 @@ function updateSelected()
 	currentControl.verify = !!$("#verify").attr("checked");
 	currentControl[(!!$("#set").attr("checked") ? "date": "setDate")] = $("#date").val(); 
 	currentControl[(!!$("#set").attr("checked") ? "time": "setTime")] = $("#time").val();
-	currentControl.genKey = !!$("#genkey").attr("checked");
+	currentControl.genkey = !!$("#genkey").attr("checked");
 	currentControl.hidden = !!$("#hidden").attr("checked");
 	currentControl.isinteger = !!$("#integer").attr("checked");
 	currentControl.isdouble = !!$("#decimal").attr("checked");
@@ -200,6 +246,31 @@ function updateSelected()
 	currentControl.max = $("#max").val();
 	currentControl.defaultValue = $("#default").val();
 	currentControl.search = !!$("#search").attr("checked");
+	
+	//TODO: get and add options
+	var optCtrls = $(".selectOption");
+	
+	var options = [];
+	
+	var n = optCtrls.length;
+	for(var i = 0; i < n; i++)
+	{
+		options[i] = { label : $("input[name=optLabel]", optCtrls[i]).val(), value : $("input[name=optValue]", optCtrls[i]).val() };
+	}
+	currentControl.options = options;
+	
+	//TODO: get and add jumps
+	
+	var jump = "";
+	var jumpCtrls = $(".jumpoption");
+	var jn = jumpCtrls.length;
+	
+	for(var i = jn; i--;)
+	{
+		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + $(".jumpvalues", jumpCtrls[i]).val() + "," + jump;
+	}
+	
+	currentControl.jump = jump.trim(",");
 	
 	if(name !== currentControl.id)
 	{
@@ -229,6 +300,30 @@ function updateForm()
 	currentForm.fields = fields;
 }
 
+function updateJumps()
+{
+	var opts = currentControl.options;
+	
+	var fieldCtls = $(".jumpvalues");
+	fieldCtls.empty();
+	
+	for(var i = opts.length; i--;)
+	{
+		fieldCtls.html("<option value=\"" + i + "\">" + opts[i].label + "</option>" + fieldCtls.html());
+	}
+	
+	fieldCtls = $(".jumpdestination");
+	
+	for(fld in currentForm.fields)
+	{
+		var field = currentForm.fields[fld];
+		var lbl = currentForm.fields[fld].text;
+		if(lbl.length > 25) lbl = lbl.substr(0,22) + "...";
+		if(field.type && !field.hidden) fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
+	}
+	
+}
+
 function setSelected(jqEle)
 {
 	if(window["currentControl"])
@@ -250,6 +345,10 @@ function setSelected(jqEle)
 	$("[allow]").hide();
 	$("[allow*=" + type + "]").show();
 	
+	if(currentControl.isKey)
+	{
+		$("[allow=key]").show();
+	}
 	if(jqEle.hasClass("ecplus-form-element"))
 	{
 		$("#destination .ecplus-form-element").removeClass("selected");
@@ -260,9 +359,9 @@ function setSelected(jqEle)
 		
 		$("#required").attr("checked", (currentControl.required));
 		$("#title").attr("checked", (currentControl.title));
-		$("#key").attr("checked", (currentControl.key));
-		$("#decimal").attr("checked", (currentControl.isdouble));
-		$("#integer").attr("checked", (currentControl.isinteger));
+		$("#key").attr("checked", (currentControl.isKey));
+		$("#decimal").attr("checked", currentControl.isdouble);
+		if(! currentControl.isdouble) $("#integer").attr("checked", currentControl.isinteger);
 		$("#min").val(currentControl.min);
 		$("#max").val(currentControl.max);
 		
@@ -293,7 +392,39 @@ function setSelected(jqEle)
 		$("#hidden").attr("checked", currentControl.hidden);
 		$("#genkey").attr("checked", currentControl.genkey);
 		$("#search").attr("checked", currentControl.search);
-		//TODO: options and jumps
+		
+		var opts = currentControl.options;
+		var nOpts = currentControl.options.length;
+		
+		$(".selectOption").remove();
+		
+		while($(".selectOption").length < nOpts) addOption();
+		
+		var optEles = $(".selectOption");
+		for(var i = nOpts; i--;)
+		{
+			$("input[name=optLabel]", optEles[i]).val(opts[i].label);
+			$("input[name=optValue]", optEles[i]).val(opts[i].value);
+		}
+		
+		//TODO: Jumps
+		$(".jumpoption").remove();
+		
+		if(!currentControl.jump) return;
+		var jumps =  currentControl.jump.split(",");
+		var nJumps = jumps.length / 2;
+		
+		while($(".jumpoption").length < nJumps) addJump();
+		
+		updateJumps();
+		var jumpCtrls = $(".jumpoption");
+		var n = jumps.length
+		for(var i = 0; i < n; i += 2)
+		{
+			$(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1]);
+			$(".jumpdestination", jumpCtrls[i/2]).val(jumps[i]);
+		}
+		
 	}
 	else
 	{
@@ -303,4 +434,30 @@ function setSelected(jqEle)
 	if(currentControl) $(".last").show();
 	else $(".last").hide();
 	
+}
+
+function removeSelected()
+{
+	var jq = $("#destination .selected")
+	delete currentForm.fields[jq.attr("id")];
+	jq.remove();
+	
+	$("[allow]").hide();
+	$(".last input").val("");
+}
+
+function switchToBranch()
+{
+	$('.form').removeClass("selected");
+	
+	if(currentForm){
+		updateForm();
+		project.forms[currentForm.name] = currentForm;
+	}
+	
+	var frm = currentControl.connectedForm;
+	
+	currentForm = project.forms[frm];
+	formName = currentForm.name;
+	drawFormControls(currentForm);
 }

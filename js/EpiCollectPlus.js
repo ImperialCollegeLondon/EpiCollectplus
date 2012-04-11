@@ -1142,6 +1142,7 @@ EpiCollect.Field = function()
     this.options = [];
     this.local = false;
     this.title = false;
+    this.isKey = false;
 	this.regex = null;
 	this.verify = false;
 	this.genKey = false;
