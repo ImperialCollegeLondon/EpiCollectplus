@@ -868,7 +868,7 @@ function siteHome()
 	$vals = array();
 	$server = trim($_SERVER["HTTP_HOST"], "/");
 	$root = trim($SITE_ROOT, "/");
-	if(!$db)
+	if(!$db->connected)
 	{
 		$rurl = "http://$server/$root/test?redir=true";
 		header("location: $rurl");
