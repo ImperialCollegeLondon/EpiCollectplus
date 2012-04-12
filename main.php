@@ -864,15 +864,11 @@ function siteHome()
 {
 	header("Cache-Control: no-cache, must-revalidate");
 
-	global $SITE_ROOT;
+	global $SITE_ROOT, $db, $log;
 	$vals = array();
 	$server = trim($_SERVER["HTTP_HOST"], "/");
 	$root = trim($SITE_ROOT, "/");
-	try{
-		$log = new Logger("Ec2");
-		$db = new dbConnection;
-	}
-	catch(Exception $e)
+	if(!$db)
 	{
 		$rurl = "http://$server/$root/test?redir=true";
 		header("location: $rurl");
