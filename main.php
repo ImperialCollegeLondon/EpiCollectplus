@@ -93,7 +93,7 @@ if(!array_key_exists("salt",$cfg->settings["security"]) || $cfg->settings["secur
 
 
 
-/*function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
+function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 {
 	// error was suppressed with the @-operator
 	if (0 === error_reporting()) {
@@ -103,7 +103,7 @@ if(!array_key_exists("salt",$cfg->settings["security"]) || $cfg->settings["secur
 	throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
 
-set_error_handler('handleError', E_ALL);*/
+set_error_handler('handleError', E_ALL);
 
 $DEFAULT_OUT = $cfg->settings["misc"]["default_out"];
 $log = new Logger("Ec2");
@@ -2119,9 +2119,10 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 	$isValid = true;
 	$msgs = array();
 	
-	if(!$fn && !$xml)
-	{
-		$fn = $_GET["filename"];
+	if(!$fn) $fn = getValIfExists($_GET, "filename");
+	
+	if($fn && !$xml)
+	{		
 		$xml = file_get_contents("./ec/xml/$fn");
 	}
 
