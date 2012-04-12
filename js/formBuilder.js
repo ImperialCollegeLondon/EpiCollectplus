@@ -456,8 +456,40 @@ function switchToBranch()
 	}
 	
 	var frm = currentControl.connectedForm;
-	
+	if(!project.forms[frm]) project.forms[frm] = new EpiCollect.Form();
 	currentForm = project.forms[frm];
 	formName = currentForm.name;
 	drawFormControls(currentForm);
+}
+
+function saveProject()
+{
+	updateSelected();
+	updateForm();
+	
+	$.ajax("./updateStructure" ,{
+		type : "POST",
+		data : {data : project.toXML()},
+		success : saveProjectCallback,
+		error : saveProjectError
+	});
+}
+
+function saveProjectCallback(data, status, xhr)
+{
+	var result = JSON.parse(data);
+	
+	if(result.result)
+	{
+		alert("Project Saved");
+	}
+	else
+	{
+		alert("Project not saved : " + result.message);
+	}
+}
+
+function saveProjectError(xhr, status, err)
+{
+	alert("Project not saved : " + status);
 }

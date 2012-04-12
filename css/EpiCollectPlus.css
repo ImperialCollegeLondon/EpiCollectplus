@@ -419,6 +419,13 @@ tr.alt
 	
 }
 
+#destination, .last
+{
+	height: 90%;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
 .first div.ecplus-form-element:hover
 {
 	background : #FFCCCC;

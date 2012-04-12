@@ -199,6 +199,18 @@ EpiCollect.Project = function()
 			$(div).append("<p>" + tbl + "</p>");
 		}
 	}
+	
+	this.toXML = function()
+	{
+		var xml = "<?xml version=\"1.0\"?><ecml><model><submission id=\"" + this.id + "\" projectName=\"" + this.name + "\" allowDownloadEdits=\"" + (this.allowEdits ? "true" : "false") +"\" version=\"" + this.version + "\" /></model>";
+		for(form in this.forms)
+		{
+			xml = xml + this.forms[form].toXML();
+		}
+		xml = xml + "</ecml>";
+		return xml;
+	}
+	
 }
 
 EpiCollect.Form = function()
@@ -1127,7 +1139,15 @@ EpiCollect.Form = function()
 		});
 	}
 	
-
+	this.toXML = function()
+	{
+		var xml = "<form name=\"" + this.name + "\" num=\"" + this.num + "\" key=\"" + this.key + "\" main=\"" + this.main + "\">";
+		for(fld in this.fields){
+			xml = xml + this.fields[fld].toXML();
+		}
+		xml = xml + "</form>";
+		return xml;
+	}
 }
 
 EpiCollect.Field = function()
@@ -1145,7 +1165,7 @@ EpiCollect.Field = function()
     this.isKey = false;
 	this.regex = null;
 	this.verify = false;
-	this.genKey = false;
+	this.genkey = false;
 	this.display = true;
 	this.edit = true;
 	
@@ -1611,7 +1631,46 @@ EpiCollect.Field = function()
 		return msgs.length == 0 ? true : msgs;		
 	};
 	
-	
+	this.toXML = function()
+	{
+		if(!this.type) return "";
+		
+		var xml = "<" + this.type + " ref=\"" + this.id + "\"";
+		//TODO: Other settings
+		if(this.required) xml = xml + " required=\"true\"";
+		if(this.isinteger) xml = xml + " integer=\"true\"";
+		if(this.isdouble) xml = xml + " decimal=\"true\"";
+		if(this.local) xml = xml + " local=\"true\"";
+		if(this.title) xml = xml + " title=\"true\"";
+		if(this.regex) xml = xml + " regex=\"" + this.regex + "\"";
+		if(this.verify) xml = xml + " verify=\"true\"";
+		if(this.genkey) xml = xml + " genkey=\"true\"";
+		if(!this.display || this.hidden) xml = xml + " hidden=\"true\"";
+		if(this.edit) xml = xml + " edit=\"true\"";
+		if(this.date) xml = xml + " date=\"" + this.date + "\"";
+		if(this.time) xml = xml + " time=\"" + this.time + "\"";
+		if(this.setDate) xml = xml + " setdate=\"" + this.setDate + "\"";
+		if(this.setTime) xml = xml + " settime=\"" + this.setTime + "\"";
+		if(this.min) xml = xml + " min=\"" + this.min + "\"";
+		if(this.max) xml = xml + " max=\"" + this.max + "\"";
+		if(this.defaultValue) xml = xml + " default=\"" + this.defaultValue + "\"";
+		if(this.match) xml = xml + " match=\"" + this.match + "\"";
+		if(this.crumb) xml = xml + " crumb=\"" + this.crumb + "\"";
+		if(this.search) xml = xml + " search=\"true\"";
+		if(this.jump) xml = xml + " jump=\"" + this.jump + "\"";
+		if(this.type == "branch") xml = xml + " branch_form=\"" + this.connectedForm +"\"";
+		
+		xml = xml + "><label>" + this.text + "</label>"
+		
+		for(var i = 0; i < this.options.length; i++)
+		{
+			var opt = this.options[i];
+			xml = xml + "<item><label>" + opt.label + "</label><value>" + opt.value + "</value></item>";
+		}
+		
+		xml = xml + "</" + this.type + ">";
+		return xml;
+	}
 	
 }
 

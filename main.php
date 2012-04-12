@@ -93,7 +93,7 @@ if(!array_key_exists("salt",$cfg->settings["security"]) || $cfg->settings["secur
 
 
 
-function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
+/*function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 {
 	// error was suppressed with the @-operator
 	if (0 === error_reporting()) {
@@ -102,7 +102,8 @@ function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 
 	throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
-set_error_handler('handleError', E_ALL);
+
+set_error_handler('handleError', E_ALL);*/
 
 $DEFAULT_OUT = $cfg->settings["misc"]["default_out"];
 $log = new Logger("Ec2");
@@ -550,7 +551,7 @@ function projectHome()
 							"imageWidth" => $imgSize[0],
 							"imageHeight" =>$imgSize[1],
 							"tables" => $tblList,
-							"adminMenu" => "<a href=\"{$prj->name}/manage\" class=\"manage\">Manage Project</a>",
+							"adminMenu" => "<a href=\"{$prj->name}/manage\" class=\"button\">Manage Project</a> <a href=\"{$prj->name}/formBuilder\" class=\"button\">Edit Forms</a>",
 							"userMenu" => ""
 
 						);
@@ -1987,12 +1988,32 @@ function updateXML()
 {
 	global $url, $SITE_ROOT;
 
+	if(array_key_exists("xml", $_REQUEST))
+	{
+		$xml = file_get_contents("ec/xml/{$_REQUEST["xml"]}");
+	}
+	elseif(array_key_exists("data", $_POST))
+	{
+		$xml = $_POST["data"];	
+	}
+	else
+	{
+		echo "{ \"result\" : false,  \"message\" : \"No XML specified\"}";
+		return;
+	}
+	
 	$prj = new EcProject();
-	$xmlFn = "ec/xml/{$_REQUEST["xml"]}";
-
 	$prj->name = substr($url, 0, strpos($url, "/"));
 	$prj->fetch();
 
+	$validation = validate(NULL,$xml);
+	if($validation !== true)
+	{
+		echo "{ \"result\": false , \"message\" : \"Validation failed\" }";
+		return;
+	}
+	unset($validation);
+	
 	foreach($prj->tables as $name => $tbl)
 	{
 		foreach($prj->tables[$name]->fields as $fldname => $fld)
@@ -2001,15 +2022,17 @@ function updateXML()
 		}
 	}
 	
-	$prj->parse(file_get_contents($xmlFn));
+	$prj->parse($xml);
+	
 	//echo $prj->tables["Second_Form"]->fields["GPS"]->active;
-	$prj->isListed = $_REQUEST["listed"] == "true";
-	$prj->isPublic = $_REQUEST["public"] == "true";
+	if(array_key_exists("listed", $_REQUEST)) $prj->isListed = $_REQUEST["listed"] == "true";
+	if(array_key_exists("public", $_REQUEST)) $prj->isPublic = $_REQUEST["public"] == "true";
+	
 	$prj->publicSubmission = true;
 	$res = $prj->put($prj->name);
 
-	$prj->setManagers($_POST["managers"]);
-	$prj->setCurators($_POST["curators"]);
+	if(array_key_exists("managers", $_POST)) $prj->setManagers($_POST["managers"]);
+	if(array_key_exists("curators", $_POST)) $prj->setCurators($_POST["curators"]);
 	// TODO : add submitter $prj->setProjectPermissions($submitters,1);
 
 	if($res === true)
@@ -2017,11 +2040,11 @@ function updateXML()
 		$server = trim($_SERVER["HTTP_HOST"], "/");
 		$root = trim($SITE_ROOT, "/");
 		//header ("location: http://$server/$root/" . preg_replace("/updateStructure.*$/", $prj->name, $url));
-		echo "{ \"result\": \"success\" }";
+		echo "{ \"result\": true }";
 	}
 	else
 	{
-		echo "{ \"result\": \"error\" , \"message\" : \"$res\" }";
+		echo "{ \"result\": false , \"message\" : \"$res\" }";
 	}
 }
 
@@ -2054,7 +2077,7 @@ function listXml()
 		if(!preg_match("/^\.|.*\.xsd$/", $fn))
 		{
 			$e = false;
-			$v = validate($fn, $n);
+			$v = validate($fn, NULL, $n);
 			if($v === true)
 			{
 				$p = new EcProject;
@@ -2093,15 +2116,18 @@ function projectCreator()
 	}
 }
 
-function validate($fn = false, &$name = null)
+function validate($fn = NULL, $xml = NULL, &$name = NULL)
 {
 	global $SITE_ROOT;
 
 	$isValid = true;
 	$msgs = array();
-	if(!$fn) $fn = $_GET["filename"];
-
-	$xml = file_get_contents("./ec/xml/$fn");
+	
+	if(!$fn && !$xml)
+	{
+		$fn = $_GET["filename"];
+		$xml = file_get_contents("./ec/xml/$fn");
+	}
 
 	$prj = new EcProject;
 	try{
