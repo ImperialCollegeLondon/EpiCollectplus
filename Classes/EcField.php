@@ -112,7 +112,7 @@ class EcField{
 			if($this->setTime) $xml .= " settime=\"{$this->setTime}\"";
 			if($this->min) $xml .= " min=\"{$this->min}\"";
 			if($this->max) $xml .= " max=\"{$this->max}\"";
-			if($this->defaultValue) $xml .= " defaultValue=\"{$this->defaultValue}\"";
+			if($this->defaultValue) $xml .= " default=\"{$this->defaultValue}\"";
 			if($this->crumb) $xml .= " crumb=\"{$this->crumb}\"";
 			if($this->match) $xml .= " match=\"{$this->match}\"";
 			$xml.= ">\n\t\t\t<label>{$this->label}</label>\n\t\t";
@@ -146,7 +146,7 @@ class EcField{
 			if($this->max) $json .= " \"max\":\"{$this->max}\",";
 			if($this->crumb) $json .= " \"crumb\":\"{$this->crumb}\"";
 			if($this->match) $json .= " \"crumb\":\"{$this->match}\"";
-			if($this->defaultValue) $json .= " \"defaultValue\":\"{$this->defaultValue}\",";
+			if($this->defaultValue) $json .= " \"default\":\"{$this->defaultValue}\",";
 			$json.= "\n\t\t\t\"label\" : \"{$this->label}\",\n\t\t\"options\":[";
 			$i =0;
 			foreach($this->options as $opt)
@@ -357,6 +357,9 @@ class EcField{
 						case 'crumb' :
 							$this->crumb = (string)$val;
 							break;
+						case 'default' : 
+							$this->defaultValue = (string) $val;
+							break;
 				} //end switch
 				
 			}//end foreach
@@ -386,7 +389,7 @@ class EcField{
 			
 			foreach($vtype as $var => $att)
 			{
-				if($this->$var)
+				if($this->$var && $this->$var != "")
 				{
 					if($vlist != "") $vlist = "$vlist,";
 					$vcheck++;
@@ -394,7 +397,10 @@ class EcField{
 				}
 			}
 			
-			if($vcheck > 1) throw new Exception("$vlist are all set on the filed {$this->name} only one of these attributes may be set at once.");
+			if($vcheck > 1){
+				echo $xml->asXML();
+				throw new Exception("$vlist are all set on the field {$this->name} only one of these attributes may be set at once.");
+			}
 			
 			//check that min and max are only set for numerics
 			if(($this->min || $this->max) && !($this->isInt || $this->isDouble))

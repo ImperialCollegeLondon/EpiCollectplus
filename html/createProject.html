@@ -26,10 +26,6 @@
 			width : 50em;
 			height: 50em;
 		}
-		section p
-		{
-			text-align: center;
-		}
 		
 		.panelSwitcher 
 		{
@@ -61,6 +57,17 @@
 		$('#s_managers tbody').append("<tr><td>" + curEmail + "</td></tr>");
 		$('#managers').val(curEmail);
  		
+		$('input[name=name]').change(function(evt){
+			
+			if(evt.target.value)
+			{
+				$('#pdNext').button("enable");
+			}
+			else if(!$('#uploadStatus').hasClass("go"))
+			{
+				$('#pdNext').button("disable");
+			}
+		});
 		
 		$('#uploadxml').load(function(){
 			if($('#uploadxml')[0].contentDocument.forms[0])
@@ -80,7 +87,7 @@
 	  				$('#uploadStatus').addClass("err");
 	  				$('#uploadStatus').removeClass("go");
 	  				$('#uploadStatus').append("<p>" + obj.msgs.join("</p><p>") + "</p>");
-	  				$('#pdNext').button("disable");
+	  				if(!$('input[name=name]').val()) $('#pdNext').button("disable");
 	  			}
 	  			else
 	  			{
@@ -154,6 +161,9 @@
 	  <form id="projectOptions" action="create" method="POST">
 		  	<section id="projectDef">
 			  	<h2>1. Project Definition</h2>
+			  	<p>Choose a name for the project</p>
+			  	<input name="name" />
+			  	<p>Or</p>
 			  	<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
 		  		<div id="uploadStatus" class="flash"></div>
 		 		<input type="hidden" name="xml"/>

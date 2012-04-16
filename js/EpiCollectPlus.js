@@ -1647,10 +1647,10 @@ EpiCollect.Field = function()
 		if(this.genkey) xml = xml + " genkey=\"true\"";
 		if(!this.display || this.hidden) xml = xml + " hidden=\"true\"";
 		if(this.edit) xml = xml + " edit=\"true\"";
-		if(this.date) xml = xml + " date=\"" + this.date + "\"";
-		if(this.time) xml = xml + " time=\"" + this.time + "\"";
-		if(this.setDate) xml = xml + " setdate=\"" + this.setDate + "\"";
-		if(this.setTime) xml = xml + " settime=\"" + this.setTime + "\"";
+		if(this.date && this.date != "") xml = xml + " date=\"" + this.date + "\"";
+		if(this.time && this.time != "") xml = xml + " time=\"" + this.time + "\"";
+		if(this.setDate && this.setDate != "") xml = xml + " setdate=\"" + this.setDate + "\"";
+		if(this.setTime && this.setTime != "") xml = xml + " settime=\"" + this.setTime + "\"";
 		if(this.min) xml = xml + " min=\"" + this.min + "\"";
 		if(this.max) xml = xml + " max=\"" + this.max + "\"";
 		if(this.defaultValue) xml = xml + " default=\"" + this.defaultValue + "\"";

@@ -1955,18 +1955,27 @@ function createFromXml()
 	global $url, $SITE_ROOT;
 
 	$prj = new EcProject();
-	$xmlFn = "ec/xml/{$_REQUEST["xml"]}";
-
-	$prj->parse(file_get_contents($xmlFn));
+	
+	if(array_key_exists("xml", $_REQUEST) && $_REQUEST["xml"] != "")
+	{
+		$xmlFn = "ec/xml/{$_REQUEST["xml"]}";
+	
+		$prj->parse(file_get_contents($xmlFn));
+	}
+	elseif(array_key_exists("name", $_POST))
+	{
+		$prj->name = $_POST["name"];	
+	}
+	
 	$prj->isListed = $_REQUEST["listed"] == "true";
 	$prj->isPublic = $_REQUEST["public"] == "true";
 	$prj->publicSubmission = true;
 	$res = $prj->post();
-
+	
 	$prj->setManagers($_POST["managers"]);
 	$prj->setCurators($_POST["curators"]);
 	// TODO : add submitter $prj->setProjectPermissions($submitters,1);
-
+	
 	if($res === true)
 	{
 		$server = trim($_SERVER["HTTP_HOST"], "/");
@@ -2001,11 +2010,11 @@ function updateXML()
 	$prj = new EcProject();
 	$prj->name = substr($url, 0, strpos($url, "/"));
 	$prj->fetch();
-
+	
 	$validation = validate(NULL,$xml);
 	if($validation !== true)
 	{
-		echo "{ \"result\": false , \"message\" : \"Validation failed\" }";
+		echo "{ \"result\": false , \"message\" : \"" . $validation . "\" }";
 		return;
 	}
 	unset($validation);
@@ -2017,8 +2026,14 @@ function updateXML()
 			$prj->tables[$name]->fields[$fldname]->active = false;
 		}
 	}
-	
-	$prj->parse($xml);
+	try 
+	{
+		$prj->parse($xml);
+	}catch(Exception $err)
+	{
+		echo "{ \"result\": false , \"message\" : \"" . $err->getMessage() . "\" }";
+		return;
+	}
 	
 	//echo $prj->tables["Second_Form"]->fields["GPS"]->active;
 	if(array_key_exists("listed", $_REQUEST)) $prj->isListed = $_REQUEST["listed"] == "true";

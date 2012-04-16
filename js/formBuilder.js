@@ -99,6 +99,11 @@ function drawProject(project)
 	}
 }
 
+/**
+ * 
+ * @param message
+ * @param name
+ */
 function newForm(message, name)
 {
 	if(!message) 
@@ -114,8 +119,11 @@ function newForm(message, name)
 	{
 		addFormToList(name);
 		var frm = new EpiCollect.Form();
-		frm.name = frm;
+		frm.name = name;
+		frm.num = project.forms.length + 1;
 		project.forms[name] = frm;
+		
+		
 	}
 	else if(name)
 	{
@@ -166,7 +174,7 @@ function removeOption(evt)
 function addJump()
 {
 	var panel = $("#jumps");
-	panel.append('<div class="jumpoption"><hr /><label>Jump on value</label> <select class="jumpvalues"></select><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >Remove Jump</a></div>');
+	panel.append('<div class="jumpoption"><hr /><form><input type="radio" name="jumpType" value="is" selected="selected"> Jump when value is<br/><input type="radio" name="jumpType" value="not"> Jump when value is not<br/></form><label>Value</label> <select class="jumpvalues"></select><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >Remove Jump</a></div>');
 	
 	$("#jumps .remove").unbind('click').bind('click', removeJump);
 }
@@ -231,13 +239,17 @@ function updateSelected()
 	if(jq.attr("type").match(/^(text|numeric|date|time)/)) currentControl.type = "input";
 	else currentControl.type = jq.attr("type");
 	
+	var notset = !$("#set").attr("checked");
 	//TODO: need to set other params;
 	currentControl.required = !!$("#required").attr("checked");
 	currentControl.title = !!$("#title").attr("checked");
+	currentControl.isKey = !!$("#key").attr("checked");
 	currentControl.regex = $("#regex").val();
 	currentControl.verify = !!$("#verify").attr("checked");
-	currentControl[(!!$("#set").attr("checked") ? "date": "setDate")] = $("#date").val(); 
-	currentControl[(!!$("#set").attr("checked") ? "time": "setTime")] = $("#time").val();
+	currentControl[(notset ? "date": "setDate")] = $("#date").val(); 
+	currentControl[(notset ? "time": "setTime")] = $("#time").val();
+	currentControl[(notset ? "setDate" : "date")] = false; 
+	currentControl[(notset ? "setTime": "time")] = false;
 	currentControl.genkey = !!$("#genkey").attr("checked");
 	currentControl.hidden = !!$("#hidden").attr("checked");
 	currentControl.isinteger = !!$("#integer").attr("checked");
@@ -294,7 +306,8 @@ function updateForm()
 	{
 		var id = elements[i].id;
 		fields[id] = form.fields[id]; 
-		fields[id].position
+		fields[id].position;
+		if(fields[id].isKey) form.key = id;
 	}
 	
 	currentForm.fields = fields;
@@ -306,7 +319,7 @@ function updateJumps()
 	
 	var fieldCtls = $(".jumpvalues");
 	fieldCtls.empty();
-	
+	fieldCtls.html("<option value=\"any\" style=\"font-style:italic;\">Any Value</option>" + fieldCtls.html());
 	for(var i = opts.length; i--;)
 	{
 		fieldCtls.html("<option value=\"" + i + "\">" + opts[i].label + "</option>" + fieldCtls.html());
@@ -329,6 +342,8 @@ function setSelected(jqEle)
 	if(window["currentControl"])
 	{
 		updateSelected();
+		$(".last input[type=text]").val("");
+		$(".last input[type=checkbox]").attr("checked", false);
 	}
 	
 	if(currentForm.fields[jqEle.attr("id")])
@@ -386,7 +401,7 @@ function setSelected(jqEle)
 		{
 			$("#set").attr("checked", false);
 		}
-		$("#defualt").val(currentControl.defaultValue);
+		$("#default").val(currentControl.defaultValue);
 		$("#regex").val(currentControl.regex);
 		$("#verify").attr("checked", currentControl.verify);
 		$("#hidden").attr("checked", currentControl.hidden);
@@ -443,7 +458,8 @@ function removeSelected()
 	jq.remove();
 	
 	$("[allow]").hide();
-	$(".last input").val("");
+	$(".last input[type=text]").val("");
+	$(".last input[type=checkbox]").attr("checked", false);
 }
 
 function switchToBranch()
@@ -459,6 +475,25 @@ function switchToBranch()
 	if(!project.forms[frm]) project.forms[frm] = new EpiCollect.Form();
 	currentForm = project.forms[frm];
 	formName = currentForm.name;
+	drawFormControls(currentForm);
+}
+
+function switchToForm(name)
+{
+	$('.form').removeClass("selected");
+	
+	if(currentForm){
+		updateForm();
+		project.forms[currentForm.name] = currentForm;
+	}
+	
+	$('.form').each(function(idx,ele){
+		if($(ele).text() == name) $(ele).addClass("selected");
+	});
+	
+	if(!project.forms[name]) project.forms[name] = new EpiCollect.Form();
+	currentForm = project.forms[name];
+	formName = name;
 	drawFormControls(currentForm);
 }
 
