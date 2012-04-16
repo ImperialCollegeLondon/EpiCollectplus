@@ -2133,11 +2133,12 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 
 	$isValid = true;
 	$msgs = array();
-	
+
 	if(!$fn) $fn = getValIfExists($_GET, "filename");
 	
 	if($fn && !$xml)
 	{		
+
 		$xml = file_get_contents("./ec/xml/$fn");
 	}
 

@@ -280,9 +280,8 @@
   			{
 		  		$qry = "SELECT firstName, lastName, Email FROM user WHERE serverManager = 1 and active = 1";
 		  		$res = $db->do_query($qry);
-		  		if($db->do_query($qry) !== true) die("$res");
-		  		
-		  		
+		  		if($res !== true) return array();
+	
 		  		while($arr = $db->get_row_array())
 		  		{
 		  			array_push($men, $arr);
