@@ -7,6 +7,21 @@ $(function()
 	var url = location.href;
 	EpiCollect.loadProject(url.substr(0, url.lastIndexOf("/")) + ".xml", drawProject);
 	
+	$(window).scroll(function(evt){
+		if($(document.body).scrollTop() > $("#toolbox")[0].offsetTop) 
+		{  
+			$("#toolbox-inner").css({
+				"position":"fixed",
+				"top" : "0px"
+			}); 
+		}else{
+			$("#toolbox-inner").css({
+				"position":"relative"
+			}); 
+		}
+			
+	});
+	
 	$("[allow]").hide();
 	
 	$('#destination').sortable({
@@ -149,8 +164,17 @@ function addControlToForm(id, text, type)
 	
 	if(type[0] != ".") type = "." + type;
 	var jq = $(type, $(".first")).clone();
-	$("p", jq).text(text);
+	$("p.title", jq).text(text);
 	jq.attr("id", id);
+	
+	$(".option", jq).remove();
+	
+	var opts = currentForm.fields[id].options;
+	var l = opts.length;
+	for(var i = 0; i < l; i++)
+	{
+		jq.append("<p class=\"option\">" + opts[i].label + "</p>");
+	}
 	
 	$("#destination").append(jq);
 }
@@ -291,7 +315,16 @@ function updateSelected()
 	currentForm.fields[currentControl.id] = currentControl;
 	
 	jq.attr("id", currentControl.id);
-	$("p", jq).text(currentControl.text);
+	$("p.title", jq).text(currentControl.text);
+	
+	$(".option", jq).remove();
+	
+	var opts = currentControl.options;
+	var l = opts.length;
+	for(var i = 0; i < l; i++)
+	{
+		jq.append("<p class=\"option\">" + opts[i].label + "</p>");
+	}
 }
 
 function updateForm()

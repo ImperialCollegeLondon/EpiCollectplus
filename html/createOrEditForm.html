@@ -96,8 +96,10 @@
 {{main}}
 <h1>Form Builder</h1>
 <div id="toolbox">
+	<div id="toolbox-inner">
 		<a href="javascript:saveProject()" class="button">Save Project</a>
 		<a href="javascript:currentForm.displayForm();" class="button">Preview Form</a>
+	</div>
 </div>
 <div id="formList">
 		<h4 class="label">Select a form to edit: </h4>
@@ -108,60 +110,61 @@
 		<div id="source" class="column first">
 			<h3>Form Elements</h3>
       		<div class="ecplus-form-element ecplus-text-element" type="text">
-      			<p>Text</p> 
-       			<img src="../images/textinput.png" />
+      			<p class="title">Text</p> 
       		</div>
       		<div class="ecplus-form-element ecplus-numeric-element" type="numeric">
-      			<p>Numeric</p> 
-      			<img src="../images/numbericinput.png" />
+      			<p class="title">Numeric</p> 
       		</div>
       		<div class="ecplus-form-element ecplus-date-element" type="date">
-      			<p>Date</p> 
-       			<img src="../images/dateinput.png" />
+      			<p class="title">Date</p> 
+       			
       		</div>
       		<div class="ecplus-form-element ecplus-time-element" type="time">
-      			<p>Time</p> 
-      			<img src="../images/timeinput.png" />
+      			<p class="title">Time</p> 
+      			
       		</div>
       		<div class="ecplus-form-element ecplus-select1-element" type="select1">
-      			<p>Drop-down list</p> 
-      			<img src="../images/selectone.png" />
+      			<p class="title">Drop-down list</p> 
+      			<p class="option">Option One</p>
+      			<p class="option">Option Two</p>
       		</div>
       		<div class="ecplus-form-element ecplus-radio-element" type="radio">
-      			<p>Radio Buttons</p> 
-      			<img src="../images/radio.png" />
+      			<p class="title">Radio Buttons</p> 
+      			<p class="option">Option One</p>
+      			<p class="option">Option Two</p>
       		</div>
       		<div class="ecplus-form-element ecplus-select-element" type="select">
-      			<p>Check boxes</p> 
-      			<img src="../images/select.png" />
+      			<p class="title">Check boxes</p> 
+      			<p class="option">Option One</p>
+      			<p class="option">Option Two</p>
       		</div>
       		<div class="ecplus-form-element ecplus-textarea-element" type="textarea">
-      			<p>Multi-line Text</p> 
-      			<img src="../images/textarea.png" />
+      			<p class="title">Multi-line Text</p> 
+      			
       		</div>
       		<div class="ecplus-form-element ecplus-location-element" type="location">
-      			<p>Location</p> 
-      			<img src="../markers/point" />
+      			<p class="title">Location</p> 
+      			
       		</div>
       		<div class="ecplus-form-element ecplus-photo-element" type="photo">
-      			<p>Photograph</p> 
-      			<img src="../images/glyphicons/glyphicons_011_camera.png" />
+      			<p class="title">Photograph</p> 
+      			
       		</div>
       		<div class="ecplus-form-element ecplus-video-element" type="video">
-      			<p>Video</p> 
-      			<img src="../images/glyphicons/glyphicons_047_camera_small.png" />
+      			<p class="title">Video</p> 
+      			
       		</div>
       		<div class="ecplus-form-element ecplus-audio-element" type="audio">
-      			<p>Audio</p> 
-      			<img src="../images/glyphicons/glyphicons_300_microphone.png" />
+      			<p class="title">Audio</p> 
+      			
       		</div>
       		<div class="ecplus-form-element ecplus-barcode-element" type="barcode">
-      			<p>Barcode</p> 
-      			<img src="../images/barcode.png" />
+      			<p class="title">Barcode</p> 
+      			
       		</div>
       		<div class="ecplus-form-element ecplus-branch-element" type="branch">
-      			<p>Branch Form</p> 
-      			<img src="../images/branch.png" />
+      			<p class="title">Branch Form</p> 
+      			
       		</div>
     	</div> <!--source-->
 	    <div id="middle" class="column second">

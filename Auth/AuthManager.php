@@ -64,20 +64,22 @@
   		
   		$provider = strtoupper($provider);
   		
-  		$_SESSION["url"] = $requestedUrl;
+  		$_SESSION["url"] = "./" . $requestedUrl;
   		if($provider != "" && array_key_exists($provider, $this->providers))
   		{
-  			return $this->providers[$provider]->requestLogin($requestedUrl, count($this->getServerManagers()) == 0);
+  			return $this->providers[$provider]->requestLogin("./" . $requestedUrl, count($this->getServerManagers()) == 0);
   		}
   		else
   		{
-  			global $url;
+  			global $url, $SITE_ROOT;
+  			$server = trim($_SERVER["HTTP_HOST"], "/");
+  			$root = trim($SITE_ROOT, "/");
   			$frm =  "<p>Please Choose a Method to login</p>";
-  			if($this->localEnabled)$frm .= "<a class=\"provider\" href=\"$url?provider=LOCAL\"><img src=\"images/projectPlaceHolder.png\" alt=\"\" height=\"24\"/> EpiCollect Account</a>";
-  			if($this->openIdEnabled) $frm .= "<a class=\"provider\" href=\"$url?provider=OPENID\"><img src=\"images/googleLogo.png\" alt=\"Google\" height=\"24\"/> account (OpenID)</a>";
+  			if($this->localEnabled)$frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=LOCAL\"><img src=\"http://$server/$root/images/projectPlaceHolder.png\" alt=\"\" height=\"24\"/> EpiCollect Account</a>";
+  			if($this->openIdEnabled) $frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=OPENID\"><img src=\"http://$server/$root/images/googleLogo.png\" alt=\"Google\" height=\"24\"/> account (OpenID)</a>";
 			if($this->ldapEnabled && array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "")
 			{
-					$frm .= "<a class=\"provider\" href=\"$url?provider=LDAP\">Windows Account ({$cfg->settings["security"]["ldap_domain"]})</a>";
+					$frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=LDAP\">Windows Account ({$cfg->settings["security"]["ldap_domain"]})</a>";
 			}
 			return $frm;
   		}

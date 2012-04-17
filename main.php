@@ -367,8 +367,9 @@ function defaultHandler()
 	echo applyTemplate('base.html', "./" . $url);
 }
 
-function loginHandler($cb_url = ".")
+function loginHandler()
 {
+	$cb_url="";
 	header("Cache-Control: no-cache, must-revalidate");
 
 	global $auth, $url, $cfg;
@@ -1967,6 +1968,12 @@ function createFromXml()
 		$prj->name = $_POST["name"];	
 	}
 	
+	if(!$prj->name || $prj->name == "")
+	{
+		flash("No project name provided");
+		header("location: http://$server/$root/createProject.html");
+	}
+	
 	$prj->isListed = $_REQUEST["listed"] == "true";
 	$prj->isPublic = $_REQUEST["public"] == "true";
 	$prj->publicSubmission = true;
@@ -2150,6 +2157,8 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 		array_push($msgs, "The XML for this project is invalid : " . $err->getMessage());
 	}
 
+	$prj->name = trim($prj->name);
+	
 	if(!$prj->name || $prj->name == "")
 	{
 		array_push($msgs, "This project does not have a name, please include a projectName attribute in the model tag.");
@@ -2485,7 +2494,10 @@ function updateProject()
 
 function formBuilder()
 {
-	echo applyTemplate("./base.html" , "./createOrEditForm.html");
+	global $url;
+	$prj = str_replace("/formBuilder", "", $url);
+	
+	echo applyTemplate("./base.html" , "./createOrEditForm.html", array("projectName" => $prj));
 }
 
 function getControlTypes()
@@ -2887,7 +2899,7 @@ $pageRules = array(
 		"createProject.html" => new PageRule(null, 'createProject', true),
 		"projectHome.html" => new PageRule(null, 'projectHome'),
 
-		"createOrEditForm.html" => new PageRule(null ,'defaultHandler', true),
+		"createOrEditForm.html" => new PageRule(null ,'formBuilder', true),
 		"uploadProject" =>new PageRule(null, 'uploadProjectXML', true),
 		"getForm" => new PageRule(null, 'getXML',	 true),
 		"validate" => new PageRule(null, 'validate',false),
@@ -2930,7 +2942,7 @@ $pageRules = array(
 		"[a-zA-Z0-9_-]+/download" =>new PageRule(null, 'downloadData'),
 		"[a-zA-Z0-9_-]+/summary" =>new PageRule(null, 'projectSummary'),
 		"[a-zA-Z0-9_-]+/usage" =>  new PageRule(null, 'projectUsage'),
-		"[a-zA-Z0-9_-]+/formBuilder(\.html)?" =>  new PageRule(null, 'formBuilder'),
+		"[a-zA-Z0-9_-]+/formBuilder(\.html)?" =>  new PageRule(null, 'formBuilder', true),
 		"[a-zA-Z0-9_-]+/editProject.html" =>new PageRule(null, 'editProject', true),
 		"[a-zA-Z0-9_-]+/update" =>new PageRule(null, 'updateProject', true),
 		"[a-zA-Z0-9_-]+/manage" =>new PageRule(null, 'updateProject', true),

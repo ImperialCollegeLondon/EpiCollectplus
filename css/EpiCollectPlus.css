@@ -359,22 +359,21 @@ tr.alt
 .ecplus-columns .first
 {
 	left : 0;
-	background : #FFEEEE;
-	height: 98%;
+	background-color : #FFEEEE;
 }
 
 .ecplus-columns .second
 {
 	display:block;
 	margin : 0 21em 0 21em;
-	height : 60em;
-	background: #EEFFEE;
+	height : 68em;
+	background-color : #EEFFEE;
 }
 
 .ecplus-columns .last
 {
 	right:0;
-	background: #EEEEFF;
+	background-color: #EEEEFF;
 	height: 98%;
 }
 
@@ -428,13 +427,13 @@ tr.alt
 
 .first div.ecplus-form-element:hover
 {
-	background : #FFCCCC;
+	background-color : #FFCCCC;
 }
 
 .second div.ecplus-form-element:hover, .ecplus-form-element .ui-sortable-placeholder
 {
 	visibility : show;
-	background : #CCFFCC;
+	background-color : #CCFFCC;
 }
 
 .second div.ecplus-form-element.selected
@@ -445,14 +444,13 @@ tr.alt
 
 .ecplus-form-element
 {
-	height : 3em;
-	font-weight : bold;
 	padding: 0.5em 0.25em 0.5em 0.25em;
 }
 
-.ecplus-form-element p
+.ecplus-form-element p.title
 {
-	margin : 0;
+	font-weight: bold;
+	margin: 0 0 19px 0;
 }
 
 .ecplus-form-element img
@@ -514,7 +512,7 @@ tr.alt
 	display : inline-block;
 	padding : 0.25em;
 	border-radius: 0.5em;
-	background : #EEEEEE;
+	background-color : #EEEEEE;
 	border: 1px solid #666666;
 }
 
@@ -612,6 +610,122 @@ tr.alt
 	height : 100%;
 }
 
+.ecplus-text-element
+{
+	height: 3em;
+	background : url("../images/textinput.png") 2px 1.75em no-repeat;	
+}
+
+.ecplus-numeric-element
+{
+	height: 3em;
+	background : url("../images/numbericinput.png") 2px 1.75em no-repeat;	
+}
+
+.ecplus-date-element
+{
+	height: 3em;
+	background : url("../images/dateinput.png") 2px 1.75em no-repeat;	
+}
+
+.ecplus-time-element
+{
+	height: 3em;
+	background : url("../images/timeinput.png") 2px 1.75em no-repeat;	
+}
+
+.ecplus-select1-element
+{
+	min-height: 3em;
+	background : url("../images/selectone.png") 2px 1.75em no-repeat;	
+}
+
+.ecplus-select1-element .option
+{
+	background : url("../images/select1opt.png") left 50% no-repeat;
+	margin: 0px -2px 0px 0px;
+	padding : 2px 0px 4px 5px;
+}
+
+.ecplus-select1-element .option:last-child
+{
+	background : url("../images/select1opt.png") left bottom no-repeat;
+}
+
+.ecplus-radio-element
+{
+	min-height: 3em;	
+}
+
+.ecplus-radio-element p.title
+{
+	margin-bottom: 0;
+}
+
+.ecplus-radio-element .option
+{
+	padding-left : 1.25em;
+	background : url("../images/radioopt.png") 0% 50% no-repeat;	
+}
+
+.ecplus-select-element
+{
+	min-height: 3em;	
+}
+
+.ecplus-select-element p.title
+{
+	margin-bottom: 0;
+}
+
+.ecplus-select-element .option
+{
+	padding-left : 1.25em;
+	background : url("../images/selectopt.png") 0% 50% no-repeat;	
+}
+
+.ecplus-textarea-element
+{
+	height: 5em;
+	background : url("../images/textarea.png") 2px 1.75em no-repeat;		
+}
+
+.ecplus-location-element
+{
+	height: 3em;
+	background : url("../markers/point") 2px 1.75em no-repeat;		
+}
+
+.ecplus-photo-element
+{
+	height: 3em;
+	background : url("../images/glyphicons/glyphicons_011_camera.png") 2px 1.75em no-repeat;		
+}
+
+.ecplus-video-element
+{
+	height: 3em;
+	background : url("../images/glyphicons/glyphicons_047_camera_small.png") 2px 1.75em no-repeat;		
+}
+
+.ecplus-audio-element
+{
+	height: 3em;
+	background : url("../images/glyphicons/glyphicons_300_microphone.png") 2px 1.75em no-repeat;		
+}
+
+.ecplus-barcode-element
+{
+	height: 3em;
+	background : url("../images/barcode.png") 2px 1.75em no-repeat;		
+}
+
+.ecplus-branch-element
+{
+	height: 3em;
+	background : url("../images/branch.png") 2px 1.75em no-repeat;		
+}
+
 #loginStatus{
 	float:right;
 	margin-top: -2px;
@@ -637,13 +751,13 @@ tr.alt
 .ui-slider-horizontal
 {
 	border: 1px solid #CCCCCC;
-	background : #EEEEEE;
+	background-color : #EEEEEE;
 }
 
 .ui-autocomplete
 {
 	border: 1px solid #CCCCCC;
-	background : #EEEEEE;
+	background-color : #EEEEEE;
 }
 
 #breadcrumbs
@@ -652,4 +766,13 @@ tr.alt
 	padding : 5px 2px 5px 2px;
 	border-top: 1px solid #CCCCCC;
 	/*border-bottom: 1px solid #CCCCCC;*/
+}
+
+#toolbox-inner
+{	
+	top : 0px;
+	width: 90%;
+	padding : 0.5em;
+	background-color : #FFFFFF;
+	z-index : 2000;
 }
