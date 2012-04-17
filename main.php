@@ -918,8 +918,13 @@ function uploadData()
 	$prj->name = preg_replace("/\/upload\.?(xml|json)?$/", "", $url);
 
 	$prj->fetch();
-
+	
 	if($_SERVER["REQUEST_METHOD"] == "POST"){
+		if(count($_POST) == 0)
+		{
+			parse_str(file_get_contents("php://input"), $_POST);
+		}
+		
 		if(count($_FILES) > 0)
 		{
 			foreach($_FILES as $file){
@@ -1012,13 +1017,15 @@ function uploadData()
 						$alt = "{$key}_alt";
 						$acc = "{$key}_acc";
 						$src = "{$key}_provider";
-							
+
+						
+						
 						$ent->values[$key] = array(
-								'latitude' => (string)$_POST[$lat],
-								'longitude' => (string)$_POST[$lon],
-								'altitude' => (string)$_POST[$alt],
-								'accuracy' => (string) $_POST[$acc], 
-								'provider' => (string)$_POST[$src]
+								'latitude' => (string) getValIfExists($_POST, $lat),
+								'longitude' => (string)getValIfExists($_POST,$lon),
+								'altitude' => (string)getValIfExists($_POST,$alt),
+								'accuracy' => (string) getValIfExists($_POST,$acc), 
+								'provider' => (string)getValIfExists($_POST,$src)
 						);
 					}
 					else if(!array_key_exists($key, $_POST))
