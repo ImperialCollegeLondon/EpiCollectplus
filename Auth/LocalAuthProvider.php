@@ -11,6 +11,8 @@
 			$this->db = $db;
 		}
 
+		function getType(){return "LOCAL";}
+		
 		function resetPassword($uid)
 		{
 			global $db, $cfg;
@@ -42,6 +44,55 @@
 			{
 				return $str;
 			} 
+		}
+		
+		function setPassword($uid, $password)
+		{
+			global $db, $cfg;
+							
+			$qry = "select details from user where idUsers = $uid";
+			$res = $db->do_query($qry);
+			if($res !== true) return $res;
+				
+			$creds = "";
+				
+			while($arr = $db->get_row_array())
+			{
+				$creds = json_decode($arr["details"]);
+			}
+				
+			$salt = $cfg->settings["security"]["salt"];
+			$enc_data = crypt($password, "$2a$08$".$salt ."$");
+				
+			$creds->auth = $enc_data;
+				
+			$data = "{\"username\" : \"{$creds->username}\", \"auth\" : \"$enc_data\" }";
+				
+			$qry = "UPDATE user SET details = '$data' WHERE idUsers = $uid";
+			if($db->do_query($qry) == true)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}		
+		
+		function getUserName($uid)
+		{
+			global $db;
+				
+			$qry = "select details from user where idUsers = $uid";
+			$res = $db->do_query($qry);
+			if($res !== true) return $res;
+			
+			while($arr = $db->get_row_array())
+			{
+				$creds = json_decode($arr["details"]);
+			}
+			
+			return $creds->username;
 		}
 		
 		public function requestLogin($callbackUrl, $firstLogin = false)

@@ -13,6 +13,10 @@
 			$this->ldap = ldap_connect($cfg->settings["security"]["ldap_server_uri"]); // from settings
 		}
 		
+		function getType(){
+			return "LDAP";
+		}
+		
 		public function requestLogin($callbackUrl, $firstLogin = false)
 		{
 			global $SITE_ROOT;

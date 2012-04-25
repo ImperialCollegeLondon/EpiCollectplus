@@ -1486,14 +1486,15 @@ function formHandler()
 			
 			if(preg_match("/\.csv$/", $_f["name"]))
 			{
-				ini_set("max_execution_time", 300);
+				ini_set("max_execution_time", 600);
 				$res = $prj->tables[$frmName]->parseEntriesCSV(file_get_contents($_f["tmp_name"]));
 			}
 			elseif(preg_match("/\.xml$/", $_f["name"]))
 			{
 				$res = $prj->tables[$frmName]->parseEntries(simplexml_load_string(file_get_contents($_f["tmp_name"])));
 			}
-			echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
+			//echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
+			flash ("Upload Complete");
 		}
 		else
 		{
@@ -1526,6 +1527,7 @@ function formHandler()
 			//{
 				$res = $ent->post();
 				echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
+				return;
 			//}
 			//catch(Exception $e)
 			//{
@@ -1537,12 +1539,16 @@ function formHandler()
 	elseif($_SERVER["REQUEST_METHOD"] == "DELETE")
 	{
 		echo "delete form";
+		return;
 	}
 	else
 	{
+		ini_set("max_execution_time", 60);
+		
 		$offset = array_key_exists('start', $_GET) ? $_GET['start'] : 0;
 		$limit = array_key_exists('limit', $_GET) ? $_GET['limit'] : 0;;
-			
+		
+		
 		switch($format){
 			case "json":
 					header("Cache-Control: no-cache, must-revalidate");
@@ -1554,13 +1560,11 @@ function formHandler()
 					$i = 0;			
 					while($str = $prj->tables[$frmName]->recieve(1))
 					{
-					
 						echo ($i > 0 ? ",$str" : $str);
 						$i++;
 					}
 					echo "]";
-					break;
-					
+					return;
 					
 				case "xml":
 					header("Cache-Control: no-cache, must-revalidate");
@@ -1593,12 +1597,12 @@ function formHandler()
 // 							echo "</entry>";
 						}
 						echo "</entries>";
-						break;
+						return;
 					}
 					else
 					{
 						echo $prj->tables[$frmName]->toXml();
-						break;
+						return;
 					}
 			case "kml":
 				header("Cache-Control: no-cache, must-revalidate");
@@ -1640,7 +1644,7 @@ function formHandler()
 				echo '</Folder></Document></kml>';
 					
 					
-				break;
+				return;
 
 			case "csv":
 				header("Cache-Control: no-cache, must-revalidate");
@@ -1671,7 +1675,7 @@ function formHandler()
 				{
 					echo "$xml\n";
 				}
-				break;
+				return;
 			
 			case "tsv":
 				header("Cache-Control: no-cache, must-revalidate");
@@ -1696,7 +1700,7 @@ function formHandler()
 				{
 					echo "$xml\n";
 				}
-				break;
+				return;
 			case "js" :
 				global $SITE_ROOT;
 					
@@ -1730,7 +1734,7 @@ function formHandler()
 		}
 		
 		Ext.onReady(init);";
-				break;
+				return;
 			case "css":
 				global $SITE_ROOT;
 				header("Cache-Control: public; max-age=100000;");
@@ -1784,46 +1788,47 @@ function formHandler()
 			background-color: #CCCCCC;
 		}
 					";
-				break;
+				return;
 			default:
-				header("Cache-Control: no-cache, must-revalidate");
-
-			global $SITE_ROOT;
-			$referer = array_key_exists("HTTP_REFERER", $_SERVER) ? $_SERVER["HTTP_REFERER"] : "";
-			if(!array_key_exists("formCrumbs", $_SESSION) || !$prj->getPreviousTable($frmName) || !preg_match("/{$prj->name}\//", $referer))
-			{
-				$_SESSION["formCrumbs"] = array();
-			}
-			$p = "";
-			if(array_key_exists("prevForm", $_GET))
-			{
-
-				$pKey = $prj->tables[$_GET["prevForm"]]->key;
-				$_SESSION["formCrumbs"][$_GET["prevForm"]] =  $_GET[$pKey];
-				//if we've come back up a step we need to remove the entry. We assume that the crumbs are in the correct order to
-				//draw them in the correct order
-			}
-				
-			foreach($_SESSION["formCrumbs"] as $k => $v)
-			{
-				if($prj->tables[$k]->number >= $prj->tables[$frmName]->number)
-				{
-					unset($_SESSION["formCrumbs"][$k]);
-				}
-				else
-				{
-					$p .= "&gt; <a href=\"{$k}\">{$k} : $v </a>";
-				}
-			}
-				
-			$mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>
-				<script type=\"text/javascript\" src=\"{$SITE_ROOT}/js/markerclusterer.js\"></script>
-			<script src=\"http://www.google.com/jsapi\"></script>" : "";
-			$vars = array("prevForm" => $p,"projectName" => $prj->name, "formName" => $frmName, "curate" =>  $permissionLevel > 1 ? "true" : "false", "mapScript" => $mapScript );
-			echo applyTemplate("base.html", "./FormHome.html", $vars);
-			break;
+				break;
 		}
 	}
+	
+	header("Cache-Control: no-cache, must-revalidate");
+	
+	global $SITE_ROOT;
+	$referer = array_key_exists("HTTP_REFERER", $_SERVER) ? $_SERVER["HTTP_REFERER"] : "";
+	if(!array_key_exists("formCrumbs", $_SESSION) || !$prj->getPreviousTable($frmName) || !preg_match("/{$prj->name}\//", $referer))
+	{
+		$_SESSION["formCrumbs"] = array();
+	}
+	$p = "";
+	if(array_key_exists("prevForm", $_GET))
+	{
+	
+		$pKey = $prj->tables[$_GET["prevForm"]]->key;
+		$_SESSION["formCrumbs"][$_GET["prevForm"]] =  $_GET[$pKey];
+		//if we've come back up a step we need to remove the entry. We assume that the crumbs are in the correct order to
+		//draw them in the correct order
+	}
+		
+	foreach($_SESSION["formCrumbs"] as $k => $v)
+	{
+		if($prj->tables[$k]->number >= $prj->tables[$frmName]->number)
+		{
+			unset($_SESSION["formCrumbs"][$k]);
+		}
+		else
+		{
+			$p .= "&gt; <a href=\"{$k}\">{$k} : $v </a>";
+		}
+	}
+		
+	$mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>
+	<script type=\"text/javascript\" src=\"{$SITE_ROOT}/js/markerclusterer.js\"></script>
+	<script src=\"http://www.google.com/jsapi\"></script>" : "";
+	$vars = array("prevForm" => $p,"projectName" => $prj->name, "formName" => $frmName, "curate" =>  $permissionLevel > 1 ? "true" : "false", "mapScript" => $mapScript );
+	echo applyTemplate("base.html", "./FormHome.html", $vars);
 }
 
 function entryHandler()
@@ -1911,8 +1916,57 @@ function entryHandler()
 
 function updateUser()
 {
-
-	echo applyTemplate("base.html", "./updateUser.html", "");
+	global $auth;
+	
+	if($_SERVER["REQUEST_METHOD"] == "POST")
+	{
+		$pwd = getValIfExists($_POST, "password");
+		$con = getValIfExists($_POST, "confirmpassword");
+		
+		$change = true;
+		
+		if(!$pwd || !$con)
+		{
+			$change = false;
+			flash("Password not changed, password was blank.", "err");
+		}
+		
+		if($pwd != $con)
+		{
+			$change = false;
+			flash("Password not changed, passwords did not match.", "err");
+		}
+		
+		
+		if(strlen($pwd) < 8) {
+			$change = false;
+			flash("Password not changed, password was shorter than 8 characters.", "err");
+		}
+		
+		if(!preg_match("/^.*(?=.{8,})(?=.*\d)(?=.*[a-zA-Z]).*$/", $pwd))
+		{
+			$change = false;
+			flash("Password not changed, password must be longer than 8 characters and contain at least one letter and at least one number.", "err");
+		}
+		
+		if($auth->setPassword($auth->getEcUserId(), $_POST["password"]))
+		{
+			flash("Password changed");
+		}else {
+			flash("Password not changed.", "err");
+		}
+	}
+	
+	$name = explode(" ", $auth->getUserNickname());
+	
+	echo applyTemplate("base.html", "./updateUser.html", array(
+			"firstName" => $name[0], 
+			"lastName" => $name[1],
+			"email" => $auth->getUserEmail(),
+			"userName" => $auth->getUserName(),
+			"LOCAL" => $auth->getUserName() != ""
+		)
+	);
 }
 
 function saveUser()
@@ -2076,7 +2130,7 @@ function updateXML()
 function tableStats()
 {
 	global  $url, $log;
-
+	ini_set("max_execution_time", 60);
 	header("Cache-Control: no-cache, must-revalidate");
 
 	$prjEnd = strpos($url, "/");

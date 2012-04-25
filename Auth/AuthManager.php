@@ -57,6 +57,18 @@
 	   		$this->providers["LOCAL"] = new LocalLoginProvider();
 	   	}
   	}
+  	
+  	function getProviderType()
+  	{
+  		//return $this->provider->getType();
+  		return "LOCAL";
+  	}
+  	
+  	function getUserName()
+  	{
+  		return $this->providers["LOCAL"]->getUserName($this->getEcUserId());
+  		
+  	}
   
   	function requestlogin($requestedUrl, $provider = "")
   	{
@@ -108,6 +120,19 @@
   		else
   		{
   			 
+  			return false;
+  		}
+  	}
+  	
+  	function setPassword($uid, $password)
+  	{
+  		if($this->localEnabled)
+  		{
+  			return $this->providers["LOCAL"]->setPassword($uid, $password);
+  		}
+  		else
+  		{
+  	
   			return false;
   		}
   	}

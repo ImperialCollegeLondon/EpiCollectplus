@@ -90,6 +90,12 @@ table
 	border : 1px solid #CCCCCC;
 }
 
+label
+{
+	display : inline-block;
+	font-weight: bold;
+}
+
 .provider
 {
 	padding: 0.75em 0.25em 0.75em 0.25em;
@@ -134,10 +140,6 @@ tr.alt
 	background-color: #d8e2fe;
 }
 
-.ecplus-toolbar 
-{
-	height: 3em;
-}
 
 .ecplus-toolbar a
 {
@@ -314,7 +316,6 @@ tr.alt
 {
 	display : inline-block;
 	width: 0.75em;
-	height : 1.5em;
 	border-right : 2px solid #CCCCCC;
 	margin-right : 0.75em;
 }
@@ -378,6 +379,16 @@ tr.alt
 }
 
 @media all and (max-width: 1024px){
+	#loginStatus
+	{
+		width: 27em;
+	}
+	
+	#breadcrumbs
+	{
+		height : 2em;
+	}
+	
 	.ecplus-columns .first, .ecplus-columns .last
 	{
 		width : 15em;
@@ -390,6 +401,8 @@ tr.alt
 }
 
 @media all and (max-width: 800px){
+	
+	
 	.ecplus-columns .first, .ecplus-columns .last
 	{
 		width : 12em;
@@ -413,10 +426,7 @@ tr.alt
 	width : 10em;
 }
 
-.ecplus-form-element
-{
-	
-}
+
 
 #destination, .last
 {
@@ -591,6 +601,10 @@ tr.alt
 	width: 100%;
 }
 
+.ecplus-settingspanel label {
+	width : auto;
+}
+
 .ecplus-settingspanel .ecplus-expansionbar
 {
 	height : 100%;
@@ -614,6 +628,12 @@ tr.alt
 {
 	height: 3em;
 	background : url("../images/textinput.png") 2px 1.75em no-repeat;	
+}
+
+.ecplus-fk-element
+{
+	height: 3em;
+	background : url("../images/fk.png") 2px 1.75em no-repeat;	
 }
 
 .ecplus-numeric-element
@@ -734,6 +754,7 @@ tr.alt
 
 #main
 {
+	min-width : 780px;
 	min-height: 400px;
 	border: 1px solid #cccccc;
 	padding: 10px 10px 10px 10px;
@@ -774,5 +795,22 @@ tr.alt
 	width: 90%;
 	padding : 0.5em;
 	background-color : #FFFFFF;
-	z-index : 2000;
+	z-index : 999;
 }
+
+#ecplus_loader_bg
+{
+	position: fixed;
+	top : 0;
+	bottom: 0;
+	left:0;
+	right : 0;
+	background-color : rgba(0,0,0,0.4);
+}
+
+#ecplus_loader
+{
+	
+	background-color : rgba(255,255,255,1);
+}
+

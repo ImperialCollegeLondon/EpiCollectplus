@@ -481,6 +481,8 @@
 			}
 			$qry = "$select $join $where $group $order $limit";
 
+			//echo $qry;
+			
 			return $db->do_query($qry);
 				
 		}
@@ -523,6 +525,7 @@
 						{
 							foreach($obj as $key => $value)
 							{
+								$value = trim($value);
 								$str .= "<$key>$value</$key>";
 							}
 						}
@@ -820,36 +823,127 @@
 			$db->do_query($sql);
 		}
 		
+		public function parseCSVLine($line)
+		{
+			$vals = array("");
+			$len = strlen($line);
+			
+			$curval = "";
+			$inquotes = false;
+			
+			for($k = 0, $v = 0; $k < $len; $k++)
+			{
+				if($line[$k] == "," && !$inquotes)
+				{
+					$v++;
+					$vals[$v] = "";
+				}
+				elseif($line[$k] == "," && ($k == ($len - 1) || $line[++$k] == "\""))
+				{
+					$v++;
+					$vals[$v] = "";
+					$inquotes = true;
+				}
+				elseif($line[$k] == "\"" && ($k == 0 || $line[$k-1] == ","))
+				{
+					$inquotes = true;
+				}
+				elseif($inquotes && $line[$k] == "\"")
+				{
+					if($k == $len - 1 || $line[$k + 1]  == ",") $inquotes =  false;
+					else
+					{
+						echo implode(" !! ", $vals);
+						throw new Exception("Field Values cannot contain quotes (line xx position $k)");
+					}
+				}
+				else
+				{
+					$vals[$v] .= $line[$k];
+				}
+			}
+			return $vals;
+		}
+		
 		public function parseEntriesCSV($txt)
 		{
 			$lines = explode("\r\n", $txt);
 			
 			// assumes that the first line is the header
 			$lines[0] = trim($lines[0], ",");
-			$headers = explode(",", $lines[0]);
-			
-			for($i = count($headers); $i--;)
-			{
-				$headers[$i] = trim($headers[$i]);
+			try{
+				$headers = $this->parseCSVLine($lines[0]);
 			}
+			catch(Exception $err)
+			{
+				throw new Exception(str_replace("xx", "0", $err->getMessage()));
+			}
+			echo implode(" ~~ ", $headers);
+			echo "<br />\r\n";
 			
 			$len = count($lines);
+			$vals = array();
+			$fields = array_keys($this->fields);
 			
 			for ($i = $len; --$i;)
 			{
-				if(preg_match("/^,*$/", trim($lines[$i]))) continue;
-				$lines[$i] = trim($lines[$i], ",");
-				$vals = explode(",", $lines[$i]);
-
+				if(trim($lines[$i]) == "") continue;
+				
+// 				if(preg_match("/^,*$/", trim($lines[$i]))) continue;
+// 				$lines[$i] = trim($lines[$i], ",");
+// 				$lines[$i] = str_replace(",Null,", "\"\"", $lines[$i]);
+// 				$vals = explode("\",\"", $lines[$i]);
+				try{
+					$vals = $this->parseCSVLine($lines[$i]);
+					//echo ">> ";
+					//echo print_r($vals , true);
+					//echo "<br />\r\n";
+				}	
+				catch(Exception $err)
+				{
+					throw new Exception(str_replace("xx", $i, $err->getMessage()));	
+				}
+				
 				$entry = new EcEntry($this);
 				
 				$vlen = count($vals);
+				$hlan = count($headers);
+				
+// 				for($j = $vlen; $j--;)
+// 				{
+// 					if($headers[$j] == "") continue;
+// 					if(array_key_exists($headers[$j], $this->fields) && $vals[$j] != "") $entry->values[$headers[$j]] = trim(trim($vals[$j]), "\"");
+// 				}
 
-				for($j = $vlen; $j--;)
+				for($f = count($fields); $f--;)
 				{
-					if($headers[$j] == "") continue;
-					if($vals[$j] != "") $entry->values[$headers[$j]] = trim($vals[$j]);
+					$ent = array_combine($headers, $vals);
+					if($this->fields[$fields[$f]]->type == "location" || $this->fields[$fields[$f]]->type == "gps" )
+					{
+						$lat = "{$fields[$f]}_lat";
+						$lon = "{$fields[$f]}_lon";
+						$alt = "{$fields[$f]}_alt";
+						$acc = "{$fields[$f]}_acc";
+						$src = "{$fields[$f]}_provider";
+						
+						$entry->values[$fields[$f]] = array(
+							'latitude' => $ent[$lat],
+							'longitude' => $ent[$lon],
+							'altitude' => getValIfExists($ent, $alt),
+							'accuracy' => getValIfExists($ent, $acc),
+							'provider' => getValIfExists($ent, $src)
+						);
+					}
+					else
+					{
+						if(array_key_exists($fields[$f], $ent))
+						{
+							$entry->values[$fields[$f]] = $ent[$fields[$f]];
+						}
+					}
 				}
+				
+				$entry->deviceId = "web upload";
 
 				$res = $entry->post();
 				if($res !== true) return $res;

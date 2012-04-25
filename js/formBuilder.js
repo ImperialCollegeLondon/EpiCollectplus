@@ -23,6 +23,7 @@ $(function()
 	});
 	
 	$("[allow]").hide();
+	$("[notfor]").show();
 	
 	$('#destination').sortable({
 		revert : 50,
@@ -76,14 +77,15 @@ $(function()
 			}
 			else if(sp.hasClass("form"))
 			{
-				if(currentForm){
+				switchToForm(sp.text());
+				/*if(currentForm){
 					updateForm();
 					project.forms[currentForm.name] = currentForm;
 				}
 				sp.addClass('selected');
 				currentForm = project.forms[sp.text()];
 				formName = currentForm.name;
-				drawFormControls(currentForm);
+				drawFormControls(currentForm);*/
 			}
 		}
 	});
@@ -224,6 +226,7 @@ function drawFormControls(form)
 		
 		if(fld.type == "input")
 		{
+			
 			if(fld.isinteger || fld.isdouble)
 			{
 				cls = "ecplus-numeric-element";
@@ -240,7 +243,12 @@ function drawFormControls(form)
 			{
 				cls = "ecplus-text-element";
 			}
-				
+			
+			var forms = project.forms;
+			for(f in forms)
+			{
+				if(fld.id == forms[f].key) cls = "ecplus-fk-element";
+			}
 		}
 		else cls = "ecplus-" + fld.type + "-element";
 		
@@ -260,11 +268,23 @@ function updateSelected()
 	currentControl.id = $('#inputId').val();
 	currentControl.text = $('#inputLabel').val();
 	
-	if(jq.attr("type").match(/^(text|numeric|date|time)/)) currentControl.type = "input";
-	else currentControl.type = jq.attr("type");
+	if(jq.attr("type").match(/^(text|numeric|date|time|fk)/))
+	{
+		currentControl.type = "input";
+		if(jq.attr("type") == "fk")
+		{
+			var f = $("#parent").val();
+			var frm = project.forms[f]
+			currentControl.id = frm.key;
+			currentControl.text = frm.fields[frm.key].text;
+		}
+	}
+	else{ currentControl.type = jq.attr("type"); }
 	
 	var notset = !$("#set").attr("checked");
 	//TODO: need to set other params;
+	var fk = $("#parent").val();
+	
 	currentControl.required = !!$("#required").attr("checked");
 	currentControl.title = !!$("#title").attr("checked");
 	currentControl.isKey = !!$("#key").attr("checked");
@@ -391,7 +411,9 @@ function setSelected(jqEle)
 	var type = jqEle.attr("type");
 	
 	$("[allow]").hide();
+	$("[notfor]").show();
 	$("[allow*=" + type + "]").show();
+	$("[notfor*=" + type + "]").hide();
 	
 	if(currentControl.isKey)
 	{
@@ -399,6 +421,7 @@ function setSelected(jqEle)
 	}
 	if(jqEle.hasClass("ecplus-form-element"))
 	{
+		$("#parent").val("");
 		$("#destination .ecplus-form-element").removeClass("selected");
 		jqEle.addClass("selected");
 		
@@ -455,6 +478,19 @@ function setSelected(jqEle)
 			$("input[name=optValue]", optEles[i]).val(opts[i].value);
 		}
 		
+		var forms = project.forms;
+		
+		if(jqEle.attr("type") == "fk")
+		{	
+			for(f in forms)
+			{
+				if(jqEle.attr("id") == forms[f].key){
+					$("#parent").val(f);
+				}
+			
+			}
+		}
+		
 		//TODO: Jumps
 		$(".jumpoption").remove();
 		
@@ -472,6 +508,8 @@ function setSelected(jqEle)
 			$(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1]);
 			$(".jumpdestination", jumpCtrls[i/2]).val(jumps[i]);
 		}
+		
+		
 		
 	}
 	else
@@ -523,6 +561,15 @@ function switchToForm(name)
 	$('.form').each(function(idx,ele){
 		if($(ele).text() == name) $(ele).addClass("selected");
 	});
+	
+	$("#parent").empty();
+	for(frm in project.forms)
+	{
+		if(frm == name) break;
+		
+		if(project.forms[frm].main) $("#parent").append("<option value=\"" + frm + "\">" + frm + " (" + project.forms[frm].key + ")</option>");
+	}
+	
 	
 	if(!project.forms[name]) project.forms[name] = new EpiCollect.Form();
 	currentForm = project.forms[name];

@@ -83,7 +83,7 @@
 		
 		#bottombar
 		{
-			margin : 1em 15em 1em -1.5em;
+			margin : 1em 14em 1em -1.5em;
 			position : relative;
 			height : 10em;
 			padding: .5em .5em .5em .5em;
@@ -117,6 +117,13 @@
 			width : 15em;
 		}
 		
+		@media all and (max-width: 1024px){
+			#sidebar {display:none;}
+			
+			#map {margin-left: 0;}
+		}
+		
+		
 		#sidebar a 
 		{
 			display : block;
@@ -127,7 +134,6 @@
 		{
 			margin: 0.5em 0.5em 0.5em 0.5em;
 			border: 1px solid #CCCCFF !important;
-			width : 15em;
 		}
 
 		
@@ -213,6 +219,7 @@
 			var bubble = null;
 			
 			var geoField = null;
+			var defaultColourField = null;
 			
 			var dateFormat = " dd MM yyyy hh:mm:ss";
 			
@@ -240,6 +247,8 @@
 				if(url.indexOf("?") > 0)url = url.substr(0, url.indexOf("?"));
 				formName = url.substr(url.lastIndexOf("/") + 1).replace(/#.*$/, "");
 				url = url.substr(0, url.lastIndexOf("/"));
+				
+				loader = new EpiCollect.LoadingOverlay();
 				
 				$(".graphPanel").graphPanel(
 				{
@@ -401,8 +410,6 @@
 					
 				});
 				
-				getData();
-				
 				for(fld in project.forms[formName].fields)
 				{
 					var field = project.forms[formName].fields[fld];
@@ -412,17 +419,19 @@
 					$('#showHideFields .ecplus-dropdown-menu').append("<input type=\"checkbox\" name=\"fldShowHide\" value=\"" + fld + "\" " + (hiddenColumns[fld] ? "" : "checked=\"checked\"") + " /><label for=\"fldShowHide\">" + text +  "</label><br />");
 					
 					if(field.type != "location" && field.type != "gps" && field.type != "branch"
-							&& field.type != "video" && field.type != "audio" && field.type != "photo")
+							&& field.type != "video" && field.type != "audio" && field.type != "photo" && field.type != "")
 					{
 						$('.fieldList').append("<option value=\"" + fld + "\">" + text +  "</option>")
 						if(field.type == "select" || field.type == "radio" ||field.type == "select1" 
 								|| fld == project.getPrevForm(formName).key || fld == "DeviceID")
 						{
-							
+							if(!defaultColourField) defaultColourField = fld;	
 							$('.colourFieldList').append("<option value=\"" + fld + "\">" + text +  "</option>");
 						}
 					}
 				}
+				
+				getData();
 				
 				$('#showHideFields input').change(function(evt){
 					var ctrl = $(evt.target).val();
@@ -496,7 +505,7 @@
 			
 			function getData()
 			{
-				
+				loader.start();
 				offset = pageNo * numEnts
 				var urlStr = url + "/" + formName + ".json?mode=list&start=" + offset + "&limit=" + numEnts + "&sort=" + sortCol + "&dir=" +sortDir + (location.search ? "&" + location.search.substr(1) : "");
 				var statUrl = url + "/" + formName + "/__stats?" + location.search.substr(1);;
@@ -506,8 +515,8 @@
 					urlStr += "&" + filterField + "=" + filterValue;
 					statUrl += "&" + filterField + "=" + filterValue; 
 				}
-				$.getJSON(urlStr , dataLoad);
-				$.getJSON(statUrl , statLoad);
+				$.getJSON(urlStr , dataLoad).error(function(){loader.stop();}).success(function(){$.getJSON(statUrl , statLoad);});
+				
 				$('#start').text(offset);
 			}
 			
@@ -594,6 +603,7 @@
 				});
 				
 				showHideColumns();
+				loader.stop();
 			}
 			
 			function showHideColumns()
@@ -610,6 +620,7 @@
 			function statLoad(stats)
 			{
 				$("#total").text(stats["ttl"]);
+
 			}
 			
 			function mapDataCallback(data, status, xhr)
@@ -635,14 +646,27 @@
 				var dlen = data.length;
 				var mlen = markers.length;
 				
+				var minlat = 180;
+				var maxlat = -180;
+				var minlon = 180;
+				var maxlon = -180
+				
 				for(var i = 0; i < data.length; i++)
 				{
-					var mkr = new google.maps.Marker({
-						id : data[i][keyField],
-						position : new google.maps.LatLng(data[i][geoField].latitude, data[i][geoField].longitude),
-						icon : "{#SITE_ROOT#}/markers/point",
-						index : i
-					});
+					if(data[i][geoField].latitude >= -90 && data[i][geoField].latitude <= 90 && data[i][geoField].longitude >= -180 && data[i][geoField].longitude <= 180 && data[i][geoField].accuracy > 0)
+					{
+						var mkr = new google.maps.Marker({
+							id : data[i][keyField],
+							position : new google.maps.LatLng(data[i][geoField].latitude, data[i][geoField].longitude),
+							icon : "{#SITE_ROOT#}/markers/point",
+							index : i
+						});
+					
+						minlat = Math.min(data[i][geoField].latitude, minlat);
+						maxlat = Math.max(data[i][geoField].latitude, maxlat);
+						minlon = Math.min(data[i][geoField].longitude, minlon);
+						maxlon = Math.max(data[i][geoField].longitude, maxlon);
+					}
 					
 					mincreated = Math.min(mincreated, Number(data[i]["created"]));
 					maxcreated = Math.max(maxcreated, Number(data[i]["created"]));
@@ -655,7 +679,9 @@
 					addToSidebar(i, data[i][project.forms[formName].titleField])
 				}
 				
-				colourMarkersBy("DeviceID");
+				colourMarkersBy(defaultColourField);
+
+				map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
 				
 				if(!markerClusterer)
 				{
@@ -823,11 +849,13 @@
 					var d = mapData[i];
 					var mkr = markers[i];
 					
+					if(!d[fld]) d[fld] = "<i>No value</i>";
+					
 					if(!colourGrps[d[fld]])
 					{
 						colourGrps[d[fld]] = colours[colourIdx++ % colours.length];
 					}
-					mkr.setIcon("{#SITE_ROOT#}/markers/point?colour=" + colourGrps[d[fld]])
+					mkr.setIcon("http://" + location.host +  "/{#SITE_ROOT#}/markers/point?colour=" + colourGrps[d[fld]])
 					mkr.colour = colourGrps[d[fld]];
 				}
 				
@@ -835,6 +863,44 @@
 				window.colourGrps = colourGrps;
 				
 				if(markerClusterer) markerClusterer.repaint();
+				drawMapLegend();
+			}
+			
+			function drawMapLegend()
+			{
+				
+				if(!map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].length)
+				{
+					legend = document.createElement('div');
+					legend.style.backgroundColor = '#EEEEEE';
+					legend.style.padding = '5px 5px 5px 5px';
+					legend.style.border = '1px solid #000000'
+					var inner = document.createTextNode('Hello World');
+					legend.appendChild(inner);
+					map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
+				}
+				
+				
+				var i = 0;
+				for(grp in colourGrps)
+				{
+					var legRow = document.createElement('div');
+					var img = document.createElement('img');
+					img.style.display = 'inline';
+					img.src = "../markers/point?colour=" + colourGrps[grp];
+					legRow.appendChild(img);
+					legRow.appendChild(document.createTextNode(grp));
+					if(i < legend.childNodes.length)
+					{
+						legend.replaceChild(legRow, legend.childNodes[i]);
+					}
+					else
+					{
+						legend.appendChild(legRow);
+					}
+					i++;
+				}
+				while(i < legend.childNodes.length) legend.removeChild(legend.childNodes[i]);
 			}
 			
 			function drawBar(jq, data, field)
@@ -991,7 +1057,8 @@
 			</p>
 			
 			<p class="ecplus-table-footer"> <a href="javascript:firstPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_170_step_backward.png" alt="first"/></a> <a href="javascript:turnBackPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_350_playback.png" alt="previous"/></a><span id="start"></span> to <span id="end"></span> of <span id="total"></span><a href="javascript:turnPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/></a><a href="javascript:lastPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/></a></p>
-			
+			<hr />
+			<h3>Upload data from a CSV file</h3>
 			<form method="POST" enctype="multipart/form-data" >
 				<label for="upload">File to upload : </label><input type="file" name="upload" /><br />
 				<input type="submit" name="submit" value="Upload File" />
