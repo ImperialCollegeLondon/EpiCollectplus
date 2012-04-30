@@ -926,7 +926,7 @@ function uploadData()
 	global  $url, $log;
 	$flog = fopen('ec/uploads/fileUploadLog.log', 'a');
 	$prj = new EcProject();
-	$prj->name = preg_replace("/\/upload\.?(xml|json)?$/", "", $url);
+	$prj->name = preg_replace('/\/upload\.?(xml|json)?$/', '', $url);
 
 	$prj->fetch();
 	
@@ -998,8 +998,8 @@ function uploadData()
 			$tn = $_POST["table"];
 			unset($_POST["table"]);
 
-			try
-			{
+			//try
+			//{
 				 
 				$ent = new EcEntry($prj->tables[$tn]);
 				if(array_key_exists("ecPhoneID", $_POST))
@@ -1064,7 +1064,7 @@ function uploadData()
 					$log->write("error",  "error : $res\r\n");
 					echo $res;
 				}
-			}
+			/*}
 			catch(Exception $e)
 			{
 				$log->write("error",  "error : " . $e->getMessage() . "\r\n");
@@ -1078,7 +1078,7 @@ function uploadData()
 					header("HTTP/1.1 405 Bad Request");
 				}
 				echo $msg;
-			}
+			}*/
 		}
 	}
 	fclose($flog);

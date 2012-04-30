@@ -131,9 +131,13 @@
 					{
 						if(($this->form->fields[$keys[$i]]->type == 'gps' || $this->form->fields[$keys[$i]]->type == 'location') && !is_string($this->values[$keys[$i]]))
 						{
-							array_push($ins, sprintf(' ( %u, \'%s\', \'%s\', \'%s\', %s, %u )', 
-									$this->form->fields[$keys[$i]]->idField, $this->form->survey->name, $this->form->name, $keys[$i],$db->stringVal(json_encode($this->values[$keys[$i]], 
-											$this->id))));
+							array_push($ins, sprintf(' ( %s, \'%s\', \'%s\', \'%s\', %s, %s )', 
+									$this->form->fields[$keys[$i]]->idField, 
+									$this->form->survey->name, 
+									$this->form->name, 
+									$keys[$i],
+									$db->stringVal(json_encode($this->values[$keys[$i]])), 
+									$this->id));
 						}
 						else
 						{
@@ -213,14 +217,25 @@
 						{
 							if(($entries[$i]->form->fields[$keys[$j]]->type == 'gps' || $entries[$i]->form->fields[$keys[$j]]->type == 'location') && !is_string($entries[$i]->values[$keys[$j]]))
 							{
-								$qry .= sprintf('%s ( %u, \'%s\', \'%s\', \'%s\', %s, %u )', ($i > 0 || $j > 0 ? ',' : ''),
-										$entries[$i]->form->fields[$keys[$j]]->idField, $entries[$i]->form->survey->name, $entries[$i]->form->name, $keys[$j],$db->stringVal(json_encode($entries[$i]->values[$keys[$j]], 
-												$insert_keys[$entries[$i]->insert_key])));
+								$qry .= sprintf('%s ( %s, \'%s\', \'%s\', \'%s\', %s, %s )', 
+										($i > 0 || $j > 0 ? ',' : ''),
+										$entries[$i]->form->fields[$keys[$j]]->idField, 
+										$entries[$i]->form->survey->name, 
+										$entries[$i]->form->name, 
+										$keys[$j],
+										$db->stringVal(json_encode($entries[$i]->values[$keys[$j]], 
+										$insert_keys[$entries[$i]->insert_key])));
 							}
 							else
 							{
-								$qry .= sprintf('%s ( %s, \'%s\', \'%s\', \'%s\', %s, %u)', ($i > 0 || $j > 0 ? ',' : ''),
-										$entries[$i]->form->fields[$keys[$j]]->idField, $entries[$i]->form->survey->name, $entries[$i]->form->name, $keys[$j], $db->stringVal($entries[$i]->values[$keys[$j]]), $insert_keys[$entries[$i]->insert_key]);
+								$qry .= sprintf('%s ( %s, \'%s\', \'%s\', \'%s\', %s, %s)', 
+										($i > 0 || $j > 0 ? ',' : ''),
+										$entries[$i]->form->fields[$keys[$j]]->idField, 
+										$entries[$i]->form->survey->name, 
+										$entries[$i]->form->name, 
+										$keys[$j], 
+										$db->stringVal($entries[$i]->values[$keys[$j]]), 
+										$insert_keys[$entries[$i]->insert_key]);
 							}
 						}
 					}
