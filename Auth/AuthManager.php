@@ -7,6 +7,8 @@
  {
 	private $provider;
 
+	private $user;
+	
 	public $firstName;
 	public $lastName;
 	public $email;

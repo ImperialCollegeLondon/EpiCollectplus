@@ -494,81 +494,29 @@ function projectHome()
 		echo applyTemplate('base.html','./404.html', $vals);
 		die;
 	}
+	
+	
+	$loggedIn = $auth->isLoggedIn();
+	$role = $prj->checkPermission($auth->getEcUserId());
 
-	if(!$prj->isPublic && !$auth->isLoggedIn() && !preg_match('/\.xml$/',$url))
+	if( !$prj->isPublic && !$loggedIn && !preg_match('/\.xml$/',$url) )
 	{
 		flash('This is a private project, please log in to view the project.');
-		loginHandler($url);
+		//loginHandler($url);
 		return;
 	}
-	else if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2)
+	else if( !$prj->isPublic && $role < 2 )
 	{
 		flash(sprintf('You do not have permission to view %s.', $prj->name));
-		header(sprintf('location: %s', $SITE_ROOT));
+		//header(sprintf('location: http://%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT));
 		return;
 	}
-
+	
+	
 
 	//echo strtoupper($_SERVER["REQUEST_METHOD"]);
 	$reqType = strtoupper($_SERVER['REQUEST_METHOD']);
-	if($reqType == 'GET')
-	{
-		if(array_key_exists('HTTP_ACCEPT', $_SERVER)) $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "$SITE_ROOT/") + 1);
-		$ext = substr($url, strrpos($url, '.') + 1);
-		$format = $ext != '' ? $ext : $format;
-		if($format == 'xml')
-		{
-				header('Cache-Control: no-cache, must-revalidate');
-				header ('Content-type: text/xml; charset=utf-8;');
-				echo $prj->toXML();
-		}else {
-				header('Cache-Control: no-cache, must-revalidate');
-				header ('Content-type: text/html;');
-				
-				try{
-					//$userMenu = '<h2>View Data</h2><span class="menuItem"><img src="images/map.png" alt="Map" /><br />View Map</span><span class="menuItem"><img src="images/form_view.png" alt="List" /><br />List Data</span>';
-					//$adminMenu = '<h2>Project Administration</h2><span class="menuItem"><a href="./' . $prj->name . '/formBuilder.html"><img src="'.$SITE_ROOT.'/images/form_small.png" alt="Form" /><br />Create or Edit Form(s)</a></span><span class="menuItem"><a href="editProject.html?name='.$prj->name.'"><img src="'.$SITE_ROOT.'/images/homepage_update.png" alt="Home" /><br />Update Project</a></span>';
-					$tblList = '';
-					foreach($prj->tables as $tbl)
-					{
-						$tblList .= "<div class=\"tblDiv\"><a class=\"tblName\" href=\"{$prj->name}/{$tbl->name}\">{$tbl->name}</a><a href=\"{$prj->name}/{$tbl->name}\">View All Data</a> | <form name=\"{$tbl->name}SearchForm\" action=\"./{$prj->name}/{$tbl->name}\" method=\"GET\"> Search for {$tbl->key} <input type=\"text\" name=\"{$tbl->key}\" /> <a href=\"javascript:document.{$tbl->name}SearchForm.submit();\">Search</a></form></div>";
-					}
-	
-					$imgName = $prj->image ? $prj->image : "images/projectPlaceholder.png";
-	
-					if(file_exists($imgName))
-					{
-						$imgSize = getimagesize($imgName);
-					}
-					else
-					{
-						$imgSize = array(0,0);
-					}
-	
-					$vals =  array(
-						'projectName' => $prj->name,
-						'projectDescription' => $prj->description && $prj->description != "" ? $prj->description : "Project homepage for {$prj->name}",
-						'projectImage' => $imgName,
-						'imageWidth' => $imgSize[0],
-						'imageHeight' =>$imgSize[1],
-						'tables' => $tblList,
-						'adminMenu' => "<a href=\"{$prj->name}/manage\" class=\"button\">Manage Project</a> <a href=\"{$prj->name}/formBuilder\" class=\"button\">Edit Forms</a>",
-						'userMenu' => ''
-	
-					);
-					
-					
-					echo applyTemplate('base.html','projectHome.html',$vals);
-				}
-				catch(Exception $e)
-				{
-					
-					$vals = array('error' => $e->getMessage());
-					echo applyTemplate('base.html','error.html',$vals);
-				}
-		}
-	}
-	elseif($reqType == 'POST') //
+	if( $reqType == 'POST' ) //
 	{
 		//echo 'POST';
 		// update project
@@ -579,39 +527,116 @@ function projectHome()
 		$prj->publicSubmission =  array_key_exists('publicSubmission', $_POST) && $_POST['publicSubmission'] == 'on' ?  1 : 0;
 			
 		$res = $prj->id ? $prj->push() : $prj->post();
-		if($res !== true)
+		if( $res !== true )
 		{
 			echo $res;
 		}
 			
-		if($_POST['admins'] && $res === true)
+		if( $_POST['admins'] && $res === true )
 		{
 			$res = $prj->setAdmins($_POST["admins"]);
 		}
 			
-		if($_POST['users'] && $res === true)
+		if( $_POST['users'] && $res === true )
 		{
 			$res = $prj->setUsers($_POST["users"]);
 		}
 			
-		if($_POST['submitters'] && $res === true)
+		if( $_POST['submitters'] && $res === true )
 		{
 			$res = $prj->setSubmitters($_POST['submitters']);
 		}
 		echo $res;
 	}
-	elseif($reqType == 'DELETE')
+	elseif( $reqType == 'DELETE' )
 	{
-		if($prj->checkPermission($auth->getEcUserId()) == 3)
+		if( $role  == 3 )
 		{
-			$prj->deleteProject();
+			$res = $prj->deleteProject();
+			if( $res === true )
+			{
+				header('HTTP/1.1 200 OK', true, 200);
+				echo '{ "success": true }';
+				return;
+			}
+			else
+			{
+				header('HTTP/1.1 500 Error', true, 500);
+				echo ' {"success" : false, "message" : "Could not delete project" }';
+			}
 		}
 		else
 		{
-			flash('Permission Denied');
-			header(sprintf('location: http://%s/%s/', trim($SITE_ROOT, '/'), trim($_SERVER["HTTP_HOST"], "/")));
+			header('HTTP/1.1 403 Forbidden', true, 403);
+			echo ' {"success" : false, "message" : "You do not have permission to delete this project" }';
 		}
 		
+	}
+	elseif( $reqType == 'GET' )
+	{
+	
+		if( array_key_exists('HTTP_ACCEPT', $_SERVER)) $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "$SITE_ROOT/") + 1 );
+		$ext = substr($url, strrpos($url, '.') + 1);
+		$format = $ext != '' ? $ext : $format;
+		if( $format == 'xml' )
+		{
+				header('Cache-Control: no-cache, must-revalidate');
+				header('Content-type: text/xml; charset=utf-8;');
+				echo $prj->toXML();
+		}else {
+				header('Cache-Control: no-cache, must-revalidate');
+				header('Content-type: text/html;');
+				
+				try{
+					//$userMenu = '<h2>View Data</h2><span class="menuItem"><img src="images/map.png" alt="Map" /><br />View Map</span><span class="menuItem"><img src="images/form_view.png" alt="List" /><br />List Data</span>';
+					//$adminMenu = '<h2>Project Administration</h2><span class="menuItem"><a href="./' . $prj->name . '/formBuilder.html"><img src="'.$SITE_ROOT.'/images/form_small.png" alt="Form" /><br />Create or Edit Form(s)</a></span><span class="menuItem"><a href="editProject.html?name='.$prj->name.'"><img src="'.$SITE_ROOT.'/images/homepage_update.png" alt="Home" /><br />Update Project</a></span>';
+					$tblList = '';
+					foreach( $prj->tables as $tbl )
+					{
+						$tblList .= "<div class=\"tblDiv\"><a class=\"tblName\" href=\"{$prj->name}/{$tbl->name}\">{$tbl->name}</a><a href=\"{$prj->name}/{$tbl->name}\">View All Data</a> | <form name=\"{$tbl->name}SearchForm\" action=\"./{$prj->name}/{$tbl->name}\" method=\"GET\"> Search for {$tbl->key} <input type=\"text\" name=\"{$tbl->key}\" /> <a href=\"javascript:document.{$tbl->name}SearchForm.submit();\">Search</a></form></div>";
+					}
+	
+					$imgName = $prj->image ? $prj->image : "images/projectPlaceholder.png";
+	
+					if( file_exists($imgName) )
+					{
+						$imgSize = getimagesize($imgName);
+					}
+					else
+					{
+						$imgSize = array(0,0);
+					}
+					
+					$adminMenu = '';
+					
+					if( $role == 3 )
+					{
+						$adminMenu = "<a href=\"{$prj->name}/manage\" class=\"button\">Manage Project</a> <a href=\"{$prj->name}/formBuilder\" class=\"button\">Edit Forms</a>";
+					}
+					
+					$vals =  array(
+						'projectName' => $prj->name,
+						'projectDescription' => $prj->description && $prj->description != "" ? $prj->description : "Project homepage for {$prj->name}",
+						'projectImage' => $imgName,
+						'imageWidth' => $imgSize[0],
+						'imageHeight' =>$imgSize[1],
+						'tables' => $tblList,
+						'adminMenu' => $adminMenu,
+						'userMenu' => ''
+	
+					);
+					
+					
+					echo applyTemplate('base.html','projectHome.html',$vals);
+					return;
+				}
+				catch( Exception $e )
+				{
+					
+					$vals = array('error' => $e->getMessage());
+					echo applyTemplate('base.html','error.html',$vals);
+				}
+		}
 	}
 }
 

@@ -517,13 +517,16 @@ tr.alt
 
 .button
 {
-	font-size : 10pt;
-	color: #444444;
-	display : inline-block;
-	padding : 0.25em;
 	border-radius: 0.5em;
 	background-color : #EEEEEE;
 	border: 1px solid #666666;
+	color: #444444;
+	display : inline-block;
+	font-size : 10pt;
+	margin : 0.25em 0.25em 0.25em 0.25em;
+	padding : 0.25em;
+	text-align : center;
+	width : 7em;
 }
 
 .button:hover
@@ -532,6 +535,17 @@ tr.alt
 	text-decoration : none;
 	border-color:black;
 	background-color: #DDDDDD;
+}
+
+.button.danger, .ui-widget-content.danger, .ui-button.danger
+{
+	background : #FFEEEE !important;
+	border: 1px solid #FF6666 !important;
+}
+
+.button.danger:hover
+{
+	background-color : #FF6666 !important;
 }
 
 .flash

@@ -261,10 +261,10 @@ EpiCollect.Project = function()
 				t.cols.push(frm.name + "Entries");
 			}
         }
-		for(tbl in this.forms)
+		for( tbl in this.forms )
 		{
 			var branches = this.forms[tbl].branchForms;
-			for(var i = 0; i < branches.length; i ++)
+			for( var i = 0; i < branches.length; i ++ )
 			{
 				this.forms[branches[i]].branchOf = tbl;
 			}
@@ -273,7 +273,7 @@ EpiCollect.Project = function()
 		
 	this.draw = function(div)
 	{
-		for(tbl in this.forms)
+		for( tbl in this.forms )
 		{
 			$(div).append("<p>" + tbl + "</p>");
 		}
@@ -282,14 +282,13 @@ EpiCollect.Project = function()
 	this.toXML = function()
 	{
 		var xml = "<?xml version=\"1.0\"?><ecml><model><submission id=\"" + this.id + "\" projectName=\"" + this.name + "\" allowDownloadEdits=\"" + (this.allowEdits ? "true" : "false") +"\" version=\"" + this.version + "\" /></model>";
-		for(form in this.forms)
+		for( form in this.forms )
 		{
 			xml = xml + this.forms[form].toXML();
 		}
 		xml = xml + "</ecml>";
 		return xml;
 	}
-	
 }
 
 EpiCollect.Form = function()

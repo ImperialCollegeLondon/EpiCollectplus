@@ -187,6 +187,18 @@
   		});
   	}
   	
+  	function deleteProject()
+	{
+		if(confirm("If you delete this project the project definition and all data will be removed from the server. Are you sure you want to do this?"))
+		{
+			$.ajax(location.href, {
+				type : 'DELETE',
+				success: function() { location.replace(location.href.replace(project.name)); }
+				
+			})
+		}
+	}
+  	
   </script>
 {{/script}}
 {{breadcrumbs}}
@@ -202,6 +214,7 @@
 	  			<li><a href="#listing">Listing</a></li>
 	  			<li><a href="#s_managers">Managers</a></li>
 	  			<li><a href="#s_curators">Curators</a></li>
+	  			<li><a href="#s_delete">Delete Project</a></li>
 	  		</ul>
 		  	<section id="projectDef">
 			  	<h2>1. Project Definition</h2>
@@ -259,6 +272,11 @@
 				<label for="newcurator">Enter the email address for the curator you wish to add </label><input type="email" id="newcurator" /><a class="button" href="javascript:addUser('curators', $('#newcurator').val())">Add curator</a>
 				<input type="hidden" name="curators" id="curators"/>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
+			</section>
+			<section id="s_delete">
+				<h2>Delete Project</h2>
+				<p>Use the button below to delete this project and all of its data from the server.</p>
+				<a href="javascript:deleteProject()" class="danger button"> Delete Project </a>
 			</section>
 			
 	</form>
