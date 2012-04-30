@@ -187,8 +187,10 @@
 				
 				$len = count($entries);
 				$sessId =  session_id();
-				for($i = 0; $i < $len; ++$i)
+				for( $i = 0; $i < $len; ++$i)
 				{
+					if( !$entries[$i]->created ) { $entries[$i]->created = getTimestamp(); }
+					
 					$entries[$i]->insert_key = sprintf('%s%s', $sessId, $i);  
 					$qry .= sprintf('%s (%s, %s, %s, %s, %s, \'%s\', 0, \'%s\')', 
 							($i > 0 ? ',' : ''),
