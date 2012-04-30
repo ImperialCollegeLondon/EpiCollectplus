@@ -117,7 +117,7 @@
 					//$sql = "SELECT isUsers FROM user WHERE email = {$_GET['email']}";
 				
 				
-				$qry = sprintf('INSERT INTO entry (form, projectName, formName, DeviceId, created, uploaded, user) VALUES (%s, %s, %s, %s,%s,%s,0);',
+				$qry = sprintf('INSERT INTO entry (form, projectName, formName, DeviceId, created, uploaded, user) VALUES (%s, %s, %s, %s,%s,\'%s\',0);',
 						$this->form->id, 
 						$db->stringVal($this->projectName), 
 						$db->stringVal($this->formName),  
