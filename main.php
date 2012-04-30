@@ -509,19 +509,18 @@ function projectHome()
 
 
 	//echo strtoupper($_SERVER["REQUEST_METHOD"]);
-
-	if(strtoupper($_SERVER['REQUEST_METHOD']) == 'GET')
+	$reqType = strtoupper($_SERVER['REQUEST_METHOD']);
+	if($reqType == 'GET')
 	{
 		if(array_key_exists('HTTP_ACCEPT', $_SERVER)) $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "$SITE_ROOT/") + 1);
 		$ext = substr($url, strrpos($url, '.') + 1);
 		$format = $ext != '' ? $ext : $format;
-		switch($format){
-			case 'xml':
+		if($format == 'xml')
+		{
 				header('Cache-Control: no-cache, must-revalidate');
 				header ('Content-type: text/xml; charset=utf-8;');
 				echo $prj->toXML();
-				break;
-			default:
+		}else {
 				header('Cache-Control: no-cache, must-revalidate');
 				header ('Content-type: text/html;');
 				
@@ -559,7 +558,6 @@ function projectHome()
 					
 					
 					echo applyTemplate('base.html','projectHome.html',$vals);
-					break;
 				}
 				catch(Exception $e)
 				{
@@ -569,15 +567,15 @@ function projectHome()
 				}
 		}
 	}
-	elseif(strtoupper($_SERVER["REQUEST_METHOD"]) == "POST") //
+	elseif($reqType == 'POST') //
 	{
-		//echo "POST";
+		//echo 'POST';
 		// update project
-		$prj->description = $_POST["description"];
-		$prj->image = $_POST["image"];
-		$prj->isPublic = array_key_exists("isPublic", $_POST) && $_POST["isPublic"] == "on" ?  1 : 0;
-		$prj->isListed =  array_key_exists("isListed", $_POST) && $_POST["isListed"] == "on" ?  1 : 0;
-		$prj->publicSubmission =  array_key_exists("publicSubmission", $_POST) && $_POST["publicSubmission"] == "on" ?  1 : 0;
+		$prj->description = $_POST['description'];
+		$prj->image = $_POST['image'];
+		$prj->isPublic = array_key_exists('isPublic', $_POST) && $_POST['isPublic'] == 'on' ?  1 : 0;
+		$prj->isListed =  array_key_exists('isListed', $_POST) && $_POST['isListed'] == 'on' ?  1 : 0;
+		$prj->publicSubmission =  array_key_exists('publicSubmission', $_POST) && $_POST['publicSubmission'] == 'on' ?  1 : 0;
 			
 		$res = $prj->id ? $prj->push() : $prj->post();
 		if($res !== true)
@@ -585,23 +583,35 @@ function projectHome()
 			echo $res;
 		}
 			
-		if($_POST["admins"] && $res === true)
+		if($_POST['admins'] && $res === true)
 		{
 			$res = $prj->setAdmins($_POST["admins"]);
 		}
 			
-		if($_POST["users"] && $res === true)
+		if($_POST['users'] && $res === true)
 		{
 			$res = $prj->setUsers($_POST["users"]);
 		}
 			
-		if($_POST["submitters"] && $res === true)
+		if($_POST['submitters'] && $res === true)
 		{
-			$res = $prj->setSubmitters($_POST["submitters"]);
+			$res = $prj->setSubmitters($_POST['submitters']);
 		}
 		echo $res;
 	}
-
+	elseif($reqType == 'DELETE')
+	{
+		if($prj->checkPermission($auth->getEcUserId()) == 3)
+		{
+			$prj->deleteProject();
+		}
+		else
+		{
+			flash('Permission Denied');
+			header(sprintf('location: http://%s/%s/', trim($SITE_ROOT, '/'), trim($_SERVER["HTTP_HOST"], "/")));
+		}
+		
+	}
 }
 
 function siteTest()
@@ -1126,12 +1136,16 @@ function downloadData()
 	$root =substr($_SERVER["SCRIPT_FILENAME"], 0, $pos);
 	$wwwroot = "http://{$_SERVER["HTTP_HOST"]}$SITE_ROOT";
 
-	$startTbl = (array_key_exists('select_table', $_GET) ? $_GET["table"] : false);
-	$endTbl = (array_key_exists('select_table', $_GET) ? $_GET["select_table"] :  $_GET["table"]);
-	$entry = (array_key_exists('entry', $_GET) ? $_GET["entry"] : false);
+	
+	
+	$startTbl = (array_key_exists('select_table', $_GET) ? getValIfExists($_GET, "table") : false);
+	$endTbl = (array_key_exists('select_table', $_GET) ? getValIfExists($_GET, "select_table") :  getValIfExists($_GET, "table"));
+	$entry = getValIfExists($_GET, "entry");
 	$dataType = (array_key_exists('type', $_GET) ? $_GET["type"] : "data");
 	$xml = !(array_key_exists('xml', $_GET) && $_GET['xml'] === "false");
 
+	
+	
 	$files_added = 0;
 
 	$delim = "\t";
@@ -1155,40 +1169,36 @@ function downloadData()
 		{
 			continue;
 		}
-		// first check if the table has a number between $n and $end
-		else if(($tbl->number >= $n && $tbl->number <= $end))
-		{
-			array_push($tbls, $name);
-		}
 		
-		if(count($tbl->branches) > 0)
+		// are we doing name-based or type-based checking?
+		elseif( $dataType  == 'group' )
 		{
-			$tbls = array_merge($tbls, $tbl->branches);
-		}
-		
-		//else if it is a branch form
-		//TODO : Not needed for EC2, but must work for EC+
-		/*else if($tbl->branchOf)
+			if( $tbl->group )
 			{
-		//if the parent table is in the list add it.
-		if(array_key_exists($tbl->branchOf, $tbls))
-		{
-		addBranch($name, $tbls->branchOf);
+				array_push($tbls, $name);
+			}
 		}
-		//if not see if the parent table should be in the list, if it is add it and if not skip and move on
-		else if ($survey->tables[$tbl->branchOf]->number >= $n || $survey->tables[$tbl->branchOf]->number <= $n)
+		else
 		{
-		$tbls[$tables[$tbl->branchOf]->number] =  $tbl->branchOf;
-		//addBranch($tbl->name, $tbls->branchOf);
+			// first check if the table has a number between $n and $end
+			if( ($tbl->number >= $n && $tbl->number <= $end) )
+			{
+				array_push($tbls, $name);
+			}
+			
+			if( count($tbl->branches) > 0 )
+			{
+				$tbls = array_merge($tbls, $tbl->branches);
+			}	
 		}
-		//else continue;
-		} */
 	}
 
+	if( $dataType  == 'group' ) $dataType = 'data';
+	
 	//criteria
 	$cField = false;
 	$cVals = array();
-	if($entry)
+	if( $entry )
 	{
 		$cField = $survey->tables[$startTbl]->key;
 		$cVals[0] = $entry;
@@ -1199,9 +1209,9 @@ function downloadData()
 	//for each main table we're intersted in (i.e. main tables between stat and end table)
 	//$ts = new DateTime("now", new DateTimeZone("UTC"));
 	//$ts = $ts->getTimestamp();
-	if($dataType == "data" && $xml)
+	if( $dataType == 'data' && $xml )
 	{
-		header("Content-type: text/xml");
+		header('Content-type: text/xml');
 		$fxn = "$root\\ec\\uploads\\{$baseFn}.xml";
 		$fx_url = "$wwwroot/ec/uploads/{$baseFn}.xml";
 		if(file_exists($fxn))
