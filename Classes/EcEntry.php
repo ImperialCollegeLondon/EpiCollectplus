@@ -64,6 +64,9 @@
 				$this->created = $dt->getTimestamp();
 			}
 			
+			$this->uploaded = getTimestamp('Y-m-d h:i:s');
+			
+			
 			if(!$this->deviceId)
 			{
 				$this->deviceId = 'web upload';
@@ -114,7 +117,13 @@
 					//$sql = "SELECT isUsers FROM user WHERE email = {$_GET['email']}";
 				
 				
-				$qry = sprintf('INSERT INTO entry (form, projectName, formName, DeviceId, created, uploaded, user) VALUES (%s, %s, %s, %s,%u,%u,0);',$this->form->id, $db->stringVal($this->projectName), $db->stringVal($this->formName),  $db->stringVal($this->deviceId),$this->created, $_SERVER['REQUEST_TIME'] );
+				$qry = sprintf('INSERT INTO entry (form, projectName, formName, DeviceId, created, uploaded, user) VALUES (%s, %s, %s, %s,%s,%s,0);',
+						$this->form->id, 
+						$db->stringVal($this->projectName), 
+						$db->stringVal($this->formName),  
+						$db->stringVal($this->deviceId),
+						$this->created, 
+						$this->uploaded );
 				$res = $db->do_query($qry);
 				
 				if($res !== true) return $res;

@@ -1537,17 +1537,18 @@ function formHandler()
 					return;
 				}
 			}
-			////try
-			//{
+			
+			try
+			{
 				$res = $ent->post();
 				echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
 				return;
-			//}
-			//catch(Exception $e)
-			//{
-			//	header("HTTP/1.1 500 Conflict");
-			//	echo $e->getMessage();
-			//}
+			}
+			catch(Exception $e)
+			{
+				header("HTTP/1.1 500 Conflict");
+				echo $e->getMessage();
+			}
 		}
 	}
 	elseif($_SERVER["REQUEST_METHOD"] == "DELETE")
