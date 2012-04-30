@@ -190,7 +190,7 @@
 				for($i = 0; $i < $len; ++$i)
 				{
 					$entries[$i]->insert_key = sprintf('%s%s', $sessId, $i);  
-					$qry .= sprintf('%s (%s, %s, %s, %s, %s, %s, 0, \'%s\')', 
+					$qry .= sprintf('%s (%s, %s, %s, %s, %s, \'%s\', 0, \'%s\')', 
 							($i > 0 ? ',' : ''),
 							$entries[$i]->form->id, 
 							$db->stringVal($entries[$i]->projectName), 
