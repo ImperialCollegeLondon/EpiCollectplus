@@ -197,7 +197,7 @@
 							$db->stringVal($entries[$i]->formName),  
 							$db->stringVal($entries[$i]->deviceId), 
 							$entries[$i]->created, 
-							$_SERVER['REQUEST_TIME'], 
+							getTimestamp("Y-m-d H:i:s"), 
 							$entries[$i]->insert_key);
 					
 					//echo $_SERVER['REQUEST_TIME'] . '<br />\r\n';
