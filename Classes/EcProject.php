@@ -528,6 +528,13 @@ class EcProject{
 			}
 		}
 		
+		function deleteProject()
+		{
+			global $db;
+			$qry = sprintf('CALL deleteProject(\'%s\')',$this->name);
+			return $db->do_query($qry);
+		}
+		
 		function getSummary()
 		{
 				global $auth;

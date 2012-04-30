@@ -201,10 +201,11 @@ function assocToDelimStr($arr, $delim)
 	return $str;
 }
 
-function getTimestamp()
+function getTimestamp($fmt)
 {
 	$date = new DateTime("now", new DateTimeZone("UTC"));
-	return $date->getTimestamp();
+	if( !$fmt ) return $date->getTimestamp();
+	else return $date->format($fmt);
 }
 
 function regexEscape($s)
@@ -999,6 +1000,7 @@ function uploadData()
 
 			try
 			{
+				 
 				$ent = new EcEntry($prj->tables[$tn]);
 				if(array_key_exists("ecPhoneID", $_POST))
 				{
@@ -1028,14 +1030,12 @@ function uploadData()
 						$acc = "{$key}_acc";
 						$src = "{$key}_provider";
 
-						
-						
 						$ent->values[$key] = array(
-								'latitude' => (string) getValIfExists($_POST, $lat),
-								'longitude' => (string)getValIfExists($_POST,$lon),
-								'altitude' => (string)getValIfExists($_POST,$alt),
-								'accuracy' => (string) getValIfExists($_POST,$acc), 
-								'provider' => (string)getValIfExists($_POST,$src)
+							'latitude' => (string) getValIfExists($_POST, $lat),
+							'longitude' => (string)getValIfExists($_POST,$lon),
+							'altitude' => (string)getValIfExists($_POST,$alt),
+							'accuracy' => (string) getValIfExists($_POST,$acc), 
+							'provider' => (string)getValIfExists($_POST,$src)
 						);
 					}
 					else if(!array_key_exists($key, $_POST))
@@ -1048,6 +1048,7 @@ function uploadData()
 						$ent->values[$key] = (string)$_POST[$key];
 					}
 				}
+				
 				$log->write("debug", "posting ... \r\n");
 				$res = $ent->post();
 				$log->write("debug",  "response : $res \r\n");
@@ -1516,7 +1517,7 @@ function formHandler()
 				
 			$ent->created = $_POST["created"];
 			$ent->deviceId = $_POST["DeviceID"];
-			$ent->uploaded = getTimestamp();
+			$ent->uploaded = getTimestamp('Y-m-d H:i:s');
 			$ent->user = 0;
 			
 			foreach(array_keys($ent->values) as $key)
