@@ -533,6 +533,7 @@
 			
 			function doFilter(field, value)
 			{
+				if(field === filterField && value === filterValue) return;
 				filterField = field;
 				filterValue = value;
 				pageNo = 0;
@@ -541,17 +542,18 @@
 			
 			function dataLoad(entries)
 			{
+				$(".ecplus-data tbody").empty();
+				
 				if(entries.length == 0)
 				{
 					if(pageNo > 0) pageNo--;
+					loader.stop();
 					return;
 				}
 				
 				$(".ecplus-data th, .ecplus-data  td").show();
 				
 				window.ecplus_entries = entries;
-				
-				$(".ecplus-data tbody").empty();
 				
 				$('#end').text(Number($('#start').text()) + Number(entries.length));
 				$('#total').text(entries.count);

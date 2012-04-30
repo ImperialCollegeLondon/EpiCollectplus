@@ -1,16 +1,14 @@
 <?php
 
-if (isset($_REQUEST['_SESSION'])) die("Bad client request");
+if (isset($_REQUEST['_SESSION'])) die('Bad client request');
 
-//$tlog = fopen("./uploads/speedLog", "w");
 date_default_timezone_set('UTC');
 $dat = new DateTime('now');
-$dfmat = "%s.u";
-//fwrite($tlog, "Load started at " . $dat->format("H:i:s") . "\n");
+$dfmat = '%s.u';
 
-$SITE_ROOT = "";
+$SITE_ROOT = '';
 
-@session_start();
+session_start();
 
 function getValIfExists($array, $key)
 {
@@ -25,69 +23,69 @@ function getValIfExists($array, $key)
 	}
 }
 
+$DIR = str_replace('main.php', '', $_SERVER['SCRIPT_FILENAME']);
 
-if(preg_match("/main.php/", $_SERVER["SCRIPT_NAME"]))
+if(strpos($_SERVER['SCRIPT_NAME'], 'main.php'))
 {
 	//IIS
-	$SITE_ROOT = str_replace("/main.php", "", $_SERVER["PHP_SELF"]);
+	$SITE_ROOT = str_replace('/main.php', '', $_SERVER['PHP_SELF']);
 }
 else
 {
 	//Apache
-	$SITE_ROOT = str_replace($_SERVER["DOCUMENT_ROOT"], "", $_SERVER["SCRIPT_FILENAME"]);
-	$SITE_ROOT = str_replace("/main.php", "", $SITE_ROOT);
+	$SITE_ROOT = str_replace(array($_SERVER['DOCUMENT_ROOT'], '/main.php') , '', $_SERVER['SCRIPT_FILENAME']);
 }
 
 
-include ("./utils/HttpUtils.php");
-include ("./Auth/AuthManager.php");
-include './db/dbConnection.php';
+include (sprintf('%s/utils/HttpUtils.php', $DIR));
+include (sprintf('%s/Auth/AuthManager.php', $DIR));
+include (sprintf('%s/db/dbConnection.php', $DIR));
 
-$url = (array_key_exists("REQUEST_URI", $_SERVER) ? $_SERVER["REQUEST_URI"] : $_SERVER["HTTP_X_ORIGINAL_URL"]); //strip off site root and GET query
-if($SITE_ROOT != "") $url = str_replace($SITE_ROOT, "", $url);
+$url = (array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : $_SERVER["HTTP_X_ORIGINAL_URL"]); //strip off site root and GET query
+if($SITE_ROOT != '') $url = str_replace($SITE_ROOT, '', $url);
 
-if(strpos($url, "?")) $url = substr($url, 0, strpos($url, "?"));
-$url = trim($url, "/");
+if(strpos($url, '?')) $url = substr($url, 0, strpos($url, '?'));
+$url = trim($url, '/');
 $url = urldecode($url);
 
 
 
-include "./Classes/PageSettings.php";
-include ("./Classes/configManager.php");
-include ("./Classes/Logger.php");
+include sprintf('%s/Classes/PageSettings.php', $DIR);
+include (sprintf('%s/Classes/configManager.php', $DIR));
+include (sprintf('%s/Classes/Logger.php', $DIR));
 /*
  * Ec Class declatratioions
 */
 
-include("./Classes/EcProject.php");
-include("./Classes/EcTable.php");
-include("./Classes/EcField.php");
-include ("./Classes/EcOption.php");
-include ("./Classes/EcEntry.php");
+include(sprintf('%s/Classes/EcProject.php', $DIR));
+include(sprintf('%s/Classes/EcTable.php', $DIR));
+include(sprintf('%s/Classes/EcField.php', $DIR));
+include (sprintf('%s/Classes/EcOption.php', $DIR));
+include (sprintf('%s/Classes/EcEntry.php', $DIR));
 /*
  * End of Ec Class definitions
 */
 
-$cfg = new ConfigManager("ec/epicollect.ini");
+$cfg = new ConfigManager(sprintf('%sec/epicollect.ini', $DIR));
 
 function genStr()
 {
-	$str = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	$str = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 	$str = str_shuffle($str);
 	$str = substr($str, -22);
 }
 
-if($cfg->settings["security"]["use_ldap"] && !function_exists("ldap_connect"))
+if($cfg->settings['security']['use_ldap'] && !function_exists('ldap_connect'))
 {
-	$cfg->settings["security"]["use_ldap"] = false;
+	$cfg->settings['security']['use_ldap'] = false;
 	$cfg->writeConfig();
 }
 
 
-if(!array_key_exists("salt",$cfg->settings["security"]) || $cfg->settings["security"]["salt"] == "")
+if(!array_key_exists('salt',$cfg->settings['security']) || $cfg->settings['security']['salt'] == '')
 {
 	$str = genStr();
-	$cfg->settings["security"]["salt"] = $str;
+	$cfg->settings['security']['salt'] = $str;
 	$cfg->writeConfig();
 }
 
@@ -105,8 +103,8 @@ function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 
 set_error_handler('handleError', E_ALL);
 
-$DEFAULT_OUT = $cfg->settings["misc"]["default_out"];
-$log = new Logger("Ec2");
+$DEFAULT_OUT = $cfg->settings['misc']['default_out'];
+$log = new Logger('Ec2');
 $db = false;
 
 $auth = new AuthManager();
@@ -188,7 +186,8 @@ function setupDB()
 			}
 		}
 	}
-	flash("Please sign in to register as the first administartor of this server. $res");
+	
+	flash(sprintf("Please sign in to register as the first administartor of this server. %s", $res));
 	loginHandler();
 }
 
@@ -216,23 +215,23 @@ function regexEscape($s)
 
 function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 {
-	global $db, $SITE_ROOT, $auth;
+	global $db, $SITE_ROOT, $DIR, $auth;
 
-	$template = file_get_contents("./html/$baseUri");
-	$templateVars["SITE_ROOT"] = ltrim($SITE_ROOT, "\\");
-	$templateVars["uid"] = md5($_SERVER["HTTP_HOST"]);
+	$template = file_get_contents(sprintf('%shtml/%s', $DIR, trim( $baseUri,'.')));
+	$templateVars['SITE_ROOT'] = ltrim($SITE_ROOT, '\\');
+	$templateVars['uid'] = md5($_SERVER['HTTP_HOST']);
 
 
 	// Is there a user logged in?
 
-	$flashes = "";
+	$flashes = '';
 
 
-	if(array_key_exists("flashes", $_SESSION) && is_array($_SESSION["flashes"]))
+	if(array_key_exists('flashes', $_SESSION) && is_array($_SESSION['flashes']))
 	{
-		while($flash = array_pop($_SESSION["flashes"]))
+		while($flash = array_pop($_SESSION['flashes']))
 		{
-			$flashes .= "<p class=\"flash {$flash["type"]}\">{$flash["msg"]}</p>";
+			$flashes .= sprintf('<p class="flash %s">%s</p>', $flash["type"], $flash["msg"]);
 		}
 	}
 
@@ -244,18 +243,18 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 			//if so put the user's name and a logout option in the login section
 			if($auth->isServerManager())
 			{
-				$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
+				$template = str_replace('{#loggedIn#}', 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
 			}
 			else
 			{
-				$template = str_replace("{#loggedIn#}", 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $template);
+				$template = str_replace('{#loggedIn#}', sprintf('Logged in as %s (%s) <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $auth->getUserNickname(), $auth->getUserEmail()), $template);
 			}
-			$templateVars["userEmail"] = $auth->getUserEmail();
+			$templateVars['userEmail'] = $auth->getUserEmail();
 		}
 		// else show the login link
 		else
 		{
-			$template = str_replace("{#loggedIn#}", '<a href="{#SITE_ROOT#}/login.php">Sign in</a>', $template);
+			$template = str_replace('{#loggedIn#}', '<a href="{#SITE_ROOT#}/login.php">Sign in</a>', $template);
 		}
 		// work out breadcrumbs
 		//$template = str_replace("{#breadcrumbs#}", '', $template);
@@ -269,10 +268,11 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 	if($targetUri)
 	{
 
-		if(file_exists("./html/$targetUri"))
+		$fname = sprintf('%shtml/%s', $DIR, trim( $targetUri,'./'));
+		if(file_exists($fname))
 		{
-			$data = file_get_contents("./html/$targetUri");
-
+			$data = file_get_contents($fname);
+			
 			$fPos = 0;
 			$iStart = 0;
 			$iEnd = 0;
@@ -283,7 +283,7 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 			{
 				//echo "--";
 				// find {{
-				$iStart = strpos($data, "{{", $fPos);
+				$iStart = strpos($data, '{{', $fPos);
 					
 				if($iStart===false || $iStart < $fPos) break;
 				//echo $iStart;
@@ -293,7 +293,7 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 				//echo $iEnd;
 				$id = substr($data, $iStart + 2, ($iEnd-2) - ($iStart));
 				//find matching end {{/}}
-				$sEnd = strpos($data, "{{/$id}}", $iEnd);
+				$sEnd = strpos($data, sprintf('{{/%s}}', $id), $iEnd);
 				$sections[$id] = substr($data, $iEnd + 2, $sEnd - ($iEnd + 2));
 					
 				$fPos = $sEnd + strlen($id) + 3;
@@ -303,56 +303,56 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 		}
 		else
 		{
-			$sections["script"] = "";
-			$sections["main"] = "<h1>404 - page not found</h1>
-				<p>Sorry, the page you were looking for could not be found.</p>";
-			header("HTTP/1.1 404 Page not found");
+			$sections['script'] = '';
+			$sections['main'] = '<h1>404 - page not found</h1>
+				<p>Sorry, the page you were looking for could not be found.</p>';
+			header('HTTP/1.1 404 Page not found');
 		}
 		foreach(array_keys($sections) as $sec)
 		{
 			// do processing
-			$template = str_replace("{#$sec#}", $sections[$sec], $template);
+			$template = str_replace(sprintf('{#%s#}',$sec) , $sections[$sec], $template);
 		}
-		$template = str_replace("{#flashes#}", $flashes, $template);
+		$template = str_replace('{#flashes#}', $flashes, $template);
 	}
 	if($templateVars)
 	{
 		foreach($templateVars as $sec => $cts)
 		{
 			// do processing
-			$template = str_replace("{#$sec#}", $cts, $template);
+			$template = str_replace(sprintf('{#%s#}', $sec), $cts, $template);
 		}
 	}
 
-	$template = preg_replace("/\{#[a-z0-9_]+#\}/i", "", $template);
+	$template = preg_replace('/\{#[a-z0-9_]+#\}/i', '', $template);
 	return $template;
 }
 
 function mimeType($f)
 {
 	$mimeTypes = array(
-			"ico" => "image/x-icon",
-			"png" => "image/png",
-			"gif" => "image/gif",
-			"jpg" => "image/jpeg",
-			"css" => "text/css",
-			"html" => "text/html",
-			"js" => "text/javascript",
-			"json" => "text/javascript",
-			"xml" => "text/xml",
-			"php" => "text/html",
-			"mp4" => "video/mp4"
+			'ico' => 'image/x-icon',
+			'png' => 'image/png',
+			'gif' => 'image/gif',
+			'jpg' => 'image/jpeg',
+			'css' => 'text/css',
+			'html' => 'text/html',
+			'js' => 'text/javascript',
+			'json' => 'text/javascript',
+			'xml' => 'text/xml',
+			'php' => 'text/html',
+			'mp4' => 'video/mp4'
 	);
 
-	$f = preg_replace("/\?.*$/", "", $f);
-	$ext = substr($f, strrpos($f, ".") +1);
+	$f = preg_replace('/\?.*$/', '', $f);
+	$ext = substr($f, strrpos($f, '.') +1);
 	if(array_key_exists($ext, $mimeTypes))
 	{
 		return $mimeTypes[$ext];
 	}
 	else
 	{
-		return "text/plain";
+		return 'text/plain';
 	}
 }
 
@@ -363,60 +363,60 @@ function mimeType($f)
 function defaultHandler()
 {
 	global $url;
-	header("Content-type: " . mimeType($url));
+	header(sprintf('Content-type: $s', mimeType($url)));
 	echo applyTemplate('base.html', "./" . $url);
 }
 
 function loginHandler()
 {
-	$cb_url="";
-	header("Cache-Control: no-cache, must-revalidate");
+	$cb_url='';
+	header('Cache-Control: no-cache, must-revalidate');
 
 	global $auth, $url, $cfg;
-	if(array_key_exists("provider", $_GET))
+	if(array_key_exists('provider', $_GET))
 	{
-		$_SESSION["provider"] = $_GET["provider"];
+		$_SESSION['provider'] = $_GET['provider'];
 		$auth = new AuthManager();
 		$frm = $auth->requestlogin($cb_url);
 	}
 	if(!$auth) $auth = new AuthManager();
-	if (array_key_exists("provider", $_SESSION))
+	if (array_key_exists('provider', $_SESSION))
 	{
-		echo applyTemplate("./base.html", "./loginbase.html", array( "form" => $auth->requestlogin($cb_url, $_SESSION["provider"])));
+		echo applyTemplate('./base.html', './loginbase.html', array( 'form' => $auth->requestlogin($cb_url, $_SESSION['provider'])));
 	}
 	else
 	{
-		echo applyTemplate("./base.html", "./loginbase.html", array( "form" => $auth->requestlogin($cb_url)));
+		echo applyTemplate('./base.html', './loginbase.html', array( 'form' => $auth->requestlogin($cb_url)));
 	}
 
 }
 
 function loginCallback()
 {
-	header("Cache-Control: no-cache, must-revalidate");
+	header('Cache-Control: no-cache, must-revalidate');
 
 	global $auth, $cfg, $db;
 	$db = new dbConnection();
 	if(!$auth) $auth = new AuthManager();
-	$auth->callback($_SESSION["provider"]);
+	$auth->callback($_SESSION['provider']);
 }
 
 function logoutHandler()
 {
-	header("Cache-Control: no-cache, must-revalidate");
+	header('Cache-Control: no-cache, must-revalidate');
 
 	global $auth, $SITE_ROOT;
-	$server = trim($_SERVER["HTTP_HOST"], "/");
-	$root = trim($SITE_ROOT, "/");
+	$server = trim($_SERVER['HTTP_HOST'], '/');
+	$root = trim($SITE_ROOT, '/');
 	if($auth)
 	{
 		$auth->logout();
-		header("location: http://$server/$root/");
+		header(sprintf('location: http://%s/%s/', $server, $root));
 		return;
 	}
 	else
 	{
-		echo "No Auth";
+		echo 'No Auth';
 	}
 }
 
@@ -424,7 +424,7 @@ function uploadHandlerFromExt()
 {
 	global $log;
 	//$flog = fopen('fileUploadLog.log', 'w');
-	if($_SERVER["REQUEST_METHOD"] == "POST")
+	if($_SERVER['REQUEST_METHOD'] == 'POST')
 	{
 		if(count($_FILES) > 0)
 		{
@@ -468,105 +468,105 @@ function projectHome()
 {
 	global $url, $SITE_ROOT, $auth;
 
-
-
-	$url = preg_replace("/\/$/", "", $url);
-	$url = ltrim($url, "/");
+	$eou = strlen($url) - 1;
+	if($url{$eou} == '/')
+	{
+		$url{$eou} = '';
+	}
+	$url = ltrim($url, '/');
 
 	$prj = new EcProject();
 	if(array_key_exists('name', $_GET))
 	{
-		$prj->name = $_GET["name"];
+		$prj->name = $_GET['name'];
 	}
 	else
 	{
-		$prj->name = preg_replace("/\.(xml|json)$/", "", $url);
+		$prj->name = preg_replace('/\.(xml|json)$/', '', $url);
 	}
+	
 	$prj->fetch();
 
 	if(!$prj->id)
 	{
-		$vals = array("error" => "Project could not be found");
-		echo applyTemplate("base.html","./404.html",$vals);
-		return;
+		$vals = array('error' => 'Project could not be found');
+		echo applyTemplate('base.html','./404.html', $vals);
+		die;
 	}
 
-	if(!$prj->isPublic && !$auth->isLoggedIn() && !preg_match("/\.xml$/",$url))
+	if(!$prj->isPublic && !$auth->isLoggedIn() && !preg_match('/\.xml$/',$url))
 	{
-		flash("The is a private project, please log in to view the project.");
+		flash('This is a private project, please log in to view the project.');
 		loginHandler($url);
 		return;
 	}
 	else if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2)
 	{
-		flash("You do not have permission to view {$prj->name}.");
-		header("location: {$SITE_ROOT}");
+		flash(sprintf('You do not have permission to view %s.', $prj->name));
+		header(sprintf('location: %s', $SITE_ROOT));
 		return;
 	}
 
 
-
 	//echo strtoupper($_SERVER["REQUEST_METHOD"]);
 
-	if(strtoupper($_SERVER["REQUEST_METHOD"]) == "GET")
+	if(strtoupper($_SERVER['REQUEST_METHOD']) == 'GET')
 	{
-		if(array_key_exists("HTTP_ACCEPT", $_SERVER)) $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "$SITE_ROOT/") + 1);
-		$ext = substr($url, strrpos($url, ".") + 1);
-		$format = $ext != "" ? $ext : $format;
+		if(array_key_exists('HTTP_ACCEPT', $_SERVER)) $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "$SITE_ROOT/") + 1);
+		$ext = substr($url, strrpos($url, '.') + 1);
+		$format = $ext != '' ? $ext : $format;
 		switch($format){
-			case "xml":
-				header("Cache-Control: no-cache, must-revalidate");
-				header ("Content-type: text/xml; charset=utf-8;");
+			case 'xml':
+				header('Cache-Control: no-cache, must-revalidate');
+				header ('Content-type: text/xml; charset=utf-8;');
 				echo $prj->toXML();
 				break;
 			default:
-				header("Cache-Control: no-cache, must-revalidate");
-			header ("Content-type: text/html;");
-
-
+				header('Cache-Control: no-cache, must-revalidate');
+				header ('Content-type: text/html;');
 				
-			try{
-				//$userMenu = '<h2>View Data</h2><span class="menuItem"><img src="images/map.png" alt="Map" /><br />View Map</span><span class="menuItem"><img src="images/form_view.png" alt="List" /><br />List Data</span>';
-				//$adminMenu = '<h2>Project Administration</h2><span class="menuItem"><a href="./' . $prj->name . '/formBuilder.html"><img src="'.$SITE_ROOT.'/images/form_small.png" alt="Form" /><br />Create or Edit Form(s)</a></span><span class="menuItem"><a href="editProject.html?name='.$prj->name.'"><img src="'.$SITE_ROOT.'/images/homepage_update.png" alt="Home" /><br />Update Project</a></span>';
-				$tblList = "";
-				foreach($prj->tables as $tbl)
-				{
-					$tblList .= "<div class=\"tblDiv\"><a class=\"tblName\" href=\"{$prj->name}/{$tbl->name}\">{$tbl->name}</a><a href=\"{$prj->name}/{$tbl->name}\">View All Data</a> | <form name=\"{$tbl->name}SearchForm\" action=\"./{$prj->name}/{$tbl->name}\" method=\"GET\"> Search for {$tbl->key} <input type=\"text\" name=\"{$tbl->key}\" /> <a href=\"javascript:document.{$tbl->name}SearchForm.submit();\">Search</a></form></div>";
-				}
-
-				$imgName = $prj->image ? $prj->image : "images/projectPlaceholder.png";
-
-				if(file_exists($imgName))
-				{
-					$imgSize = getimagesize($imgName);
-				}
-				else
-				{
-					$imgSize = array(0,0);
-				}
-
-				$vals =  array(
-							"projectName" => $prj->name,
-							"projectDescription" => $prj->description && $prj->description != "" ? $prj->description : "Project homepage for {$prj->name}",
-							"projectImage" => $imgName,
-							"imageWidth" => $imgSize[0],
-							"imageHeight" =>$imgSize[1],
-							"tables" => $tblList,
-							"adminMenu" => "<a href=\"{$prj->name}/manage\" class=\"button\">Manage Project</a> <a href=\"{$prj->name}/formBuilder\" class=\"button\">Edit Forms</a>",
-							"userMenu" => ""
-
-						);
-						
-
-						echo applyTemplate("base.html","./projectHome.html",$vals);
-						break;
+				try{
+					//$userMenu = '<h2>View Data</h2><span class="menuItem"><img src="images/map.png" alt="Map" /><br />View Map</span><span class="menuItem"><img src="images/form_view.png" alt="List" /><br />List Data</span>';
+					//$adminMenu = '<h2>Project Administration</h2><span class="menuItem"><a href="./' . $prj->name . '/formBuilder.html"><img src="'.$SITE_ROOT.'/images/form_small.png" alt="Form" /><br />Create or Edit Form(s)</a></span><span class="menuItem"><a href="editProject.html?name='.$prj->name.'"><img src="'.$SITE_ROOT.'/images/homepage_update.png" alt="Home" /><br />Update Project</a></span>';
+					$tblList = '';
+					foreach($prj->tables as $tbl)
+					{
+						$tblList .= "<div class=\"tblDiv\"><a class=\"tblName\" href=\"{$prj->name}/{$tbl->name}\">{$tbl->name}</a><a href=\"{$prj->name}/{$tbl->name}\">View All Data</a> | <form name=\"{$tbl->name}SearchForm\" action=\"./{$prj->name}/{$tbl->name}\" method=\"GET\"> Search for {$tbl->key} <input type=\"text\" name=\"{$tbl->key}\" /> <a href=\"javascript:document.{$tbl->name}SearchForm.submit();\">Search</a></form></div>";
+					}
+	
+					$imgName = $prj->image ? $prj->image : "images/projectPlaceholder.png";
+	
+					if(file_exists($imgName))
+					{
+						$imgSize = getimagesize($imgName);
+					}
+					else
+					{
+						$imgSize = array(0,0);
+					}
+	
+					$vals =  array(
+						'projectName' => $prj->name,
+						'projectDescription' => $prj->description && $prj->description != "" ? $prj->description : "Project homepage for {$prj->name}",
+						'projectImage' => $imgName,
+						'imageWidth' => $imgSize[0],
+						'imageHeight' =>$imgSize[1],
+						'tables' => $tblList,
+						'adminMenu' => "<a href=\"{$prj->name}/manage\" class=\"button\">Manage Project</a> <a href=\"{$prj->name}/formBuilder\" class=\"button\">Edit Forms</a>",
+						'userMenu' => ''
+	
+					);
+					
+					
+					echo applyTemplate('base.html','projectHome.html',$vals);
+					break;
 				}
 				catch(Exception $e)
 				{
 					
-				$vals = array("error" => $e->getMessage());
-				echo applyTemplate("base.html","./error.html",$vals);
-			}
+					$vals = array('error' => $e->getMessage());
+					echo applyTemplate('base.html','error.html',$vals);
+				}
 		}
 	}
 	elseif(strtoupper($_SERVER["REQUEST_METHOD"]) == "POST") //
@@ -905,7 +905,7 @@ function siteHome()
 		$vals["projects"] .= "<p style=\"margin-top:1.2em;\"> <a href=\"createProject.html	\">create a new project</a></p>";
 	}
 
-	echo applyTemplate("base.html","./index.html",$vals);
+	echo applyTemplate("base.html","index.html",$vals);
 }
 
 
@@ -1430,7 +1430,7 @@ function formHandler()
 
 	global $url,  $log, $auth;
 
-	$format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "/") + 1);
+	$format = substr($_SERVER['HTTP_ACCEPT'], strpos($_SERVER['HTTP_ACCEPT'], '/') + 1);
 	$ext = substr($url, strrpos($url, ".") + 1);
 	$format = $ext != "" ? $ext : $format;
 
@@ -1473,12 +1473,13 @@ function formHandler()
 		return;
 	}
 	
-	if($_SERVER["REQUEST_METHOD"] == "POST")
+	if($_SERVER["REQUEST_METHOD"] == 'POST')
 	{
 		
 		$log->write("debug", json_encode($_POST));
 		header("Cache-Control: no-cache, must-revalidate");
 		
+		print_r(array_keys($_FILES));
 		$_f = getValIfExists($_FILES, "upload");
 		
 		if($_f)
@@ -1487,7 +1488,10 @@ function formHandler()
 			if(preg_match("/\.csv$/", $_f["name"]))
 			{
 				ini_set("max_execution_time", 600);
-				$res = $prj->tables[$frmName]->parseEntriesCSV(file_get_contents($_f["tmp_name"]));
+				$fh = fopen($_f["tmp_name"], 'r');
+				$res = $prj->tables[$frmName]->parseEntriesCSV($fh);
+				fclose($fh);
+				unset ($fh);
 			}
 			elseif(preg_match("/\.xml$/", $_f["name"]))
 			{
@@ -1498,7 +1502,6 @@ function formHandler()
 		}
 		else
 		{
-		
 			$ent = $prj->tables[$frmName]->createEntry();
 				
 			$ent->created = $_POST["created"];
@@ -1543,27 +1546,27 @@ function formHandler()
 	}
 	else
 	{
-		ini_set("max_execution_time", 60);
+		ini_set('max_execution_time', 60);
 		
 		$offset = array_key_exists('start', $_GET) ? $_GET['start'] : 0;
 		$limit = array_key_exists('limit', $_GET) ? $_GET['limit'] : 0;;
 		
 		
 		switch($format){
-			case "json":
-					header("Cache-Control: no-cache, must-revalidate");
-					header("Content-Type: application/json");
+			case 'json':
+					header('Cache-Control: no-cache, must-revalidate');
+					header('Content-Type: application/json');
 					
 					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "json");
 					if($res !== true) die($res);
-					echo "[";		
+					echo '[';		
 					$i = 0;			
 					while($str = $prj->tables[$frmName]->recieve(1))
 					{
-						echo ($i > 0 ? ",$str" : $str);
+						echo ($i > 0 ? sprintf(',%s', $str) : $str);
 						$i++;
 					}
-					echo "]";
+					echo ']';
 					return;
 					
 				case "xml":
@@ -1828,7 +1831,7 @@ function formHandler()
 	<script type=\"text/javascript\" src=\"{$SITE_ROOT}/js/markerclusterer.js\"></script>
 	<script src=\"http://www.google.com/jsapi\"></script>" : "";
 	$vars = array("prevForm" => $p,"projectName" => $prj->name, "formName" => $frmName, "curate" =>  $permissionLevel > 1 ? "true" : "false", "mapScript" => $mapScript );
-	echo applyTemplate("base.html", "./FormHome.html", $vars);
+	echo applyTemplate('base.html', './FormHome.html', $vars);
 }
 
 function entryHandler()
@@ -2944,78 +2947,77 @@ $hasManagers = $db->connected && count($auth->getServerManagers()) > 0;
 
 $pageRules = array(
 //static file handlers
-		"" => new PageRule("index.html", 'siteHome'),
-		"index.html?" => new PageRule("index.html", 'siteHome'),
-		"[a-zA-Z0-1]+\.html" => new PageRule(null, 'defaultHandler'),
-		"images/.+" => new PageRule(),
-		"favicon\..+" => new PageRule(),
-		"Ext/.+" => new PageRule(),
-		"js/.+" => new PageRule(),
-		"css/.+" => new PageRule(),
+		'' => new PageRule('index.html', 'siteHome'),
+		'index.html?' => new PageRule('index.html', 'siteHome'),
+		'[a-zA-Z0-1]+\.html' => new PageRule(null, 'defaultHandler'),
+		'images/.+' => new PageRule(),
+		'favicon\..+' => new PageRule(),
+		'js/.+' => new PageRule(),
+		'css/.+' => new PageRule(),
 
-		"html/projectIFrame.html" => new PageRule(),
+		'html/projectIFrame.html' => new PageRule(),
 
 //project handlers
-		"pc" => new PageRule(null, 'projectCreator', true),
-		"create" => new PageRule(null, 'createFromXml', true),
-		"createProject.html" => new PageRule(null, 'createProject', true),
-		"projectHome.html" => new PageRule(null, 'projectHome'),
+		'pc' => new PageRule(null, 'projectCreator', true),
+		'create' => new PageRule(null, 'createFromXml', true),
+		'createProject.html' => new PageRule(null, 'createProject', true),
+		'projectHome.html' => new PageRule(null, 'projectHome'),
 
-		"createOrEditForm.html" => new PageRule(null ,'formBuilder', true),
-		"uploadProject" =>new PageRule(null, 'uploadProjectXML', true),
-		"getForm" => new PageRule(null, 'getXML',	 true),
-		"validate" => new PageRule(null, 'validate',false),
-//"listXML" => new PageRule(null, 'listXML',false),
+		'createOrEditForm.html' => new PageRule(null ,'formBuilder', true),
+		'uploadProject' =>new PageRule(null, 'uploadProjectXML', true),
+		'getForm' => new PageRule(null, 'getXML',	 true),
+		'validate' => new PageRule(null, 'validate',false),
+//'listXML' => new PageRule(null, 'listXML',false),
 //login handlers
-//"Auth/loginCallback.php" => new PageRule(null,'loginCallbackHandler'),
-		"login.php" => new PageRule(null,'loginHandler', false, true),
-		"loginCallback" => new PageRule(null,'loginCallback', false, true),
-		"logout" => new PageRule(null, 'logoutHandler'),
-		"chooseProvider.html" => new PageRule(null, 'chooseProvider'),
+//'Auth/loginCallback.php' => new PageRule(null,'loginCallbackHandler'),
+		'login.php' => new PageRule(null,'loginHandler', false, true),
+		'loginCallback' => new PageRule(null,'loginCallback', false, true),
+		'logout' => new PageRule(null, 'logoutHandler'),
+		'chooseProvider.html' => new PageRule(null, 'chooseProvider'),
 
 //user handlers
-		"updateUser.html" => new PageRule(null, 'updateUser', true),
-		"saveUser" =>new PageRule(null, 'saveUser', true),
-		"user/manager/?" => new PageRule(null, 'managerHandler', true),
-		"user/.*@.*?" => new PageRule(null, 'userHandler', true),
-		"admin" => new PageRule(null, 'admin', $hasManagers),
-		"listUsers" => new PageRule(null, 'listUsers', $hasManagers),
-		"disableUser" => new PageRule(null, 'disableUser',true),
-		"enableUser" => new PageRule(null, 'enableUser',true),
-		"resetPassword" => new PageRule(null, 'resetPassword',true),
+		'updateUser.html' => new PageRule(null, 'updateUser', true),
+		'saveUser' =>new PageRule(null, 'saveUser', true),
+		'user/manager/?' => new PageRule(null, 'managerHandler', true),
+		'user/.*@.*?' => new PageRule(null, 'userHandler', true),
+		'admin' => new PageRule(null, 'admin', $hasManagers),
+		'listUsers' => new PageRule(null, 'listUsers', $hasManagers),
+		'disableUser' => new PageRule(null, 'disableUser',true),
+		'enableUser' => new PageRule(null, 'enableUser',true),
+		'resetPassword' => new PageRule(null, 'resetPassword',true),
 		
 		
 //generic, dynamic handlers
-		"getControls" =>  new PageRule(null, 'getControlTypes'),
-		"uploadFile.php" => new PageRule(null, 'uploadHandlerFromExt'),
-		"ec/uploads/.+\.(jpg)|(mp4)$" => new PageRule(null, 'getMedia'),
-		"ec/uploads/.+" => new PageRule(null, null),
+		'getControls' =>  new PageRule(null, 'getControlTypes'),
+		'uploadFile.php' => new PageRule(null, 'uploadHandlerFromExt'),
+		'ec/uploads/.+\.(jpg)|(mp4)$' => new PageRule(null, 'getMedia'),
+		'ec/uploads/.+' => new PageRule(null, null),
 	
-		"uploadTest.html" => new PageRule(null, 'defaultHandler', true),
-		"test" => new PageRule(null, 'siteTest', false),
-		"createDB" => new PageRule(null, 'setupDB',$hasManagers),
-		"writeSettings" => new PageRule(null, 'writeSettings', $hasManagers),
+		'uploadTest.html' => new PageRule(null, 'defaultHandler', true),
+		'test' => new PageRule(null, 'siteTest', false),
+		'createDB' => new PageRule(null, 'setupDB',$hasManagers),
+		'writeSettings' => new PageRule(null, 'writeSettings', $hasManagers),
 		
-		"markers/point" => new PageRule(null, 'getPointMarker'),
-		"markers/cluster" => new PageRule(null, 'getClusterMarker'),
+		'markers/point' => new PageRule(null, 'getPointMarker'),
+		'markers/cluster' => new PageRule(null, 'getClusterMarker'),
 //to API
-		"[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|/)?" =>new PageRule(null, 'projectHome'),
-		"[a-zA-Z0-9_-]+/upload" =>new PageRule(null, 'uploadData'),
-		"[a-zA-Z0-9_-]+/download" =>new PageRule(null, 'downloadData'),
-		"[a-zA-Z0-9_-]+/summary" =>new PageRule(null, 'projectSummary'),
-		"[a-zA-Z0-9_-]+/usage" =>  new PageRule(null, 'projectUsage'),
-		"[a-zA-Z0-9_-]+/formBuilder(\.html)?" =>  new PageRule(null, 'formBuilder', true),
-		"[a-zA-Z0-9_-]+/editProject.html" =>new PageRule(null, 'editProject', true),
-		"[a-zA-Z0-9_-]+/update" =>new PageRule(null, 'updateProject', true),
-		"[a-zA-Z0-9_-]+/manage" =>new PageRule(null, 'updateProject', true),
-		"[a-zA-Z0-9_-]+/updateStructure" =>new PageRule(null, 'updateXML', true),
-		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__stats" =>new PageRule(null, 'tableStats'),
-		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia" =>new PageRule(null, 'uploadMedia'),
+		'[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|/)?' =>new PageRule(null, 'projectHome'),
+		'[a-zA-Z0-9_-]+/upload' =>new PageRule(null, 'uploadData'),
+		'[a-zA-Z0-9_-]+/download' =>new PageRule(null, 'downloadData'),
+		'[a-zA-Z0-9_-]+/summary' =>new PageRule(null, 'projectSummary'),
+		'[a-zA-Z0-9_-]+/usage' =>  new PageRule(null, 'projectUsage'),
+		'[a-zA-Z0-9_-]+/formBuilder(\.html)?' =>  new PageRule(null, 'formBuilder', true),
+		'[a-zA-Z0-9_-]+/editProject.html' =>new PageRule(null, 'editProject', true),
+		'[a-zA-Z0-9_-]+/update' =>new PageRule(null, 'updateProject', true),
+		'[a-zA-Z0-9_-]+/manage' =>new PageRule(null, 'updateProject', true),
+		'[a-zA-Z0-9_-]+/updateStructure' =>new PageRule(null, 'updateXML', true),
+		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__stats' =>new PageRule(null, 'tableStats'),
+		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
 		
-		"[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.kml|\.js|\.css|/)?" => new PageRule(null, 'formHandler'),
+		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.kml|\.js|\.css|/)?' => new PageRule(null, 'formHandler'),
 
-//"[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage" => new  => new PageRule(null, formUsage),
-		"[^/\.]*/[^/\.]+/[^/\.]*(\.xml|\.json|/)?" => new PageRule(null, 'entryHandler')
+//'[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage' => new  => new PageRule(null, formUsage),
+		'[^/\.]*/[^/\.]+/[^/\.]*(\.xml|\.json|/)?' => new PageRule(null, 'entryHandler')
 
 //forTesting
 
@@ -3049,9 +3051,21 @@ else
 
 if($rule)
 {
-	if($rule->secure && !getValIfExists($_SERVER, "HTTPS") && @file_exists("https://{$_SERVER["HTTP_HOST"]}/{$SITE_ROOT}/{$url}"))
+	if($rule->secure && !getValIfExists($_SERVER, "HTTPS"))
 	{
-		header("location: https://{$_SERVER["HTTP_HOST"]}/{$SITE_ROOT}/{$url}");
+		$https_enabled = false;
+		try{
+			$https_enabled = file_exists("https://{$_SERVER["HTTP_HOST"]}/{$SITE_ROOT}/{$url}");
+		}
+		catch(Exception $e)
+		{
+			$https_enabled = false;
+		}
+		if($https_enabled)
+		{
+			header("location: https://{$_SERVER["HTTP_HOST"]}/{$SITE_ROOT}/{$url}");
+			die();
+		}
 	}
 	elseif($rule->secure)
 	{

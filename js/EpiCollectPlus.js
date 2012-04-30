@@ -31,7 +31,7 @@ EpiCollect.LoadingOverlay = function()
 	
 	this.start = function()
 	{
-		size = Math.min(window.innerWidth, window.innerHeight) * 0.6;	
+		size = Math.min(window.innerWidth, window.innerHeight, 800) * 0.4;	
 		
 		$("#ecplus_loader").css({"width"  : size + "px", "height" : size + "px", "position" : "fixed", "top" : "50%", "left" : "50%", "margin-left" : "-" + (size/2) + "px", "margin-top" : "-" + (size/2) + "px", "border-radius" :"20px"});
 		
@@ -1392,7 +1392,14 @@ EpiCollect.Field = function()
 		}
 		else
 		{ 
-			return value;
+			if(!value || (typeof value == "string" && (value == "undefined" || value.match(/null/i))))
+			{
+				return '';
+			}
+			else
+			{
+				return value;
+			}
 		}
 	}
 	
