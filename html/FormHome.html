@@ -487,14 +487,25 @@
 			
 			function lastPage()
 			{
-				pageNo = Math.floor(Number($("#total").text()) / numEnts, numEnts);
+				
+				var total = Number($("#total").text());
+				if(total == 0 )return;
+				var rem = total % numEnts;
+				if(rem == 0) rem = numEnts;
+				pageNo = (total - rem) / numEnts;
 				getData()
 			}
 			
 			function turnPage()
 			{
-				pageNo++;
-				getData();
+				var total = Number($("#total").text());
+				var last = Number($("#end").text());
+				
+				if(total > last)
+				{
+					pageNo++;
+					getData();
+				}
 			}
 			
 			function turnBackPage()
@@ -1058,7 +1069,25 @@
 				<a href="./{#formName#}.xml" target="__blank"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_200_download.png" title="Dowload Data as XML" alt="Download XML"></a>
 			</p>
 			
-			<p class="ecplus-table-footer"> <a href="javascript:firstPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_170_step_backward.png" alt="first"/></a> <a href="javascript:turnBackPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_350_playback.png" alt="previous"/></a><span id="start"></span> to <span id="end"></span> of <span id="total"></span><a href="javascript:turnPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/></a><a href="javascript:lastPage();"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/></a></p>
+			<p class="ecplus-table-footer">
+				<a href="javascript:firstPage();" title="Go to first page">
+					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_170_step_backward.png" alt="first"/>
+				</a> 
+				<a href="javascript:turnBackPage();" title="Go to previous page">
+					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_350_playback.png" alt="previous"/>
+				</a>
+				<span id="start"></span> to <span id="end"></span> of <span id="total"></span>
+				<a href="javascript:getData();"  title="Refresh page">
+					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_081_refresh.png" alt="next"/>
+				</a>
+			
+				<a href="javascript:turnPage();"  title="Go to next page">
+					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/>
+				</a>
+				<a href="javascript:lastPage();"   title="Go to final page">
+					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/>
+				</a>
+			</p>
 			<hr />
 			<h3>Upload data from a CSV file</h3>
 			<form method="POST" enctype="multipart/form-data" >

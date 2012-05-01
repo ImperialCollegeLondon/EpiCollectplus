@@ -1466,7 +1466,8 @@ function formHandler()
 
 	global $url,  $log, $auth;
 
-	$format = substr($_SERVER['HTTP_ACCEPT'], strpos($_SERVER['HTTP_ACCEPT'], '/') + 1);
+	$http_accept = getValIfExists($_SERVER, 'HTTP_ACCEPT');
+	$format = ($http_accept ? substr($http_accept, strpos($http_accept, '/') + 1) : '');
 	$ext = substr($url, strrpos($url, ".") + 1);
 	$format = $ext != "" ? $ext : $format;
 

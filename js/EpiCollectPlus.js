@@ -22,7 +22,7 @@ EpiCollect.LoadingOverlay = function()
 	ctx = $("#ecplus_loader")[0].getContext('2d');
 	ctx.translate(size/2, size/2);
 	ctx.font = "18pt sans-serif";
-	ctx.globalCompositeOperation = "source-out";
+	
 	
 	this.setMessage = function (msg)
 	{

@@ -305,6 +305,16 @@ tr.alt
 	vertical-align: middle;
 }
 
+.ecplus-table-footer span:first-child
+{
+	margin-left : 0.5em;
+}
+
+.ecplus-table-footer span:last-child
+{
+	margin-right : 0.5em;
+}
+
 /* general */
 
 .locationControl
