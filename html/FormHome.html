@@ -377,6 +377,7 @@
 				
 				$(".ecplus-data th").resizable({
 					handles : "e",
+					alsoResize : ".ecplus-data",
 					resize	: function(event, ele)
 					{
 						$("td." + ele.element[0].className.substring(0, ele.element[0].className.indexOf(" "))).css({ "max-width" : (ele.element.width()-5) + "px"});
@@ -385,29 +386,27 @@
 				
 				$(".ecplus-data th").append("<img src=\"../images/uparrow.png\" class=\"asc\" width=\"12\" /><img src=\"../images/downarrow.png\" class=\"desc\" width=\"12\" />")
 				$(".ecplus-data th").click(function(evt){
+					var newSortCol = evt.target.classList[0];
 					
-						var newSortCol = evt.target.classList[0];
-						
-						
-						$(".ecplus-data th").removeClass("desc");
-						$(".ecplus-data th").removeClass("asc");
-			
-						console.debug(sortCol + " " + sortDir);
-						window.evt = evt;
-						if(newSortCol == sortCol && sortDir == "asc")
-						{
-							$(evt.target).addClass("desc");
-							sortDir = "desc";
-						}
-						else
-						{
-							$(evt.target).addClass("asc");
-							sortDir = "asc";
-						}
-						sortCol = newSortCol;
-						getData();
-						evt.preventDefault();
 					
+					$(".ecplus-data th").removeClass("desc");
+					$(".ecplus-data th").removeClass("asc");
+		
+					console.debug(sortCol + " " + sortDir);
+					window.evt = evt;
+					if(newSortCol == sortCol && sortDir == "asc")
+					{
+						$(evt.target).addClass("desc");
+						sortDir = "desc";
+					}
+					else
+					{
+						$(evt.target).addClass("asc");
+						sortDir = "asc";
+					}
+					sortCol = newSortCol;
+					getData();
+					evt.preventDefault();
 				});
 				
 				for(fld in project.forms[formName].fields)
@@ -580,23 +579,8 @@
 						
 						html += "<td class=\"" + f + "\">";
 						
-						//if(fld.type == "location" || fld.type == "gps")
-						//{
-						//	if(entries[i][f] == undefined)
-						//	{
-						//		html += "&nbsp;";
-						//	}
-						//	else
-						//	{
-						//		val = entries[i][f];
-						//		html +=  val.latitude + "," + val.longitude;
-						//	}
-						//}
-						//else
-						//{
-						//	html += entries[i][f] == undzefined ? "&nbsp;" : entries[i][f];
-						//}
-						html += fld.formatValue(entries[i][f]);
+					
+						html += fld.formatValue(entries[i][f], entries[i]);
 						html += "</td>"					
 					}
 					if(nextFormName) html += "<td>" + entries[i][nextFormName + "_entries"]  + "</td>";
@@ -1064,9 +1048,9 @@
 				<span class="ecplus-toolbar-divider">&nbsp;</span>
 				<span id ="showHideFields" class="ecplus-dropdown"></span> 
 				<span class="ecplus-toolbar-divider">&nbsp;</span> 
-				<a href="./{#formName#}.csv"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_200_download.png" title="Dowload Data as CSV" alt="Download CSV"></a>
-				<a href="./{#formName#}.tsv"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_200_download.png" title="Dowload Data as TSV" alt="Download TSV"></a>
-				<a href="./{#formName#}.xml" target="__blank"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_200_download.png" title="Dowload Data as XML" alt="Download XML"></a>
+				<a href="./{#formName#}.csv"><img src="{#SITE_ROOT#}/images/downloadcsv.png" title="Dowload Data as CSV" alt="Download CSV"></a>
+				<a href="./{#formName#}.tsv"><img src="{#SITE_ROOT#}/images/downloadtab.png" title="Dowload Data as TSV" alt="Download TSV"></a>
+				<a href="./{#formName#}.xml" target="__blank"><img src="{#SITE_ROOT#}/images/downloadxml.png" title="Dowload Data as XML" alt="Download XML"></a>
 			</p>
 			
 			<p class="ecplus-table-footer">

@@ -326,7 +326,7 @@
 			$this->fields[$this->key]->key = true;
 		}
 		
-		public function ask($args = false, $offset = 0, $limit = 0, $sortField = 'created', $sortDir = 'asc', $exact = false, $format = 'object', $includeChildCount = false)
+		public function ask($args = false, $offset = 0, $limit = 0, $sortField = 'created', $sortDir = 'asc', $exact = false, $format = 'object', $includeChildCount = true)
 		{
 			global $db;
 			
@@ -378,7 +378,7 @@
 				{
 					if(array_key_exists($k, $this->fields) && $this->fields[$k]->type != "")
 					{
-						$join .= sprintf(' LEFT JOIN entryvalue ev%s on e.idEntry = ev%s.entry', $k, $k);
+						$join .= sprintf(' LEFT JOIN entryvalue ev%s on e.idEntry = ev%s.entry AND ev%s.projectName = \'%s\' AND ev%s.formName = \'%s\' AND ev%s.fieldName = \'%s\'', $k, $k, $k, $this->projectName, $k, $this->name, $k, $k);
 						if($exact)
 						{
 							$where .= sprintf(' AND ev%s.value = \'%s\'', $k, $v);
@@ -391,20 +391,20 @@
 				}
 			}
 			
-			for($i = count($this->branchfields); $includeChildCount && $i--;)
+			for($i = count($this->branchfields); $i--;)
 			{
 				if($format == 'json'){
-					$select .= sprintf(' \', \'%s\' : \' , IFNULL(ev%s_entries.count, 0) ,', $this->branchfields[$i], $this->branches[$i]);
+					$select .= sprintf(' \', "%s" : \' , COUNT(distinct ev%s_entries.entry) ,', $this->branchfields[$i], $this->branches[$i]);
 				}elseif($format == 'xml'){
-					$select .= sprintf(' \'<%s>\', IFNULL(ev%s_entries.count, 0), \'</%s>\',', $this->branchfields[$i], $this->branches[$i], $this->branchfields[$i]);
+					$select .= sprintf(' \'<%s>\', COUNT(distinct ev%s_entries.entry), \'</%s>\',', $this->branchfields[$i], $this->branches[$i], $this->branchfields[$i]);
 				}elseif($format == 'csv'){
-					$select .= sprintf(', IFNULL(ev%s_entries.count, 0) ', $this->branches[$i]);
+					$select .= sprintf(', COUNT(distinct ev%s_entries.entry) ', $this->branches[$i]);
 				}elseif($format == 'tsv'){
-					$select .= sprintf(', IFNULL(ev%s_entries.count, 0)  ', $this->branches[$i]);
+					$select .= sprintf(', COUNT(distinct ev%s_entries.entry)  ', $this->branches[$i]);
 				}elseif($format == 'kml'){
 					throw new Exception ('Format not yet implemented');
 				}elseif($format == 'tskv'){
-					$select .= sprintf(',%s , IFNULL(ev%s_entries.count, 0)', $this->branchfields[$i], $this->branches[$i]);
+					$select .= sprintf(',%s , COUNT(distinct ev%s_entries.entry)', $this->branchfields[$i], $this->branches[$i]);
 				}elseif($format != 'object'){
 					//throw new Exception ('Format not specified');
 				}
@@ -413,27 +413,34 @@
 				{
 					$join .= sprintf(' LEFT JOIN entryvalue ev%s on ev%s.entry = e.idEntry and ev%s.fieldName = \'%s\'', $this->key,$this->key,$this->key,$this->key);
 				}
-				$join .= sprintf(' LEFT JOIN (select count(distinct entry) as count, value from entryValue where projectName = \'%s\' AND formName = \'%s\' AND fieldName = \'%s\' group by value) ev%s_entries ON ev%s.value = ev%s_entries.value', 
-								$this->survey->name,$this->branches[$i], $this->key, $this->branches[$i], $this->key, $this->branches[$i]);
+				$join .= sprintf(' LEFT JOIN entryValue ev%s_entries  ON ev%s.value = ev%s_entries.value  AND ev%s_entries.projectName = \'%s\' AND ev%s_entries.formName = \'%s\' AND ev%s_entries.fieldName = \'%s\'',
+							$this->branches[$i],
+							$this->key, 
+							$this->branches[$i],
+							$this->branches[$i],
+							$this->survey->name,
+							$this->branches[$i], 
+							$this->branches[$i], 
+							$this->branches[$i], 
+							$this->key);
 			}
 			
- 			if($includeChildCount && $this->survey->getNextTable($this->name, true))
+ 			/*if($this->survey->getNextTable($this->name, true))
  			{
  				$child = $this->survey->getNextTable($this->name, true);
- 				//$select .= ', COUNT(ev{$child->name}_entries.value) as {$child->name}_entries ';
  				
  				if($format == 'json'){
- 					$select .= sprintf(' \', "%s_entries" : \' , IFNULL(ev%s_entries.count,0)  ,', $child->name, $child->name);
+ 					$select .= sprintf(' \', "%s_entries" : \' , COUNT(ev%s_entries.entry)  ,', $child->name, $child->name);
  				}elseif($format == 'xml'){
- 					$select .= sprintf(' \'<%s_entries>\', IFNULL(ev%s_entries.count,0), \'</%s_entries>\',', $child->name, $child->name, $child->name);
+ 					$select .= sprintf(' \'<%s_entries>\',  COUNT(distinct ev%s_entries.entry), \'</%s_entries>\',', $child->name, $child->name, $child->name);
  				}elseif($format == 'csv'){
- 					$select .= sprintf(',   IFNULL(ev%s_entries.count,0)  ', $child->name);
+ 					$select .= sprintf(',    COUNT(distinct ev%s_entries.entry)  ', $child->name);
  				}elseif($format == 'tsv'){
- 					$select .=sprintf( ',   IFNULL(ev%s_entries.count,0)  ', $child->name);
+ 					$select .=sprintf( ',    COUNT(distinct ev%s_entries.entry) ', $child->name);
  				}elseif($format == 'kml'){
  					throw new Exception ('Format not yet implemented');
  				}elseif($format == 'tskv'){
- 					$select .= sprintf(',%s_entries , IFNULL(ev%s_entries.count,0)', $child->name, $child->name);
+ 					$select .= sprintf(',%s_entries , COUNT(distinct ev%s_entries.entry)', $child->name, $child->name);
  				}elseif($format == 'object'){
  					//throw new Exception ('Format not specified');
  				}
@@ -445,10 +452,18 @@
 				}
 				if($includeChildCount)
 				{
-					$join .= sprintf(' LEFT JOIN (select count(entry) as count, value from entryValue where projectName = \'%s\' AND formName = \'%s\' AND fieldName = \'%s\' group by value) ev%s_entries  ON ev%s.value = ev%s_entries.value'
-					,$this->survey->name, $child->name, $this->key, $child->name, $this->key, $child->name);
+					$join .= sprintf(' LEFT JOIN entryValue ev%s_entries  ON ev%s.value = ev%s_entries.value  AND ev%s_entries.projectName = \'%s\' AND ev%s_entries.formName = \'%s\' AND ev%s_entries.fieldName = \'%s\'',
+							$child->name,
+							$this->key, 
+							$child->name,
+							$child->name,
+							$this->survey->name,
+							$child->name, 
+							$child->name, 
+							$child->name, 
+							$this->key);
 				}
- 			}
+ 			}*/
  			
  			if($format == 'json'){
  				$select .= ' \'}\') as `data` ';
@@ -927,9 +942,7 @@
 						$entry->$vars[$v] = $ent[$vars[$v]];
 					}
 				}
-				
-				
-				
+
 				$vlen = count($vals);
 				$hlan = count($headers);
 

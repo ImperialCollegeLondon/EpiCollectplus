@@ -1366,7 +1366,7 @@ EpiCollect.Field = function()
 	   
    }
    
-	this.formatValue = function(value)
+	this.formatValue = function(value, data)
 	{
 		if(this.type == "photo"){
 			if(value && !value.match(/null/i) && value != "-1")
@@ -1388,6 +1388,21 @@ EpiCollect.Field = function()
 			}
 		}else if(this.type == "location" || this.type == "gps"){
 			return value.latitude + ", " + value.longitude;
+		}
+		else if(this.id == 'created')
+		{
+			return new Date(value).toLocaleString();
+		}
+		else if(this.type == 'branch')
+		{
+			if(!value)
+			{
+				return '0';
+			}
+			else
+			{
+				return value + (data ?  ' <a href="' + this.connectedForm + '?' + this.form.key +  '=' + data[this.form.key] + '">View entries</a>' : '');
+			}
 		}
 		else
 		{ 

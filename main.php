@@ -37,7 +37,7 @@ else
 }
 
 
-include (sprintf('%s/utils/HttpUtils.php', $DIR));
+//include (sprintf('%s/utils/HttpUtils.php', $DIR));
 include (sprintf('%s/Auth/AuthManager.php', $DIR));
 include (sprintf('%s/db/dbConnection.php', $DIR));
 
@@ -50,12 +50,13 @@ $url = urldecode($url);
 
 
 
-include sprintf('%s/Classes/PageSettings.php', $DIR);
+include (sprintf('%s/Classes/PageSettings.php', $DIR));
 include (sprintf('%s/Classes/configManager.php', $DIR));
 include (sprintf('%s/Classes/Logger.php', $DIR));
+
 /*
  * Ec Class declatratioions
-*/
+ */
 
 include(sprintf('%s/Classes/EcProject.php', $DIR));
 include(sprintf('%s/Classes/EcTable.php', $DIR));
