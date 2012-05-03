@@ -110,7 +110,7 @@
 		
 		public function escapeArg($arg)
 		{
-			return $this->con->escape_string($arg);
+			return $this->con->real_escape_string($arg);
 		}
 		
 		public function do_query($qry)

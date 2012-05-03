@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `entry` (
   `lastEdited` datetime DEFAULT NULL,
   `uploaded` datetime NOT NULL,
   `user` int(11) NOT NULL,
+  `bulk_insert_key` varchar(255) NULL,
   PRIMARY KEY (`idEntry`),
   KEY `fk_Entry_Form1` (`form`),
   KEY `fk_Entry_User1` (`user`),

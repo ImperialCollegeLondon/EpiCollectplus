@@ -429,18 +429,33 @@
  			{
  				$child = $this->survey->getNextTable($this->name, true);
  				
+ 				$qry = sprintf('CREATE TEMPORARY TABLE %s_entries select count(1) as entries, a.value , b.entry 
+ 					FROM EntryValue a, EntryValue b 
+ 					WHERE a.projectName = \'%s\' and a.formName =\'%s\' and a.fieldName = \'%s\' and a.value = b.value and b.formName = \'%s\' 
+ 					and b.fieldName = \'%s\' GROUP BY a.value, b.entry ORDER BY a.value;',
+ 					$child->name,
+ 					$this->projectName,
+ 					$child->name,
+ 					$this->key,
+ 					$this->name,
+ 					$this->key
+ 				);
+ 				
+ 				$res = $db->do_query($qry);
+ 				if($res !== true) die($res);
+ 				
  				if($format == 'json'){
- 					$select .= sprintf(' \', "%s_entries" : \' , COUNT(ev%s_entries.entry)  ,', $child->name, $child->name);
+ 					$select .= sprintf(' \', "%s_entries" : \' , IFNULL(%s_entries.entries, 0)  ,', $child->name, $child->name);
  				}elseif($format == 'xml'){
- 					$select .= sprintf(' \'<%s_entries>\',  COUNT(distinct ev%s_entries.entry), \'</%s_entries>\',', $child->name, $child->name, $child->name);
+ 					$select .= sprintf(' \'<%s_entries>\',   IFNULL(%s_entries.entries, 0), \'</%s_entries>\',', $child->name, $child->name, $child->name);
  				}elseif($format == 'csv'){
- 					$select .= sprintf(',    COUNT(distinct ev%s_entries.entry)  ', $child->name);
+ 					$select .= sprintf(',     IFNULL(%s_entries.entries, 0)  ', $child->name);
  				}elseif($format == 'tsv'){
- 					$select .=sprintf( ',    COUNT(distinct ev%s_entries.entry) ', $child->name);
+ 					$select .=sprintf( ',     IFNULL(%s_entries.entries, 0)) ', $child->name);
  				}elseif($format == 'kml'){
  					throw new Exception ('Format not yet implemented');
  				}elseif($format == 'tskv'){
- 					$select .= sprintf(',%s_entries , COUNT(distinct ev%s_entries.entry)', $child->name, $child->name);
+ 					$select .= sprintf(',%s_entries ,  IFNULL(%s_entries.entries, 0)', $child->name, $child->name);
  				}elseif($format == 'object'){
  					//throw new Exception ('Format not specified');
  				}
@@ -448,20 +463,7 @@
  				
  				if(!strstr($join, sprintf('ev%s', $this->key)))
 				{
-					$join .= sprintf(' LEFT JOIN entryvalue ev%s on ev%s.entry = e.idEntry and ev%s.fieldName = \'%s\'', $this->key, $this->key, $this->key, $this->key);
-				}
-				if($includeChildCount)
-				{
-					$join .= sprintf(' LEFT JOIN entryValue ev%s_entries  ON ev%s.value = ev%s_entries.value  AND ev%s_entries.projectName = \'%s\' AND ev%s_entries.formName = \'%s\' AND ev%s_entries.fieldName = \'%s\'',
-							$child->name,
-							$this->key, 
-							$child->name,
-							$child->name,
-							$this->survey->name,
-							$child->name, 
-							$child->name, 
-							$child->name, 
-							$this->key);
+					$join .= sprintf(' LEFT JOIN %s_entries on e.idEntry = %s_entries.entry',  $child->name, $child->name);
 				}
  			}*/
  			

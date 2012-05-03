@@ -37,7 +37,7 @@ else
 }
 
 
-//include (sprintf('%s/utils/HttpUtils.php', $DIR));
+include (sprintf('%s/utils/HttpUtils.php', $DIR));
 include (sprintf('%s/Auth/AuthManager.php', $DIR));
 include (sprintf('%s/db/dbConnection.php', $DIR));
 
@@ -202,7 +202,7 @@ function assocToDelimStr($arr, $delim)
 	return $str;
 }
 
-function getTimestamp($fmt)
+function getTimestamp($fmt = false)
 {
 	$date = new DateTime("now", new DateTimeZone("UTC"));
 	if( !$fmt ) return $date->getTimestamp();
@@ -1517,26 +1517,33 @@ function formHandler()
 		$log->write("debug", json_encode($_POST));
 		header("Cache-Control: no-cache, must-revalidate");
 		
-		print_r(array_keys($_FILES));
+		
 		$_f = getValIfExists($_FILES, "upload");
 		
 		if($_f)
 		{
-			
-			if(preg_match("/\.csv$/", $_f["name"]))
+			if($_f['tmp_name'] == '')
+			{
+				flash('The file is too big to upload', 'err');
+				
+			}
+			else
 			{
 				ini_set("max_execution_time", 600);
-				$fh = fopen($_f["tmp_name"], 'r');
-				$res = $prj->tables[$frmName]->parseEntriesCSV($fh);
-				fclose($fh);
-				unset ($fh);
+				if(preg_match("/\.csv$/", $_f["name"]))
+				{
+					$fh = fopen($_f["tmp_name"], 'r');
+					$res = $prj->tables[$frmName]->parseEntriesCSV($fh);
+					fclose($fh);
+					unset ($fh);
+				}
+				elseif(preg_match("/\.xml$/", $_f["name"]))
+				{
+					$res = $prj->tables[$frmName]->parseEntries(simplexml_load_string(file_get_contents($_f["tmp_name"])));
+				}
+				//echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
+				flash ("Upload Complete");
 			}
-			elseif(preg_match("/\.xml$/", $_f["name"]))
-			{
-				$res = $prj->tables[$frmName]->parseEntries(simplexml_load_string(file_get_contents($_f["tmp_name"])));
-			}
-			//echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
-			flash ("Upload Complete");
 		}
 		else
 		{

@@ -189,7 +189,7 @@
 				$sessId =  session_id();
 				for( $i = 0; $i < $len; ++$i)
 				{
-					if( !$entries[$i]->created ) { $entries[$i]->created = getTimestamp(); }
+					if( !$entries[$i]->created || $entries[$i]->created == "NULL") { $entries[$i]->created = getTimestamp(); }
 					
 					$entries[$i]->insert_key = sprintf('%s%s', $sessId, $i);  
 					$qry .= sprintf('%s (%s, %s, %s, %s, %s, \'%s\', 0, \'%s\')', 
@@ -234,8 +234,8 @@
 										$entries[$i]->form->survey->name, 
 										$entries[$i]->form->name, 
 										$keys[$j],
-										$db->stringVal(json_encode($entries[$i]->values[$keys[$j]], 
-										$insert_keys[$entries[$i]->insert_key])));
+										$db->stringVal(json_encode($entries[$i]->values[$keys[$j]])), 
+										$insert_keys[$entries[$i]->insert_key]);
 							}
 							else
 							{
