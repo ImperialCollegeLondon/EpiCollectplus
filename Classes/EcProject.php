@@ -485,23 +485,25 @@ class EcProject{
 									publicSubmission = " . $db->boolVal($this->publicSubmission) . ", uploadToLocalServer = '{$this->uploadToLocalServer}', downloadFromLocalServer = '{$this->downloadFromLocalServer}' WHERE id = {$this->id} AND name = '$oldName'");
 				if($res !== true) return $res;
 				
-				//update form
-				$sql = "UPDATE form SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
-				$res = $db->do_query($sql);
-				if($res !== true) return $res;
-				//update fields
-				$sql = "UPDATE field SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
-				$res = $db->do_query($sql);
-				if($res !== true) return $res;
-				//update entries
-				$sql = "UPDATE entry SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
-				$res = $db->do_query($sql);
-				if($res !== true) return $res;
-				//update entryvalues
-				$sql = "UPDATE entryvalue SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
-				$res = $db->do_query($sql);
-				if($res !== true) return $res;
-				
+				if($this->name !== $oldName)
+				{ 
+					//update form
+					$sql = "UPDATE form SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+					$res = $db->do_query($sql);
+					if($res !== true) return $res;
+					//update fields
+					$sql = "UPDATE field SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+					$res = $db->do_query($sql);
+					if($res !== true) return $res;
+					//update entries
+					$sql = "UPDATE entry SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+					$res = $db->do_query($sql);
+					if($res !== true) return $res;
+					//update entryvalues
+					$sql = "UPDATE entryvalue SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+					$res = $db->do_query($sql);
+					if($res !== true) return $res;
+				}
 				
 				
 				$log->write('info', 'Project details updated');

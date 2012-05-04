@@ -58,25 +58,33 @@
   	var curators = {#curators#}.split(",");
   	var managers = {#managers#}.split(",");
   	var projectName = "{#projectName#}"
-  	var isPublic = {#public#};
-  	var isListed = {#listed#};
+  	var isPublic = {#public#} == 1;
+  	var isListed = {#listed#} == 1;
   	
   	$(function(){
   		$(".projectName").text(projectName);
   		
+  		$('#isPublic').attr("checked", isPublic);
+  		$('#isPrivate').attr("checked", !isPublic);
+  		$('#isListed').attr("checked", isListed);
+ 		$('#notListed').attr("checked", !isListed);
+ 		
   		publicOpts = $('#public').buttonset();
-  		listOpts = $('#listed').buttonset();
-  		$('.panelSwitcher, .button').button();
+  		listOpts = $('#listed_r').buttonset();
+  		
+  		$('input[type=radio]').button("refresh");
+  		
+  		$('.panelSwitcher, .button').button()
   		
   		for(var i = 0; i < curators.length; i++)
   		{
-  			if(curators[i] != "")
+  			if( curators[i] != "" )
   				addUser("curators", curators[i]);
   		}
   		
   		for(var i = 0; i < managers.length; i++)
   		{
-  			if(managers[i] != "")
+  			if( managers[i] != "" )
   				addUser("managers", managers[i]);
   		}
  		
@@ -175,7 +183,7 @@
   	function save()
   	{
   		$.ajax({
-  			url : location.href + 'Structure',
+  			url : location.href.replace("/manage", "/updateStructure"),
   			type : 'POST',
   			data : $('form').serialize(),
   			success: function(data, status, xhr){
@@ -237,8 +245,8 @@
 			<section id="listing">
 				<h2>3. Listing on the Homepage</h2>
 				<p>The front page of this server displays a list of projects that have been created on this server, please choose one of the following options</p>
-				<div id="listed">
-					<input type="radio" name="listed" id="isListed" value="true" checked="checked" /><label for="isListed">I would like this project to appear <br />on the list on the homepage of this server.</label>
+				<div id="listed_r">
+					<input type="radio" name="listed" id="isListed" value="true" /><label for="isListed">I would like this project to appear <br />on the list on the homepage of this server.</label>
 					<input type="radio" name="listed" id="notListed" value="false" /><label for="notListed">I would not like this project to appear <br />on the list on the homepage of this server.</label>
 				</div>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>

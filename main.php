@@ -503,13 +503,13 @@ function projectHome()
 	if( !$prj->isPublic && !$loggedIn && !preg_match('/\.xml$/',$url) )
 	{
 		flash('This is a private project, please log in to view the project.');
-		//loginHandler($url);
+		loginHandler($url);
 		return;
 	}
 	else if( !$prj->isPublic && $role < 2 )
 	{
 		flash(sprintf('You do not have permission to view %s.', $prj->name));
-		//header(sprintf('location: http://%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT));
+		header(sprintf('location: http://%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT));
 		return;
 	}
 	
@@ -2110,48 +2110,47 @@ function updateXML()
 {
 	global $url, $SITE_ROOT;
 
-	if(array_key_exists("xml", $_REQUEST))
+	$xml = '';
+	if(array_key_exists("xml", $_REQUEST) && $_REQUEST['xml'] != '')
 	{
 		$xml = file_get_contents("ec/xml/{$_REQUEST["xml"]}");
 	}
-	elseif(array_key_exists("data", $_POST))
+	elseif(array_key_exists("data", $_POST) && $_POST["data"] != '')
 	{
 		$xml = $_POST["data"];	
 	}
-	else
-	{
-		echo "{ \"result\" : false,  \"message\" : \"No XML specified\"}";
-		return;
-	}
-	
+		
 	$prj = new EcProject();
 	$prj->name = substr($url, 0, strpos($url, "/"));
 	$prj->fetch();
 	
-	$validation = validate(NULL,$xml);
-	if($validation !== true)
+	echo '--', $xml , '--';
+	if($xml)
 	{
-		echo "{ \"result\": false , \"message\" : \"" . $validation . "\" }";
-		return;
-	}
-	unset($validation);
-	
-	foreach($prj->tables as $name => $tbl)
-	{
-		foreach($prj->tables[$name]->fields as $fldname => $fld)
+		$validation = validate(NULL,$xml);
+		if($validation !== true)
 		{
-			$prj->tables[$name]->fields[$fldname]->active = false;
+			echo "{ \"result\": false , \"message\" : \"" . $validation . "\" }";
+			return;
+		}
+		unset($validation);
+		
+		foreach($prj->tables as $name => $tbl)
+		{
+			foreach($prj->tables[$name]->fields as $fldname => $fld)
+			{
+				$prj->tables[$name]->fields[$fldname]->active = false;
+			}
+		}
+		try 
+		{
+			$prj->parse($xml);
+		}catch(Exception $err)
+		{
+			echo "{ \"result\": false , \"message\" : \"" . $err->getMessage() . "\" }";
+			return;
 		}
 	}
-	try 
-	{
-		$prj->parse($xml);
-	}catch(Exception $err)
-	{
-		echo "{ \"result\": false , \"message\" : \"" . $err->getMessage() . "\" }";
-		return;
-	}
-	
 	//echo $prj->tables["Second_Form"]->fields["GPS"]->active;
 	if(array_key_exists("listed", $_REQUEST)) $prj->isListed = $_REQUEST["listed"] == "true";
 	if(array_key_exists("public", $_REQUEST)) $prj->isPublic = $_REQUEST["public"] == "true";
@@ -2554,7 +2553,7 @@ function updateProject()
 			$listed = getValIfExists($_POST, "listed");
 
 			$drty = false;
-			if($xml)
+			if($xml && $xml != "")
 			{
 				$prj->parse($xml);
 				$drty = true;
