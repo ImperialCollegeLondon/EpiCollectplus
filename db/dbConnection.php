@@ -144,9 +144,12 @@
 			if($this->connected)
 			{
 				if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
-				$this->resSet = $this->con->multi_query($qry);
-				if($this->resSet)
+				$res = $this->con->multi_query($qry);
+				
+				if($res) 
 				{
+					//$this->resSet = $this->con->use_result();
+					
 					return true;
 				}
 				else
@@ -159,6 +162,15 @@
 			{
 				throw new Exception("Database not yet connected");
 			}
+		}
+		
+		public function getLastResultSet()
+		{
+			$this->resSet = $this->con->store_result() ;
+			while( $this->con->more_results() && $this->con->next_result()) {
+				$this->resSet = $this->con->store_result() ;
+			}
+			return true;
 		}
 		
 		public function exec_sp($spName, $args = Array())

@@ -568,7 +568,7 @@
 				$('#end').text(Number($('#start').text()) + Number(entries.length));
 				$('#total').text(entries.count);
 				
-				
+				var keyfield = project.forms[formName].key;
 				var html = "";
 				for(var i = 0; i < entries.length; i++)
 				{
@@ -583,7 +583,11 @@
 						html += fld.formatValue(entries[i][f], entries[i]);
 						html += "</td>"					
 					}
-					if(nextFormName) html += "<td>" + entries[i][nextFormName + "_entries"]  + "</td>";
+					if(nextFormName)
+					{
+						
+						html += "<td>" + entries[i][nextFormName + "_entries"]  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "\">View entries</a></td>";
+					}
 					html += "</tr>";
 				}
 				$(".ecplus-data tbody").append(html);

@@ -425,11 +425,11 @@
 							$this->key);
 			}
 			
- 			/*if($this->survey->getNextTable($this->name, true))
+ 			if($this->survey->getNextTable($this->name, true))
  			{
  				$child = $this->survey->getNextTable($this->name, true);
  				
- 				$qry = sprintf('CREATE TEMPORARY TABLE %s_entries select count(1) as entries, a.value , b.entry 
+ 				$qry = sprintf('CREATE TEMPORARY TABLE %s_entries (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
  					FROM EntryValue a, EntryValue b 
  					WHERE a.projectName = \'%s\' and a.formName =\'%s\' and a.fieldName = \'%s\' and a.value = b.value and b.formName = \'%s\' 
  					and b.fieldName = \'%s\' GROUP BY a.value, b.entry ORDER BY a.value;',
@@ -441,8 +441,8 @@
  					$this->key
  				);
  				
- 				$res = $db->do_query($qry);
- 				if($res !== true) die($res);
+ 				//$res = $db->do_query($qry);
+ 				//if($res !== true) die($res);
  				
  				if($format == 'json'){
  					$select .= sprintf(' \', "%s_entries" : \' , IFNULL(%s_entries.entries, 0)  ,', $child->name, $child->name);
@@ -463,9 +463,9 @@
  				
  				if(!strstr($join, sprintf('ev%s', $this->key)))
 				{
-					$join .= sprintf(' LEFT JOIN %s_entries on e.idEntry = %s_entries.entry',  $child->name, $child->name);
+					$join .= sprintf(' LEFT JOIN %s_entries on %s_entries.entry = e.idEntry',  $child->name, $child->name);
 				}
- 			}*/
+ 			}
  			
  			if($format == 'json'){
  				$select .= ' \'}\') as `data` ';
@@ -512,11 +512,14 @@
 			{
 				$limit_s = '';
 			}
-			$qry = sprintf('%s %s %s %s %s %s', $select, $join, $where, $group, $order, $limit_s);
+			$qry = sprintf('%s %s %s %s %s %s %s', $qry, $select, $join, $where, $group, $order, $limit_s);
+
 			unset($select, $join, $where, $group, $order, $limit_s);
 			//echo $qry;
 			
-			return $db->do_query($qry);
+			$db->do_multi_query($qry);
+			
+			return $db->getLastResultSet();
 				
 		}
 		
@@ -527,8 +530,8 @@
 			
 			$res = $db->do_query($sql);
 			$count = 0;
-			while($arr = $db->get_row_array()){ $count += intval($arr['cnt']); }
-			return $count > 0;			
+			while($arr = $db->get_row_array()){ $count = intval($arr['entry']); }
+			return $count;			
 		}
 		
 		public function recieve($n = 1)

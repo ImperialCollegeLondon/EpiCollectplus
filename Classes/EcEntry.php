@@ -14,6 +14,8 @@
 		public $user;
 		public $values = array(); //associative array of the entry values
 		public $insert_key = '';
+		public $parent = null;
+		public $numberOfChildren = 0;	
 		
 		public function  __construct($f)
 		{
@@ -33,13 +35,16 @@
 			if($res !== true) return $res;
 			while($arr = $db->get_row_array())
 			{
-				$this->id = $arr["idEntry"];
-				$this->projectName = $arr["projectName"];
-				$this->formName = $arr["formName"];
-				$this->deviceId = $arr["DeviceId"];
-				$this->created = $arr["created"];
-				$this->uploaded = $arr["uploaded"];
-				$this->user = $arr["user"];
+				$this->id = $arr['idEntry'];
+				$this->projectName = $arr['projectName'];
+				$this->formName = $arr['formName'];
+				$this->deviceId = $arr['DeviceId'];
+				$this->created = $arr['created'];
+				$this->uploaded = $arr['uploaded'];
+				$this->user = $arr['user'];
+				$this->numberOfChildren = $arr['numberOfChildren'];
+				$this->parent = $arr['parent'];
+				$this->key = $arr['keyValue'];
 			}
 			
 			$sql = "SELECT * from entryvalue where entry = {$this->id}";
@@ -49,20 +54,22 @@
 			
 			while($arr = $db->get_row_array())
 			{
-				$this->values[$arr["fieldName"]] = $arr["value"];
+				$this->values[$arr['fieldName']] = $arr['value'];
 			}
 			return true;
 		}
 		
 		public function post() // add!
 		{
-			global $auth, $db;
-						
+			global $db;
+			
 			if(!$this->created)
 			{
 				$dt = new DateTime();
 				$this->created = $dt->getTimestamp();
 			}
+			
+			if(!$this->key) $this->key = $this->values[$this->form->key];
 			
 			$this->uploaded = getTimestamp('Y-m-d h:i:s');
 			
@@ -72,10 +79,10 @@
 				$this->deviceId = 'web upload';
 			}
 				
-			if($this->form->isMain){
-				$parent = $this->checkParentExists();
+			if($this->form->isMain && $this->form->number > 1){
+				$this->parent = $this->checkParentExists();
 			
-				if($parent === false)
+				if(!$parent)
 				{
 					throw new Exception('Message: The parent of this entry is not present on the server.');
 				}
@@ -191,6 +198,7 @@
 				{
 					if( !$entries[$i]->created || $entries[$i]->created == "NULL") { $entries[$i]->created = getTimestamp(); }
 					
+					
 					$entries[$i]->insert_key = sprintf('%s%s', $sessId, $i);  
 					$qry .= sprintf('%s (%s, %s, %s, %s, %s, \'%s\', 0, \'%s\')', 
 							($i > 0 ? ',' : ''),
@@ -254,7 +262,7 @@
 				$res = $db->do_query($qry);
 				if($res !== true) die($res);
 				
-				$qry = sprintf('UPDATE entry SET  bulk_insert_key = Null wherebulk_insert_key Like \'%s%%\'', $sessId);				
+				$qry = sprintf('UPDATE entry SET  bulk_insert_key = NULL WHERE bulk_insert_key Like \'%s%%\'', $sessId);				
 				$res = $db->do_query($qry);
 				return $res;
 		}

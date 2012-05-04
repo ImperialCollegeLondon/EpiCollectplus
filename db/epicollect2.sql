@@ -31,6 +31,9 @@ CREATE TABLE IF NOT EXISTS `entry` (
   `uploaded` datetime NOT NULL,
   `user` int(11) NOT NULL,
   `bulk_insert_key` varchar(255) NULL,
+  `parent` int (11) NULL,
+  `numberOfChildren` int NOT NULL default 0,
+  `keyValue` varchar(1000) NULL,
   PRIMARY KEY (`idEntry`),
   KEY `fk_Entry_Form1` (`form`),
   KEY `fk_Entry_User1` (`user`),
@@ -51,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `entryvalue` (
   KEY `fieldname` (`fieldName`) USING HASH,
   KEY `formname` (`formName`) USING HASH,
   KEY `entry` (`entry`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ~
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ~
 
 CREATE TABLE IF NOT EXISTS `entryGeoValue` (
 	`id` int(11) NOT NULL AUTO_INCREMENT,
@@ -71,7 +74,7 @@ CREATE TABLE IF NOT EXISTS `entryGeoValue` (
   	`admin_2` varchar(255),
   	`admin_3` varchar(255),
   	PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ~
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ~
 
 CREATE TRIGGER `EntryInsert` AFTER INSERT ON `entryvalue`
  FOR EACH ROW BEGIN
@@ -94,7 +97,6 @@ CREATE TABLE IF NOT EXISTS `entryvaluehistory` (
   `formName` varchar(100) NOT NULL,
   `fieldName` varchar(45) NOT NULL
 ) ENGINE=ARCHIVE DEFAULT CHARSET=utf8 ~
-
 CREATE TABLE IF NOT EXISTS `field` (
   `idField` int(11) NOT NULL AUTO_INCREMENT,
   `form` int(11) NOT NULL,
