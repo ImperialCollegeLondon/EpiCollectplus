@@ -526,7 +526,7 @@
 		function checkExists($keyValue)
 		{
 			global $db;
-			$sql = sprintf('SELECT count(idEntryValue) AS cnt FROM entryValue WHERE projectName = \'%s\' AND formName = \'%s\' AND fieldName= \'%s\' AND value = \'%s\'', $this->projectName, $this->name, $this->key, $keyValue);
+			$sql = sprintf('SELECT entry, count(idEntryValue) AS cnt FROM entryValue WHERE projectName = \'%s\' AND formName = \'%s\' AND fieldName= \'%s\' AND value = \'%s\'', $this->projectName, $this->name, $this->key, $keyValue);
 			
 			$res = $db->do_query($sql);
 			$count = 0;
