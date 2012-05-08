@@ -332,7 +332,7 @@
 			
 			if(!$sortField) $sortField = 'created';
 			if(!$sortDir) $sortDir = 'asc';
-			
+			$qry = '';
 			//$db = new dbConnection();
 			/*
 			 * with fields being pulled from the database and concatinated at that point it makes sense to concatinate them in such a way that post-processing isn't required to

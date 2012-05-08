@@ -271,7 +271,10 @@ class EcProject{
 		
 		public function checkPermission($uid)
 		{
-			$db = new dbConnection();
+		 	global $db, $auth;
+		 	
+		 	if($auth->isServerManager()) return 3;
+		 	
 			$res = $db->exec_sp("checkProjectPermission", array($uid?$uid:0, $this->id));
 			if($res !== true) die($res);
 			if($obj = $db->get_row_object()) // if no one has any permissions on the project
