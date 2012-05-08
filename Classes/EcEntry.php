@@ -42,9 +42,6 @@
 				$this->created = $arr['created'];
 				$this->uploaded = $arr['uploaded'];
 				$this->user = $arr['user'];
-				$this->numberOfChildren = $arr['numberOfChildren'];
-				$this->parent = $arr['parent'];
-				$this->key = $arr['keyValue'];
 			}
 			
 			$sql = "SELECT * from entryvalue where entry = {$this->id}";
@@ -82,7 +79,7 @@
 			if($this->form->isMain && $this->form->number > 1){
 				$this->parent = $this->checkParentExists();
 			
-				if(!$parent)
+				if(!$this->parent)
 				{
 					throw new Exception('Message: The parent of this entry is not present on the server.');
 				}
@@ -276,18 +273,7 @@
 			//$db = new dbConnection();
 			$res = $db->beginTransaction();
 			if($res !== true) return $res;
-			//check that the entry does already exist
-			/*$qry = "SELECT * FROM entryvalue WHERE projectName = '{$this->projectName}' AND formName = '{$this->formName}' AND fieldName = '{$this->form->keyField}' AND value = '{$this->values[$this->form->keyField]}'";
-			//echo $qry;
-			
-			$num = 0;
-			$res = $db->do_query($qry);
-			if($res !== true)
-			{
-				$db->rollbackTransaction();
-				return $res;
-			}*/
-			
+
 			$ent = $this->form->createEntry();
 			$ent->values = $this->values;
 			
@@ -304,7 +290,31 @@
 			
 			foreach($this->values as $key => $value)
 			{
-				if(($this->form->fields[$key]->type == "gps" || $this->form->fields[$key]->type == "location") && !is_string($this->values[$key]))
+				if(!array_key_exists($key, $ent->values))
+				{
+					$qry = 'INSERT INTO entryvalue (field, projectName, formName, fieldName, value, entry) VALUES ';
+					$in = '';
+					$keys = array_keys($this->values);
+					$length = count($keys);
+					if(($this->form->fields[$key]->type == 'gps' || $this->form->fields[$key]->type == 'location') && !is_string($this->values[$key]))
+					{
+						$in = sprintf(' ( %s, \'%s\', \'%s\', \'%s\', %s, %s )',
+								$this->form->fields[$key]->idField,
+								$this->form->survey->name,
+								$this->form->name,
+								$keys[$i],
+								$db->stringVal(json_encode($this->values[$key])),
+								$this->id);
+					}
+					else
+					{
+						$in = sprintf('( %s, \'%s\', \'%s\', \'%s\', %s, %u)',
+								$this->form->fields[$key]->idField, $this->form->survey->name, $this->form->name, $key, $db->stringVal($this->values[$key]), $this->id);
+					}
+					$qry .= $in;
+					$res = $db->do_query($qry);
+				}
+				elseif(($this->form->fields[$key]->type == "gps" || $this->form->fields[$key]->type == "location") && !is_string($this->values[$key]))
 				{
 					$qry = "UPDATE entryvalue SET value = " . $db->stringVal(json_encode($value)) ." WHERE projectName = '{$this->projectName}' AND formName = '{$this->formName}' AND fieldName = '$key' AND entry = {$ent->id}";
 				}

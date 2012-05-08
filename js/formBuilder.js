@@ -247,7 +247,7 @@ function drawFormControls(form)
 			var forms = project.forms;
 			for(f in forms)
 			{
-				if(fld.id == forms[f].key) cls = "ecplus-fk-element";
+				if(f != form.name && fld.id == forms[f].key) cls = "ecplus-fk-element";
 			}
 		}
 		else cls = "ecplus-" + fld.type + "-element";
@@ -436,8 +436,8 @@ function setSelected(jqEle)
 		$("#min").val(currentControl.min);
 		$("#max").val(currentControl.max);
 		
-		$("#date").val(currentControl.date);
-		if(currentControl.setDate)
+		if(currentControl.date)$("#date").val(currentControl.date);
+		if(!!currentControl.setDate)
 		{
 			$("#date").val(currentControl.setDate);
 			$("#set").attr("checked", true);
@@ -447,7 +447,7 @@ function setSelected(jqEle)
 			$("#set").attr("checked", false);
 		}
 		
-		$("#time").val(currentControl.time);
+		if(currentControl.time) $("#time").val(currentControl.time);
 		if(currentControl.setTime)
 		{
 			$("#time").val(currentControl.setTime);
@@ -455,7 +455,7 @@ function setSelected(jqEle)
 		}
 		else
 		{
-			$("#set").attr("checked", false);
+			if(!currentControl.setDate) $("#set").attr("checked", false);
 		}
 		$("#default").val(currentControl.defaultValue);
 		$("#regex").val(currentControl.regex);

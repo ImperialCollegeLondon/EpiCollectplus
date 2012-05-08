@@ -2124,7 +2124,7 @@ function updateXML()
 	$prj->name = substr($url, 0, strpos($url, "/"));
 	$prj->fetch();
 	
-	echo '--', $xml , '--';
+	//echo '--', $xml , '--';
 	if($xml)
 	{
 		$validation = validate(NULL,$xml);

@@ -591,7 +591,7 @@ EpiCollect.Form = function()
 		var vertical = cnf.vertical;
 		var index = cnf.index;
 		var editMode = cnf.edit;
-		var debug  = cnf.edit;
+		var debug  = cnf.debug;
 		
 		if(index == undefined)
 			this.formIndex = 0;

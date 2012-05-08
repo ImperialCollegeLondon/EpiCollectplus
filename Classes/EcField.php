@@ -398,7 +398,7 @@ class EcField{
 			}
 			
 			if($vcheck > 1){
-				echo $xml->asXML();
+				//echo $xml->asXML();
 				throw new Exception("$vlist are all set on the field {$this->name} only one of these attributes may be set at once.");
 			}
 			
