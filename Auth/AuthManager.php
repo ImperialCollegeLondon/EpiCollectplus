@@ -14,6 +14,8 @@
 	public $email;
 	public $language = "en";
 	
+	private $serverManager = false;
+	
 	private $openIdEnabled = true;
 	private $ldapEnabled = true;
 	private $localEnabled = true;
