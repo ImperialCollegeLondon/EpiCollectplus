@@ -378,9 +378,9 @@
 				
 				if(nextFormName)
 				{
-					if(hiddenColumns[f] == undefined) hiddenColumns[f] = false;
+					if(hiddenColumns[nextFormName] == undefined) hiddenColumns[nextFormName] = false;
 					
-					$(".ecplus-data tr").append("<th class=\"" + f + "\">" + nextFormName + " Entries</th>");
+					$(".ecplus-data tr").append("<th class=\"" + nextFormName + "_entries\">" + nextFormName + " Entries</th>");
 				}
 				
 				$(".ecplus-data th").resizable({

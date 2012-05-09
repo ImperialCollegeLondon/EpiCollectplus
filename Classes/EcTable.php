@@ -426,9 +426,9 @@
 							$this->key);
 			}
 			
- 			if($this->survey->getNextTable($this->name, true))
+			$child = $this->survey->getNextTable($this->name, true);
+ 			if($child)
  			{
- 				$child = $this->survey->getNextTable($this->name, true);
  				
  				$qry = sprintf('CREATE TEMPORARY TABLE %s_entries (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
  					FROM EntryValue a, EntryValue b 
@@ -494,6 +494,10 @@
 			if($sortIsField)
 			{
 				$order = sprintf(' ORDER BY ev%s.value %s', $sortField, $sortDir);
+			}
+			elseif($child && $sortField == $child->name . '_entries')
+			{
+				$order = sprintf(' ORDER BY %s_entries.entries %s', $child->name, $sortDir);
 			}
 			elseif($sortField)
 			{
