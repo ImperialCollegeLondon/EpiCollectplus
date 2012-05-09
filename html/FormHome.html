@@ -180,6 +180,14 @@
 			right: 0;
 		}
 		
+		table.ibubble th
+		{
+			background : rgba(255, 255, 255, 1);
+			color : rgba(0,0,0,1);
+			padding : 0.2em 0.2em 0.2em 0.2em;
+			text-align: left;
+		}
+		
 	</style>
 {{/style}}
 
@@ -517,8 +525,9 @@
 			{
 				loader.start();
 				offset = pageNo * numEnts
-				var urlStr = url + "/" + formName + ".json?mode=list&start=" + offset + "&limit=" + numEnts + "&sort=" + sortCol + "&dir=" +sortDir + (location.search ? "&" + location.search.substr(1) : "");
-				var statUrl = url + "/" + formName + "/__stats?" + location.search.substr(1);;
+				
+				var urlStr = url + "/" + formName + ".json?mode=list&start=" + offset + "&limit=" + numEnts + "&sort=" + sortCol + "&dir=" +sortDir + (location.search  ? "&" + location.search.substr(1) : "");
+				var statUrl = url + "/" + formName + "/__stats?" + location.search.substr(1);
 				
 				if(filterField && filterValue)
 				{
@@ -780,12 +789,17 @@
 			function getContentFor(mkrIdx)
 			{
 				var rec = mapData[mkrIdx];
-				var html = "";
+				var html = '<table class="ibubble">';
+				var fields = project.forms[formName].fields;
 				
-				for(fld in project.forms[formName].fields)
+				for( fld in fields )
 				{
-					html += "<b>" + fld + "</b> : " + project.forms[formName].fields[fld].formatValue(rec[fld]) + "<br />";
+					if( fields[fld].type != '' || fld == 'created' ) 
+					{
+						html += '<tr><th>' + fields[fld].text + '</th> <td> ' + fields[fld].formatValue(rec[fld]) + '</td></tr>';
+					}
 				}
+				html += '</table>'
 				return html;
 			}
 			
@@ -797,7 +811,7 @@
 				var mkrs = markers;
 				var data = mapData;
 				
-				for(var i = len; i--;)
+				for( var i = len; i--; )
 				{
 					var d = data[i];
 					

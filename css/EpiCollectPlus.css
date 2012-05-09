@@ -50,7 +50,7 @@ p
 	margin : 0.5em 0 0.5em 0;	
 }
 
-th
+.ecplus-data th
 {
 	color: #EEEEEE;
 	background: #444444;
@@ -61,7 +61,7 @@ th
 	cursor : pointer;
 }
 
-th:hover
+.ecplus-data th:hover
 {
 	background-color:#444488;
 }
@@ -71,13 +71,13 @@ tr
 	
 }
 
-td
+.ecplus-data td
 {
 	overflow : hidden;
 	word-wrap: break-word;
 }
 
-th, td
+.ecplus-data th, .ecplus-data td
 {
 	padding : 0.25em 0.25em 0.25em 0.25em;
 	border-right : 1px solid #CCCCCC;
@@ -85,7 +85,7 @@ th, td
 	text-align : left;
 }
 
-table
+table.ecplus-data
 {
 	border : 1px solid #CCCCCC;
 }

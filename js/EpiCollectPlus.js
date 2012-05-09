@@ -4,6 +4,7 @@ var succeeded;
 var project;
 
 var baseUrl = (location.href.indexOf("?") > 0 ? location.href.substr(0, location.href.indexOf("?")) :location.href );
+baseUrl = baseUrl.indexOf('#') > 0 ? baseUrl.substr(0, baseUrl.indexOf('#')) : baseUrl;
 
 EpiCollect = {};
 

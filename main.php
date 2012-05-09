@@ -369,28 +369,37 @@ function defaultHandler()
 	echo applyTemplate('base.html', "./" . $url);
 }
 
+/**
+ * Called when the page requires a log in
+ */
 function loginHandler()
 {
 	$cb_url='';
 	header('Cache-Control: no-cache, must-revalidate');
 
-	global $auth, $url, $cfg;
+	global $auth, $url, $db;
+	
+	if( !preg_match('/login.php/', $url) )
+	{
+		$cb_url = $url; 
+	}
+	
+	if( !$auth ) $auth = new AuthManager();
+	
 	if(array_key_exists('provider', $_GET))
 	{
 		$_SESSION['provider'] = $_GET['provider'];
-		$auth = new AuthManager();
-		$frm = $auth->requestlogin($cb_url);
+		$frm = $auth->requestlogin($cb_url, $_SESSION['provider']);
 	}
-	if(!$auth) $auth = new AuthManager();
-	if (array_key_exists('provider', $_SESSION))
+	elseif (array_key_exists('provider', $_SESSION))
 	{
-		echo applyTemplate('./base.html', './loginbase.html', array( 'form' => $auth->requestlogin($cb_url, $_SESSION['provider'])));
+		$frm = $auth->requestlogin($cb_url, $_SESSION['provider']);
 	}
 	else
 	{
-		echo applyTemplate('./base.html', './loginbase.html', array( 'form' => $auth->requestlogin($cb_url)));
+		$frm = $auth->requestlogin($cb_url);
 	}
-
+	echo applyTemplate('./base.html', './loginbase.html', array( 'form' => $frm));
 }
 
 function loginCallback()
@@ -1486,10 +1495,11 @@ function formHandler()
 	
 	
 	$permissionLevel = 0;
+	$loggedIn = $auth->isLoggedIn();
+	
+	if($loggedIn) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
 
-	if($auth->isLoggedIn()) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
-
-	if(!$prj->isPublic && !$auth->isLoggedIn())
+	if(!$prj->isPublic && !$loggedIn)
 	{
 		loginHandler($url);
 		return;

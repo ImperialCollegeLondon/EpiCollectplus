@@ -279,6 +279,7 @@ class EcProject{
 			if($res !== true) die($res);
 			if($obj = $db->get_row_object()) // if no one has any permissions on the project
 			{
+				$db->free_result();
 				return $obj->role;
 			}
 			else 

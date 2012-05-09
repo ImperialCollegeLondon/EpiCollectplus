@@ -376,10 +376,11 @@
 			{
 				foreach($args as $k => $v)
 				{
-					if(array_key_exists($k, $this->fields) && $this->fields[$k]->type != "")
+					if( $v == '' ) continue;
+					if( array_key_exists($k, $this->fields) && $this->fields[$k]->type != "" )
 					{
 						$join .= sprintf(' LEFT JOIN entryvalue ev%s on e.idEntry = ev%s.entry AND ev%s.projectName = \'%s\' AND ev%s.formName = \'%s\' AND ev%s.fieldName = \'%s\'', $k, $k, $k, $this->projectName, $k, $this->name, $k, $k);
-						if($exact)
+						if( $exact )
 						{
 							$where .= sprintf(' AND ev%s.value = \'%s\'', $k, $v);
 						}
@@ -811,35 +812,34 @@
 			return $res;
 		}
 		
-		function getSummary($args, $exact = false)
+		/**
+		 * Retrieves the number of records that match a certain criteria
+		 */
+		function getSummary($args, $exact = true)
 		{
 			//TODO : filter summary based on $args
 			global $db;
 			//$qry = "SELECT count(1) as ttl, max(created) as lastCreated, max(uploaded) as uploaded, max(lastEdited) as lastEdited, count(DISTINCT deviceID) as devices, count(distinct user) as users from entry where projectName = '{$this->projectName}' and formName = '{$this->name}' Group By projectName, formName";
 			
-			$sql2 = "SELECT count(DISTINCT entry) as ttl FROM entryvalue WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
+			$sql2 = "SELECT count(a.entry) as ttl from (SELECT entry, count(value) as count FROM entryvalue WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
 			if(is_array($args) && count($args) > 0)
 			{
 				//If we have search criteria
 				$sql2 .= "AND (";
-				$joinClause = " ";
-				$whereClause = " ";
+				
 				foreach($args as $k => $v)
 				{
-					$joinClause .= " JOIN entryvalue ev$k on e.idEntry = ev$k.Entry ";
 					if($exact)
 					{
-						$whereClause .= "AND (ev$k.fieldName = '$k' AND ev$k.value Like '$v') ";
 						$sql2 .= "(fieldName = '$k' AND value Like '$v') OR";
 					}
 					else
 					{
-						$whereClause .= "AND (ev$k.fieldName = '$k' AND ev$k.value Like '%$v%') ";
 						$sql2 .= "(fieldName = '$k' AND value Like '%$v%') OR";
 					}
 				}
-				$whereClause = substr($whereClause, 0, count($whereClause) - 3). ")";
-				$sql2 = substr($sql2, 0, count($sql2) - 3). ");";
+				
+				$sql2 = substr($sql2, 0, count($sql2) - 3). ") GROUP BY entry) a where a.count = " . count($args);
 			}
 			
 			$res = $db->do_query($sql2);

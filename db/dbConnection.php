@@ -13,6 +13,7 @@
 		
 		public $connected;
 		public $errorCode;
+		public $lastQuery;
 		
 		public function __construct($un = false, $pwd = false)
 		{
@@ -103,6 +104,14 @@
 			//}
 		}
 		
+		public function free_result()
+		{
+			/*$this->resSet->free();
+			while( $this->con->more_results() ) { 
+				$this->resSet = $this->con->next_result(); $this->resSet->close();
+			}*/
+		}
+		
 		public function affectedRows()
 		{
 			return $this->numRows;
@@ -115,6 +124,7 @@
 		
 		public function do_query($qry)
 		{
+			
 			if($this->connected)
 			{
 				if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
@@ -122,7 +132,7 @@
 				$this->numRows = $this->con->affected_rows;
 				if($this->resSet)
 				{
-					
+					$this->lastQuery = $qry;
 					return true;
 				}
 				else
@@ -210,12 +220,12 @@
 		
 		public function get_row_array()
 		{
-			return mysqli_fetch_assoc($this->resSet);
+			return $this->resSet->fetch_assoc();
 		}
 		
 		public function get_row_object()
 		{
-			return mysqli_fetch_object($this->resSet);
+			return $this->resSet->fetch_object();
 		}
 		
 		public function last_id()
