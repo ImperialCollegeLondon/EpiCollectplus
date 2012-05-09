@@ -689,7 +689,7 @@
 					addToSidebar(i, data[i][project.forms[formName].titleField])
 				}
 				
-				colourMarkersBy(defaultColourField);
+				colourMarkersBy($('#mapColourField').val());
 
 				map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
 				
@@ -1061,7 +1061,7 @@
 				<a href="javascript:project.forms[formName].displayForm({data : window.ecplus_entries[$('.ecplus-data tbody tr.selected').index()], edit : true});"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
 				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$('.ecplus-data tbody tr.selected').index()][project.forms[formName].key]);"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a>
 				<span class="ecplus-toolbar-divider">&nbsp;</span> 
-				Filter List By <select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value).val());"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Filter" alt="Filter"></a>
+				Filter List By <select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value').val());"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Filter" alt="Filter"></a>
 				<a href="javascript:doFilter('','');"><!--  <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Clear Filter" alt="Clear Filter">-->Clear Filter</a>
 				<span class="ecplus-toolbar-divider">&nbsp;</span>
 				<span id ="showHideFields" class="ecplus-dropdown"></span> 
