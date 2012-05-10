@@ -93,8 +93,9 @@
 {{/breadcrumbs}}
 {{main}}
 	<h1>{#projectName#}</h1>
-	<div id="projectPanel">{#adminMenu#}</div>
-	<div id="projectDescription" style="display:none"><img class="projectImage" src="{#projectImage#}" alt="Project Image" width="{#imgWidth#}" height="{#imgHeight#}" />{#projectDescription#}</div>
+	<div id="projectPanel">{#adminMenu#} <a href="{#projectName#}.xml" class="button" target="__blank">Show XML</a></div>
+	<div id="projectDescription" style="display:none">
+		<img class="projectImage" src="{#projectImage#}" alt="Project Image" width="{#imgWidth#}" height="{#imgHeight#}" />{#projectDescription#}</div>
 	<p>To view all data from a particular table click the relevant button, or to search, enter an ID in the text box and then click the button</p>
 	<div id="menu"></div>
 	

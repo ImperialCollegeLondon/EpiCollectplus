@@ -325,7 +325,7 @@
 		  			array_push($men, $arr);
 		  		}
   			}
-  			
+  			$db->free_result();
 	  		return $men;
   		}
 	  	catch(ErrorException $err)
