@@ -56,7 +56,7 @@ class EcProject{
 				//$res = $db->exec_sp("getProject", array($this->name));
 				$res = $db->do_query("SELECT * FROM project WHERE name = '{$this->name}'");
 				if($res!== true) return $res;
-				if($arr = $db->get_row_array())
+				while($arr = $db->get_row_array())
 				{
 					$this->fromArr($arr);
 				}
@@ -264,7 +264,7 @@ class EcProject{
 			{
 				$edited = null;
 			}		
-
+			while($db->get_row_array()) {}
 			$dat = $uploaded > $edited  ? $uploaded : $edited;
 			return $dat->getTimestamp() . $arr["ttl"];
 		}
@@ -274,18 +274,24 @@ class EcProject{
 		 	global $db, $auth;
 		 	
 		 	if($auth->isServerManager()) return 3;
-		 	
-			$res = $db->exec_sp("checkProjectPermission", array($uid?$uid:0, $this->id));
-			if($res !== true) die($res);
-			if($obj = $db->get_row_object()) // if no one has any permissions on the project
+		 	$db->free_result();
+		 	$role = 0;
+			
+		 	$res = $db->exec_sp("checkProjectPermission", array($uid?$uid:0, $this->id));
+			
+			if( $res !== true )
+			{ die($res); }
+			
+			while($obj = $db->get_row_object()) // if no one has any permissions on the project
 			{
-				$db->free_result();
-				return $obj->role;
+			
+				$role = $obj->role;
+			
 			}
-			else 
-			{
-				return 3;
-			}
+			$db->free_result();
+			
+			return $role;
+			
 		}
 		
 		public function getNextTable($tblName, $mainOnly)
@@ -319,8 +325,8 @@ class EcProject{
 				global $auth;
 				
 				$db = new dbConnection();
-				if($this->checkPermission($auth->getEcUserId()) == 3)
-				{
+				/*if($this->checkPermission($auth->getEcUserId()) == 3)
+				{*/
 						$sql = "SELECT upp.role, u.email FROM userprojectpermission upp join user u on upp.user = u.idUsers WHERE upp.role = $lvl and upp.project = {$this->id}";
 						$res = $db->do_query($sql);
 						if($res === true)
@@ -337,11 +343,11 @@ class EcProject{
 								return $res;
 						}
 						
-				}
+				/*}
 				else
 				{
 						return "You do not have permission to update this project";
-				}
+				}*/
 		}
 		
 		public function getPreviousTable($tblName, $mainOnly = false)

@@ -25,7 +25,7 @@
 			$res = $db->do_query($qry);
 			if($res !== true) return $res;
 			
-			$creds = "";
+			$creds = null;
 			
 			while($arr = $db->get_row_array())
 			{

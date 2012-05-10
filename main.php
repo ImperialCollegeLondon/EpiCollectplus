@@ -2536,16 +2536,19 @@ function createProject()
 
 function updateProject()
 {
-	global  $url, $auth;
+	global  $url, $auth, $db;
 
 	$pNameEnd = strrpos($url, "/");
 	$oldName = substr($url, 0, $pNameEnd);
 	$prj = new EcProject();
 	$prj->name = $oldName;
 	$prj->fetch();
-
-	if($prj->checkPermission($auth->getEcUserId()) < 3)
+	
+	$role = intVal($prj->checkPermission($auth->getEcUserId()));
+	
+	if($role != 3)
 	{
+		
 		header("Cache-Control: no-cache; must-revalidate;");
 		flash ("You do not have permission to manage this project", "err");
 		$url = str_replace("update", "", $url);
