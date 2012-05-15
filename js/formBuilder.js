@@ -150,7 +150,7 @@ function newForm(message, name)
 
 function addFormToList(name)
 {
-	$("#formList .control").before("<span class=\"form\">" + name + "</span>");
+	$("#formList .control").before("<span id=\"" + name + "\" class=\"form\">" + name + "</span>");
 }
 
 /**
@@ -503,14 +503,12 @@ function setSelected(jqEle)
 		updateJumps();
 		var jumpCtrls = $(".jumpoption");
 		var n = jumps.length
-		for(var i = 0; i < n; i += 2)
+		
+		for( var i = 0; i < n; i += 2 )
 		{
 			$(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1]);
 			$(".jumpdestination", jumpCtrls[i/2]).val(jumps[i]);
 		}
-		
-		
-		
 	}
 	else
 	{
@@ -522,6 +520,27 @@ function setSelected(jqEle)
 	
 }
 
+function removeForm(name)
+{
+	if(confirm('Are you sure you want to remove the form ' + name + '?'))
+	{
+		$('#' + name, $("#formList")).remove();
+		var key = project.forms[name].key;
+		delete project.forms[name];
+		
+		for( frm in project.forms )
+		{
+			for( fld in project.forms[frm].fields )
+			{
+				if( fld == key )
+				{
+					delete project.forms[frm].fields[fld];
+				}
+			}
+		}
+	}
+}
+
 function removeSelected()
 {
 	var jq = $("#destination .selected")
@@ -531,6 +550,33 @@ function removeSelected()
 	$("[allow]").hide();
 	$(".last input[type=text]").val("");
 	$(".last input[type=checkbox]").attr("checked", false);
+}
+
+function renameForm(name)
+{
+	var newName = prompt('What would you like to rename the form ' + name + ' to?');
+	if(newName)
+	{
+		var forms = project.forms;
+		var form = forms[name];
+		var newForms = {};
+		form.name = newName;
+		
+		for(frm in forms)
+		{
+			if(frm == name)
+			{
+				newForms[newName] = form;
+			}
+			else
+			{
+				newForms[frm] = forms[frm];
+			}
+		}
+		
+		project.forms = newForms;
+		drawProject(project);
+	}
 }
 
 function switchToBranch()

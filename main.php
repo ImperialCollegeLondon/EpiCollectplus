@@ -515,7 +515,7 @@ function projectHome()
 		loginHandler($url);
 		return;
 	}
-	else if( !$prj->isPublic && $role < 2 )
+	else if( !$prj->isPublic && $role < 2 && !preg_match('/\.xml$/',$url) )
 	{
 		flash(sprintf('You do not have permission to view %s.', $prj->name));
 		header(sprintf('location: http://%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT));

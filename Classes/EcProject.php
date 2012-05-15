@@ -637,12 +637,16 @@ class EcProject{
 		public function toXML()
 		{
 				global $SITE_ROOT;
+				
+				$protocol = 'http';
+				if (getValIfExists($_SERVER, "HTTPS")){$protocol = 'https';}
+				
 				$xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
 <xform>
 	<model>
 		<submission id=\"{$this->submission_id}\" projectName=\"{$this->name}\" allowDownloadEdits=\"". ($this->allowDownloadEdits ? "true" : "false") . "\" versionNumber=\"{$this->ecVersionNumber}\" />
-		<uploadToServer>http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/{$this->name}/upload</uploadToServer>
-		<downloadFromServer>http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/{$this->name}/download</downloadFromServer>";
+		<uploadToServer>$protocol://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/{$this->name}/upload</uploadToServer>
+		<downloadFromServer>$protocol://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/{$this->name}/download</downloadFromServer>";
 		if($this->uploadToLocalServer) $xml .= "\n\t\t<uploadToLocalServer>{$this->uploadToLocalServer}</uploadToLocalServer>";
 		if($this->downloadFromLocalServer) $xml .= "\n\t\t<downloadFromLocalServer>{$this->downloadFromLocalServer}</downloadFromLocalServer>";
 	$xml .= "\n\t</model>\n";
