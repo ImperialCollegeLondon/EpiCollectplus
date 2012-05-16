@@ -315,8 +315,6 @@ function updateSelected()
 	}
 	currentControl.options = options;
 	
-	//TODO: get and add jumps
-	
 	var jump = "";
 	var jumpCtrls = $(".jumpoption");
 	var jn = jumpCtrls.length;
@@ -373,9 +371,9 @@ function updateJumps()
 	var fieldCtls = $(".jumpvalues");
 	fieldCtls.empty();
 	fieldCtls.html("<option value=\"any\" style=\"font-style:italic;\">Any Value</option>" + fieldCtls.html());
-	for(var i = opts.length; i--;)
+	for(var i = opts.length; i; i--)
 	{
-		fieldCtls.html("<option value=\"" + i + "\">" + opts[i].label + "</option>" + fieldCtls.html());
+		fieldCtls.html("<option value=\"" + i + "\">" + opts[i-1].label + "</option>" + fieldCtls.html());
 	}
 	
 	fieldCtls = $(".jumpdestination");

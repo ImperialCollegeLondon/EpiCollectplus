@@ -63,25 +63,26 @@
 	  ctx = this;	  
 	  
 	  function dropmarker(){ 
-		  if(cnf.mapType == "osm")
-		  {
-			  accCircle.setLatLng(mkr.getLatLng())
-		  }
-		  else
-		  {
-			  accCircle.setCenter(mkr.getPosition());
-		  }
-		  
-		  $("#latitude", ctx).val((cnf.mapType == "osm" ? mkr.getLatLng().lat : mkr.getPosition().lat()));
-		  $("#longitude", ctx).val((cnf.mapType == "osm" ? mkr.getLatLng().lng : mkr.getPosition().lng()));
-		  $("#accuracy", ctx).val(accCircle.radius);
-		  $("#provider", ctx).val("Marker Dropped");
-		  
-		  if(eleService)
-		  {
-			  eleService.getElevationForLocations({locations  : [ mkr.getPosition() ]}, elevationCallback);
-		  }
-		  
+		  try{
+			  if(cnf.mapType == "osm")
+			  {
+				  accCircle.setLatLng(mkr.getLatLng())
+			  }
+			  else
+			  {
+				  accCircle.setCenter(mkr.getPosition());
+			  }
+			  
+			  $("#latitude", ctx).val((cnf.mapType == "osm" ? mkr.getLatLng().lat : mkr.getPosition().lat()));
+			  $("#longitude", ctx).val((cnf.mapType == "osm" ? mkr.getLatLng().lng : mkr.getPosition().lng()));
+			  $("#accuracy", ctx).val(accCircle.radius);
+			  $("#provider", ctx).val("Marker Dropped");
+			  
+			  if(eleService)
+			  {
+				  eleService.getElevationForLocations({locations  : [ mkr.getPosition() ]}, elevationCallback);
+			  }
+		  }catch(err){alert(err);}
 	  }
 	  
 	  function elevationCallback(results, status)

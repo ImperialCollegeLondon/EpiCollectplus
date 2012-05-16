@@ -701,6 +701,10 @@ EpiCollect.Form = function()
 			fmt = fmt.replace("MM", "mm").replace("yyyy", "yy");
 			
 			$(ele).datepicker({ dateFormat : fmt });
+			if(project.forms[formName].fields[ele.name].setDate)
+			{
+				$(ele).datepicker("setDate", new Date());
+			}
 		});
 		if(this.gpsFlds.length > 0) $(".locationControl", this.formElement).gpsPicker()
 		$(".ecplus-radio-group, .ecplus-check-group, select", this.formElement).controlgroup();
@@ -733,12 +737,12 @@ EpiCollect.Form = function()
 			}
 		});
 		
-		$(".ecplus-input", this.formElement).blur(function(evt){
+		/*$(".ecplus-input", this.formElement).blur(function(evt){
 			if(!project.forms[formName].moveNext(true))
 			{
 				$(evt.target).focus();
 			}
-		});
+		});*/
 		
 		this.jumpFormTo(this.formIndex);
 	};
@@ -751,29 +755,39 @@ EpiCollect.Form = function()
 	
 	this.doJump = function(fieldName)
 	{
+		console.debug(fieldName);
 		var start = this.formIndex;
 		var done = false;
 
 		var _frm = this;
 		
-		$(".ecplus-question").each(function(idx, ele){
-			if(idx <= start || !_frm.fields[ele.id.replace("ecplus-question-", "")] ) return;
-		
-			if(fieldName && ele.id == "ecplus-question-" + fieldName)
+		$(".ecplus-question, .ecplus-question-hidden").each(function(idx, ele){
+			var fld = ele.id.replace("ecplus-question-", "");
+			if($(ele).hasClass('ecplus-question-hidden') && idx < start) start++;
+			
+			if(idx <= start || !_frm.fields[fld] ) return;
+			if(fld == fieldName) done = true;
+			
+			if(!fieldName || done)
 			{
-				done = true;
-			}
-			else if(fieldName && !done)
-			{
-				$(ele).hide();
-			}
-			else if(!_frm.fields[ele.id.replace("ecplus-question-", "")].jump)
-			{
+				console.debug("show " + fld);
 				$(ele).show();
+				$(ele).addClass('ecplus-question');
+				$(ele).removeClass('ecplus-question-hidden');
+			}
+			else if(!done)
+			{
+				console.debug("hide " + fld);
+				$(ele).hide();
+				$(ele).removeClass('ecplus-question');
+				$(ele).addClass('ecplus-question-hidden');
 			}
 			else
 			{
-				$(ele).hide();
+				console.debug("show " + fld);
+				$(ele).show();
+				$(ele).addClass('ecplus-question');
+				$(ele).removeClass('ecplus-question-hidden');
 			}
 		});
 	}
@@ -844,7 +858,7 @@ EpiCollect.Form = function()
 			
 	
 			
-			if(valid === true)
+			if(valid === true || valid.length == 0)
 			{
 				if(this.fields[fldName].jump)
 				{
@@ -1421,7 +1435,7 @@ EpiCollect.Field = function()
 	this.validate = function(value)
 	{
 		var msgs = []
-		if(this.required && !value) msgs.push("This field is required");
+		if(this.required && (!value || value == "")) msgs.push("This field is required");
 		if(value && value != "")
 	    {
 			if(this.isinteger){
@@ -1559,11 +1573,11 @@ EpiCollect.Field = function()
 			}
 			
 			if(this.max){
-				if(Number(Value) > this.max) msgs.push("Value must be less than  or equal to" + this.max);
+				if(Number(value) > this.max) msgs.push("Value must be less than  or equal to" + this.max);
 			}
 			
 			if(this.min){
-				if(Number(Value) < this.min) msgs.push("Value must be greater than or equal to " + this.min);
+				if(Number(value) < this.min) msgs.push("Value must be greater than or equal to " + this.min);
 			}
 			
 			if(this.match){
