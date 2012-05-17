@@ -3004,6 +3004,9 @@ function userHandler()
 $hasManagers = $db->connected && count($auth->getServerManagers()) > 0;
 
 $pageRules = array(
+		
+		'markers/point' => new PageRule(null, 'getPointMarker'),
+		'markers/cluster' => new PageRule(null, 'getClusterMarker'),
 //static file handlers
 		'' => new PageRule('index.html', 'siteHome'),
 		'index.html?' => new PageRule('index.html', 'siteHome'),
@@ -3056,8 +3059,6 @@ $pageRules = array(
 		'createDB' => new PageRule(null, 'setupDB',$hasManagers),
 		'writeSettings' => new PageRule(null, 'writeSettings', $hasManagers),
 		
-		'markers/point' => new PageRule(null, 'getPointMarker'),
-		'markers/cluster' => new PageRule(null, 'getClusterMarker'),
 //to API
 		'[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|/)?' =>new PageRule(null, 'projectHome'),
 		'[a-zA-Z0-9_-]+/upload' =>new PageRule(null, 'uploadData'),

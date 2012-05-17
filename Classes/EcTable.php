@@ -845,6 +845,10 @@
 				
 				$sql2 = substr($sql2, 0, count($sql2) - 3). ") GROUP BY entry) a where a.count = " . count($args);
 			}
+			else
+			{
+				$sql2 = "SELECT COUNT(idEntry) as ttl from Entry WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
+			}
 			
 			$res = $db->do_query($sql2);
 			
