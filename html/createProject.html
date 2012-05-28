@@ -20,7 +20,7 @@
 			text-align : left;
 		}
 		
-		section
+		.section
 		{
 			display: inline-block;
 			width : 50em;
@@ -69,19 +69,27 @@
 			}
 		});
 		
-		$('#uploadxml').load(function(){
+		$('#uploadxml').one('load', function(){
 			if($('#uploadxml')[0].contentDocument.forms[0])
 			{
 		  		$($('#uploadxml')[0].contentDocument.forms[0].xml).change(function(){
 		  			$('#uploadxml')[0].contentDocument.forms[0].submit();
 		  		});
 			}
-			$('#uploadxml').load(function(){
+			$('#uploadxml').on('load', function(){
+				
+				if($('#uploadxml')[0].contentWindow.location.href == location.protocol + '//' + location.host + "{#SITE_ROOT#}/html/projectIFrame.html") return;
+					
 				$('#uploadStatus').empty();
-	  			try{obj = JSON.parse($($('#uploadxml')[0].contentDocument.body).text());}catch(err){}
+	  			try{
+	  				obj = JSON.parse($($('#uploadxml')[0].contentDocument.body).text());
+	  			}catch(err){
+	  				obj = false;
+	  			}
+	  			
 	  			if(!obj || !obj.valid){
 	  				
-	  				if($('#uploadxml')[0].contentWindow.location.href != location.origin + "{#SITE_ROOT#}/html/projectIFrame.html") {$('#uploadxml')[0].src = "{#SITE_ROOT#}/html/projectIFrame.html";}
+	  				if($('#uploadxml')[0].contentWindow.location.href != location.protocol + '//' + location.host + "{#SITE_ROOT#}/html/projectIFrame.html") {$('#uploadxml')[0].src = "{#SITE_ROOT#}/html/projectIFrame.html";}
 	  				$('#uploadxml').show();
 	  				//show error messages
 	  				$('#uploadStatus').addClass("err");
@@ -91,7 +99,7 @@
 	  			}
 	  			else
 	  			{
-	  				if($('#uploadxml')[0].contentWindow.location.href != location.origin + "{#SITE_ROOT#}/html/projectIFrame.html") {$('#uploadxml')[0].src = "{#SITE_ROOT#}/html/projectIFrame.html";}
+	  				if($('#uploadxml')[0].contentWindow.location.href != location.protocol + '//' + location.host + "{#SITE_ROOT#}/html/projectIFrame.html") {$('#uploadxml')[0].src = "{#SITE_ROOT#}/html/projectIFrame.html";}
 	  				$('#uploadStatus').addClass("go");
 	  				$('#uploadStatus').removeClass("err");
 	  			
@@ -100,6 +108,7 @@
 	  				$(document.forms[0].xml).val(obj.file);
 	  				$('#pdNext').button("enable");
 	  			}
+	  			
 	  		});
 		})
   		
@@ -110,7 +119,7 @@
   	
   	function goTo(sectionId)
   	{
-  		$('section').hide();
+  		$('.section').hide();
   		$('#' + sectionId).show();
   	}
   	
@@ -159,7 +168,7 @@
 	  <h1 id="title">Create a Project - <span class="projectName"></span></h1>
 	  <div id="message" class="flashes"></div>
 	  <form id="projectOptions" action="create" method="POST">
-		  	<section id="projectDef">
+		  	<div id="projectDef" class="section">
 			  	<h2>1. Project Definition</h2>
 			  	<p>Choose a name for the project</p>
 			  	<input name="name" />
@@ -169,8 +178,8 @@
 		 		<input type="hidden" name="xml"/>
 		 		<br/>
 		 		<a class="panelSwitcher" id="pdNext" href="javascript:goTo('visibility');"> Continue </a>
-	 		</section>
-		 	<section id="visibility">
+	 		</div>
+		 	<div id="visibility" class="section">
 				<h2>2. Visibility</h2>
 				<p>EpiCollect+ allows project data to either be public of private, please choose one of the following options</p>
 				<div id="public">
@@ -181,8 +190,8 @@
 				<a class="panelSwitcher" href="javascript:goTo('listing');"> Continue </a>	
 				<a class="panelSwitcher" href="javascript:goTo('projectDef');"> Back </a>
 				
-			</section>
-			<section id="listing">
+			</div>
+			<div id="listing" class="section">
 				<h2>3. Listing on the Homepage</h2>
 				<p>The front page of this server displays a list of projects that have been created on this server, please choose one of the following options</p>
 				<div id="listed">
@@ -192,8 +201,8 @@
 				<br/>
 				<a class="panelSwitcher" href="javascript:goTo('s_managers');"> Continue </a>	
 				<a class="panelSwitcher" href="javascript:goTo('visibility');"> Back </a>
-			</section>
-			<section id="s_managers">
+			</div>
+			<div id="s_managers"  class="section">
 				<h2>4. Project Managers</h2>
 				<p>Any users in this group have the ability to add and remove other project managers and curators, they can also update the project 
 				settings and the project definition. Managers can also Add, edit and remove data using the web interface.</p>
@@ -209,8 +218,8 @@
 				<br/>
 				<a class="panelSwitcher" href="javascript:goTo('s_curators');"> Continue </a>	
 				<a class="panelSwitcher" href="javascript:goTo('listing');"> Back </a>
-			</section>
-			<section id="s_curators">
+			</div>
+			<div id="s_curators" class="section">
 				<h2>5. Project Curators</h2>
 				<p>Any users in this group are allowed to use the web interface to add, edit and remove data. Anyone can upload data from the EpiCollect+ Android App. If this project is not public then 
 				only Curators and managers will be able to use the web interface for this project.</p>
@@ -226,7 +235,7 @@
 				<br/>
 				<a class="panelSwitcher" href="javascript:document.forms[0].submit();"> Create Project </a>	
 				<a class="panelSwitcher" href="javascript:goTo('s_managers');"> Back </a>
-			</section>
+			</div>
 	</form>
   
 {{/main}}

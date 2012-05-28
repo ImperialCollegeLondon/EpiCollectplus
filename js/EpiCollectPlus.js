@@ -42,15 +42,18 @@ EpiCollect.LoadingOverlay = function()
 		
 		$("#ecplus_loader").css({"width"  : size + "px", "height" : size + "px", "position" : "fixed", "top" : "50%", "left" : "50%", "margin-left" : "-" + (size/2) + "px", "margin-top" : "-" + (size/2) + "px", "border-radius" :"20px"});
 		
-		ctx = $("#ecplus_loader")[0].getContext('2d');
+		try{
+			ctx = $("#ecplus_loader")[0].getContext('2d');
 		
-		
-		$("#ecplus_loader_bg").show();
-		drawer = setInterval(this.draw, 10);
+			$("#ecplus_loader_bg").show();
+			drawer = setInterval(this.draw, 10);
+		}catch(err){}
 	}
 	
 	this.draw = function()
 	{
+		if(!ctx) return;
+		
 		var d = size;
 		var halfd = d/2;
 		ctx.clearRect(-halfd, -halfd, d, d);

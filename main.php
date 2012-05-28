@@ -2321,10 +2321,10 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 				$isValid = false;
 				array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has no label. All fields must have a label and the label must not be null. If you have added a label to the field please make sure the tags are all in lower case i.e. <label>...</label> not <Label>...</Label>");
 			}
-			if(!preg_match("/^[0-9A-Za-z_-]$/", $fid->label))
+			if(!preg_match("/^[0-9A-Za-z_-]+$/", $fld->name))
 			{
 				$isValid = false;
-				array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid label, the label must only contain letters, numbers, _ or -");
+				array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid name, the label must only contain letters, numbers, _ or -");
 			}
 
 			if($fld->jump)
