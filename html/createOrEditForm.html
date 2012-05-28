@@ -1,73 +1,299 @@
 {{style}}
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />		
-		<link rel="stylesheet" type="text/css" href="../Ext/ext-all.css" />
 		<link rel="stylesheet" type="text/css" href="../EpiSkins.css" />
+		<style type="text/css">
+			body
+			{
+				-webkit-touch-callout: none;
+				-webkit-user-select: none;
+				-khtml-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+			}
+		
+			#formList
+			{
+				display : block;
+				height : 9em;
+				overflow-x : auto;
+				overflow-y : hidden;
+			}
+			
+			#formList span
+			{
+				position:relative;
+				border-radius : 0.5em;
+				display : inline-block;
+				height : 3em;
+				margin : 0.5em 0em .5em 0em;
+				padding : 1.5em 0.5em 1em 0.5em;
+				text-align : center;
+				width : 6em;
+				vertical-align :middle;
+			}
+			
+			#formList .form
+			{	
+				border : 0.5em solid #CCCCCC;
+				margin-right : 1em;	
+			}
+			
+			#formList .form:after
+			{	
+				content: ' ';
+				position : absolute;
+				right : -2em;
+				top: 50%;
+				width: 1.5em;
+				border-bottom: 0.5em solid #CCCCCC; 
+			}
+			
+			#formList .form:hover:after
+			{
+				border-bottom:0.5em solid #CCFFCC; 
+			}
+			
+			
+			#formList .control
+			{
+				border : 0.5em dashed #CCCCCC;	
+			}
+			
+			#formList span:hover
+			{
+				border-color : #CCFFCC;	
+			}
+			
+			#formList span.selected
+			{
+				border-color : #CCCCFF;
+			}
+			
+			#toolbox
+			{
+				height: 2em;
+				margin : 0.25em;
+				padding: 0.25em;
+			}
+			
+			#toolbox a
+			{
+				display:inline-block;
+				vertical-align : middle;
+				text-align: center;
+				min-width : 5em;
+			}
+			
+		</style>
 {{/style}}
 {{script}}				
-		<script type="text/javascript" src="../Ext/ext-base.js"></script>
-		<script type="text/javascript" src="../Ext/ext-all.js"></script> 
-		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
-		<script type="text/javascript" src="../js/EpiCollect2.js"></script>
+		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui-1.8.17.custom.min.js"></script>
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 		<script type="text/javascript" src="../js/formBuilder.js"></script>
+		<script type="text/javascript" src="{#SITE_ROOT#}/js/gpsPicker.js"></script>
+		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.controlgroup.js"></script>
+		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.settingspanel.js"></script>
+		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.mediainput.js"></script>
 {{/script}}
+{{breadcrumbs}}
+&gt; <a href="../{#projectName#}">Project : {#projectName#}</a> &gt; Form Builder
+{{/breadcrumbs}}
 {{main}}
-<div id="formList">
-		<span class="label">Select a form to Edit: </span><!--<span class="table selected" id="this">This</span><span class="link">This_Id</span><span class="table">Another</span><span class="control">Add a new form</span>-->
-</div>
-<div id="toolbox">
-		<a href="javascript:saveProject()">Save</a>
-</div>
-	<div class="columns">
-		<div id="source" class="column first">
-				<b>Form Elements</b><hr />
-      
-    </div> <!--source-->
-    <div id="middle" class="column second">
-        <b>Form</b> (drag elements between bars)
-				<p>
-						<div style="float:right; font-weight:bold;font-size:10pt;">
-								<a href="javascript:void(0)" onclick="popup($('#middle&gt;p'),'Preview', 'See a preview of what your form will look like when used on the iPhone or an Android phone')">?</a>
-						</div>
-						Preview: <a href="#webbie"  id="web" onclick="web();">Web</a>|<a href="#android"  id="web" onclick="android();">Android</a>|<a href="#iphone"  id="web" onclick="iphone();">iPhone</a>
-				
-		
-        <hr />
-        <div class="ui-sortable" id="destination">
-						<div class="target">&nbsp;</div>
-						
-				</div>
-        <p></p>
-				<hr />
-    </div>
-    <div id="details" class="column last">
-        <div id="detailHeader"><b>Field Properties</b><hr></div>	
-        <div id="textInputEdit" class="formLineEdit" style="display:none">
-            <br /><a href="http://www.epicollect.net/formHelp.asp#labels" target="_blank">Label</a><input id="textInputLabel" name="textInputLabel" type="text"><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($('#textInputEdit'),'Label', 'The label displayed to the user')">?</a></div>
-            <br /><a href="http://www.epicollect.net/formHelp.asp#ids" target="_blank">ID</a><input id="textInputValue" name="textInputValue"><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($('#textInputEdit'),'ID', 'The name of the column in the database')">?</a></div>
+	<h1>Form Builder</h1>
+	<div id="toolbox">
+		<div id="toolbox-inner">
+			<a href="javascript:saveProject()" class="button">Save Project</a>
+			<a href="javascript:project.forms[currentForm.name].displayForm({ debug : true });" class="button">Preview Form</a>
+			<a href="javascript:renameForm(currentForm.name);" class="button">Rename Form</a>
+			<a href="javascript:removeForm(currentForm.name);" class="button">Delete Form</a>
+		</div>
+	</div>
+	<div id="formList">
+			<h4 class="label">Select a form to edit: </h4>
+			<span class="form">First_Form</span><span class="control">Add a new form</span>
+	</div>
 
-						<div id="selectEdit" class="formLineEdit">
-							 <input id="addSelectOneOption" value="Add Option" type="submit" />
-							 <div id="selectOneOption0" class="selectOption">
-										<hr />
-										<i>Option</i>: <a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Label</a><input name="oneOptionLabel" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Option &gt; Name', 'The label displayed to the user')">?</a></div>
-										<br /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Value</a><input name="oneOptionValue" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Option &gt; Value', 'The value entered into the database')">?</a></div>
-										<br><input name="removeSelectOneOption" value="Remove" type="submit">	 
-							 </div>
-							 
+	<div class="ecplus-columns">
+		<div id="source" class="column first">
+			<h3>Form Elements</h3>
+			<hr />
+			<div class="ecplus-form-element ecplus-fk-element" type="fk">
+      			<p class="title">Link from another form</p> 
+      		</div>
+      		<div class="ecplus-form-element ecplus-text-element" type="text">
+      			<p class="title">Text</p> 
+      		</div>
+      		<div class="ecplus-form-element ecplus-numeric-element" type="numeric">
+      			<p class="title">Numeric</p> 
+      		</div>
+      		<div class="ecplus-form-element ecplus-date-element" type="date">
+      			<p class="title">Date</p> 
+       			
+      		</div>
+      		<div class="ecplus-form-element ecplus-time-element" type="time">
+      			<p class="title">Time</p> 
+      		</div>
+      		<div class="ecplus-form-element ecplus-select1-element" type="select1">
+      			<p class="title">Drop-down list</p> 
+      			<p class="option">Option One</p>
+      			<p class="option">Option Two</p>
+      		</div>
+      		<div class="ecplus-form-element ecplus-radio-element" type="radio">
+      			<p class="title">Radio Buttons</p> 
+      			<p class="option">Option One</p>
+      			<p class="option">Option Two</p>
+      		</div>
+      		<div class="ecplus-form-element ecplus-select-element" type="select">
+      			<p class="title">Check boxes</p> 
+      			<p class="option">Option One</p>
+      			<p class="option">Option Two</p>
+      		</div>
+      		<div class="ecplus-form-element ecplus-textarea-element" type="textarea">
+      			<p class="title">Multi-line Text</p> 
+      			
+      		</div>
+      		<div class="ecplus-form-element ecplus-location-element" type="location">
+      			<p class="title">Location</p> 
+      			
+      		</div>
+      		<div class="ecplus-form-element ecplus-photo-element" type="photo">
+      			<p class="title">Photograph</p> 
+      			
+      		</div>
+      		<div class="ecplus-form-element ecplus-video-element" type="video">
+      			<p class="title">Video</p> 
+      			
+      		</div>
+      		<div class="ecplus-form-element ecplus-audio-element" type="audio">
+      			<p class="title">Audio</p> 
+      			
+      		</div>
+      		<div class="ecplus-form-element ecplus-barcode-element" type="barcode">
+      			<p class="title">Barcode</p> 
+      			
+      		</div>
+      		<div class="ecplus-form-element ecplus-branch-element" type="branch">
+      			<p class="title">Branch Form</p> 
+      		</div>
+    	</div> <!--source-->
+	    <div id="middle" class="column second">
+	        <h3>Form</h3>
+	        <p><i>Build a form by dragging controls between the lines below.</i></p>
+			<!-- <p>
+				Preview: <a href="#webbie"  id="web" onclick="web();">Web</a>|<a href="#android"  id="web" onclick="android();">Android</a>|<a href="#iphone"  id="web" onclick="iphone();">iPhone</a>
+			</p>-->
+	        <hr />
+	        <div class="ui-sortable" id="destination"><span>&nbsp;</span></div>
+			<hr />
+	    </div>
+	    <div id="details" class="column last">
+	        <h3>Field Properties</h3>	
+	       		<form id="props">
+			   		<div id="labelCtrl" notfor="fk">
+				        	<label for="inputLabel">
+				        		<a href="http://www.epicollect.net/formHelp.asp#labels" target="_blank">Label</a>
+				        	</label>
+				        	<input id="inputLabel" name="text" type="text" />
+				    </div>
+				    <div id="nameCtrl" notfor="fk">
+				           	<label for="inputId">
+				           		<a href="http://www.epicollect.net/formHelp.asp#ids" target="_blank">ID</a>
+				           	</label>
+				           	<input id="inputId" name="id" type="text" />
+				    </div>
+				    <div id="requiredCtrl" notfor="fk">
+				           	<label for="inputRequired">Required</label>
+				           	<input type="checkbox" id="required" name="required" value="true" />
+				    </div>
+				    <div id="fkPanel" allow="fk">
+				    	<label>Use key from </label><select id="parent" name="parent"></select>
+				    </div>
+				    <div id="branchButton" allow="branch">
+				    	<a href="javascript:switchToBranch();" class="button">Edit branch form</a>
+				    </div>
+				    <div id="titleCtrl" allow="text,numeric,select1,radio,barcode">
+				           	<label for="inputTitle">Title</label> 
+				           	<input type="checkbox" id="title" name="title" value="true" />
+				    </div>
+				    <div id="keyCtrl" allow="text,numeric,barcode">
+				           	<label for="inputKey">Key</label> 
+				           	<input type="checkbox" id="key" name="key" value="true" />
+				    </div>
+				    <div allow="text,numeric,select1,radio,barcode">
+				        	<label>Searchable</label> 
+				        	<input type="checkbox" id="search" name="search" value="true" />
+				    </div>
+				    <div allow="numeric">
+				        	<label for="inputDec">Decimal</label> 
+				        	<input type="radio" id="decimal" name="numeric" value="decimal" />
+				        	<label for="inputInt">Integer</label> 
+				        	<input type="radio" id="integer"  name="numeric" value="integer" />
+				        	<label for="inputmin">Minumum Value</label> 
+				        	<input type="number" id="min" name="min" />
+				        	<label for="inputmax">Maximum Value</label> 
+				        	<input type="number" id="max" name="max" />
+				    </div>
+				    <div allow="date">	
+				        	<label for="date">Date Format</label> 
+				        	<input type="text" id="date" name="date" />
+				    </div>
+				    <div allow="time">
+				        	<label for="inputmax">Time Format</label> 
+				        	<input type="text" id="time" name="time" />
+				    </div>
+				   	<div allow="date,time">
+				        	<label for="inputSet">Set default to current date/time</label> 
+				        	<input type="checkbox" id="set" name="set" value="true" />
+				    </div>
+				    <div allow="text,numeric">
+				        	<label for="inputdefault">Default</label>
+				        	<input type="text" id="default" name="defaultValue" />
+				     </div>
+				     <div allow="text,textarea,barcode">
+				       	<label for="inputregex">Regular Expression</label> 
+				       	<input type="text" id="regex" name="regex" />
+				     </div>
+				     <div allow="text,numeric,date,time">
+				        	<label for="inputVerify">Double Entry</label>
+				        	<input type="checkbox" id="verify" name="verify" value="true" />
+				     </div>
+				     <div allow="key">
+				      	<label for="inputHidden">Hidden</label>
+				      	 <input type="checkbox" id="hidden" name="hidden" value="true" />
+				       	<label for="inputGenKey">Generate Key</label>
+				       	 <input type="checkbox" id="genkey" name="genkey" value="true" />
+					</div> 
+					<div id="options" allow="select,radio,select1">
+						<hr />
+						<h3>Options</h3>
+						 <a id="addSelectOneOption" href="javascript:addOption();" class="button">Add Option</a>
+						 <div class="selectOption">
+									<hr />
+									<a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Label</a><input name="optLabel" />
+									<br /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Value</a><input name="optValue" />
+									<br><a href="javascript:void(0);" class="button removeOption">Remove Option</a>	 
+						 </div> 
+					</div>
+					<div id="jumps" allow="select,radio,select1">
+						<hr />
+						<h3>Jumps</h3>
+						<a href="javascript:addJump();updateJumps();" class="button">Add Jump</a>
+						<div class="jumpoption">
+							<hr />
+							<label>Jump on value</label> <select class="jumpvalues"></select>
+							<br /><label>Jump to</label> <select class="jumpdestination"></select>
+							<br /><a href="javascript:void(0);" class="button remove" >Remove Jump</a>
 						</div>
-					 <hr />
-					 <a href="http://www.epicollect.net/formHelp.asp#flags" target="_blank">Required</a> <input name="required" type="checkbox"><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Required', 'The user must supply a value for this field.')">?</a></div>
-					 <!--<br><a href="http://www.epicollect.net/formHelp.asp#flags" target="_blank">Read-Only</a> <input name="readonly" type="checkbox"><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Read-Only', 'The data in this field cannot be edited once it has been entered')">?</a></div>-->
-					 <br><a href="http://www.epicollect.net/formHelp.asp#flags" target="_blank">Title</a> <input name="title" type="checkbox"><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Title', 'If this option is selected then the field\'s value will appear as the name of the record in the record list and on the map.')">?</a></div>
-					 <!--<br><a href="http://www.epicollect.net/formHelp.asp#flags" target="_blank">Subtitle</a> <input name="subtitle" type="checkbox"><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Read-Only', 'The data in this field cannot be edited once it has been entered')">?</a></div>-->
-					 <br><div id="numericFlag" style="display: inline;"><a href="http://www.epicollect.net/formHelp.asp#flags" target="_blank">Numeric</a> <input name="numeric" type="checkbox"></div><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Numeric', 'The data in this field will be restricted to integer or decimal numbers')">?</a></div>
-					 <br><a href="http://www.epicollect.net/formHelp.asp#flags" target="_blank">Chartable</a> <input name="chart" type="checkbox"><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Chartable', 'The data in this field can be displayed in a chart. For text input fields this means the data must also be numeric.')">?</a></div>
-					 <br><div id="chartType">(pie<input name="pie" disabled="disabled" type="radio"> bar<input name="bar" disabled="disabled" type="radio">)</div><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),'Read-Only', 'Whether chartable data should be diplayed as a pie or bar chart.')">?</a></div>
-					 <input id="done" name="done" value="Done" type="submit">
-					 <input id="delete" name="delete" value="Delete" type="submit">
-        </div>
-    </div> <!-- details-->
-</div> <!--columns-->
+					</div>
+					<hr />
+					<div>
+						<a class="button removeControl" href="javascript:removeSelected();">Delete</a>
+					</div>
+				</form>
+		    </div>
+			
+	    </div> <!-- details-->
+	</div> <!--columns-->
 <p>
 </p><div class="formOptions">
     <!--Allow users to edit entries initially recorded on other users' devices? (<a href="http://www.epicollect.net/formHelp.asp#allowDownloadEdits" target="_blank">help</a>) --><input name="allowDownloadEdits" type="hidden">

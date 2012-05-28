@@ -7,6 +7,8 @@
 		
 		abstract public function requestLogin($callbackurl, $firstLogin = false);
 		abstract public function getDetails();
+		abstract public function getType();
+		
 		public function getCredentialString()
 		{
 			if(is_string($this->data))

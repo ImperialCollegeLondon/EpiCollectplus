@@ -12,6 +12,9 @@
 		public $isMain = true;
 		public $branches = array();
 		public $branchOf = false;
+		public $group = false;
+		
+		public $branchfields = array();
 		
 		public function __construct($s = null)
 		{
@@ -46,7 +49,7 @@
 		
 		public function toXML()
 		{
-			$xml = "\n\t<form num=\"{$this->number}\" name=\"{$this->name}\" key=\"{$this->key}\" main=\"". ($this->isMain ? "true" : "false")."\"> ";
+			$xml = "\n\t<form num=\"{$this->number}\" name=\"{$this->name}\" key=\"{$this->key}\" main=\"". ($this->isMain ? "true" : "false")."\" " . ($this->group ? "group=\"{$this->group}\"" : "") . "  > ";
 			foreach($this->fields as $fld)
 			{
 				if($fld->active)
@@ -67,7 +70,7 @@
 			foreach($this->fields as $fld)
 			{
 				$xml .= ($i > 0 ? "," : "") . $fld->toJson();
-				$i++;
+				++$i;
 			}
 			$xml .= "]\n\t}";
 			return $xml;
@@ -108,12 +111,13 @@
 					$this->name = $arr["name"];
 					$this->number = $arr["table_num"];
 					$this->version = $arr["version"];
+					$this->group = $arr["group"];
 					$this->isMain = $arr["isMain"] == "1";
 				}
 				
 			}
 			
-			$qry = "SELECT f.idField as idField, f.key, f.name, f.label, ft.name as type, f.required, f.jump, f.isinteger as isInt, f.isDouble, f.title, f.regex, f.doubleEntry, f.search, f.group_form, f.branch_form, f.display, f.genkey, f.date, f.time, f.setDate, f.setTime, f.min, f.max, f.crumb, f.`match`, f.active FROM field f LEFT JOIN fieldtype ft on ft.idFieldType = f.type WHERE ";
+			$qry = "SELECT f.idField as idField, f.key, f.name, f.label, ft.name as type, f.required, f.jump, f.isinteger as isInt, f.isDouble, f.title, f.regex, f.doubleEntry, f.search, f.group_form, f.branch_form, f.display, f.genkey, f.date, f.time, f.setDate, f.setTime, f.min, f.max, f.crumb, f.`match`, f.active, f.defaultValue FROM field f LEFT JOIN fieldtype ft on ft.idFieldType = f.type WHERE ";
 			if(is_numeric($this->id))
 			{
 				$qry = "$qry f.form = {$this->id} ORDER BY f.position";
@@ -146,17 +150,24 @@
 				
 				foreach($this->fields as $fld)
 				{
-					$db = new dbConnection();
-					$res = $db->exec_sp("getOptions", array($fld->idField));
-					while($res === true && $arr = $db->get_row_array())
+					//$db = new dbConnection();
+					if(!$fld->idField) continue;
+					$res = $db->do_query("SELECT `index`, `label`, `value` FROM `option` WHERE `field` = {$fld->idField}"); //$db2->exec_sp("getOptions", array($fld->idField));
+					if($res !== true) die($res);
+					while($arr = $db->get_row_array())
 					{
 						$opt = new EcOption();
 						$opt->fromArray($arr);
 						$opt->idx = $arr["index"];
 						$fld->options[$opt->value] = $opt;
 					}
-					if($fld->type == "branch") array_push($this->branches, $fld->branch_form);
+					if($fld->type == "branch"){
+						array_push($this->branches, $fld->branch_form);
+						array_push($this->branchfields, $fld->name);
+					}
+					unset($db2);
 				}
+				
 				return true;
 			}
 			else
@@ -172,7 +183,7 @@
 			
 			//print_r($this->fields);
 			
-			$res = $db->do_query("INSERT INTO form(project, projectName, version, name, table_num, keyField, isMain) VALUES({$this->survey->id}, '{$this->survey->name}', {$this->version} , '{$this->name}', '{$this->number}', '{$this->key}', " . ($this->isMain ? "1" : "0") . ")");
+			$res = $db->do_query("INSERT INTO form(project, projectName, version, name, table_num, keyField, isMain, `group`) VALUES({$this->survey->id}, '{$this->survey->name}', {$this->version} , '{$this->name}', '{$this->number}', '{$this->key}', " . ($this->isMain ? "1" : "0") . ", " . $db->numVal($this->group) . ")");
 			if($res === true)
 			{
 				$this->fetch(); //need to get the form's id
@@ -210,6 +221,9 @@
 							break;
 						case 'main':
 							$this->isMain = parseBool((string)$val);
+							break;
+						case 'group':
+							$this->group = (int)$val;
 							break;
 					}
 				}
@@ -297,8 +311,11 @@
 					$fld->active = true;
 					$fld->position = $p;
 					$this->fields[$fld->name] = $fld;
-					if($fld->type == "branch") array_push($this->branches, $fld->branch_form);
-					$p++;
+					if($fld->type == "branch"){
+						array_push($this->branches, $fld->branch_form);
+						array_push($this->branchfields, $fld->name);
+					}
+					++$p;
 				
 				}
 				
@@ -309,185 +326,293 @@
 			$this->fields[$this->key]->key = true;
 		}
 		
-		public function ask($args = false, $offset = 0, $limit = 0, $sortField = "created", $sortDir = "asc", $exact = false)
+		public function ask($args = false, $offset = 0, $limit = 0, $sortField = 'created', $sortDir = 'asc', $exact = false, $format = 'object', $includeChildCount = true)
 		{
 			global $db;
-			$db = new dbConnection();
-			$select = "SELECT DISTINCT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded ";
-			$join = "FROM entry e ";
-			$where = " WHERE e.projectName = '{$this->survey->name}' AND e.formName = '{$this->name}' ";
-			foreach($this->fields as $name => $field)
+			
+			if(!$sortField) $sortField = 'created';
+			if(!$sortDir) $sortDir = 'asc';
+			$qry = '';
+			//$db = new dbConnection();
+			/*
+			 * with fields being pulled from the database and concatinated at that point it makes sense to concatinate them in such a way that post-processing isn't required to
+			 * puth the values into the appropriate format.
+			 * 
+			 * The format of the request therefore needs to be stored by ask() so that recieve() know's what it's outputting.
+			 */
+			$this->lastRequestFormat = $format;
+			
+			if($format == 'object')
 			{
-				if($field->active)
-				{
-					$select .= ", ev$name.value as `$name` ";
-					$join .= "LEFT JOIN entryValue ev$name ON e.idEntry = ev$name.entry and ev$name.fieldName = '$name' " ;
-				}
+				$select = 'SELECT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded, GROUP_CONCAT( CONCAT_WS(\'::\', ev.fieldName, ev.value) ORDER BY ev.field SEPARATOR \'~~\') as data ';
+			}elseif($format == 'json'){
+				$select = 'SELECT CONCAT (\'{\"id\" : \', e.idEntry, \', \"DeviceID\": \"\', e.DeviceID, \'\",\"created\" : \', e.created, \' , \"lastEdited\":\"\', IFNULL(e.lastEdited, \'\'),\'\" , \"uploaded\":\"\', e.uploaded, \'\",\' , GROUP_CONCAT( CONCAT(\'\"\', ev.fieldName, \'\" : \"\', IFNULL(ev.value, \'\'), \'\"\') ORDER BY ev.field  SEPARATOR \',\'),  ';
+			}elseif($format == 'xml'){
+				$select = 'SELECT CONCAT (\'<entry><id>\', e.idEntry, \'</id><DeviceID>\', e.DeviceID, \'</DeviceID><created>\', e.created, \'</created><lastEdited>\', IFNULL(e.lastEdited, \'\'),\'</lastEdited><uploaded>\', e.uploaded, \'</uploaded>\' , GROUP_CONCAT( CONCAT(\'<\', ev.fieldName, \'>\', REPLACE(REPLACE(ev.value, \'\<\', \'&lt;\'), \'\>\', \'&gt;\'), \'</\', ev.fieldName, \'>\') ORDER BY ev.field  SEPARATOR \'\'),';
+			}elseif($format == 'csv'){
+				$select = 'SELECT CONCAT_WS (\',\', e.idEntry, e.DeviceID, e.created, IFNULL(e.lastEdited, \'\'),e.uploaded, GROUP_CONCAT(IFNULL(ev.value,\'\') ORDER BY ev.field  SEPARATOR \',\') ';
+			}elseif($format == 'tsv'){
+				$select = 'SELECT CONCAT_WS (\'\t\', e.idEntry, e.DeviceID, e.created, IFNULL(e.lastEdited, \'\'),e.uploaded, GROUP_CONCAT(IFNULL(ev.value,\'\') ORDER BY ev.field  SEPARATOR \'\t\')';
+			}elseif($format == 'kml'){
+				throw new Exception ('Format not yet implemented');
+			}elseif($format == 'tskv'){
+				$select = 'SELECT CONCAT_WS (\'\t\',\'id\', e.idEntry, \'DeviceID\', e.DeviceID, \'created\', e.created, \'lastEdited\',IFNULL(e.lastEdited, \'\'),\'uploaded\',e.uploaded, GROUP_CONCAT(CONCAT_WS(\'\t\',ev.fieldName, ev.value) ORDER BY ev.field SEPARATOR \'\t\') ';
+			}else{
+				throw new Exception ('Format not specified');
+			}
+			
+			$group = ' GROUP BY e.idEntry, e.DeviceID, e.created, e.lastEdited, e.uploaded ';
+			$join = sprintf('FROM entryvalue ev JOIN entry e ON e.idEntry = ev.entry');
+			if(count($this->branchfields))
+			{
+				$where = sprintf(' WHERE ev.fieldName NOT IN (\'%s\') and e.projectName = \'%s\' AND e.formName = \'%s\' ', implode('\',\'', $this->branchfields), $this->survey->name, $this->name);
+			}
+			else
+			{
+				$where = sprintf(' WHERE e.projectName = \'%s\' AND e.formName = \'%s\' ', $this->survey->name, $this->name);
 			}
 			
 			if($args)
 			{
 				foreach($args as $k => $v)
 				{
-					if(array_key_exists($k, $this->fields))
+					$s_k = str_replace('.', '_', $k);
+					
+					if( $v == '' ) continue;
+					if( array_key_exists($k, $this->fields) && $this->fields[$k]->type != "" )
 					{
-						if($exact)
+						$join .= sprintf(' LEFT JOIN entryvalue ev%s on e.idEntry = ev%s.entry AND ev%s.projectName = \'%s\' AND ev%s.formName = \'%s\' AND ev%s.fieldName = \'%s\'', $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
+						if( $exact )
 						{
-							$where .= " AND ev$k.value = '$v'";
+							$where .= sprintf(' AND ev%s.value = \'%s\'', $s_k, $v);
 						}
 						else
 						{
-							$where .= " AND ev$k.value LIKE '%$v%'";
+							$where .= sprintf(' AND ev%s.value Like \'%s\'', $s_k, $v);
 						}
 					}
 				}
 			}
-// 			if($this->survey->getNextTable($this->name, true))
-// 			{
-// 				$child = $this->survey->getNextTable($this->name, true);
-// 				$join .= "LEFT JOIN (select value from entryValue where projectName = '{$this->survey->name}' AND formName = '{$this->name}' AND fieldName = '{$this->key}') ev{$child->name}_entries ON  ";
-// 			}
 			
+			for($i = count($this->branchfields); $i--;)
+			{
+				$bf =  str_replace('.', '_', $this->branchfields[$i]);
+				
+				if($format == 'json'){
+					$select .= sprintf(' \', "%s" : \' , COUNT(distinct ev%s_entries.entry) ,', $bf, $this->branches[$i]);
+				}elseif($format == 'xml'){
+					$select .= sprintf(' \'<%s>\', COUNT(distinct ev%s_entries.entry), \'</%s>\',', $bf, $this->branches[$i], $bf);
+				}elseif($format == 'csv'){
+					$select .= sprintf(', COUNT(distinct ev%s_entries.entry) ', $this->branches[$i]);
+				}elseif($format == 'tsv'){
+					$select .= sprintf(', COUNT(distinct ev%s_entries.entry)  ', $this->branches[$i]);
+				}elseif($format == 'kml'){
+					throw new Exception ('Format not yet implemented');
+				}elseif($format == 'tskv'){
+					$select .= sprintf(',%s , COUNT(distinct ev%s_entries.entry)', $bf, $this->branches[$i]);
+				}elseif($format != 'object'){
+					//throw new Exception ('Format not specified');
+				}
+				
+				if(!strstr($join, sprintf('ev%s', $this->key)))
+				{
+					$join .= sprintf(' LEFT JOIN entryvalue ev%s on ev%s.entry = e.idEntry and ev%s.fieldName = \'%s\'', $this->key,$this->key,$this->key,$this->key);
+				}
+				$join .= sprintf(' LEFT JOIN entryValue ev%s_entries  ON ev%s.value = ev%s_entries.value  AND ev%s_entries.projectName = \'%s\' AND ev%s_entries.formName = \'%s\' AND ev%s_entries.fieldName = \'%s\'',
+							$this->branches[$i],
+							$this->key, 
+							$this->branches[$i],
+							$this->branches[$i],
+							$this->survey->name,
+							$this->branches[$i], 
+							$this->branches[$i], 
+							$this->branches[$i], 
+							$this->key);
+			}
 			
-			if(array_key_exists($sortField, $this->fields))
+			$child = $this->survey->getNextTable($this->name, true);
+ 			if($child)
+ 			{
+ 				
+ 				$qry = sprintf('CREATE TEMPORARY TABLE %s_entries (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
+ 					FROM EntryValue a, EntryValue b 
+ 					WHERE a.projectName = \'%s\' and a.formName =\'%s\' and a.fieldName = \'%s\' and a.value = b.value and b.formName = \'%s\' 
+ 					and b.fieldName = \'%s\' GROUP BY a.value, b.entry ORDER BY a.value;',
+ 					$child->name,
+ 					$this->projectName,
+ 					$child->name,
+ 					$this->key,
+ 					$this->name,
+ 					$this->key
+ 				);
+ 				
+ 				//$res = $db->do_query($qry);
+ 				//if($res !== true) die($res);
+ 				
+ 				if($format == 'json'){
+ 					$select .= sprintf(' \', "%s_entries" : \' , IFNULL(%s_entries.entries, 0)  ,', $child->name, $child->name);
+ 				}elseif($format == 'xml'){
+ 					$select .= sprintf(' \'<%s_entries>\',   IFNULL(%s_entries.entries, 0), \'</%s_entries>\',', $child->name, $child->name, $child->name);
+ 				}elseif($format == 'csv'){
+ 					$select .= sprintf(',     IFNULL(%s_entries.entries, 0)  ', $child->name);
+ 				}elseif($format == 'tsv'){
+ 					$select .=sprintf( ',     IFNULL(%s_entries.entries, 0)) ', $child->name);
+ 				}elseif($format == 'kml'){
+ 					throw new Exception ('Format not yet implemented');
+ 				}elseif($format == 'tskv'){
+ 					$select .= sprintf(',%s_entries ,  IFNULL(%s_entries.entries, 0)', $child->name, $child->name);
+ 				}elseif($format == 'object'){
+ 					//throw new Exception ('Format not specified');
+ 				}
+ 				
+ 				
+ 				if(!strstr($join, sprintf('ev%s', $this->key)))
+				{
+					$join .= sprintf(' LEFT JOIN %s_entries on %s_entries.entry = e.idEntry',  $child->name, $child->name);
+				}
+ 			}
+ 			
+ 			if($format == 'json'){
+ 				$select .= ' \'}\') as `data` ';
+ 			}elseif($format == 'xml'){
+ 				$select .= ' \'</entry>\') as `data` ';
+ 			}elseif($format == 'csv'){
+ 				$select .= ') as data ';
+ 			}elseif($format == 'tsv'){
+ 				$select .= ') as data ';
+ 			}elseif($format == 'kml'){
+ 				throw new Exception ('Format not yet implemented');
+ 			}elseif($format == 'tskv'){
+ 				$select .= ') as data ';
+ 			}elseif($format == 'object'){
+ 				//throw new Exception ("Format not specified");
+ 			}
+
+ 			$sortIsField = array_key_exists($sortField, $this->fields);
+ 			
+ 			if(!strstr($join, sprintf('ev%s', $sortField)) && $sortIsField)
+ 			{
+ 				$s_sortField = str_replace('.', '_', $sortField);
+ 				$join .= sprintf(' LEFT JOIN entryvalue ev%s on ev%s.entry = e.idEntry and ev%s.fieldName = \'%s\'', $s_sortField, $s_sortField, $s_sortField, $sortField);
+ 			}
+			
+			if($sortIsField)
 			{
-				$order = " ORDER BY ev$sortField.value $sortDir";
+				$order = sprintf(' ORDER BY ev%s.value %s', str_replace('.', '_', $sortField), $sortDir);
 			}
-			else
+			elseif($child && $sortField == $child->name . '_entries')
 			{
-				$order = " ORDER BY e.$sortField $sortDir";
+				$order = sprintf(' ORDER BY %s_entries.entries %s', str_replace('.', '_', $child->name), $sortDir);
 			}
+			elseif($sortField)
+			{
+				$order = sprintf(' ORDER BY e.%s %s', $sortField, $sortDir);
+			}
+			unset($sortIsField);
+			
 			if($limit && $offset)
 			{
-				$limit = " LIMIT $limit, $offset";
+				$limit_s = sprintf(' LIMIT %u, %u', $offset, $limit);
 			}
 			elseif ($limit)
 			{
-				$limit = " LIMIT $limit";	
+				$limit_s = sprintf(' LIMIT %s', $limit);	
 			}
 			else 
 			{
-				$limit = "";
+				$limit_s = '';
 			}
-			$qry = "$select $join $where $order $limit";
+			$qry = sprintf('%s %s %s %s %s %s %s', $qry, $select, $join, $where, $group, $order, $limit_s);
+
+			unset($select, $join, $where, $group, $order, $limit_s);
+			//echo $qry;
 			
-			return $db->do_query($qry);
+			$db->do_multi_query($qry);
+			
+			return $db->getLastResultSet();
 				
 		}
 		
-		public function recieve($n = 1, $format = "object")
+		function checkExists($keyValue)
+		{
+			global $db;
+			$sql = sprintf('SELECT entry, count(idEntryValue) AS cnt FROM entryValue WHERE projectName = \'%s\' AND formName = \'%s\' AND fieldName= \'%s\' AND value = \'%s\'', $this->projectName, $this->name, $this->key, $keyValue);
+			
+			$res = $db->do_query($sql);
+			$count = 0;
+			while($arr = $db->get_row_array()){ $count = intval($arr['entry']); }
+			return $count;			
+		}
+		
+		public function recieve($n = 1)
 		{
 			global $db;
 			$ret = null;
 			
-			for($i = 0; ($n > $i) && ($arr = $db->get_row_array()) ; $i++)
+			for($i = -1; ($n > ++$i) && ($arr = $db->get_row_array()) ; )
 			{
-				
-				//print_r($arr);
-				if($format == "object")
+				if($this->lastRequestFormat == 'json')
 				{
-					if($ret == null) $ret = array();
-					array_push($ret, $arr);						
+					//replace is neccesary for tables with GPS fields 
+					$ret = str_replace(array('"{' ,'}"'), array('{','}'), $arr['data']); 
 				}
-				elseif($format == "tsv")
+				elseif($this->lastRequestFormat == 'object')
 				{
-					if($ret == null) $ret = "";
-					foreach($arr as $key => $val)
+					$vals = explode('~~', $arr['data']);
+					unset($arr['data']);
+					for($j = count($vals); $j--;)
 					{
-						if(strlen($ret) != 0 && $ret[strlen($ret)-1] != "\n") $ret .=  "\t";
-						if(array_key_exists($key, $this->fields) && ($this->fields[$key]->type == "location" || $this->fields[$key]->type == "gps" ))
-						{
-							if($val != "")
-							{
-								$val = json_decode($val);
-								$ret .=  str_replace("\n", " ","{$val->latitude}\t{$val->longitude}\t{$val->altitude}\t{$val->accuracy}\t{$val->provider}");
-							}
-							else
-							{
-								$ret .= "0\t0\t0\t-1\tNone";
-							}
-						}
-						else
-						{
-							$ret .= str_replace("\n", " ", $val);
-						}
-					}
-					$ret .= "\n";
-				}  
-				elseif($format == "csv") 
-				{
-					if($ret == null) $ret = "";
-					foreach($arr as $key => $val)
-					{
-						if(strlen($ret) != 0 && $ret[strlen($ret)-1] != "\n") $ret .=  ",";
-						if(array_key_exists($key, $this->fields) && ($this->fields[$key]->type == "location" || $this->fields[$key]->type == "gps" ))
-						{
-							if($val != "")
-							{
-								$val = json_decode($val);
-								$ret .=  str_replace("\n", " ","{$val->latitude},{$val->longitude},{$val->altitude},{$val->accuracy},{$val->provider}");
-							}
-							else
-							{
-								$ret .= "0,0,0,-1,None";
-							}
-						}
-						else
-						{
-							$ret .=  str_replace("\n", " ",$val);
-						}
-					}
-					$ret .= "\n";
-				}
-				elseif($format == "json")
-				{
-					if($ret == null) $ret = "";
-					if($i > 0) $ret .= ",";
-					$ret .= "{";
-				
-					foreach($arr as $key => $val)
-					{
-						if(array_key_exists($key, $this->fields) && ($this->fields[$key]->type == "location" || $this->fields[$key]->type == "gps" ))
-						{
-							$ret .= "\"$key\" : $val,";
-						}
-						else
-						{
-							$ret .= "\"$key\" : \"$val\",";
-						}
-					}
+						$kv =explode('::', $vals[$j]);
+						if(count($kv) > 1) $arr[$kv[0]] = $kv[1];
 					
-					$ret = trim($ret, ",") . "}";
-					
+					} 
+					$ret = $arr;
 				}
-				elseif($format == "xml")
+				else
 				{
-					if($ret == null) $ret = "";
-					$ret .= "<entry>";
-					foreach($arr as $key => $val)
+					$ret = $arr["data"];
+					$json_objects = array();
+					preg_match_all('/\{.*\}/', $ret, $json_objects);
+			
+					for($j = count($json_objects); $j--;)
 					{
-						if(array_key_exists($key, $this->fields) && ($this->fields[$key]->type == "location" || $this->fields[$key]->type == "gps" ))
+						if(count($json_objects[$j]) == 0) continue;
+						$obj = json_decode($json_objects[$j][0], true);
+						$str = '';
+						if($this->lastRequestFormat == 'xml')
 						{
-							if($val != "")
+							foreach($obj as $key => $value)
 							{
-								$val = json_decode($val);
-								$ret .= "<{$key}_lat>{$val->latitude}</{$key}_lat><{$key}_lon>{$val->longitude}</{$key}_lon><{$key}_alt>{$val->altitude}</{$key}_alt><{$key}_acc>{$val->accuracy}</{$key}_acc><{$key}_provider>{$val->provider}</{$key}_provider>";
-							}
-							else
-							{
-								$ret .= "<{$key}_lat>0</{$key}_lat><{$key}_lon>0</{$key}_lon><{$key}_alt>0</{$key}_alt><{$key}_acc>-1</{$key}_acc><{$key}_provider>None</{$key}_provider>";
+								$value = trim($value);
+								$str .= "<$key>$value</$key>";
 							}
 						}
-						else 
+						elseif ($this->lastRequestFormat == 'csv')
 						{
-							$ret .= "<$key>$val</$key>";
+							$str = implode(",", array_values($obj));
 						}
+						elseif($this->lastRequestFormat == 'tsv')
+						{
+							$str = implode("\t", array_values($obj));
+						}
+						elseif ($this->lastRequestFormat == 'tskv')
+						{
+							$k = 0;
+							foreach($obj as $key => $value)
+							{
+								$str .=  (++$k > 1 ? '\t' : '') . sprintf('%s\t%s', $key, $value);
+							}
+						}
+						elseif($this->lastRequestFormat == 'kml')
+						{
+							
+						}
+						$ret = str_replace($json_objects[0][0], $str, $ret);
 					}
-					$ret .= "</entry>";
 				}
 			}
 			
-			return $ret;
+			return (is_string($ret) ?  utf8_decode($ret) : $ret);
 		}
 		
 		public function get($args = false, $offset = 0, $limit = 0, $sortField = "created", $sortDir = "asc", $exact = false)
@@ -663,7 +788,7 @@
 			global $db;// = new dbConnection();
 			
 			$db->beginTransaction();
-			$sql = "UPDATE form set version = {$this->version}, name = '{$this->name}', keyField = '{$this->key}', isMain = " . ($this->isMain ? 1 : 0) . " WHERE project = {$this->survey->id} AND table_num = {$this->number};";
+			$sql = "UPDATE form set version = {$this->version}, name = '{$this->name}', keyField = '{$this->key}', isMain = " . ($this->isMain ? 1 : 0) . ", `group` = " . $db->numVal($this->group)  . " WHERE project = {$this->survey->id} AND table_num = {$this->number};";
 			$res = $db->do_query($sql);
 			if($res !== true){
 				$db->rollbackTransaction();
@@ -696,25 +821,47 @@
 			return $res;
 		}
 		
-		public function post($args) //$args should be an assocaitive array of arguments
+		/**
+		 * Retrieves the number of records that match a certain criteria
+		 */
+		function getSummary($args, $exact = true)
 		{
+			//TODO : filter summary based on $args
+			global $db;
+			//$qry = "SELECT count(1) as ttl, max(created) as lastCreated, max(uploaded) as uploaded, max(lastEdited) as lastEdited, count(DISTINCT deviceID) as devices, count(distinct user) as users from entry where projectName = '{$this->projectName}' and formName = '{$this->name}' Group By projectName, formName";
 			
-		}
-		
-		public function delete($args, &$response)
-		{
+			$sql2 = "SELECT count(a.entry) as ttl from (SELECT entry, count(value) as count FROM entryvalue WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
+			if(is_array($args) && count($args) > 0)
+			{
+				//If we have search criteria
+				$sql2 .= "AND (";
+				
+				foreach($args as $k => $v)
+				{
+					if($exact)
+					{
+						$sql2 .= "(fieldName = '$k' AND value Like '$v') OR";
+					}
+					else
+					{
+						$sql2 .= "(fieldName = '$k' AND value Like '%$v%') OR";
+					}
+				}
+				
+				$sql2 = substr($sql2, 0, count($sql2) - 3). ") GROUP BY entry) a where a.count = " . count($args);
+			}
+			else
+			{
+				$sql2 = "SELECT COUNT(idEntry) as ttl from Entry WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
+			}
 			
+			$res = $db->do_query($sql2);
 			
-		}
-		
-		public function toSQL()
-		{
-			
-		}
-		
-		function getSummary()
-		{
-			
+			if($res !== true) return $res;
+			$arr = array();	
+			while($a = $db->get_row_array()){$arr = $a;}
+
+			return $arr;
 		}
 		
 		function getUsage($res = "day", $from = NULL, $to = NULL)
@@ -731,29 +878,140 @@
 			
 			$periods = array();
 			
-			switch($res)
-			{
-				case "hour":
-					break;
-				case "day":
-					break;
-				case "week":
-					break;
-				case "month":
-					break;
-				case "year":
-					break;
-			}
 			
 			//$db = new dbConnection();
 			global $db; 
 			$db->do_query($sql);
 		}
 		
+		public function parseCSVLine($line)
+		{
+			$line = trim($line);
+			$vals = array('');
+			$len = strlen($line);
+			
+			$curval = '';
+			$inquotes = false;
+			
+			for($k = 0, $v = 0; $k < $len; ++$k)
+			{
+				if($line[$k] == ',' && !$inquotes)
+				{
+					++$v;
+					$vals[$v] = '';
+				}
+				elseif($line[$k] == ',' && ($k == ($len - 1) || $line[++$k] == '"'))
+				{
+					++$v;
+					$vals[$v] = '';
+					$inquotes = true;
+				}
+				elseif($line[$k] == '"' && ($k == 0 || $line[$k-1] == ','))
+				{
+					$inquotes = true;
+				}
+				elseif($inquotes && $line[$k] == '"')
+				{
+					if($k == $len - 1 || $line[$k + 1]  == ',') $inquotes =  false;
+					else
+					{
+ 						//echo $k,' ! ' ,$len ,  '<br />', $line;
+						throw new Exception(sprintf('Values cannot contain quotes (line xx position %u)', $k));
+					}
+				}
+				else
+				{
+					$vals[$v] .= $line[$k];
+				}
+			}
+			return $vals;
+		}
+		
+		public function parseEntriesCSV($fp)
+		{
+			//$lines = explode("\r\n", $txt);
+			// assumes that the first line is the header
+			//$lines[0] = trim($lines[0], ',');
+			try{
+				$headers = fgetcsv($fp);//$this->parseCSVLine($lines[0]);
+			}
+			catch(Exception $err)
+			{
+				throw new Exception(str_replace('xx', '0', $err->getMessage()));
+			}
+			
+			$vals = array();
+			$ents = array();
+			$fields = array_keys($this->fields);
+			$x = 0;
+			
+			while($vals = fgetcsv($fp))
+			{
+				$entry = new EcEntry($this);
+				$vars = array_keys(get_object_vars($entry));
+				
+				$varLen = count($vars);
+				$ent = array_combine($headers, $vals);
+				
+				for($v = 0; $v < $varLen; ++$v)
+				{
+					if(array_key_exists($vars[$v], $ent))
+					{
+						$entry->$vars[$v] = $ent[$vars[$v]];
+					}
+				}
+
+				$vlen = count($vals);
+				$hlan = count($headers);
+
+				$ttl = count($fields);
+				for($f = 0; $f < $ttl; ++$f)
+				{
+					if($this->fields[$fields[$f]]->type == 'location' || $this->fields[$fields[$f]]->type == 'gps' )
+					{
+						$lat = sprintf('%s_lat', $fields[$f]);
+						$lon = sprintf('%s_lon', $fields[$f]);
+						$alt = sprintf('%s_alt', $fields[$f]);
+						$acc = sprintf('%s_acc', $fields[$f]);
+						$src = sprintf('%s_provider', $fields[$f]);
+						
+						$entry->values[$fields[$f]] = array(
+							'latitude' => $ent[$lat],
+							'longitude' => $ent[$lon],
+							'altitude' => getValIfExists($ent, $alt),
+							'accuracy' => getValIfExists($ent, $acc),
+							'provider' => getValIfExists($ent, $src)
+						);
+					}
+					else
+					{	
+						if(array_key_exists($fields[$f], $ent))
+						{
+							$entry->values[$fields[$f]] = $ent[$fields[$f]];
+						}
+					}
+				}
+				
+				$entry->deviceId = 'web upload';
+				//echo $entry->created . '<br />\r\n';
+				array_push($ents, $entry);	
+				
+				if(++$x % 100 == 0)
+				{
+					$entry->postEntries($ents);
+					unset($ents);
+					$ents = array();
+				}							
+			}
+			if(count($ents) > 0) $entry->postEntries($ents);
+			return true;
+		}
+		
 		public function parseEntries($xml) //recieves a table XMLSimpleElement
 		{
+			
 			$res = true;
-			for($i = 0; $i <  count($xml->entry); $i++)
+			for($i = 0; $i <  count($xml->entry); ++$i)
 			{
 				$ent = $xml->entry[$i];
 				$entry = new EcEntry($this);
@@ -799,6 +1057,43 @@
 				if($res !== true) return $res;
 			}
 			return $res;
+		}
+		
+		public function autoComplete($field, $val)
+		{
+			global $db;
+			
+			$fld = "";
+			if(array_key_exists($field, $this->fields))
+			{
+				$qry = "SELECT DISTINCT value FROM entryValue WHERE projectName = '{$this->projectName}' AND formName = '{$this->name}' AND fieldName = '$field' AND Value LIKE '$val%'";
+				$fld = "value";
+			}
+			else
+			{
+				$qry = "SELECT DISTINCT $field FROM entry WHERE projectName = '{$this->projectName}' AND formName = '{$this->name}' AND $field LIKE '$val%'";
+				$fld = $field;
+			}
+			
+			$res = $db->do_query($qry);
+			if($res !== true) return "[]";
+			
+			$result = "[";
+			while($arr = $db->get_row_array())
+			{
+				if($result != "[") $result .= ",";
+				if($this->fields[$field]->type == "location" || $this->fields[$field]->type == "gps")
+				{
+					$result .= "{$arr[$fld]}";
+				}
+				else
+				{
+					$result .= "\"{$arr[$fld]}\"";
+				}
+			}
+			
+			$result .= "]";
+			return $result;
 		}
 		
 	}

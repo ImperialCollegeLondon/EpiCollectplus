@@ -7,10 +7,14 @@
  {
 	private $provider;
 
+	private $user;
+	
 	public $firstName;
 	public $lastName;
 	public $email;
 	public $language = "en";
+	
+	private $serverManager = false;
 	
 	private $openIdEnabled = true;
 	private $ldapEnabled = true;
@@ -57,36 +61,94 @@
 	   		$this->providers["LOCAL"] = new LocalLoginProvider();
 	   	}
   	}
+  	
+  	function getProviderType()
+  	{
+  		//return $this->provider->getType();
+  		return "LOCAL";
+  	}
+  	
+  	function getUserName()
+  	{
+  		return $this->providers["LOCAL"]->getUserName($this->getEcUserId());
+  		
+  	}
   
   	function requestlogin($requestedUrl, $provider = "")
   	{
-  		global $cfg;
+  		global $cfg, $hasManagers, $SITE_ROOT;
   		
   		$provider = strtoupper($provider);
   		
-  		$_SESSION["url"] = $requestedUrl;
+  		$_SESSION["url"] = "http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}" . $requestedUrl;
   		if($provider != "" && array_key_exists($provider, $this->providers))
   		{
-  			return $this->providers[$provider]->requestLogin($requestedUrl, count($this->getServerManagers()) == 0);
+  			return $this->providers[$provider]->requestLogin("http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}" . $requestedUrl, !$hasManagers);
   		}
   		else
   		{
-  			global $url;
+  			global $url, $SITE_ROOT;
+  			$server = trim($_SERVER["HTTP_HOST"], "/");
+  			$root = trim($SITE_ROOT, "/");
   			$frm =  "<p>Please Choose a Method to login</p>";
-  			if($this->localEnabled)$frm .= "<a class=\"provider\" href=\"$url?provider=LOCAL\"><img src=\"images/projectPlaceHolder.png\" alt=\"\" height=\"24\"/> EpiCollect Account</a>";
-  			if($this->openIdEnabled) $frm .= "<a class=\"provider\" href=\"$url?provider=OPENID\"><img src=\"images/googleLogo.png\" alt=\"Google\" height=\"24\"/> account (OpenID)</a>";
+  			if($this->localEnabled)$frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=LOCAL\"><img src=\"http://$server/$root/images/projectPlaceholder.png\" alt=\"\" height=\"24\"/> EpiCollect Account</a>";
+  			if($this->openIdEnabled) $frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=OPENID\">Google/Gmail account (OpenID)</a>";
 			if($this->ldapEnabled && array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "")
 			{
-					$frm .= "<a class=\"provider\" href=\"$url?provider=LDAP\">Windows Account ({$cfg->settings["security"]["ldap_domain"]})</a>";
+					$frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=LDAP\">Windows Account ({$cfg->settings["security"]["ldap_domain"]})</a>";
 			}
 			return $frm;
   		}
    		
   	}
+  	
+  	function setEnabled($uid, $enabled)
+  	{
+  		global $db;
+  		
+  		$enabled = $enabled ? "1" : "0";
+  		if($uid != $this->getEcUserId())
+  		{
+  			$qry = "UPDATE user SET active = $enabled where idUsers = $uid";
+  			return $db->do_query($qry);
+  		}
+  		return false;
+  	}
+  	
+  	function resetPassword($uid)
+  	{
+  		if($this->localEnabled)
+  		{
+  			return $this->providers["LOCAL"]->resetPassword($uid);
+  		}
+  		else
+  		{
+  			 
+  			return false;
+  		}
+  	}
+  	
+  	function setPassword($uid, $password)
+  	{
+  		if($this->localEnabled)
+  		{
+  			return $this->providers["LOCAL"]->setPassword($uid, $password);
+  		}
+  		else
+  		{
+  	
+  			return false;
+  		}
+  	}
   
   	function callback($provider = "")
   	{
-  		global  $cfg, $db;
+  		global  $cfg, $db, $SITE_ROOT, $url;
+  		
+  		if( $this->isLoggedIn() ) 
+  		{
+  			header("location: {$_SESSION["url"]}"); return;
+  		}
   		
   		if(!array_key_exists($provider, $this->providers)) {
   			header("location: /");
@@ -99,7 +161,7 @@
   		{
   			
   			$uid = false;
-  			$sql = "SELECT idUsers FROM user where details = '" . $this->providers[$provider]->getCredentialString() . "'";
+  			$sql = "SELECT idUsers, active FROM user where details = '" . $this->providers[$provider]->getCredentialString() . "'";
   			
   			if($provider != "LOCAL")
   			{
@@ -112,11 +174,20 @@
   			if($res !== true) die($res . "\n" . $sql);
   			while($arr = $db->get_row_array())
   			{
-  				$uid = $arr["idUsers"];
+  				if($arr["active"])
+  				{ 
+  					$uid = $arr["idUsers"];
+  				}
+  				else 
+  				{
+  					flash ("Account is disabled", "err");  	
+  					header("location: {$_SESSION["url"]}");
+  					return;
+  				}
   			}
   			if(!$uid)
   			{
-  				$sql = "INSERT INTO user (FirstName, LastName, Email, details, language, serverManager) VALUES ('{$this->firstName}','{$this->lastName}','{$this->email}','" . $this->providers[$provider]->getCredentialString() . "','{$this->language}', " . (count($this->getServerManagers()) == 0) . ")";
+  				$sql = "INSERT INTO user (FirstName, LastName, Email, details, language, serverManager) VALUES ('{$this->firstName}','{$this->lastName}','{$this->email}','" . $this->providers[$provider]->getCredentialString() . "','{$this->language}', " . (count($this->getServerManagers()) == 0 ?  "1" : "0") . ")";
   				$res = $db->do_query($sql);
   				if($res !== true) die($res);
   				$uid = $db->last_id();
@@ -144,7 +215,7 @@
   			}
   			sleep($_SESSION["tries"] * $_SESSION["tries"]);
   			global $SITE_ROOT;
-  			header("location: $SITE_ROOT/login.php");
+  			header("location: http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/login.php");
   		}
   	}
   	
@@ -178,11 +249,13 @@
   			catch(Exception $e)
   			{
   				return false;
-  			}
-  			
+  			}	
   		}
+  		
+  		if(!$db->connected) return false;
   		$dat = new DateTime();
   		$qry = "DELETE FROM ecsession WHERE expires < ". $dat->getTimestamp();
+  		 		
   		$res = $db->do_query($qry);
   		if($res !== true) return false;
   		
@@ -191,6 +264,7 @@
   		$qry = "select user, firstName, lastName, email, serverManager from ecsession left join user on ecsession.user = user.idUsers WHERE ecsession.id = '" . session_id() ."'"; 
   		$res = $db->do_query($qry);
   		if($res !== true) die($res . "\n" . $qry);
+  		
   		while ($arr = $db->get_row_array()){ 
   			$this->user = $arr["user"]; 
   			$this->firstName = $arr["firstName"];
@@ -198,6 +272,7 @@
   			$this->email = $arr["email"];
   			$this->serverManager = $arr["serverManager"];
   		}
+		$db->free_result();
    		return $this->user !== false;
   	}
   
@@ -236,22 +311,21 @@
   	function getServerManagers()
   	{
   		global $db;
-  		
   		try{
+  		
   			$men = array();
   			if($db)
   			{
-		  		$qry = "SELECT firstName, lastName, Email FROM user WHERE serverManager = 1";
+		  		$qry = "SELECT firstName, lastName, Email FROM user WHERE serverManager = 1 and active = 1";
 		  		$res = $db->do_query($qry);
-		  		if($db->do_query($qry) !== true) die("$res");
-		  		
-		  		
+		  		if($res !== true) throw new Exception(sprintf('MySQL error :  %s last successful query was %s',$res, $db->lastQuery));
+				
 		  		while($arr = $db->get_row_array())
 		  		{
 		  			array_push($men, $arr);
 		  		}
   			}
-  			
+  			$db->free_result();
 	  		return $men;
   		}
 	  	catch(ErrorException $err)
@@ -279,9 +353,10 @@
 	  
 	  function createUser($username, $pass, $email, $firstName, $lastName, $language)
 	  {
+	  	global $hasManagers;
 	  	if($this->localEnabled)
 	  	{
-	  	 	$res =  $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language, count($this->getServerManagers()) == 0);
+	  	 	$res =  $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language, $hasManagers);
 	  	 	echo $res;
 	  	 	if($res === true)
 	  	 	{
@@ -297,6 +372,27 @@
 	  		
 	  		return false;
 	  	}
+	  }
+	  
+	  function getUsers($order = "FirstName", $dir = "asc")
+	  {
+	  		global $db, $log;
+	  		$query = "SELECT idUsers as userId, FirstName, LastName, Email, active FROM user ORDER BY $order $dir";
+	  		$res = $db->do_query($query);
+	  		if(!$res === true)
+	  		{
+	  			$log->write("err", $res);
+	  			return false;
+	  		}
+	  		else
+	  		{
+	  			$ret = array();
+	  			while($arr = $db->get_row_array())
+	  			{
+	  				array_push($ret, $arr);
+	  			}
+	  			return $ret;
+	  		}
 	  }
 	  
 	  function getUserNickname()

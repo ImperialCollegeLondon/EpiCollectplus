@@ -102,7 +102,7 @@ class EcField{
 			if($this->doubleEntry) $xml .= ' verify="true"';
 			if($this->jump) $xml .= " jump=\"{$this->jump}\"";
 			if($this->search) $xml .= " search=\"true\"";
-			if($this->group_form) $xml .= " group_form=\"{$this->group_form}\"";
+			if($this->group_form) $xml .= " group_num=\"{$this->group_form}\"";
 			if($this->branch_form) $xml .= " branch_form=\"{$this->branch_form}\"";
 			if(!$this->display) $xml .= " display=\"false\"";
 			if($this->genkey) $xml .= " genkey=\"true\"";
@@ -112,7 +112,7 @@ class EcField{
 			if($this->setTime) $xml .= " settime=\"{$this->setTime}\"";
 			if($this->min) $xml .= " min=\"{$this->min}\"";
 			if($this->max) $xml .= " max=\"{$this->max}\"";
-			if($this->defaultValue) $xml .= " defaultValue=\"{$this->defaultValue}\"";
+			if($this->defaultValue) $xml .= " default=\"{$this->defaultValue}\"";
 			if($this->crumb) $xml .= " crumb=\"{$this->crumb}\"";
 			if($this->match) $xml .= " match=\"{$this->match}\"";
 			$xml.= ">\n\t\t\t<label>{$this->label}</label>\n\t\t";
@@ -134,7 +134,7 @@ class EcField{
 			if($this->doubleEntry) $json .= ' "verify":true,';
 			if($this->jump) $json .= " \"jump\":\"{$this->jump}\",";
 			if($this->search) $json .= " \"search\":\"true\",";
-			if($this->group_form) $json .= " \"group_form\":\"{$this->group_form}\",";
+			if($this->group_form) $json .= " \"group\":\"{$this->group_form}\",";
 			if($this->branch_form) $json .= " \"branch_form\":\"{$this->branch_form}\",";
 			if(!$this->display) $json .= " \"display\":\"false\",";
 			if($this->genkey) $json .= " \"genkey\":\"true\",";
@@ -146,15 +146,18 @@ class EcField{
 			if($this->max) $json .= " \"max\":\"{$this->max}\",";
 			if($this->crumb) $json .= " \"crumb\":\"{$this->crumb}\"";
 			if($this->match) $json .= " \"crumb\":\"{$this->match}\"";
-			if($this->defaultValue) $json .= " \"defaultValue\":\"{$this->defaultValue}\",";
+			if($this->defaultValue) $json .= " \"default\":\"{$this->defaultValue}\",";
+			
 			$json.= "\n\t\t\t\"label\" : \"{$this->label}\",\n\t\t\"options\":[";
 			$i =0;
+			
 			foreach($this->options as $opt)
 			{
 				$json .= ($i > 0 ? "," : "") . "\n\t\t\t\t{\n\t\t\t\t\t\"label\":\"{$opt->label}\",\n\t\t\t\t\t\"value\" : \"{$opt->value}\"\n\t\t\t}";
 				$i++;
 			}
 			$json.= "]}";
+			
 			return $json;
 		}
 		
@@ -187,24 +190,23 @@ class EcField{
 				if($res !== true) return $res;
 				//if($db->affectedRows() == 0) return "field {$this->name} ({$this->idField}) not found -- $sql";
 				
-				if(count($this->options) != 0){
+				$sql = "DELETE FROM `option` WHERE field = {$this->idField}";
+				$res = $db->do_query($sql);
+				if($res !== true) return $res;
 				
-						$sql = "DELETE FROM `option` WHERE field = {$this->idField}";
-						$res = $db->do_query($sql);
+				if(count($this->options) != 0){						
+					foreach($this->options as $opt)
+					{
+						$res = $db->exec_sp("addOption", array(
+							$this->form->survey->name,
+							$this->form->name,
+							$this->name,
+							$opt->idx,
+							$opt->label,
+							$opt->value
+						));
 						if($res !== true) return $res;
-										
-						foreach($this->options as $opt)
-						{
-							$res = $db->exec_sp("addOption", array(
-								$this->form->survey->name,
-								$this->form->name,
-								$this->name,
-								$opt->idx,
-								$opt->label,
-								$opt->value
-							));
-							if($res !== true) return $res;
-						}
+					}
 				}
 				return true;
 		}
@@ -221,7 +223,7 @@ class EcField{
 				$fieldType = $arr["idFieldType"];
 			}
 			
-			$lbl = mysql_escape_string($this->label);
+			$lbl = $db->escapeArg($this->label);
 			
 			$qry ="INSERT INTO field (form, projectName, formName, type, name, label, language, regex, title, `key`, isinteger, isdouble, active, doubleentry, jump, required, search, group_form, branch_form, display, genkey, date, time, setdate, settime, `min`, `max`, `match`, crumb, defaultValue, position) VALUES
 								 ({$this->form->id}, '{$this->form->survey->name}', '{$this->form->name}', $fieldType, '{$this->name}','{$lbl}', '{$this->language}',";
@@ -318,7 +320,7 @@ class EcField{
 						case 'search' :
 								$this->search = parseBool((string)$val);
 								break;
-						case 'group_form':
+						case 'group_num':
 								$this->group_form = (string)$val;
 								break;
 						case 'branch_form':
@@ -357,9 +359,14 @@ class EcField{
 						case 'crumb' :
 							$this->crumb = (string)$val;
 							break;
+						case 'default' : 
+							$this->defaultValue = (string) $val;
+							break;
 				} //end switch
 				
 			}//end foreach
+			
+			$this->options = array();
 			
 			foreach($xml->children() as $opt)
 			{
@@ -386,7 +393,7 @@ class EcField{
 			
 			foreach($vtype as $var => $att)
 			{
-				if($this->$var)
+				if($this->$var && $this->$var != "")
 				{
 					if($vlist != "") $vlist = "$vlist,";
 					$vcheck++;
@@ -394,7 +401,10 @@ class EcField{
 				}
 			}
 			
-			if($vcheck > 1) throw new Exception("$vlist are all set on the filed {$this->name} only one of these attributes may be set at once.");
+			if($vcheck > 1){
+				//echo $xml->asXML();
+				throw new Exception("$vlist are all set on the field {$this->name} only one of these attributes may be set at once.");
+			}
 			
 			//check that min and max are only set for numerics
 			if(($this->min || $this->max) && !($this->isInt || $this->isDouble))

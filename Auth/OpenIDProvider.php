@@ -14,6 +14,10 @@
 			$this->openid->required = array('namePerson/first', 'namePerson/last', 'contact/email', 'contact/country/home', 'pref/language');
 		}
 		
+		function getType(){
+			return "OPEN_ID";
+		}
+		
 		public function requestLogin($callbackUrl, $firstLogin = false)
 		{
 			/*if(!$this->openid->mode)

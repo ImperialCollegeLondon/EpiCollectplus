@@ -58,25 +58,33 @@
   	var curators = {#curators#}.split(",");
   	var managers = {#managers#}.split(",");
   	var projectName = "{#projectName#}"
-  	var isPublic = {#public#};
-  	var isListed = {#listed#};
+  	var isPublic = {#public#} == 1;
+  	var isListed = {#listed#} == 1;
   	
   	$(function(){
   		$(".projectName").text(projectName);
   		
+  		$('#isPublic')[0].checked = isPublic;
+  		$('#isPrivate')[0].checked =  !isPublic;
+  		$('#isListed')[0].checked =  isListed;
+ 		$('#notListed')[0].checked = !isListed;
+ 		
   		publicOpts = $('#public').buttonset();
   		listOpts = $('#listed').buttonset();
-  		$('.panelSwitcher, .button').button();
+  		
+  		$('input[type=radio]').button("refresh");
+  		
+  		$('.panelSwitcher, .button').button()
   		
   		for(var i = 0; i < curators.length; i++)
   		{
-  			if(curators[i] != "")
+  			if( curators[i] != "" )
   				addUser("curators", curators[i]);
   		}
   		
   		for(var i = 0; i < managers.length; i++)
   		{
-  			if(managers[i] != "")
+  			if( managers[i] != "" )
   				addUser("managers", managers[i]);
   		}
  		
@@ -175,7 +183,7 @@
   	function save()
   	{
   		$.ajax({
-  			url : location.href + 'Structure',
+  			url : location.href.replace("/manage", "/updateStructure"),
   			type : 'POST',
   			data : $('form').serialize(),
   			success: function(data, status, xhr){
@@ -186,6 +194,20 @@
   			}
   		});
   	}
+  	
+  	function deleteProject()
+	{
+		if( confirm("If you delete this project the project definition and all data will be removed from the server. Are you sure you want to do this?") )
+		{
+			var url = location.href.replace('/manage', '');
+			$.ajax(url, {
+				type : 'DELETE',
+				success: function() { 
+					location.replace(url.replace(projectName, '')); 
+				}
+			});
+		}
+	}
   	
   </script>
 {{/script}}
@@ -202,6 +224,7 @@
 	  			<li><a href="#listing">Listing</a></li>
 	  			<li><a href="#s_managers">Managers</a></li>
 	  			<li><a href="#s_curators">Curators</a></li>
+	  			<li><a href="#s_delete">Delete Project</a></li>
 	  		</ul>
 		  	<section id="projectDef">
 			  	<h2>1. Project Definition</h2>
@@ -215,8 +238,8 @@
 				<h2>2. Visibility</h2>
 				<p>EpiCollect+ allows project data to either be public of private, please choose one of the following options</p>
 				<div id="public">
-					<input type="radio" name="public" id="isPublic" value="true" checked="checked"/><label for="isPublic">I would like anyone to be able <br />to view the data in this project.</label>
-					<input type="radio" name="public" id="isPrivate" value="false" /><label for="isPrivate">I only want people I specify to be able<br /> to view the data in this project.</label>
+					<input type="radio" name="public" id="isPublic" checked="checked"/><label for="isPublic">I would like anyone to be able <br />to view the data in this project.</label>
+					<input type="radio" name="public" id="isPrivate" /><label for="isPrivate">I only want people I specify to be able<br /> to view the data in this project.</label>
 				</div>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 				
@@ -225,8 +248,8 @@
 				<h2>3. Listing on the Homepage</h2>
 				<p>The front page of this server displays a list of projects that have been created on this server, please choose one of the following options</p>
 				<div id="listed">
-					<input type="radio" name="listed" id="isListed" value="true" checked="checked" /><label for="isListed">I would like this project to appear <br />on the list on the homepage of this server.</label>
-					<input type="radio" name="listed" id="notListed" value="false" /><label for="notListed">I would not like this project to appear <br />on the list on the homepage of this server.</label>
+					<input type="radio" name="listed" id="isListed" /><label for="isListed">I would like this project to appear <br />on the list on the homepage of this server.</label>
+					<input type="radio" name="listed" id="notListed" /><label for="notListed">I would not like this project to appear <br />on the list on the homepage of this server.</label>
 				</div>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 			</section>
@@ -259,6 +282,11 @@
 				<label for="newcurator">Enter the email address for the curator you wish to add </label><input type="email" id="newcurator" /><a class="button" href="javascript:addUser('curators', $('#newcurator').val())">Add curator</a>
 				<input type="hidden" name="curators" id="curators"/>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
+			</section>
+			<section id="s_delete">
+				<h2>Delete Project</h2>
+				<p>Use the button below to delete this project and all of its data from the server.</p>
+				<a href="javascript:deleteProject()" class="danger button"> Delete Project </a>
 			</section>
 			
 	</form>

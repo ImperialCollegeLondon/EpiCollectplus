@@ -1,9 +1,33 @@
 {{style}}
-	
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/Ext/resources/css/ext-all.css" />
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/js/fileuploadfield.css" />
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />
+	<link rel="stylesheet" href="http://code.leafletjs.com/leaflet-0.3.1/leaflet.css" />
+	<!--[if lte IE 8]>
+	    <link rel="stylesheet" href="http://code.leafletjs.com/leaflet-0.3.1/leaflet.ie.css" />
+	<![endif]-->
 	<style type="text/css">
+		img.desc
+		{
+			display : none;
+			float : right;
+			margin-top: 0.25em;
+		}
+		
+		.desc img.desc
+		{
+			display : inline-block;
+		}
+		
+		img.asc
+		{
+			display : none;
+			float : right;
+			margin-top: 0.25em;
+		}
+		
+		.asc img.asc
+		{
+			display : inline-block;
+		}
+	
 		.cp-item {
 			vertical-align: top;
 			display: inline-block;
@@ -44,51 +68,990 @@
 			width : 30%;
 		}
 		
+		#mapTab
+		{
+			position : relative;
+		}
 		
+		#map
+		{
+			position : relative;
+			margin-left : 15em;
+			height : 30em;
+			margin-right : 15em;
+		}
+		
+		#bottombar
+		{
+			margin : 1em 14em 1em -1.5em;
+			position : relative;
+			height : 10em;
+			padding: .5em .5em .5em .5em;
+		}
+		
+		#bottombar div.filterControl, #bottombar div.colourControl
+		{
+			height: 100%;
+			width: 30%;
+			display : inline-block;
+			border : 1px solid #CCCCCC;
+			padding: 0.5em;
+			position : relative;
+			vertical-align : top;
+		}
+				
+		#bottombar div.filterControl.active
+		{
+			display : inline-block;
+			border : 1px solid #CCCCFF;
+		}
+		
+		#sidebar 
+		{
+			border: 1px solid #CCCCCC;
+			bottom : 13.25em;
+			overflow : auto;
+			left : 0;
+			position : absolute;
+			top : 1em;
+			width : 15em;
+		}
+		
+		@media all and (max-width: 1024px){
+			#sidebar {display:none;}
+			
+			#map {margin-left: 0;}
+		}
+		
+		
+		#sidebar a 
+		{
+			display : block;
+		}
+		
+		
+		#slider-range
+		{
+			margin: 0.5em 0.5em 0.5em 0.5em;
+			border: 1px solid #CCCCFF !important;
+		}
+
+		
+		.filterControl b 
+		{
+			display : inline-block;
+			width: 6em;
+		}
+		
+		#graphbar 
+		{
+			bottom : 0em;
+			right : 0;
+			overflow : auto;
+			position : absolute;
+			top : 1em;
+			width : 15em;
+		}
+		
+		.graphPanel
+		{
+			border: 1px solid #CCCCCC;
+			position : relative;
+			height : 32%;
+			margin-bottom: 1px;	
+			overflow: hidden;	
+		}
 		
 		.button:active
 		{
 			background-color: #CCCCCC;
 		}
 		
+		.clearFilter
+		{
+			display : none;
+		}
+		
+		.active .clearFilter
+		{
+			display:inline-block;
+			position:absolute;
+			bottom:0;
+			right: 0;
+		}
+		
+		table.ibubble th
+		{
+			background : rgba(255, 255, 255, 1);
+			color : rgba(0,0,0,1);
+			padding : 0.2em 0.2em 0.2em 0.2em;
+			text-align: left;
+		}
+		
 	</style>
 {{/style}}
 
 {{script}}
-	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/adapter/ext/ext-base.js"></script>
-	<script type="text/javascript" src="{#SITE_ROOT#}/Ext/ext-all.js"></script>
-	<script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollect2.js"></script>
 	{#mapScript#}
+	<!-- <script src="http://code.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>-->
+	<!-- <script src="http://maps.google.com/maps/api/js?sensor=false" ></script>-->
 	<!-- <script type="text/javascript" src="{#formName#}.js"></script>-->
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/gpsPicker.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.controlgroup.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.settingspanel.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.mediainput.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.categories.js"></script>
+	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.pie.js"></script>
 	<script type="text/javascript">
-		var survey;
-		var table;
-		
-		var uid = 'web_{#uid#}';
-		
-		function init()
-		{
-			survey = new EcSurvey;
-			//table = new EcTable();
-			Ext.Ajax.request({
-				url: location.pathname.substring(0, location.pathname.lastIndexOf('/')) + ".xml",
-				success: function (res)
+			var formName = "";
+			var map = null;
+			
+			var mapData = [];
+			var markers = [];			
+			
+			var qry = location.search.trim("?");
+			var sortCol = "created";
+			var sortDir = "asc";
+			var pageNo = 0;
+			var numEnts = 10;
+			
+			var filterField = "";
+			var filterValue = "";
+			
+			var nextFormName = "";
+			
+			var markerClusterer = null;
+			
+			var bubble = null;
+			
+			var geoField = null;
+			var defaultColourField = null;
+			
+			var dateFormat = " dd MM yyyy hh:mm:ss";
+			
+			var hiddenColumns = { created : false, uploaded : true, lastEdited : true, DeviceID : true};
+			
+			var colours = [
+				"rgba(255,0,0,1)",
+				"rgba(0,128,0,1)",
+				"rgba(192,192,192,1)",
+				"rgba(255,255,0,1)",
+				"rgba(255,255,255,1)",
+				"rgba(128,0,128,1)",
+				"rgba(128,128,128,1)",
+				"rgba(128,0,0,1)",
+				"rgba(0,0,204,1)", 
+				"rgba(159,255,159,1)",
+				"rgba(255,157,206,1)",
+				"rgba(179,102,255,1)",
+				"rgba(120,68,33,1)"
+			];
+			
+			$(function()
+			{
+				url = location.href.trim("/");
+				if(url.indexOf("?") > 0)url = url.substr(0, url.indexOf("?"));
+				formName = url.substr(url.lastIndexOf("/") + 1).replace(/#.*$/, "");
+				url = url.substr(0, url.lastIndexOf("/"));
+				
+				loader = new EpiCollect.LoadingOverlay();
+				
+				$(".graphPanel").graphPanel(
 				{
-					survey.parse(res.responseXML);
-					table = survey.tables[location.pathname.substring(location.pathname.lastIndexOf('/') + 1)]
-					drawPage();
+					form : "<fieldSet><label for=\"field\">Field Name</label><select name=\"field\" class=\"colourFieldList\"></select><h4>Chart Type</h4><p><input type=\"radio\" name=\"chartType\" value=\"pie\" /> <label>Pie</label></p>" 
+					+"<p><input type=\"radio\" name=\"chartType\" value=\"bar\" checked=\"checked\" /> <label>Bar</label></p> </fieldSet>",
+				});
+				
+				$("#tabs").tabs({
+					show : function(event, tab)
+					{
+						if(tab.panel.id == "mapTab")
+						{
+							 cen = map.getCenter();
+							 google.maps.event.trigger(map, 'resize');
+							 map.setCenter(cen);
+							 getMapData();
+						}
+					}
+				});
+				
+				
+				$("#showHideFields").append("<a href=\"javascript:toggleMenu('#showHideFields')\">Show/Hide Fields</a><div class=\"ecplus-dropdown-menu\" style=\"display:none;\"></div>");
+				
+				EpiCollect.loadProject(url + ".xml", loadCallback);
+				
+				$.fn.disableSelection = function() {
+				    return this.each(function() {           
+				        $(this).attr('unselectable', 'on')
+				               .css({
+				                   '-moz-user-select':'none',
+				                   '-webkit-user-select':'none',
+				                   'user-select':'none',
+				                   '-ms-user-select':'none'
+				               })
+				               .each(function() {
+				                   this.onselectstart = function() { return false; };
+				               });
+				    });
+				};
+			});
+	
+			
+			function toggleMenu(selector)
+			{
+				
+				var jq = $(selector + " .ecplus-dropdown-menu");
+				var visible = jq.css("display") != "none";
+				
+				if(visible) jq.hide();
+				else
+				{
+					$(document.body).click(function(evt){
+						
+						if($(evt.target).attr("type") != "checkbox" && $(evt.target)[0].tagName != "LABEL")
+							$(selector + " .ecplus-dropdown-menu").hide();
+					});
+					
+					jq.show();
+					
 				}
-			})
-		}
+			}
+			
+			function createMap(div)
+			{
+				var doc = document;
+				var _maps = google.maps;
+				
+				map = new _maps.Map(doc.getElementById(div), {
+					center : new _maps.LatLng(0,0),
+					mapTypeId:_maps.MapTypeId.HYBRID,
+					zoom : 2,
+					panControl: true,
+					rotateControl: true,
+					zoomControl: true
+				});
+			}
+			
+			function loadCallback(prj){
+				project = prj;		
+				
+				var hasMap = (project.forms[formName].gpsFlds.length > 0);
+				if(hasMap) geoField = project.forms[formName].gpsFlds[0]
+				
+				for(nextForm = project.getNextForm(formName); nextForm; nextForm = project.getNextForm(nextForm.name))
+				{
+					if(nextForm.main)
+					{
+						nextFormName = nextForm.name;
+						break;
+					}
+				}
+				
+				
+				
+				if(hasMap)
+				{
+					createMap("map");			
+				}
+				else
+				{
+					$("#tabs li")[1].style.display = "none"; 
+				}
+				
+				
+				$("#tableTab .ecplus-toolbar").after("<div class=\"ecplus-data-container\"><table class=\"ecplus-data\"><thead><tr></tr></thead><tbody></tbody></table></div>");
+				
+				for(f in project.forms[formName].fields)
+				{
+					var fld = project.forms[formName].fields[f];
+					var text = fld.text;
+					if(text.length > 25) text = text.substr(0,22) + "..."; 
+					
+					if(hiddenColumns[f] == undefined) {hiddenColumns[f] = false;}
+					
+				
+					$(".ecplus-data tr").append("<th class=\"" + f + "\" >" + text + "</th>");	
+				}
+				
+				
+				if(nextFormName)
+				{
+					if(hiddenColumns[nextFormName] == undefined) hiddenColumns[nextFormName] = false;
+					
+					$(".ecplus-data tr").append("<th class=\"" + nextFormName + "_entries\">" + nextFormName + " Entries</th>");
+				}
+				
+				$(".ecplus-data th").resizable({
+					handles : "e",
+					alsoResize : ".ecplus-data",
+					resize	: function(event, ele)
+					{
+						$("td." + ele.element[0].className.substring(0, ele.element[0].className.indexOf(" "))).css({ "max-width" : (ele.element.width()-5) + "px"});
+					}
+				});
+				
+				$(".ecplus-data th").append("<img src=\"../images/uparrow.png\" class=\"asc\" width=\"12\" /><img src=\"../images/downarrow.png\" class=\"desc\" width=\"12\" />")
+				$(".ecplus-data th").click(function(evt){
+					var newSortCol = evt.target.classList[0];
+					
+					
+					$(".ecplus-data th").removeClass("desc");
+					$(".ecplus-data th").removeClass("asc");
 		
-		function drawPage(){
-			var tbl = table.getTable({#curate#}, {#curate#}, {#curate#});
-			tbl.render('tabPanel');
-		}
-		
-		Ext.onReady(init);
-		
-		
+					console.debug(sortCol + " " + sortDir);
+					window.evt = evt;
+					if(newSortCol == sortCol && sortDir == "asc")
+					{
+						$(evt.target).addClass("desc");
+						sortDir = "desc";
+					}
+					else
+					{
+						$(evt.target).addClass("asc");
+						sortDir = "asc";
+					}
+					sortCol = newSortCol;
+					getData();
+					evt.preventDefault();
+				});
+				
+				for(fld in project.forms[formName].fields)
+				{
+					var field = project.forms[formName].fields[fld];
+					var text = field.text;
+					if(text.length > 25) text = text.substr(0,22) + "...";
+					
+					$('#showHideFields .ecplus-dropdown-menu').append("<input type=\"checkbox\" name=\"fldShowHide\" value=\"" + fld + "\" " + (hiddenColumns[fld] ? "" : "checked=\"checked\"") + " /><label for=\"fldShowHide\">" + text +  "</label><br />");
+					
+					if(field.type != "location" && field.type != "gps" && field.type != "branch"
+							&& field.type != "video" && field.type != "audio" && field.type != "photo" && field.type != "")
+					{
+						$('.fieldList').append("<option value=\"" + fld + "\">" + text +  "</option>")
+						if(field.type == "select" || field.type == "radio" ||field.type == "select1" 
+								|| fld == project.getPrevForm(formName).key || fld == "DeviceID")
+						{
+							if(!defaultColourField) defaultColourField = fld;	
+							$('.colourFieldList').append("<option value=\"" + fld + "\">" + text +  "</option>");
+						}
+					}
+				}
+				
+				getData();
+				
+				$('#showHideFields input').change(function(evt){
+					var ctrl = $(evt.target).val();
+					hiddenColumns[ctrl] = !evt.target.checked;
+					showHideColumns();
+				});
+				
+				$('#filter_value').autocomplete(
+				{
+					source : baseUrl+ "/" + $('#filter_fields').val()
+				});
+				
+				$('#mapFilterValue').autocomplete(
+				{
+					source : baseUrl+ "/" + $('#mapFilterField').val()
+				});
+				
+				$('#filter_fields').change(function(){
+					$('#filter_value').autocomplete("option", "source" , baseUrl+ "/" + $('#filter_fields').val());
+				});
+				
+				$('#mapFilterField').change(function(){
+					$('#mapFilterValue').val("");
+					$('#mapFilterValue').autocomplete("option", "source" , baseUrl+ "/" + $('#mapFilterField').val());
+				});
+				
+				
+				
+				$('#filter_value').blur(function(){doFilter($('#filter_fields').val(), $('#filter_value').val())})
+				var t = new Date().getTime()
+				$( "#slider-range" ).slider({
+					range: true,
+					min : 0,
+					max : t,
+					values: [0,  t],
+					slide: function (event, ui)
+					{
+						filterMap(function(data){ return data["created"] >= ui.values[0] && data["created"] <= ui.values[1]; })
+						$("#timeFrom").text(new Date(ui.values[0]).format(dateFormat));
+						$("#timeTo").text(new Date(ui.values[1]).format(dateFormat));
+						
+						$(".filterControl").removeClass("active");
+						$("#timeFilter").addClass("active");
+					}
+				});
+			};	
+			
+			function firstPage()
+			{
+				pageNo = 0;
+				getData();
+			}
+			
+			function lastPage()
+			{
+				
+				var total = Number($("#total").text());
+				if(total == 0 )return;
+				var rem = total % numEnts;
+				if(rem == 0) rem = numEnts;
+				pageNo = (total - rem) / numEnts;
+				getData()
+			}
+			
+			function turnPage()
+			{
+				var total = Number($("#total").text());
+				var last = Number($("#end").text());
+				
+				if(total > last)
+				{
+					pageNo++;
+					getData();
+				}
+			}
+			
+			function turnBackPage()
+			{
+				if(pageNo > 0) pageNo--;
+				getData();
+			}
+			
+			function getData()
+			{
+				loader.start();
+				offset = pageNo * numEnts
+				
+				var urlStr = url + "/" + formName + ".json?mode=list&start=" + offset + "&limit=" + numEnts + "&sort=" + sortCol + "&dir=" +sortDir + (location.search  ? "&" + location.search.substr(1) : "");
+				var statUrl = url + "/" + formName + "/__stats?" + location.search.substr(1);
+				
+				if(filterField && filterValue)
+				{
+					urlStr += "&" + filterField + "=" + filterValue;
+					statUrl += "&" + filterField + "=" + filterValue; 
+				}
+				$.getJSON(urlStr , dataLoad).error(function(){loader.stop();}).success(function(){$.getJSON(statUrl , statLoad);});
+				
+				$('#start').text(offset);
+			}
+			
+			function getMapData()
+			{
+				var urlStr = url + "/" + formName + ".json?mode=list&sort=" +  project.forms[formName].titleField;
+				if(filterField && filterValue)
+				{
+					urlStr += "&" + filterField + "=" + filterValue;
+					statUrl += "&" + filterField + "=" + filterValue; 
+				}
+				$.getJSON(urlStr , mapDataCallback);
+			}
+			
+			function doFilter(field, value)
+			{
+				if(field === filterField && value === filterValue) return;
+				filterField = field;
+				filterValue = value;
+				pageNo = 0;
+				getData();
+			}
+			
+			function dataLoad(entries)
+			{
+				$(".ecplus-data tbody").empty();
+				
+				if(entries.length == 0)
+				{
+					if(pageNo > 0) pageNo--;
+					loader.stop();
+					return;
+				}
+				
+				$(".ecplus-data th, .ecplus-data  td").show();
+				
+				window.ecplus_entries = entries;
+				
+				$('#end').text(Number($('#start').text()) + Number(entries.length));
+				$('#total').text(entries.count);
+				
+				var keyfield = project.forms[formName].key;
+				var html = "";
+				for(var i = 0; i < entries.length; i++)
+				{
+					html += "<tr class=\"" + (i % 2 == 1 ? " alt": "") + "\">";
+					for(f in project.forms[formName].fields)
+					{	
+						var fld = project.forms[formName].fields[f];
+						
+						html += "<td class=\"" + f + "\">";
+						
+					
+						html += fld.formatValue(entries[i][f], entries[i]);
+						html += "</td>"					
+					}
+					if(nextFormName)
+					{
+						
+						html += "<td>" + entries[i][nextFormName + "_entries"]  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "\">View entries</a></td>";
+					}
+					html += "</tr>";
+				}
+				$(".ecplus-data tbody").append(html);
+				
+				for(f in project.forms[formName].fields)
+				{
+					$('.' + f).css({"max-width" : $('th.' + f).width() + "px"});
+				}
+				
+				$(".ecplus-data tr").click(function(evt)
+				{
+					$(".ecplus-data tr").removeClass("selected");
+					$(evt.target.parentNode).addClass("selected");
+				});
+				
+				showHideColumns();
+				loader.stop();
+			}
+			
+			function showHideColumns()
+			{
+				for(var fld in hiddenColumns)
+				{
+					if(hiddenColumns[fld]) 
+						$("." + fld).hide();
+					else
+						$("." + fld).show();
+				}
+			}
+			
+			function statLoad(stats)
+			{
+				$("#total").text(stats["ttl"]);
+
+			}
+			
+			function mapDataCallback(data, status, xhr)
+			{
+				if(markerClusterer) markerClusterer.removeMarkers(markerClusterer.markers_);
+			
+				$('#sidebar').empty();
+				for(var mkr = markers.length; mkr--;){
+					if(!markers[mkr]) continue;
+					
+					markers[mkr].setMap(null);
+					markers.splice(mkr, 1);	
+					mapData.splice(mkr, 1);
+				}
+				
+				mapData = data;
+				
+				var mincreated = new Date().getTime();
+				var maxcreated = 0;
+				
+				var keyField = project.forms[formName].key;
+				
+				var dlen = data.length;
+				var mlen = markers.length;
+				
+				var minlat = 180;
+				var maxlat = -180;
+				var minlon = 180;
+				var maxlon = -180
+				
+				for(var i = 0; i < data.length; i++)
+				{
+					if(data[i][geoField].latitude >= -90 && data[i][geoField].latitude <= 90 && data[i][geoField].longitude >= -180 && data[i][geoField].longitude <= 180 && data[i][geoField].accuracy > 0)
+					{
+						var mkr = new google.maps.Marker({
+							id : data[i][keyField],
+							position : new google.maps.LatLng(data[i][geoField].latitude, data[i][geoField].longitude),
+							icon : "{#SITE_ROOT#}/markers/point",
+							index : i
+						});
+					
+						minlat = Math.min(data[i][geoField].latitude, minlat);
+						maxlat = Math.max(data[i][geoField].latitude, maxlat);
+						minlon = Math.min(data[i][geoField].longitude, minlon);
+						maxlon = Math.max(data[i][geoField].longitude, maxlon);
+						
+						google.maps.event.addListener(mkr, 'click', function(evt, x){
+							showBubbleFor(getMarkerAt(evt.latLng).index);
+						});
+					
+						markers[i] = mkr;
+					}
+					else
+					{
+						markers[i] = null;
+					}
+					
+					mincreated = Math.min(mincreated, Number(data[i]["created"]));
+					maxcreated = Math.max(maxcreated, Number(data[i]["created"]));
+					
+					var ttl = data[i][project.forms[formName].titleField];
+					if(!ttl || ttl.trim() == '') ttl = '<i>' + data[i]['created'] + '</i>';
+					
+					addToSidebar(i, ttl);
+				}
+				
+				colourMarkersBy($('#mapColourField').val());
+
+				map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+				
+				if(!markerClusterer)
+				{
+					markerClusterer = new MarkerClusterer(map, markers,
+					{
+						maxZoom : 12,
+						gridSize : 40,
+						styles : [
+							{
+								url : "{#SITE_ROOT#}/markers/cluster",
+								height: 50,
+						        width: 50,
+						        anchor: [24, 24],
+						        textColor: 'transparent',
+						        textSize: 14
+							},
+							{
+								url : "{#SITE_ROOT#}/markers/cluster",
+								height: 50,
+						        width: 50,
+						        anchor: [24, 24],
+						        textColor: 'transparent',
+						        textSize: 14
+							},
+							{
+								url : "{#SITE_ROOT#}/markers/cluster",
+								height: 50,
+						        width: 50,
+						        anchor: [24, 24],
+						        textColor: 'transparent',
+						        textSize: 14
+							},
+							{
+								url : "{#SITE_ROOT#}/markers/cluster",
+								height: 50,
+						        width: 50,
+						        anchor: [24, 24],
+						        textColor: 'transparent',
+						        textSize: 14
+							}
+						]
+					});
+				}
+				else
+				{
+					markerClusterer.addMarkers(markers);	
+				}
+
+				
+				$("#slider-range").slider("option", "min", mincreated);
+				$("#slider-range").slider("option", "max", maxcreated);
+				
+				$("#timeFrom").text(new Date(mincreated).format(dateFormat));
+				$("#timeTo").text(new Date(maxcreated).format(dateFormat));
+				
+			}			
+			
+			function showBubbleFor(mkrIdx)
+			{
+				if(bubble) closeBubble();
+				
+				bubble = new google.maps.InfoWindow({
+					content : getContentFor(mkrIdx),
+					position : getPositionFor(mkrIdx)
+				});
+				
+				bubble.open(map);
+			}
+			
+			function getMarkerAt(latlng)
+			{
+				var mkrs = markers	
+				
+				for(mkr in markers)
+				{
+					if(mkrs[mkr].getPosition() == latlng) return mkrs[mkr];
+				}
+			}
+			
+			function addToSidebar(index, text)
+			{
+				$("#sidebar").append("<a href=\"javascript:showBubbleFor(" + index + ")\" index=\"" + index +"\">" + text +  "</a>");
+			}
+			
+			function closeBubble()
+			{
+				bubble.close();
+			}
+			
+			function getPositionFor(mkrIdx)
+			{
+				return new google.maps.LatLng(mapData[mkrIdx][geoField].latitude, mapData[mkrIdx][geoField].longitude);
+			}
+			
+			function getContentFor(mkrIdx)
+			{
+				var rec = mapData[mkrIdx];
+				var html = '<table class="ibubble">';
+				var fields = project.forms[formName].fields;
+				
+				for( fld in fields )
+				{
+					if( fields[fld].type != '' || fld == 'created' ) 
+					{
+						html += '<tr><th>' + fields[fld].text + '</th> <td> ' + fields[fld].formatValue(rec[fld]) + '</td></tr>';
+					}
+				}
+				html += '</table>'
+				return html;
+			}
+			
+			function filterMap(filterFunction)
+			{
+				markerClusterer.setIgnoreHidden(true);
+				
+				var len = mapData.length;
+				var mkrs = markers;
+				var data = mapData;
+				
+				for( var i = len; i--; )
+				{
+					var d = data[i];
+					
+					var vis = filterFunction(data[i]);
+					mkrs[i].setVisible(vis);
+					
+				}
+				markerClusterer.repaint();
+			}
+			
+			function clearMapFilter()
+			{
+				var mkrs= markers;
+				var len = markers.length
+				
+				for(var i = len; i--;)
+				{
+					mkrs[i].setVisible(true);
+				}
+				markerClusterer.repaint();
+				
+				$(".filterControl").removeClass("active");
+				$("#slider-range").slider("values", 0, $("#slider-range").slider("option", "min"));
+				$("#slider-range").slider("values", 1, $("#slider-range").slider("option", "max"));
+				
+			}
+			
+			function doMapFieldFilter()
+			{
+				filterMap(function(data){
+					var field = $("#mapFilterField").val();
+					var val = $("#mapFilterValue").val();
+					
+					return data[field] == val;
+				});
+				
+				$(".filterControl").removeClass("active");
+				$("#fieldFilter").addClass("active");
+			}
+			
+			function colourMarkersBy(fld)
+			{
+				var colourGrps = {};
+				var colourIdx = 0;
+				
+				var len = mapData.length;
+				
+				for(var i = len; i--;)
+				{
+					var d = mapData[i];
+					var mkr = markers[i];
+					
+					if(!mkr) continue;
+					
+					if(!d[fld]) d[fld] = "<i>No value</i>";
+					
+					if(!colourGrps[d[fld]])
+					{
+						colourGrps[d[fld]] = colours[colourIdx++ % colours.length];
+					}
+					mkr.setIcon("http://" + location.host +  "/{#SITE_ROOT#}/markers/point?colour=" + colourGrps[d[fld]])
+					mkr.colour = colourGrps[d[fld]];
+				}
+				
+				window.colourField = fld;
+				window.colourGrps = colourGrps;
+				
+				if(markerClusterer) markerClusterer.repaint();
+				drawMapLegend();
+			}
+			
+			function drawMapLegend()
+			{
+				
+				if(!map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].length)
+				{
+					legend = document.createElement('div');
+					legend.style.backgroundColor = '#EEEEEE';
+					legend.style.padding = '5px 5px 5px 5px';
+					legend.style.border = '1px solid #000000'
+					var inner = document.createTextNode('Hello World');
+					legend.appendChild(inner);
+					map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
+				}
+				
+				
+				var i = 0;
+				for(grp in colourGrps)
+				{
+					var legRow = document.createElement('div');
+					var img = document.createElement('img');
+					img.style.display = 'inline';
+					img.src = "../markers/point?colour=" + colourGrps[grp];
+					legRow.appendChild(img);
+					$(legRow).append(grp);
+					if(i < legend.childNodes.length)
+					{
+						legend.replaceChild(legRow, legend.childNodes[i]);
+					}
+					else
+					{
+						legend.appendChild(legRow);
+					}
+					i++;
+				}
+				while(i < legend.childNodes.length) legend.removeChild(legend.childNodes[i]);
+			}
+			
+			function drawBar(jq, data, field)
+			{
+				var d = data;
+				var s = [];
+				
+				var idx = 0;
+				var ser = [];
+				if(field == window.colourField)
+				{
+					for(var i in d)
+					{
+						ser.push({
+							data : [[i, d[i]]],
+							bars : {
+				                show: true,
+				                barWidth: 0.6,
+				                align: "center"
+				            },
+			                color : window.colourGrps[i]
+						});
+					}
+					
+				
+				}
+				else
+				{
+					for(var i in d)
+					{
+						s[idx++] = [i, d[i]];
+					}
+					
+					ser = [{
+							data : s,
+							bars : {
+				                show: true,
+				                barWidth: 0.6,
+				                align: "center" 
+				            }
+						}]
+					;
+				}
+				
+				
+				$.plot(jq , ser, {
+					xaxis: {
+						mode: "categories",
+			            tickLength: 0
+					}
+				});
+			}
+			
+			function drawPie(jq, data, field)
+			{
+				var len = data.length;
+				var d = data;
+				
+				var s = [];
+				var idx = 0;
+				if(field == window.colourField)
+				{
+					for(var i in d)
+					{
+						s[idx++] = { label : i, data : d[i], color : window.colourGrps[i]};
+					}
+				}
+				else
+				{
+					for(var i in d)
+					{
+						s[idx++] = { label : i, data : d[i]};
+					}
+				}
+				
+				$.plot(jq , s, {
+					series: {
+						pie: {
+							show : true ,
+							radius : 1,
+							label : {
+								formatter: function(label, series){
+				                        return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+label+'<br/>'+Math.round(series.percent)+'%</div>';
+			                    },
+			                    background: { 
+			                        opacity: 0.5,
+			                        color: '#000'
+			                    }
+							}
+						}
+					},
+					legend : {
+						show : false
+					}
+				});
+			}
+			
+			function drawGraph(div, field, type)
+			{
+				var jq = $(div);
+				
+				var d = mapData;
+				var len = d.length;
+				
+				var agg = {};
+				
+				for(var i = len; i--;)
+				{
+					var val = d[i][field];
+					
+					if(!agg[val]){ agg[val] = 1;} else {agg[val]++;}					
+				}
+				
+				var dat = [];
+				
+				if(type == "pie")
+				{
+					drawPie(jq, agg, field);
+				}
+				else
+				{
+					drawBar(jq, agg, field);
+				}
+				
+			}
+			
 	</script>
 	
 {{/script}}
@@ -97,6 +1060,85 @@
 {{/breadcrumbs}}
 {{main}}
 	<h1>{#projectName#} - {#formName#}</h1>
-	<div id="tabPanel"></div>
-	<div id="ecMap"></div>
+	<div id="tabs">
+		<ul>
+			<li><a href="#tableTab">Table View</a>
+			<li><a href="#mapTab">Map</a>
+		</ul>
+		<div id="tableTab">
+			<p class="ecplus-toolbar">
+				<a href="javascript:project.forms[formName].displayForm({ vertical : false });"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_248_asterisk.png" title="New Entry" alt="New Entry"></a>
+				<a href="javascript:project.forms[formName].displayForm({data : window.ecplus_entries[$('.ecplus-data tbody tr.selected').index()], edit : true});"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
+				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$('.ecplus-data tbody tr.selected').index()][project.forms[formName].key]);"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a>
+				<span class="ecplus-toolbar-divider">&nbsp;</span> 
+				Filter List By <select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value').val());"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Filter" alt="Filter"></a>
+				<a href="javascript:doFilter('','');"><!--  <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Clear Filter" alt="Clear Filter">-->Clear Filter</a>
+				<span class="ecplus-toolbar-divider">&nbsp;</span>
+				<span id ="showHideFields" class="ecplus-dropdown"></span> 
+				<span class="ecplus-toolbar-divider">&nbsp;</span> 
+				<a href="./{#formName#}.csv"><img src="{#SITE_ROOT#}/images/downloadcsv.png" title="Dowload Data as CSV" alt="Download CSV"></a>
+				<a href="./{#formName#}.tsv"><img src="{#SITE_ROOT#}/images/downloadtab.png" title="Dowload Data as TSV" alt="Download TSV"></a>
+				<a href="./{#formName#}.xml" target="__blank"><img src="{#SITE_ROOT#}/images/downloadxml.png" title="Dowload Data as XML" alt="Download XML"></a>
+			</p>
+			
+			<p class="ecplus-table-footer">
+				<a href="javascript:firstPage();" title="Go to first page">
+					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_170_step_backward.png" alt="first"/>
+				</a> 
+				<a href="javascript:turnBackPage();" title="Go to previous page">
+					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_350_playback.png" alt="previous"/>
+				</a>
+				<span id="start"></span> to <span id="end"></span> of <span id="total"></span>
+				<a href="javascript:getData();"  title="Refresh entries">
+					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_081_refresh.png" alt="next"/>
+				</a>
+			
+				<a href="javascript:turnPage();"  title="Go to next page">
+					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/>
+				</a>
+				<a href="javascript:lastPage();"   title="Go to final page">
+					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/>
+				</a>
+			</p>
+			<hr />
+			<h3>Upload data from a CSV file</h3>
+			<form method="POST" enctype="multipart/form-data" >
+				<label for="upload">File to upload : </label><input type="file" name="upload" /><br />
+				<input type="submit" name="submit" value="Upload File" />
+			</form>	
+		</div>
+		<div id="mapTab">
+			<div id="sidebar">
+				
+			</div>
+			<div id="map"></div>
+			<div id="graphbar">
+				<div id="graphOne" class="graphPanel"></div>
+				<div id="graphTwo" class="graphPanel"></div>
+				<div id="graphThree" class="graphPanel"></div>
+			</div>
+			<div id="bottombar">
+				<div id="timeFilter" class ="filterControl">
+					<h4>Filter By Time</h4>
+					<div id="slider-range" ></div>
+					<p><b>From :</b><span id="timeFrom"></span></p>
+					<p><b>To :</b><span id="timeTo"></span></p>
+					<span class="clearFilter"><a href="javascript:clearMapFilter();">Clear Filter</a></span>
+				</div>
+				<div id="fieldFilter" class ="filterControl">
+					<h4>Filter By Field</h4>
+					<p><b>Field </b><select id="mapFilterField" class="fieldList"></select></p>
+					<p><b>Value </b><input id="mapFilterValue"></input></p>
+					<p><a href="javascript:doMapFieldFilter()">Apply Filter</a></p>
+					<span class="clearFilter"><a href="javascript:clearMapFilter();">Clear Filter</a></span>
+				</div>
+				<div id="fieldColour" class ="colourControl">
+					<h4>Colour By Field</h4>
+					<p><b>Field </b><select id="mapColourField" class="colourFieldList"></select></p>
+					<p><a href="javascript:colourMarkersBy($('#mapColourField').val())">Apply Colouring</a></p>
+				</div>
+			</div>
+		</div>
+		
+	</div>
 {{/main}}

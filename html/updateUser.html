@@ -1,83 +1,78 @@
 {{style}}
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />
 {{/style}}
 {{script}}
-	<link rel="stylesheet" type="text/css" href="Ext/ext-all.css" />
-	<script type="text/javascript" src="Ext/ext-base-debug.js"></script>
-	<script type="text/javascript" src="Ext/ext-all-debug.js"></script>
 	<script type="text/javascript">
-		function init()
-		{
-			var frmItems = [];
-			
-			var nameField = new Ext.form.TextField({
-				allowBlank: false,
-				id: "name",
-				fieldLabel: "Real Name", 
-				value: '{#Name#}'
-			});
-			frmItems.push(nameField);
-			
-			var emailField = new Ext.form.TextField({
-				allowBlank: false,
-				id: "email",
-				fieldLabel: "Email address",
-				vtype:"email",
-				value: '{#Email#}'
-			});
-			frmItems.push(emailField);
-			
-			var frm = new Ext.form.FormPanel({
-				border :false,
-				buttonAlign: 'right',
-				buttons : [
-					{
-						id:"submit",
-						text:"Submit Changes",
-						formBind:true
-					},
-					{
-						id:"reset",
-						text:"Reset"
-					}
-				],
-				defaults: {
-					anchor : "100%"
-				},
-				labelWidth: 150,
-				url: '/saveUser',
-				items: frmItems,
-				renderTo:"updateUsr",
-				width:600
-			});
-			
-			frm.getFooterToolbar().get('submit').on('click', function(){frm.getForm().submit({
-				success:function(form, action)
+		$(function(){
+			$("input[type=password]").change(function(evt){
+				var pwd = $("#password").val();
+				var con = $("#confirmpassword").val();
+				
+				$("#message").empty();
+				
+				if(pwd.trim() == "" || con.trim() == "")
 				{
-					var msgEle = Ext.get("message");
-					msgEle.addClass("success");
-					msgEle.removeClass("failure");
-					msgEle.update(action.result.msg);
-				},
-				failure:function(form, action)
-				{
-					var msgEle = Ext.get("message");
-					msgEle.addClass("failure");
-					msgEle.removeClass("success");
-					msgEle.update(action.result.msg);
+					$("[type=submit]").attr("disabled", fal);
+					return;
 				}
-			})}, this);
-			frm.getFooterToolbar().get('reset').on('click', function(){frm.getForm().reset()}, this);
-		}
-	
-		Ext.onReady(init);
+				
+				if(pwd.trim() != "" && con.trim() != "" && pwd != con)
+				{
+					$("[type=submit]").attr("disabled", "disabled");
+					$("#message").append("<p class=\"err\">Passwords must match</p>");
+					return;
+				}
+								
+				
+				if(pwd.length < 8) {
+					$("#message").append("<p class=\"err\">Your password must be at least 8 characters long</p>");
+					$("[type=submit]").attr("disabled", "disabled");
+					return;
+				}
+				
+				if(!pwd.match(/^.*(?=.{8,})(?=.*\d)(?=.*[a-zA-Z]).*$/))
+				{
+					$("#message").append("<p class=\"err\">Password must contain at least one letter and at least one number.</p>");
+					$("[type=submit]").attr("disabled", "disabled");
+					return;
+				}
+				
+				$("[type=submit]").attr("disabled", false);
+				
+				
+			});
+		});
 	</script>
 {{/script}}
 {{breadcrumbs}}
-<a href="updateUser.html">Update User</a>
+&gt; <a href="updateUser.html">Update User</a>
 {{/breadcrumbs}}
 {{main}}
 	<h1>Update your details</h1>
-	<div id="message"></div>
-	<div id="updateUsr"></div>
+	<div id="message" class="flashes"></div>
+	{#flashes#}
+	<p>Please use the form below to update your details.</p>
+	<form id="updateUsr" method="POST" >
+		<fieldSet>
+			<p><label for="firstName">First Name</label> <input id="firstName" name="firstName" type="text" value="{#firstName#}"/><br /></p>
+			<p><label for="lastName">Last Name</label> <input id="lastName" name="lastName" type="text" value="{#lastName#}" /></p>
+			<p><label for="email">Email Address</label> <input id="email" name="email" type="email" value="{#email#}" /></p>
+		</fieldSet>
+		<fieldSet allow="LOCAL">
+			<p>
+				<label for="userName">User Name</label> 
+				<input  id="userName" name="userName" type="text" disabled="disabled" value="{#userName#}" />
+			</p>
+			<p>
+				<label for="password">New Password</label> 
+				<input id="password" name="password" type="password" />
+			</p>
+			<p>
+				<label for="confirmpassword">Confirm New Password</label> 
+				<input id="confirmpassword" name="confirmpassword" type="password" />
+			</p>
+			<p>
+				<input type="submit" name="makeChanges" value="Make Changes" />
+			</p>
+		</fieldSet>
+	</form>
 {{/main}}

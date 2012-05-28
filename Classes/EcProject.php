@@ -56,7 +56,7 @@ class EcProject{
 				//$res = $db->exec_sp("getProject", array($this->name));
 				$res = $db->do_query("SELECT * FROM project WHERE name = '{$this->name}'");
 				if($res!== true) return $res;
-				if($arr = $db->get_row_array())
+				while($arr = $db->get_row_array())
 				{
 					$this->fromArr($arr);
 				}
@@ -264,24 +264,34 @@ class EcProject{
 			{
 				$edited = null;
 			}		
-
+			while($db->get_row_array()) {}
 			$dat = $uploaded > $edited  ? $uploaded : $edited;
 			return $dat->getTimestamp() . $arr["ttl"];
 		}
 		
 		public function checkPermission($uid)
 		{
-			$db = new dbConnection();
-			$res = $db->exec_sp("checkProjectPermission", array($uid?$uid:0, $this->id));
-			if($res !== true) die($res);
-			if($obj = $db->get_row_object()) // if no one has any permissions on the project
+		 	global $db, $auth;
+		 	
+		 	if($auth->isServerManager()) return 3;
+		 	$db->free_result();
+		 	$role = 0;
+			
+		 	$res = $db->exec_sp("checkProjectPermission", array($uid?$uid:0, $this->id));
+			
+			if( $res !== true )
+			{ die($res); }
+			
+			while($obj = $db->get_row_object()) // if no one has any permissions on the project
 			{
-				return $obj->role;
+			
+				$role = $obj->role;
+			
 			}
-			else 
-			{
-				return 3;
-			}
+			$db->free_result();
+			
+			return $role;
+			
 		}
 		
 		public function getNextTable($tblName, $mainOnly)
@@ -290,7 +300,7 @@ class EcProject{
 			
 			$tbl = false;
 			
-			foreach($this->tables as $t)
+			foreach($this->tables as $n => $t)
 			{
 				if($t->number == $num)
 				{
@@ -315,8 +325,8 @@ class EcProject{
 				global $auth;
 				
 				$db = new dbConnection();
-				if($this->checkPermission($auth->getEcUserId()) == 3)
-				{
+				/*if($this->checkPermission($auth->getEcUserId()) == 3)
+				{*/
 						$sql = "SELECT upp.role, u.email FROM userprojectpermission upp join user u on upp.user = u.idUsers WHERE upp.role = $lvl and upp.project = {$this->id}";
 						$res = $db->do_query($sql);
 						if($res === true)
@@ -333,14 +343,14 @@ class EcProject{
 								return $res;
 						}
 						
-				}
+				/*}
 				else
 				{
 						return "You do not have permission to update this project";
-				}
+				}*/
 		}
 		
-		public function getPreviousTable($tblName)
+		public function getPreviousTable($tblName, $mainOnly = false)
 		{
 			$tbl = false;
 			$num = $this->tables[$tblName]->number - 1;
@@ -485,23 +495,25 @@ class EcProject{
 									publicSubmission = " . $db->boolVal($this->publicSubmission) . ", uploadToLocalServer = '{$this->uploadToLocalServer}', downloadFromLocalServer = '{$this->downloadFromLocalServer}' WHERE id = {$this->id} AND name = '$oldName'");
 				if($res !== true) return $res;
 				
-				//update form
-				$sql = "UPDATE form SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
-				$res = $db->do_query($sql);
-				if($res !== true) return $res;
-				//update fields
-				$sql = "UPDATE field SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
-				$res = $db->do_query($sql);
-				if($res !== true) return $res;
-				//update entries
-				$sql = "UPDATE entry SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
-				$res = $db->do_query($sql);
-				if($res !== true) return $res;
-				//update entryvalues
-				$sql = "UPDATE entryvalue SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
-				$res = $db->do_query($sql);
-				if($res !== true) return $res;
-				
+				if($this->name !== $oldName)
+				{ 
+					//update form
+					$sql = "UPDATE form SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+					$res = $db->do_query($sql);
+					if($res !== true) return $res;
+					//update fields
+					$sql = "UPDATE field SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+					$res = $db->do_query($sql);
+					if($res !== true) return $res;
+					//update entries
+					$sql = "UPDATE entry SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+					$res = $db->do_query($sql);
+					if($res !== true) return $res;
+					//update entryvalues
+					$sql = "UPDATE entryvalue SET projectName = '{$this->name}' WHERE projectName = '$oldName'";
+					$res = $db->do_query($sql);
+					if($res !== true) return $res;
+				}
 				
 				
 				$log->write('info', 'Project details updated');
@@ -526,6 +538,13 @@ class EcProject{
 			{
 				return "You do not have permission to update this project";
 			}
+		}
+		
+		function deleteProject()
+		{
+			global $db;
+			$qry = sprintf('CALL deleteProject(\'%s\')',$this->name);
+			return $db->do_query($qry);
 		}
 		
 		function getSummary()
@@ -618,12 +637,16 @@ class EcProject{
 		public function toXML()
 		{
 				global $SITE_ROOT;
+				
+				$protocol = 'http';
+				if (getValIfExists($_SERVER, "HTTPS")){$protocol = 'https';}
+				
 				$xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
 <xform>
 	<model>
 		<submission id=\"{$this->submission_id}\" projectName=\"{$this->name}\" allowDownloadEdits=\"". ($this->allowDownloadEdits ? "true" : "false") . "\" versionNumber=\"{$this->ecVersionNumber}\" />
-		<uploadToServer>http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/{$this->name}/upload</uploadToServer>
-		<downloadFromServer>http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/{$this->name}/download</downloadFromServer>";
+		<uploadToServer>$protocol://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/{$this->name}/upload</uploadToServer>
+		<downloadFromServer>$protocol://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/{$this->name}/download</downloadFromServer>";
 		if($this->uploadToLocalServer) $xml .= "\n\t\t<uploadToLocalServer>{$this->uploadToLocalServer}</uploadToLocalServer>";
 		if($this->downloadFromLocalServer) $xml .= "\n\t\t<downloadFromLocalServer>{$this->downloadFromLocalServer}</downloadFromLocalServer>";
 	$xml .= "\n\t</model>\n";

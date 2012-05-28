@@ -56,10 +56,10 @@
 /*.ui-widget { font-family: Verdana,Arial,sans-serif; font-size: 1.1em; }*/
 .ui-widget .ui-widget { font-size: 1em; }
 /*.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Verdana,Arial,sans-serif; font-size: 1em; }*/
-.ui-widget-content { /*border: 1px solid #aaaaaa; background: #ffffff url(images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x; color: #222222; */}
-.ui-widget-content a { color: #222222; }
+.ui-widget-content { /*border: 1px solid #aaaaaa;*/ background: #ffffff ; color: #222222; }
+.ui-widget-content a {  }
 .ui-widget-header { border: 1px solid #aaaaaa; background: #cccccc url(images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x; color: #222222; font-weight: bold; }
-.ui-widget-header a { color: #222222; }
+.ui-widget-header a { }
 
 /* Interaction states
 ----------------------------------*/
@@ -294,7 +294,7 @@
  * http://docs.jquery.com/UI/Resizable#theming
  */
 .ui-resizable { position: relative;}
-.ui-resizable-handle { position: absolute;font-size: 0.1px;z-index: 99999; display: block; }
+.ui-resizable-handle { position: absolute;font-size: 0.1px;z-index: 1000; display: block; }
 .ui-resizable-disabled .ui-resizable-handle, .ui-resizable-autohide .ui-resizable-handle { display: none; }
 .ui-resizable-n { cursor: n-resize; height: 7px; width: 100%; top: -5px; left: 0; }
 .ui-resizable-s { cursor: s-resize; height: 7px; width: 100%; bottom: -5px; left: 0; }
@@ -432,7 +432,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
  *
  * http://docs.jquery.com/UI/Dialog#theming
  */
-.ui-dialog { position: absolute; padding: .2em; width: 300px; overflow: hidden; }
+.ui-dialog { position: absolute; border: 1px solid #CCCCCC; width: 300px; overflow: hidden;box-shadow: 10px 10px 5px #888888; }
 .ui-dialog .ui-dialog-titlebar { padding: .4em 1em; position: relative;  }
 .ui-dialog .ui-dialog-title { float: left; margin: .1em 16px .1em 0; } 
 .ui-dialog .ui-dialog-titlebar-close { position: absolute; right: .3em; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 18px; }

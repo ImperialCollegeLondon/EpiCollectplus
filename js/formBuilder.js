@@ -1,634 +1,677 @@
-	var project = new EcSurvey;
-	var activeForm = false;
-	var activeField = false;
-	
-	function web()
-	{
-		try{
-			Ext.get("destination").removeClass("android");
-			Ext.get("destination").removeClass("iphone");
-			Ext.get("middle").set({style : "background-image:none;"});
-		}catch(err){alert(err);}
-	}
+var currentForm = undefined;
+var currentControl = undefined;
+var formName = undefined;
 
-	function android()
-	{
-		try{
-		Ext.get("destination").addClass("android");
-		Ext.get("destination").removeClass("iphone");
-		Ext.get("middle").set({"style" : "background-image:url('images/android_epi.png');background-repeat: no-repeat;background-position: center 65px;"});
-		}catch(err){alert(err);}
-	}
-
-	function iphone()
-	{
-		Ext.get("destination").removeClass("android");
-		Ext.get("destination").addClass("iphone");
-		Ext.get("middle").set({style : "background-image:url('images/iphone_epi.png');background-repeat: no-repeat;background-position: center 65px;"});
-	}
+$(function()
+{
+	var url = location.href;
+	EpiCollect.loadProject(url.substr(0, url.lastIndexOf("/")) + ".xml", drawProject);
 	
-	function popup(ele, title, text)
-	{
-		$(".popup").remove();
-		var offset = ele.offset();
-		ele.after("<div class=\"popup\" style=\"" + ((offset.left + ele.width() + 200) < document.width ? "top:" + (offset.top) + "px;" + "left:" + (offset.left + ele.width()) : "top:" + (offset.top - 25) /*HACK!*/ + "px;" + "right:" + (document.width - (offset.left + ele.width()))) + "px;\"><span style=\"float:right;cursor:pointer;\">[x]</span><b>" + title + "</b><p>" + text + "</p></div>");
-		$("input, textarea, select, a").focus(function(){$(".popup").remove();});
-		$(".popup").click(function(){$(".popup").remove();});
-	}
+	$(window).scroll(function(evt){
+		if($(document.body).scrollTop() > $("#toolbox")[0].offsetTop) 
+		{  
+			$("#toolbox-inner").css({
+				"position":"fixed",
+				"top" : "0px"
+			}); 
+		}else{
+			$("#toolbox-inner").css({
+				"position":"relative"
+			}); 
+		}
+			
+	});
 	
-	function checkTargets()
-	{
-		var isTarget = false;
-		
-		Ext.each(Ext.query("#destination .ctrl"), function()
-		{
-			var nd = Ext.get(this);
-			if(!nd.next() || !nd.next().hasClass("target"))
-			{
-				nd.insertHtml('afterEnd', '<div class="target"></div>');
-			}
-			if(!nd.prev() || !nd.prev().hasClass("target"))
-			{
-				nd.insertHtml('beforeBegin', '<div class="target"></div>');
-			}
-		});
-			Ext.each(Ext.query("#destination .target"), function()
-		{
-			var nd = Ext.get(this);
-			if(nd.next() && nd.next().hasClass("target"))
-			{
-				nd.next().remove();
-			}
-			if(nd.prev() && nd.prev().hasClass("target"))
-			{
-				nd.prev().remove();
-			}
-		});
-	}
+	$("[allow]").hide();
+	$("[notfor]").show();
 	
-	function updateTable(fld)
-	{
-		var newflds = {};
-		var flds = project.tables[activeForm].fields;
-		var ctrls = Ext.get('destination').query('.ctrl');
-		for(var c = 0; c < ctrls.length; c++)
+	$('#destination').sortable({
+		revert : 50,
+		start : function(evt, ui)
 		{
-			if(flds[ctrls[c].id]){
-			   newflds[ctrls[c].id] = flds[ctrls[c].id]
-			}
-			else if(fld)
+			ui.placeholder.css("visibility", "");
+			ui.placeholder.css("background-color", "#CCFFCC");
+		},
+		stop : function(evt, ui)
+		{
+			if(!currentForm)
 			{
-				newflds[ctrls[c].id] = fld;	
+				alert("You need to choose a form in order to change the controls on it.")
+				$("#destination div").remove();
+			}
+			else
+			{
+				setSelected($(ui.item));
 			}
 		}
-		project.tables[activeForm].fields = newflds;
-	}
+	});
 	
-	function setEditField(fld)
-	{
-		if(activeField)
+	$(".ecplus-form-element").draggable({
+		connectToSortable: "#destination",
+		helper: "clone",
+		revert: "invalid",
+		revertDuration : 100
+	});
+	
+	$('#destination').click(function(evt){
+		var div = evt.target;
+		while(div.tagName != "DIV") { div = div.parentNode;}
+		
+		var jq = $(div);
+		if(jq.hasClass("ecplus-form-element"))
 		{
-			saveField();
+			setSelected(jq);
 		}
+	});
+	
+	$('#formList').click(function(evt){
+		var sp = evt.target;
 		
-		while(Ext.query('.selectOption').length > 1) Ext.get(Ext.query('.selectOption')[0]).remove();
-		
-		var opt = Ext.query('.selectOption')[0];		
-		
-		activeField = project.tables[activeForm].fields[fld.id];
-		Ext.get("textInputEdit").set({style : "display: block"})
-		
-		fld.radioClass("editing");
-		
-		Ext.get("textInputLabel").dom.value = activeField.text;
-		Ext.get("textInputValue").dom.value = activeField.id;
-		document.getElementsByName("required")[0].checked = activeField.required;
-		document.getElementsByName('title')[0].checked = activeField.title
-		Ext.get("selectEdit").set((project.tables[activeForm].fields[fld.id].type.match(/select|radio/gi)) ? {style : "display: block"}:{style : "display: none"});
-		
-		if(activeField.options.length > 0)
+		if(sp.tagName == "SPAN")
 		{
-			while(Ext.query('.selectOption').length < activeField.options.length) addOptionRow();
-			setOptionFields(activeField.options);
-		}
-		
-		
-	}
-
-	function setOptionFields(optArr)
-	{
-		var optRows = Ext.query('.selectOption');
-		
-		for(var r = 0; r < optRows.length; r++){
-			optRows[r].getElementsByTagName('input')[0].value = optArr[r][0];
-			optRows[r].getElementsByTagName('input')[1].value = optArr[r][1];
-		}
-		
-	}
-	
-	function getOptionFields()
-	{
-		var optArr = [];
-		var optRows = Ext.query('.selectOption');
-		
-		for(var r = 0; r < optRows.length; r++){
-			optArr[r] = [];
-			optArr[r][0] = optRows[r].getElementsByTagName('input')[0].value;
-			optArr[r][1] = optRows[r].getElementsByTagName('input')[1].value ;
-		}
-		return optArr;
-	}
-	
-	function removeField(fld)
-	{
-		if(confirm("Are you sure you want to remove " + fld + ", this cannot be undone ")){;
-			Ext.get("textInputEdit").set({style : "display: none"})
-			if(Ext.get(fld))Ext.get(fld).remove();
-			newFlds = {};
-			for(f in project.tables[activeForm].fields)
+			sp = $(sp);
+			$('#formList span').removeClass('selected');
+			if(sp.hasClass("control"))
 			{
-				if(f != fld){
-					newFlds[f] = project.tables[activeForm].fields[f];
+				newForm();
+			}
+			else if(sp.hasClass("form"))
+			{
+				switchToForm(sp.text());
+				/*if(currentForm){
+					updateForm();
+					project.forms[currentForm.name] = currentForm;
 				}
-			}
-			project.tables[activeForm].fields = newFlds;
-			
-			checkTargets();
-		}
-	}
-	
-	function addTable()
-	{
-		var name = prompt("Please enter a name for this table");
-		var tbl = new EcTable();
-		tbl.name = name;
-		
-		project.tables[name] = tbl;
-		drawProject();
-	}
-	
-	function addOptionRow()
-	{
-		try{
-			
-			var optpnls = Ext.query('.selectOption');
-			
-			var newpnl = optpnls[optpnls.length - 1].cloneNode(true);
-			newpnl.id = 'selectOneOption' + optpnls.length;
-			
-			newpnl.getElementsByTagName('input')[0].value = "";
-			newpnl.getElementsByTagName('input')[1].value = "";
-			newExtpnl = Ext.get(newpnl);
-			newExtpnl.insertAfter(optpnls[optpnls.length - 1])
-			
-			newpnl.getElementsByTagName('input')[2].onclick = function(e)
-			{alert(this.id);}
-			
-		} catch(err){alert(err);}
-	}
-	
-	function removeOptionRow()
-	{
-		
-	}
-	
-	function saveField()
-	{
-		
-		var main = document.getElementById(activeField.id);
-		
-		activeField.id = Ext.get('textInputValue').dom.value;
-		activeField.text = Ext.get('textInputLabel').dom.value;
-	  	if(activeField.type.match(/^(select1?|radio)$/g))activeField.options = getOptionFields();
-		activeField.required = document.getElementsByName("required")[0].checked;
-		activeField.title = document.getElementsByName("title")[0].checked;
-		
-		var divs = main.getElementsByTagName('div');
-		for(var i = 0; i < divs.length; i++)
-		{
-			if(divs[i].className.match(/label/))
-			{
-				 divs[i].replaceChild(document.createTextNode(activeField.text), divs[i].firstChild );
-			}
-			else if(divs[i].className.match(/control/))	
-			{
-				divs[i].replaceChild(document.createTextNode(activeField.id), divs[i].firstChild);
+				sp.addClass('selected');
+				currentForm = project.forms[sp.text()];
+				formName = currentForm.name;
+				drawFormControls(currentForm);*/
 			}
 		}
-		
-		//switchForm(activeForm);
-	}
+	});
 	
-	function makeField(ctrl, ecField)
-	{
-		var v = ctrl.cloneNode(true);
-		v.id = ecField ? ecField.id : "";
-		var c = Ext.get(v);
-
-		c.on('click', function(){
-//			alert(this.id);
-			setEditField(this);
-		});
-	
-		//add select/Edit handler
-		var d = Ext.get(c.query(".i2")[0]);
-		d.update("<img src=\"../images/uparrow.png\" />");
-		d.insertHtml('beforeEnd', '<img src=\"../images/downarrow.png\" />');
-		
-		var btns = d.query('img');
-		
-		Ext.get(btns[0]).on('click', function(){
-			this.insertBefore(this.prev().prev());
-			updateTable()
-			checkTargets();		
-		}, d.parent());
-		
-		Ext.get(btns[1]).on('click', function(){
-			this.insertAfter(this.next().next());
-			updateTable();
-			checkTargets();
-		}, d.parent());
-		return c;
-	}
-	
-	function loadProject()
-	{
-		
-		Ext.Ajax.request({
-			url: location.href.replace(/\/formBuilder(\.html)?/, '.xml'),
-			success: function (res, opts)
-			{
-				project.parse(res.responseXML);
-				drawProject();
-			}
-		});
-	}
-	
-	
-	function resetProject()
-	{
-		Ext.get('formList').update('<span class="label">Select a form to Edit: </span>');
-		Ext.get('destination').update('<div class="target"></div>');
-	}
-	
-	function drawProject()
-	{
-		
-		resetProject();
-		
-		var pnl = document.getElementById('formList')
-		for(t in project.tables)
+	$("#key").change(function(evt){
+		if(evt.target.checked)
 		{
-			if(project.tables[t].branchOf != false) continue;
-			var tbl = document.createElement('span');
-			tbl.id = "tbl~" + project.tables[t].name;
-			tbl.className = "table";
-			
-			pnl.appendChild(tbl);
-			tbl.appendChild(document.createTextNode(project.tables[t].name));
-			
-			var tbl = document.createElement('span');
-			tbl.className = "link";
-			pnl.appendChild(tbl);
-			tbl.appendChild(document.createTextNode(project.tables[t].key));
-		}
-		pnl.removeChild( pnl.lastChild)
-		var tbl = document.createElement('span');
-		tbl.className = "control";
-		pnl.appendChild(tbl);
-		tbl.appendChild(document.createTextNode("add a form"));
-		
-		pnl.appendChild(tbl);
-		
-		var tbls = Ext.query('.table');
-		for(var i = 0; i < tbls.length; i++)
-		{
-			Ext.get(tbls[i]).on('click', function(){switchForm(this.id.replace("tbl~", ""))});
-		}
-		Ext.query('.control')[0].onmousedown =  function(e){
-			addTable();
-		};
-	}
-	
-	function switchForm(frm)
-	{
-		
-		Ext.get('destination').update('<div class="target"></div>');
-		var flds = project.tables[frm].fields;
-		for(f in flds)
-		{
-			if(flds[f].type == "") continue;
-			var l = Ext.query('.target');
-			var v = createControl(Ext.get(l[l.length-1]), flds[f]);
-			checkTargets();
-		}
-		var ts = Ext.query('.table');
-		for(var x = 0; x < ts.length; x++)
-		{
-			ts[x] = Ext.get(ts[x].id);
-			
-			if(ts[x].id == "tbl~" + frm) ts[x].radioClass('selected');
-		}
-		activeForm = frm;
-	}
-	
-	function loadControls()
-	{
-		Ext.Ajax.request({
-			url: "../getControls",
-			success: function(res, opts)
-			{
-				var ctrls = Ext.util.JSON.decode(res.responseText).controlTypes;
-				var ctrlPanel = document.getElementById("source");
-				
-				for(var i = 0; i < ctrls.length; i++)
-				{
-					var main = document.createElement("div");
-					main.className = "ctrl";
-					main.id = ctrls[i].name + "template";
-					var i1 = document.createElement("span");
-					i1.id = ctrls[i].name + "ctrl";
-					i1.className="i1";
-					main.appendChild(i1);
-					var i2 = document.createElement("span");
-					i2.className="i2";
-					main.appendChild(i2);
-					var img = document.createElement('img');
-					img.src="../images/rightarrow.png";
-					img.alt="&gt;&gt;"
-					i2.appendChild(img);
-					
-					var label = document.createElement("div");
-					label.className="label";
-					var labelText=document.createTextNode(ctrls[i].formbuilderLabel);
-					label.appendChild(labelText);
-					
-					i1.appendChild(label);
-					ctrlPanel.appendChild(main);
-					
-					ct = document.createElement('div');
-					ct.className = ctrls[i].name + " control";
-					ct.id = ctrls[i].name + "template";
-					
-					
-					i1.appendChild(ct);
-					
-					if(ctrls[i].hasOptions == "1" && ctrls[i].name != "group")
-					{
-						opc  = document.createElement('div');
-						opc.className = "optionContainer";
-						
-						op1  = document.createElement('div');
-						op1.className = "option";
-						op1.appendChild(document.createTextNode('One'));
-						
-						opc.appendChild(op1);
-						
-						op1  = document.createElement('div');
-						op1.className = "option";
-						op1.appendChild(document.createTextNode('Two'));
-						
-						opc.appendChild(op1)
-						
-						ct.appendChild(opc);
-					}
-					else
-					{
-						ct.appendChild(document.createTextNode(ct.id));
-					}
-				}
-				init();
-			}
-		})
-	}
-	
-	function createControl(target, fld)
-	{
-		var main = document.createElement("div");
-		main.className = "ctrl";
-		main.id = fld.id;
-		target.replaceWith(main);
-		
-		var i1 = document.createElement("div");
-		i1.id = fld.id + "ctrl";
-		i1.className="i1";
-		main.appendChild(i1);
-	
-		var i2 = document.createElement("div");
-		i2.className="i2";
-		main.appendChild(i2);
-		var img = document.createElement('img');
-		img.src="../images/uparrow.png";
-		
-		i2.appendChild(img);
-		
-		img = document.createElement('img');
-		img.src="../images/downarrow.png";
-		
-		i2.appendChild(img);
-		
-		var label = document.createElement("div");
-		label.className="label";
-		var labelText=document.createTextNode(fld.text);
-		label.appendChild(labelText);
-		
-		i1.appendChild(label);
-		
-		ct = document.createElement('div');
-		ct.className = fld.type + " control";
-		ct.id = fld.id + "ele";
-		
-		
-		i1.appendChild(ct);
-		
-		if(fld.options.length > 0)
-		{
-			opc  = document.createElement('div');
-			opc.className = "optionContainer";
-			for(i = 0; i <  fld.options.length; i++)
-			{
-				op1  = document.createElement('div');
-				op1.className = "option";
-				op1.appendChild(document.createTextNode(fld.options[i][1]));
-				
-				opc.appendChild(op1)
-			}
-			ct.appendChild(opc);
+			$("[allow=key]").show();
 		}
 		else
 		{
-			ct.appendChild(document.createTextNode(main.id));
+			$("[allow=key]").hide();
 		}
-		
-		
-		var btns = Ext.get(i2).query('img');
-		
-		Ext.get(btns[0]).on('click', function(){
-			this.insertBefore(this.prev().prev());
-			updateTable();
-			checkTargets();		
-		}, Ext.get(main));
-		
-		Ext.get(btns[1]).on('click', function(){
-			this.insertAfter(this.next().next());
-			updateTable();
-			checkTargets();
-		}, Ext.get(main));
-		
-		Ext.get(main).on('click', function(){
-			//alert(this.dom.className);
-			setEditField(this);
-		
-		});
-		
-		//Ext.create(ct);
-		return main;
-	}
+	});
 	
-	function validateForm(frmName)
-	{
-		
-	}
+	$("#options .removeOption").unbind('click').bind('click', removeOption);
+	$("#jumps .remove").unbind('click').bind('click', removeOption);
+});
+
+function drawProject(project)
+{
+	$("#formList .form").remove();
 	
-	function saveForm(frmName)
+	for(var frm in project.forms)
 	{
-		
+		if(project.forms[frm].main)
+			addFormToList(frm);
 	}
-	
-	function validateProject()
+}
+
+/**
+ * 
+ * @param message
+ * @param name
+ */
+function newForm(message, name)
+{
+	if(!message) 
 	{
-		
+		message = "";
 	}
-	
-	function saveProject()
+	else
 	{
+		message = "\r\n\r\n" + message;
+	}
+	var name = prompt("What would you like to call the new form?" + message, name);
+	if(name && project.validateFormName(name))
+	{
+		addFormToList(name);
+		var frm = new EpiCollect.Form();
+		frm.name = name;
+		frm.num = project.forms.length + 1;
+		project.forms[name] = frm;
+		
 		
 	}
-	
-	function init()
+	else if(name)
 	{
-		var tbls = Ext.query('#formList .table');
-		for(var i = 0; i < tbls.length; i++)
+		newForm("The form name must only contain letters, numbers and _ or - and be unique within this project.", name);
+	}
+}
+
+function addFormToList(name)
+{
+	$("#formList .control").before("<span id=\"" + name + "\" class=\"form\">" + name + "</span>");
+}
+
+/**
+ * Function to add the field representation onto the form
+ * 
+ * @param id the id of the element
+ * @param text the text for the element
+ * @param type the css class of the template in the left bar
+ */
+function addControlToForm(id, text, type)
+{
+	if(type.trim() == "") return; 
+	
+	if(type[0] != ".") type = "." + type;
+	var jq = $(type, $(".first")).clone();
+	$("p.title", jq).text(text);
+	jq.attr("id", id);
+	
+	$(".option", jq).remove();
+
+	if(type.match(/select1?|radio/))
+	{
+		var opts = currentForm.fields[id].options;
+		var l = opts.length;
+		for(var i = 0; i < l; i++)
 		{
-			var t = Ext.get(tbls[i]);
-			t.addClassOnOver('over');
+			jq.append("<p class=\"option\">" + opts[i].label + "</p>");
 		}
-		
-		
-		tbls = Ext.query('#formList .control');
-		for(var i = 0; i < tbls.length; i++)
-		{
-			//alert(tbls);
-			var t = Ext.get(tbls[i]);
-			t.addClassOnOver('over');
-		}
-		new Ext.dd.DragZone('destination',
-		{
-			dropAllowed : 'ctrl',
-			getDragData : function(e){
-				var sourceEl = e.getTarget('.ctrl', 10);
-					if (sourceEl) {
-					d = sourceEl.cloneNode(true);
-					d.id = Ext.id("", "ec");
-					
-					return {
-						ddel: d,
-						sourceEl: sourceEl,
-						repairXY: Ext.fly(sourceEl).getXY()
-					}
-				}
-				else
-				{return false;}
-			},
-			getRepairXY: function() {
-				return this.dragData.repairXY;
-			}
-		});
+	}
 	
-		//var dzEles = Ext.query('.target', Ext.get('destination').dom);
-		//for(var i = 0; i < dzEles.length; i++){
-		new Ext.dd.DropZone('destination', {
-			getTargetFromEvent : function(e)
-			{
-				return e.getTarget('.target');	
-			},
-			onNodeEnter : function(target, dd, e, data){ 
-				Ext.fly(target).addClass('dd-over');
-			},
-			onNodeOut : function(target, dd, e, data){ 
-				Ext.fly(target).removeClass('dd-over');
-			},
-			onNodeDrop : function(target, dd, e, data){
-				if(!activeForm)
-				{
-					alert('A form must be selected to add fields to.');
-					return;
-				}
-				if(dd.id === "source"){
-					var ne = makeField(data.sourceEl);
-					Ext.get(target).replaceWith(new Ext.Element(ne));
-					var fld = new EcField();
-					fld.id = ne.id;
-					fld.type = data.sourceEl.id.replace('template','');
-				}
-				else
-				{
-					var ne = Ext.get(data.sourceEl);
-					ne.replace(Ext.get(target));
-					
-				}
-				updateTable(fld);
-				checkTargets();				
-			}
-		});
+	$("#destination").append(jq);
+}
+
+function addOption()
+{
+	var panel = $("#options");
+	panel.append('<div class="selectOption"><hr /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Label</a><input name="optLabel" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),\'Option &gt; Name\', \'The label displayed to the user\')">?</a></div>	<br /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Value</a><input name="optValue" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),\'Option &gt; Value\', \'The value entered into the database\')">?</a></div>	<br><a href="javascript:void(0);" class="button removeOption" >Remove Option</a> </div>');
+	
+	$("#options .removeOption").unbind('click').bind('click', removeOption);
+}
+
+function removeOption(evt)
+{
+	var ele = evt.target;
+	while(ele.tagName != "DIV") ele = ele.parentNode;
+	
+	$(ele).remove();
+}
+
+function addJump()
+{
+	var panel = $("#jumps");
+	panel.append('<div class="jumpoption"><hr /><form><input type="radio" name="jumpType" value="is" selected="selected"> Jump when value is<br/><input type="radio" name="jumpType" value="not"> Jump when value is not<br/></form><label>Value</label> <select class="jumpvalues"></select><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >Remove Jump</a></div>');
+	
+	$("#jumps .remove").unbind('click').bind('click', removeJump);
+}
+
+function removeJump(evt)
+{
+	var ele = evt.target;
+	while(ele.tagName != "DIV") ele = ele.parentNode;
+	
+	$(ele).remove();
+}
+
+function drawFormControls(form)
+{	
+	$("#destination div").remove();
+	
+	var fields = form.fields;
+	
+	for(var f in fields)
+	{
+		var fld = fields[f];
+		var cls = undefined;
 		
-		new Ext.dd.DragZone('source',
-		{
-			dropAllowed : 'ctrl',
-			getDragData : function(e){
-				var sourceEl = e.getTarget('.ctrl', 10);
-				if (sourceEl) {
-					d = sourceEl.cloneNode(true);
-					d.id = Ext.id();
-					d.width = 150;
-					return {
-						ddel: d,
-						sourceEl: sourceEl,
-						repairXY: Ext.fly(sourceEl).getXY()
-					}
-				}
-				else
-				{return false;}
-			},
-			getRepairXY: function() {
-				return this.dragData.repairXY;
-			}
-		});
-		
-		Ext.each(Ext.query('.i2 img'), function()
+		if(fld.type == "input")
 		{
 			
-			try{
-			Ext.get(this).on('click', function(){
-				try{
-					var l = Ext.get('destination').last();
-					var v = makeField(this.parent().parent().dom);
-					v.insertBefore(l);
-					var fld = new EcField();
-					fld.id = v.id;
-					fld.type = this.parent().parent().id.replace('template','');
-					updateTable(fld)
-					checkTargets();
-				}catch(err){alert(err)}
-			});
-			}catch(err){alert(err)}
-		});
+			if(fld.isinteger || fld.isdouble)
+			{
+				cls = "ecplus-numeric-element";
+			}
+			else if(fld.date || fld.setDate)
+			{
+				cls = "ecplus-date-element";
+			}
+			else if(fld.time || fld.setTime)
+			{
+				cls = "ecplus-time-element";
+			}
+			else
+			{
+				cls = "ecplus-text-element";
+			}
+			
+			var forms = project.forms;
+			for(f in forms)
+			{
+				if(f != form.name && fld.id == forms[f].key) cls = "ecplus-fk-element";
+			}
+		}
+		else cls = "ecplus-" + fld.type + "-element";
 		
-		Ext.get('addSelectOneOption').on('click', function(){
-			addOptionRow();
-		});
-		Ext.get('delete').on('click', function(){removeField(activeField.id)})
-		loadProject();
+		addControlToForm(fld.id, fld.text, cls);		
 	}
-	var editing;
-	Ext.onReady(loadControls);
+	
+}
+
+function updateSelected()
+{
+	var jq = $("#destination .selected");
+	
+	if(jq == undefined || jq.length == 0) return true;
+	
+	var name = currentControl.id; 
+	if(!currentForm.validateFieldName($('#inputId').val(), name))
+	{
+		return false;
+	}
+	
+	currentControl.id = $('#inputId').val();
+	currentControl.text = $('#inputLabel').val();
+	
+	if(jq.attr("type").match(/^(text|numeric|date|time|fk)/))
+	{
+		currentControl.type = "input";
+		if(jq.attr("type") == "fk")
+		{
+			var f = $("#parent").val();
+			var frm = project.forms[f]
+			currentControl.id = frm.key;
+			currentControl.text = frm.fields[frm.key].text;
+		}
+	}
+	else{ currentControl.type = jq.attr("type"); }
+	
+	var notset = !$("#set").attr("checked");
+	//TODO: need to set other params;
+	var fk = $("#parent").val();
+	
+	currentControl.required = !!$("#required").attr("checked");
+	currentControl.title = !!$("#title").attr("checked");
+	currentControl.isKey = !!$("#key").attr("checked");
+	currentControl.regex = $("#regex").val();
+	currentControl.verify = !!$("#verify").attr("checked");
+	currentControl[(notset ? "date": "setDate")] = $("#date").val(); 
+	currentControl[(notset ? "time": "setTime")] = $("#time").val();
+	currentControl[(notset ? "setDate" : "date")] = false; 
+	currentControl[(notset ? "setTime": "time")] = false;
+	currentControl.genkey = !!$("#genkey").attr("checked");
+	currentControl.hidden = !!$("#hidden").attr("checked");
+	currentControl.isinteger = !!$("#integer").attr("checked");
+	currentControl.isdouble = !!$("#decimal").attr("checked");
+	currentControl.min = $("#min").val();
+	currentControl.max = $("#max").val();
+	currentControl.defaultValue = $("#default").val();
+	currentControl.search = !!$("#search").attr("checked");
+	
+	//TODO: get and add options
+	var optCtrls = $(".selectOption");
+	
+	var options = [];
+	
+	var n = optCtrls.length;
+	for(var i = 0; i < n; i++)
+	{
+		options[i] = { label : $("input[name=optLabel]", optCtrls[i]).val(), value : $("input[name=optValue]", optCtrls[i]).val() };
+	}
+	currentControl.options = options;
+	
+	var jump = "";
+	var jumpCtrls = $(".jumpoption");
+	var jn = jumpCtrls.length;
+	
+	for(var i = jn; i--;)
+	{
+		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + $(".jumpvalues", jumpCtrls[i]).val() + "," + jump;
+	}
+	
+	currentControl.jump = jump.trim(",");
+	
+	if(name !== currentControl.id)
+	{
+		delete currentForm.fields[name];
+	}
+	currentForm.fields[currentControl.id] = currentControl;
+	
+	jq.attr("id", currentControl.id);
+	$("p.title", jq).text(currentControl.text);
+	
+	$(".option", jq).remove();
+	
+	if(currentControl.type.match(/select1?|radio/))
+	{
+		var opts = currentControl.options;
+		var l = opts.length;
+		for(var i = 0; i < l; i++)
+		{
+			jq.append("<p class=\"option\">" + opts[i].label + "</p>");
+		}
+	}
+	else
+	{
+		currentControl.options = [];
+	}
+	
+	return true;
+}
+
+function updateForm()
+{
+	if(!updateSelected()) return;	
+	
+	var fields = {};
+	var form = currentForm;
+	
+	var elements = $("#destination div");
+	for(var i = 0; i < elements.length; i++)
+	{
+		var id = elements[i].id;
+		fields[id] = form.fields[id]; 
+		fields[id].position;
+		if(fields[id].isKey) form.key = id;
+	}
+	
+	currentForm.fields = fields;
+}
+
+function updateJumps()
+{
+	var opts = currentControl.options;
+	
+	var fieldCtls = $(".jumpvalues");
+	fieldCtls.empty();
+	fieldCtls.html("<option value=\"any\" style=\"font-style:italic;\">Any Value</option>" + fieldCtls.html());
+	for(var i = opts.length; i; i--)
+	{
+		fieldCtls.html("<option value=\"" + i + "\">" + opts[i-1].label + "</option>" + fieldCtls.html());
+	}
+	
+	fieldCtls = $(".jumpdestination");
+	
+	for(fld in currentForm.fields)
+	{
+		var field = currentForm.fields[fld];
+		var lbl = currentForm.fields[fld].text;
+		if(lbl.length > 25) lbl = lbl.substr(0,22) + "...";
+		if(field.type && !field.hidden) fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
+	}
+	
+}
+
+function setSelected(jqEle)
+{
+	if(window["currentControl"])
+	{
+		if(!updateSelected()) return;
+		$(".last input[type=text]").val("");
+		$(".last input[type=checkbox]").attr("checked", false);
+	}
+	
+	if(currentForm.fields[jqEle.attr("id")])
+	{	
+		currentControl =  currentForm.fields[jqEle.attr("id")];
+	}
+	else
+	{
+		currentControl = new EpiCollect.Field(currentForm);
+	}
+	
+	var type = jqEle.attr("type");
+	
+	$("[allow]").hide();
+	$("[notfor]").show();
+	$("[allow*=" + type + "]").show();
+	$("[notfor*=" + type + "]").hide();
+	
+	if(currentControl.isKey)
+	{
+		$("[allow=key]").show();
+	}
+	if(jqEle.hasClass("ecplus-form-element"))
+	{
+		$("#parent").val("");
+		$("#destination .ecplus-form-element").removeClass("selected");
+		jqEle.addClass("selected");
+		
+		$('#inputLabel').val(currentControl.text);
+		$('#inputId').val(currentControl.id);
+		
+		$("#required").attr("checked", (currentControl.required));
+		$("#title").attr("checked", (currentControl.title));
+		$("#key").attr("checked", (currentControl.isKey));
+		$("#decimal").attr("checked", currentControl.isdouble);
+		if(! currentControl.isdouble) $("#integer").attr("checked", currentControl.isinteger);
+		$("#min").val(currentControl.min);
+		$("#max").val(currentControl.max);
+		
+		if(currentControl.date)$("#date").val(currentControl.date);
+		if(!!currentControl.setDate)
+		{
+			$("#date").val(currentControl.setDate);
+			$("#set").attr("checked", true);
+		}
+		else
+		{
+			$("#set").attr("checked", false);
+		}
+		
+		if(currentControl.time) $("#time").val(currentControl.time);
+		if(currentControl.setTime)
+		{
+			$("#time").val(currentControl.setTime);
+			$("#set").attr("checked", true);
+		}
+		else
+		{
+			if(!currentControl.setDate) $("#set").attr("checked", false);
+		}
+		$("#default").val(currentControl.defaultValue);
+		$("#regex").val(currentControl.regex);
+		$("#verify").attr("checked", currentControl.verify);
+		$("#hidden").attr("checked", currentControl.hidden);
+		$("#genkey").attr("checked", currentControl.genkey);
+		$("#search").attr("checked", currentControl.search);
+		
+		var opts = currentControl.options;
+		var nOpts = currentControl.options.length;
+		
+		$(".selectOption").remove();
+		
+		while($(".selectOption").length < nOpts) addOption();
+		
+		var optEles = $(".selectOption");
+		for(var i = nOpts; i--;)
+		{
+			$("input[name=optLabel]", optEles[i]).val(opts[i].label);
+			$("input[name=optValue]", optEles[i]).val(opts[i].value);
+		}
+		
+		var forms = project.forms;
+		
+		if(jqEle.attr("type") == "fk")
+		{	
+			for(f in forms)
+			{
+				if(jqEle.attr("id") == forms[f].key){
+					$("#parent").val(f);
+				}
+			
+			}
+		}
+		
+		//TODO: Jumps
+		$(".jumpoption").remove();
+		
+		if(!currentControl.jump) return;
+		var jumps =  currentControl.jump.split(",");
+		var nJumps = jumps.length / 2;
+		
+		while($(".jumpoption").length < nJumps) addJump();
+		
+		updateJumps();
+		var jumpCtrls = $(".jumpoption");
+		var n = jumps.length
+		
+		for( var i = 0; i < n; i += 2 )
+		{
+			$(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1]);
+			$(".jumpdestination", jumpCtrls[i/2]).val(jumps[i]);
+		}
+	}
+	else
+	{
+		throw "div is not a form Element!";
+	}
+	
+	if(currentControl) $(".last").show();
+	else $(".last").hide();
+	
+}
+
+function removeForm(name)
+{
+	if(confirm('Are you sure you want to remove the form ' + name + '?'))
+	{
+		$('#' + name, $("#formList")).remove();
+		var key = project.forms[name].key;
+		delete project.forms[name];
+		
+		for( frm in project.forms )
+		{
+			for( fld in project.forms[frm].fields )
+			{
+				if( fld == key )
+				{
+					delete project.forms[frm].fields[fld];
+				}
+			}
+		}
+	}
+}
+
+function removeSelected()
+{
+	var jq = $("#destination .selected")
+	delete currentForm.fields[jq.attr("id")];
+	jq.remove();
+	
+	$("[allow]").hide();
+	$(".last input[type=text]").val("");
+	$(".last input[type=checkbox]").attr("checked", false);
+}
+
+function renameForm(name)
+{
+	var newName = prompt('What would you like to rename the form ' + name + ' to?');
+	if(newName)
+	{
+		var forms = project.forms;
+		var form = forms[name];
+		var newForms = {};
+		form.name = newName;
+		
+		for(frm in forms)
+		{
+			if(frm == name)
+			{
+				newForms[newName] = form;
+			}
+			else
+			{
+				newForms[frm] = forms[frm];
+			}
+		}
+		
+		project.forms = newForms;
+		drawProject(project);
+	}
+}
+
+function switchToBranch()
+{
+	$('.form').removeClass("selected");
+	
+	if(currentForm){
+		updateForm();
+		project.forms[currentForm.name] = currentForm;
+	}
+	
+	var frm = currentControl.connectedForm;
+	if(!project.forms[frm]) project.forms[frm] = new EpiCollect.Form();
+	currentForm = project.forms[frm];
+	formName = currentForm.name;
+	drawFormControls(currentForm);
+}
+
+function switchToForm(name)
+{
+	$('.form').removeClass("selected");
+	
+	if(currentForm){
+		updateForm();
+		project.forms[currentForm.name] = currentForm;
+	}
+	
+	$('.form').each(function(idx,ele){
+		if($(ele).text() == name) $(ele).addClass("selected");
+	});
+	
+	$("#parent").empty();
+	for(frm in project.forms)
+	{
+		if(frm == name) break;
+		
+		if(project.forms[frm].main) $("#parent").append("<option value=\"" + frm + "\">" + frm + " (" + project.forms[frm].key + ")</option>");
+	}
+	
+	
+	if(!project.forms[name]) project.forms[name] = new EpiCollect.Form();
+	currentForm = project.forms[name];
+	formName = name;
+	drawFormControls(currentForm);
+}
+
+function saveProject()
+{
+	var loader = new EpiCollect.LoadingOverlay();
+	loader.setMessage('Saving...');
+	loader.start();
+	window.loader = loader;
+	
+	if(!updateSelected()) return;
+	updateForm();
+	
+	$.ajax("./updateStructure" ,{
+		type : "POST",
+		data : {data : project.toXML()},
+		success : saveProjectCallback,
+		error : saveProjectError
+	});
+}
+
+function saveProjectCallback(data, status, xhr)
+{
+	var result = JSON.parse(data);
+	window.loader.stop();
+	
+	if(result.result)
+	{
+		
+		alert("Project Saved");
+	}
+	else
+	{
+		alert("Project not saved : " + result.message);
+	}
+}
+
+function saveProjectError(xhr, status, err)
+{
+	alert("Project not saved : " + status);
+}

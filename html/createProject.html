@@ -1,5 +1,4 @@
 {{style}}	
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />
 	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/jquery-ui-1.8.17.custom.css" />
 	<style type="text/css">
 		#uploadxml
@@ -27,10 +26,6 @@
 			width : 50em;
 			height: 50em;
 		}
-		section p
-		{
-			text-align: center;
-		}
 		
 		.panelSwitcher 
 		{
@@ -46,8 +41,6 @@
 {{/style}}
 
 {{script}}
-  <!--<script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollect2.js"></script>-->
-  <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-1.7.1.min.js"></script>
   <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui-1.8.17.custom.min.js"></script>
   <script type="text/javascript">
   	var obj;
@@ -64,6 +57,17 @@
 		$('#s_managers tbody').append("<tr><td>" + curEmail + "</td></tr>");
 		$('#managers').val(curEmail);
  		
+		$('input[name=name]').change(function(evt){
+			
+			if(evt.target.value)
+			{
+				$('#pdNext').button("enable");
+			}
+			else if(!$('#uploadStatus').hasClass("go"))
+			{
+				$('#pdNext').button("disable");
+			}
+		});
 		
 		$('#uploadxml').load(function(){
 			if($('#uploadxml')[0].contentDocument.forms[0])
@@ -83,7 +87,7 @@
 	  				$('#uploadStatus').addClass("err");
 	  				$('#uploadStatus').removeClass("go");
 	  				$('#uploadStatus').append("<p>" + obj.msgs.join("</p><p>") + "</p>");
-	  				$('#pdNext').button("disable");
+	  				if(!$('input[name=name]').val()) $('#pdNext').button("disable");
 	  			}
 	  			else
 	  			{
@@ -149,14 +153,17 @@
   </script>
 {{/script}}
 {{breadcrumbs}}
-  &gt; <a href="createProject.html">{#title#}</a>
+  &gt; <a href="createProject.html">Create Project</a>
 {{/breadcrumbs}}
 {{main}}
 	  <h1 id="title">Create a Project - <span class="projectName"></span></h1>
-	  <div id="message"></div>
+	  <div id="message" class="flashes"></div>
 	  <form id="projectOptions" action="create" method="POST">
 		  	<section id="projectDef">
 			  	<h2>1. Project Definition</h2>
+			  	<p>Choose a name for the project</p>
+			  	<input name="name" />
+			  	<p>Or</p>
 			  	<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
 		  		<div id="uploadStatus" class="flash"></div>
 		 		<input type="hidden" name="xml"/>

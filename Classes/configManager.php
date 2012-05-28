@@ -33,8 +33,15 @@ class ConfigManager
 			}
 			else
 			{
-				$kv = explode("=", $val);
-				if(count($kv) == 2) $this->settings[$sec][trim($kv[0])] = trim($kv[1]);
+				$kv = explode("=", $val); 
+				if(count($kv) == 2) $this->settings[$sec][trim($kv[0])] = trim($kv[1]); 
+                if(count($kv) > 2) 
+                { 
+                	$key = $kv[0]; 
+                    unset($kv[0]); 
+                    $value = implode("=",$kv); 
+                    $this->settings[$sec][trim($key)] = trim($value); 
+                } 
 			}
 		}
 	}
