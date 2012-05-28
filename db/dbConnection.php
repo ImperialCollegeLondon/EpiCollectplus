@@ -199,7 +199,7 @@
 					}
 				}
 				
-				$qry = "CALL $spName (" . implode(", ", $args) . ")";
+				$qry = "CALL $spName (" . implode(", ", $args) . ");";
 				
 				$this->resSet = $this->con->query($qry);
 				if($this->resSet)

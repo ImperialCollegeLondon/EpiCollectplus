@@ -1614,7 +1614,6 @@ function formHandler()
 					header('Content-Type: application/json');
 					
 					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "json");
-
 					if($res !== true) die($res);
 					echo '[';		
 					$i = 0;			
@@ -2321,11 +2320,6 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 				$isValid = false;
 				array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has no label. All fields must have a label and the label must not be null. If you have added a label to the field please make sure the tags are all in lower case i.e. <label>...</label> not <Label>...</Label>");
 			}
-			if(!preg_match("/^[0-9A-Za-z_-]+$/", $fld->name))
-			{
-				$isValid = false;
-				array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid name, the label must only contain letters, numbers, _ or -");
-			}
 
 			if($fld->jump)
 			{
@@ -2341,7 +2335,7 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 				{
 
 					//check that the jump destination exists in the current form
-					if($jBits[$i] != "End" && !array_key_exists($jBits[$i], $tbl->fields))
+					if(!preg_match( '/END/i', $jBits[$i]) && !array_key_exists($jBits[$i], $tbl->fields))
 					{
 						$isValid = false;
 						array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid jump statement the field {$jBits[$i]} that is the target when the value is {$jBits[$i+1]} does not exist in this form");

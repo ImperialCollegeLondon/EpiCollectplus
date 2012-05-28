@@ -527,7 +527,8 @@
 			unset($select, $join, $where, $group, $order, $limit_s);
 			//echo $qry;
 			
-			$db->do_multi_query($qry);
+			$res = $db->do_multi_query($qry);
+			if($res !== true) return $res;
 			
 			return $db->getLastResultSet();
 				

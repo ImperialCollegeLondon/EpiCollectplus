@@ -274,7 +274,7 @@ class EcProject{
 		 	global $db, $auth;
 		 	
 		 	if($auth->isServerManager()) return 3;
-		 	$db->free_result();
+		
 		 	$role = 0;
 			
 		 	$res = $db->exec_sp("checkProjectPermission", array($uid?$uid:0, $this->id));
@@ -288,7 +288,9 @@ class EcProject{
 				$role = $obj->role;
 			
 			}
-			$db->free_result();
+			
+			$db->getLastResultSet();
+ 			$db->free_result();
 			
 			return $role;
 			
@@ -320,34 +322,27 @@ class EcProject{
 		
 		private function getPermission ($lvl)
 		{	
-				if(!is_numeric($this->id) || strstr($this->id, ".")) return "ID {$this->id} is not properly set";
-				
-				global $auth;
-				
-				$db = new dbConnection();
-				/*if($this->checkPermission($auth->getEcUserId()) == 3)
-				{*/
-						$sql = "SELECT upp.role, u.email FROM userprojectpermission upp join user u on upp.user = u.idUsers WHERE upp.role = $lvl and upp.project = {$this->id}";
-						$res = $db->do_query($sql);
-						if($res === true)
-						{
-								$returnarr = array();
-								while ($arr = $db->get_row_array())
-								{
-										array_push($returnarr, $arr["email"]);
-								}
-								return $returnarr;
-						}
-						else
-						{
-								return $res;
-						}
-						
-				/*}
-				else
-				{
-						return "You do not have permission to update this project";
-				}*/
+			if(!is_numeric($this->id) || strstr($this->id, ".")) return "ID {$this->id} is not properly set";
+			
+			global $auth;
+			
+			$db = new dbConnection();
+			
+			$sql = "SELECT upp.role, u.email FROM userprojectpermission upp join user u on upp.user = u.idUsers WHERE upp.role = $lvl and upp.project = {$this->id}";
+			$res = $db->do_query($sql);
+			if($res === true)
+			{
+					$returnarr = array();
+					while ($arr = $db->get_row_array())
+					{
+							array_push($returnarr, $arr["email"]);
+					}
+					return $returnarr;
+			}
+			else
+			{
+					return $res;
+			}		
 		}
 		
 		public function getPreviousTable($tblName, $mainOnly = false)
