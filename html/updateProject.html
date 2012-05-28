@@ -21,13 +21,13 @@
 			text-align : left;
 		}
 		
-		section
+		div.section
 		{
 			display: inline-block;
 			width : 50em;
 			height: 50em;
 		}
-		section p
+		div.section p
 		{
 			text-align: center;
 		}
@@ -131,7 +131,7 @@
   	
   	function goTo(sectionId)
   	{
-  		$('section').hide();
+  		$('div.section').hide();
   		$('#' + sectionId).show();
   	}
   	
@@ -226,15 +226,15 @@
 	  			<li><a href="#s_curators">Curators</a></li>
 	  			<li><a href="#s_delete">Delete Project</a></li>
 	  		</ul>
-		  	<section id="projectDef">
+		  	<div id="projectDef" class="section">
 			  	<h2>1. Project Definition</h2>
 			  	<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
 		  		<div id="uploadStatus" class="flash"></div>
 		 		<input type="hidden" name="xml"/>
 		 		<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 		 		
-	 		</section>
-		 	<section id="visibility">
+	 		</div>
+		 	<div id="visibility" class="section">
 				<h2>2. Visibility</h2>
 				<p>EpiCollect+ allows project data to either be public of private, please choose one of the following options</p>
 				<div id="public">
@@ -243,8 +243,8 @@
 				</div>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 				
-			</section>
-			<section id="listing">
+			</div>
+			<div id="listing" class="section">
 				<h2>3. Listing on the Homepage</h2>
 				<p>The front page of this server displays a list of projects that have been created on this server, please choose one of the following options</p>
 				<div id="listed">
@@ -252,8 +252,8 @@
 					<input type="radio" name="listed" id="notListed" /><label for="notListed">I would not like this project to appear <br />on the list on the homepage of this server.</label>
 				</div>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
-			</section>
-			<section id="s_managers">
+			</div>
+			<div id="s_managers" class="section">
 				<h2>4. Project Managers</h2>
 				<p>Any users in this group have the ability to add and remove other project managers and curators, they can also update the project 
 				settings and the project definition. Managers can also Add, edit and remove data using the web interface.</p>
@@ -267,8 +267,8 @@
 				<label for="newmanager">Enter the email address for the manager you wish to add </label><input type="email" id="newmanager" /><a class="button" href="javascript:addUser('managers', $('#newmanager').val())">Add manager</a>
 				<input type="hidden" name="managers" id="managers"/>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
-			</section>
-			<section id="s_curators">
+			</div>
+			<div id="s_curators" class="section">
 				<h2>5. Project Curators</h2>
 				<p>Any users in this group are allowed to use the web interface to add, edit and remove data. Anyone can upload data from the EpiCollect+ Android App. If this project is not public then 
 				only Curators and managers will be able to use the web interface for this project.</p>
@@ -282,12 +282,12 @@
 				<label for="newcurator">Enter the email address for the curator you wish to add </label><input type="email" id="newcurator" /><a class="button" href="javascript:addUser('curators', $('#newcurator').val())">Add curator</a>
 				<input type="hidden" name="curators" id="curators"/>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
-			</section>
-			<section id="s_delete">
+			</div>
+			<div id="s_delete" class="section">
 				<h2>Delete Project</h2>
 				<p>Use the button below to delete this project and all of its data from the server.</p>
 				<a href="javascript:deleteProject()" class="danger button"> Delete Project </a>
-			</section>
+			</div>
 			
 	</form>
   

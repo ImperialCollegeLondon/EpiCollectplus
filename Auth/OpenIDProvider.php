@@ -9,7 +9,7 @@
 		{
 			global $SITE_ROOT;
 			
-			$this->openid = new LightOpenID("$SITE_ROOT/loginCallback");
+			$this->openid = new LightOpenID("http://{$_SERVER["HTTP_HOST"]}$SITE_ROOT/loginCallback");
 			$this->openid->identity = array_key_exists("openid", $_SESSION) ? $_SESSION["openid"] : "";
 			$this->openid->required = array('namePerson/first', 'namePerson/last', 'contact/email', 'contact/country/home', 'pref/language');
 		}
