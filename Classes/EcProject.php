@@ -637,9 +637,9 @@ class EcProject{
 		public function toXML()
 		{
 				global $SITE_ROOT;
-				
+		
 				$protocol = 'http';
-				if (getValIfExists($_SERVER, "HTTPS")){$protocol = 'https';}
+				if (getValIfExists($_SERVER, "HTTPS")== 'on'){$protocol = 'https';}
 				
 				$xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
 <xform>
