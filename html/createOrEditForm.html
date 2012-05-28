@@ -16,6 +16,7 @@
 				display : block;
 				height : 9em;
 				overflow-x : auto;
+				overflow-y : hidden;
 			}
 			
 			#formList span
@@ -98,19 +99,19 @@
 &gt; <a href="../{#projectName#}">Project : {#projectName#}</a> &gt; Form Builder
 {{/breadcrumbs}}
 {{main}}
-<h1>Form Builder</h1>
-<div id="toolbox">
-	<div id="toolbox-inner">
-		<a href="javascript:saveProject()" class="button">Save Project</a>
-		<a href="javascript:project.forms[currentForm.name].displayForm({ debug : true });" class="button">Preview Form</a>
-		<a href="javascript:renameForm(currentForm.name);" class="button">Rename Form</a>
-		<a href="javascript:removeForm(currentForm.name);" class="button">Delete Form</a>
+	<h1>Form Builder</h1>
+	<div id="toolbox">
+		<div id="toolbox-inner">
+			<a href="javascript:saveProject()" class="button">Save Project</a>
+			<a href="javascript:project.forms[currentForm.name].displayForm({ debug : true });" class="button">Preview Form</a>
+			<a href="javascript:renameForm(currentForm.name);" class="button">Rename Form</a>
+			<a href="javascript:removeForm(currentForm.name);" class="button">Delete Form</a>
+		</div>
 	</div>
-</div>
-<div id="formList">
-		<h4 class="label">Select a form to edit: </h4>
-		<span class="form">First_Form</span><span class="control">Add a new form</span>
-</div>
+	<div id="formList">
+			<h4 class="label">Select a form to edit: </h4>
+			<span class="form">First_Form</span><span class="control">Add a new form</span>
+	</div>
 
 	<div class="ecplus-columns">
 		<div id="source" class="column first">
@@ -131,7 +132,6 @@
       		</div>
       		<div class="ecplus-form-element ecplus-time-element" type="time">
       			<p class="title">Time</p> 
-      			
       		</div>
       		<div class="ecplus-form-element ecplus-select1-element" type="select1">
       			<p class="title">Drop-down list</p> 

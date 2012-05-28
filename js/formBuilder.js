@@ -170,12 +170,15 @@ function addControlToForm(id, text, type)
 	jq.attr("id", id);
 	
 	$(".option", jq).remove();
-	
-	var opts = currentForm.fields[id].options;
-	var l = opts.length;
-	for(var i = 0; i < l; i++)
+
+	if(type.match(/select1?|radio/))
 	{
-		jq.append("<p class=\"option\">" + opts[i].label + "</p>");
+		var opts = currentForm.fields[id].options;
+		var l = opts.length;
+		for(var i = 0; i < l; i++)
+		{
+			jq.append("<p class=\"option\">" + opts[i].label + "</p>");
+		}
 	}
 	
 	$("#destination").append(jq);
@@ -261,10 +264,14 @@ function updateSelected()
 {
 	var jq = $("#destination .selected");
 	
-	if(jq == undefined || jq.length == 0) return;
+	if(jq == undefined || jq.length == 0) return true;
 	
 	var name = currentControl.id; 
-
+	if(!currentForm.validateFieldName($('#inputId').val(), name))
+	{
+		return false;
+	}
+	
 	currentControl.id = $('#inputId').val();
 	currentControl.text = $('#inputLabel').val();
 	
@@ -337,17 +344,26 @@ function updateSelected()
 	
 	$(".option", jq).remove();
 	
-	var opts = currentControl.options;
-	var l = opts.length;
-	for(var i = 0; i < l; i++)
+	if(currentControl.type.match(/select1?|radio/))
 	{
-		jq.append("<p class=\"option\">" + opts[i].label + "</p>");
+		var opts = currentControl.options;
+		var l = opts.length;
+		for(var i = 0; i < l; i++)
+		{
+			jq.append("<p class=\"option\">" + opts[i].label + "</p>");
+		}
 	}
+	else
+	{
+		currentControl.options = [];
+	}
+	
+	return true;
 }
 
 function updateForm()
 {
-	updateSelected();	
+	if(!updateSelected()) return;	
 	
 	var fields = {};
 	var form = currentForm;
@@ -392,7 +408,7 @@ function setSelected(jqEle)
 {
 	if(window["currentControl"])
 	{
-		updateSelected();
+		if(!updateSelected()) return;
 		$(".last input[type=text]").val("");
 		$(".last input[type=checkbox]").attr("checked", false);
 	}
@@ -623,7 +639,12 @@ function switchToForm(name)
 
 function saveProject()
 {
-	updateSelected();
+	var loader = new EpiCollect.LoadingOverlay();
+	loader.setMessage('Saving...');
+	loader.start();
+	window.loader = loader;
+	
+	if(!updateSelected()) return;
 	updateForm();
 	
 	$.ajax("./updateStructure" ,{
@@ -637,9 +658,11 @@ function saveProject()
 function saveProjectCallback(data, status, xhr)
 {
 	var result = JSON.parse(data);
+	window.loader.stop();
 	
 	if(result.result)
 	{
+		
 		alert("Project Saved");
 	}
 	else

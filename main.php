@@ -1614,6 +1614,7 @@ function formHandler()
 					header('Content-Type: application/json');
 					
 					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "json");
+
 					if($res !== true) die($res);
 					echo '[';		
 					$i = 0;			
@@ -2319,6 +2320,11 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 			{
 				$isValid = false;
 				array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has no label. All fields must have a label and the label must not be null. If you have added a label to the field please make sure the tags are all in lower case i.e. <label>...</label> not <Label>...</Label>");
+			}
+			if(!preg_match("/^[0-9A-Za-z_-]$/", $fid->label))
+			{
+				$isValid = false;
+				array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid label, the label must only contain letters, numbers, _ or -");
 			}
 
 			if($fld->jump)

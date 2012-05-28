@@ -1175,6 +1175,8 @@ MarkerClusterer.prototype.addMarkers = function (markers, opt_nodraw) {
  */
 MarkerClusterer.prototype.pushMarkerTo_ = function (marker) {
   // If the marker is draggable add a listener so we can update the clusters on the dragend:
+  if(!marker) return;
+	
   if (marker.getDraggable()) {
     var cMarkerClusterer = this;
     google.maps.event.addListener(marker, "dragend", function () {

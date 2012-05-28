@@ -147,14 +147,17 @@ class EcField{
 			if($this->crumb) $json .= " \"crumb\":\"{$this->crumb}\"";
 			if($this->match) $json .= " \"crumb\":\"{$this->match}\"";
 			if($this->defaultValue) $json .= " \"default\":\"{$this->defaultValue}\",";
+			
 			$json.= "\n\t\t\t\"label\" : \"{$this->label}\",\n\t\t\"options\":[";
 			$i =0;
+			
 			foreach($this->options as $opt)
 			{
 				$json .= ($i > 0 ? "," : "") . "\n\t\t\t\t{\n\t\t\t\t\t\"label\":\"{$opt->label}\",\n\t\t\t\t\t\"value\" : \"{$opt->value}\"\n\t\t\t}";
 				$i++;
 			}
 			$json.= "]}";
+			
 			return $json;
 		}
 		
@@ -187,24 +190,23 @@ class EcField{
 				if($res !== true) return $res;
 				//if($db->affectedRows() == 0) return "field {$this->name} ({$this->idField}) not found -- $sql";
 				
-				if(count($this->options) != 0){
+				$sql = "DELETE FROM `option` WHERE field = {$this->idField}";
+				$res = $db->do_query($sql);
+				if($res !== true) return $res;
 				
-						$sql = "DELETE FROM `option` WHERE field = {$this->idField}";
-						$res = $db->do_query($sql);
+				if(count($this->options) != 0){						
+					foreach($this->options as $opt)
+					{
+						$res = $db->exec_sp("addOption", array(
+							$this->form->survey->name,
+							$this->form->name,
+							$this->name,
+							$opt->idx,
+							$opt->label,
+							$opt->value
+						));
 						if($res !== true) return $res;
-										
-						foreach($this->options as $opt)
-						{
-							$res = $db->exec_sp("addOption", array(
-								$this->form->survey->name,
-								$this->form->name,
-								$this->name,
-								$opt->idx,
-								$opt->label,
-								$opt->value
-							));
-							if($res !== true) return $res;
-						}
+					}
 				}
 				return true;
 		}
@@ -363,6 +365,8 @@ class EcField{
 				} //end switch
 				
 			}//end foreach
+			
+			$this->options = array();
 			
 			foreach($xml->children() as $opt)
 			{

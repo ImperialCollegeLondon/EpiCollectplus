@@ -639,12 +639,12 @@
 			
 				$('#sidebar').empty();
 				for(var mkr = markers.length; mkr--;){
+					if(!markers[mkr]) continue;
+					
 					markers[mkr].setMap(null);
 					markers.splice(mkr, 1);	
 					mapData.splice(mkr, 1);
 				}
-				
-
 				
 				mapData = data;
 				
@@ -676,17 +676,25 @@
 						maxlat = Math.max(data[i][geoField].latitude, maxlat);
 						minlon = Math.min(data[i][geoField].longitude, minlon);
 						maxlon = Math.max(data[i][geoField].longitude, maxlon);
+						
+						google.maps.event.addListener(mkr, 'click', function(evt, x){
+							showBubbleFor(getMarkerAt(evt.latLng).index);
+						});
+					
+						markers[i] = mkr;
+					}
+					else
+					{
+						markers[i] = null;
 					}
 					
 					mincreated = Math.min(mincreated, Number(data[i]["created"]));
 					maxcreated = Math.max(maxcreated, Number(data[i]["created"]));
-				
-					google.maps.event.addListener(mkr, 'click', function(evt, x){
-						showBubbleFor(getMarkerAt(evt.latLng).index);
-					});
 					
-					markers[i] = mkr;
-					addToSidebar(i, data[i][project.forms[formName].titleField])
+					var ttl = data[i][project.forms[formName].titleField];
+					if(!ttl || ttl.trim() == '') ttl = '<i>' + data[i]['created'] + '</i>';
+					
+					addToSidebar(i, ttl);
 				}
 				
 				colourMarkersBy($('#mapColourField').val());
@@ -863,6 +871,8 @@
 				{
 					var d = mapData[i];
 					var mkr = markers[i];
+					
+					if(!mkr) continue;
 					
 					if(!d[fld]) d[fld] = "<i>No value</i>";
 					

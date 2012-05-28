@@ -150,7 +150,6 @@
 		
 		public function do_multi_query($qry)
 		{
-			
 			if($this->connected)
 			{
 				if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);

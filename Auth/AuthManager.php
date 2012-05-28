@@ -76,14 +76,14 @@
   
   	function requestlogin($requestedUrl, $provider = "")
   	{
-  		global $cfg, $hasManagers;
+  		global $cfg, $hasManagers, $SITE_ROOT;
   		
   		$provider = strtoupper($provider);
   		
-  		$_SESSION["url"] = "./" . $requestedUrl;
+  		$_SESSION["url"] = "http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}" . $requestedUrl;
   		if($provider != "" && array_key_exists($provider, $this->providers))
   		{
-  			return $this->providers[$provider]->requestLogin("./" . $requestedUrl, !$hasManagers);
+  			return $this->providers[$provider]->requestLogin("http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}" . $requestedUrl, !$hasManagers);
   		}
   		else
   		{

@@ -459,7 +459,6 @@ tr.alt
 .second div.ecplus-form-element.selected
 {
 	background-color : #EEEEFF;
-	margin-right: -2em;
 }
 
 .ecplus-form-element
@@ -471,6 +470,15 @@ tr.alt
 {
 	font-weight: bold;
 	margin: 0 0 19px 0;
+	
+}
+
+
+.ecplus-form-element.ecplus-select1-element p.title
+{
+	font-weight: bold;
+	padding: 0 0 19px 0;
+	margin-bottom : 0;
 }
 
 .ecplus-form-element img
@@ -650,44 +658,44 @@ tr.alt
 
 .ecplus-text-element
 {
-	height: 3em;
-	background : url("../images/textinput.png") 2px 1.75em no-repeat;	
+
+	background : url("../images/textinput.png") 2px 100% no-repeat;	
 }
 
 .ecplus-fk-element
 {
-	height: 3em;
-	background : url("../images/fk.png") 2px 1.75em no-repeat;	
+
+	background : url("../images/fk.png") 2px 100% no-repeat;	
 }
 
 .ecplus-numeric-element
 {
-	height: 3em;
-	background : url("../images/numbericinput.png") 2px 1.75em no-repeat;	
+
+	background : url("../images/numbericinput.png") 2px 100% no-repeat;	
 }
 
 .ecplus-date-element
 {
-	height: 3em;
-	background : url("../images/dateinput.png") 2px 1.75em no-repeat;	
+
+	background : url("../images/dateinput.png") 2px 100% no-repeat;	
 }
 
 .ecplus-time-element
 {
-	height: 3em;
-	background : url("../images/timeinput.png") 2px 1.75em no-repeat;	
+
+	background : url("../images/timeinput.png") 2px 100% no-repeat;	
 }
 
-.ecplus-select1-element
+.ecplus-select1-element .title
 {
-	min-height: 3em;
-	background : url("../images/selectone.png") 2px 1.75em no-repeat;	
+
+	background : url("../images/selectone.png") 2px bottom no-repeat;	
 }
 
 .ecplus-select1-element .option
 {
 	background : url("../images/select1opt.png") left 50% no-repeat;
-	margin: 0px -2px 0px 0px;
+	margin: 0px -2px 0px 2px;
 	padding : 2px 0px 4px 5px;
 }
 
@@ -784,12 +792,14 @@ tr.alt
 	padding: 10px 10px 10px 10px;
 }
 
-#nav{
+#nav
+{
 	float: right;
 	margin-top : -15px;
 }
 
-#nav a{
+#nav a
+{
 	padding: 0px 5px 0px 5px;
 }
 
@@ -819,7 +829,7 @@ tr.alt
 	width: 90%;
 	padding : 0.5em;
 	background-color : #FFFFFF;
-	z-index : 999;
+	z-index : 100;
 }
 
 #ecplus_loader_bg
@@ -833,8 +843,12 @@ tr.alt
 }
 
 #ecplus_loader
-{
-	
+{	
 	background-color : rgba(255,255,255,1);
+}
+
+#props label
+{
+	margin : .4em .2em .4em .2em;
 }
 

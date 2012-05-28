@@ -376,17 +376,19 @@
 			{
 				foreach($args as $k => $v)
 				{
+					$s_k = str_replace('.', '_', $k);
+					
 					if( $v == '' ) continue;
 					if( array_key_exists($k, $this->fields) && $this->fields[$k]->type != "" )
 					{
-						$join .= sprintf(' LEFT JOIN entryvalue ev%s on e.idEntry = ev%s.entry AND ev%s.projectName = \'%s\' AND ev%s.formName = \'%s\' AND ev%s.fieldName = \'%s\'', $k, $k, $k, $this->projectName, $k, $this->name, $k, $k);
+						$join .= sprintf(' LEFT JOIN entryvalue ev%s on e.idEntry = ev%s.entry AND ev%s.projectName = \'%s\' AND ev%s.formName = \'%s\' AND ev%s.fieldName = \'%s\'', $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
 						if( $exact )
 						{
-							$where .= sprintf(' AND ev%s.value = \'%s\'', $k, $v);
+							$where .= sprintf(' AND ev%s.value = \'%s\'', $s_k, $v);
 						}
 						else
 						{
-							$where .= sprintf(' AND ev%s.value Like \'%s\'', $k, $v);
+							$where .= sprintf(' AND ev%s.value Like \'%s\'', $s_k, $v);
 						}
 					}
 				}
@@ -394,10 +396,12 @@
 			
 			for($i = count($this->branchfields); $i--;)
 			{
+				$bf =  str_replace('.', '_', $this->branchfields[$i]);
+				
 				if($format == 'json'){
-					$select .= sprintf(' \', "%s" : \' , COUNT(distinct ev%s_entries.entry) ,', $this->branchfields[$i], $this->branches[$i]);
+					$select .= sprintf(' \', "%s" : \' , COUNT(distinct ev%s_entries.entry) ,', $bf, $this->branches[$i]);
 				}elseif($format == 'xml'){
-					$select .= sprintf(' \'<%s>\', COUNT(distinct ev%s_entries.entry), \'</%s>\',', $this->branchfields[$i], $this->branches[$i], $this->branchfields[$i]);
+					$select .= sprintf(' \'<%s>\', COUNT(distinct ev%s_entries.entry), \'</%s>\',', $bf, $this->branches[$i], $bf);
 				}elseif($format == 'csv'){
 					$select .= sprintf(', COUNT(distinct ev%s_entries.entry) ', $this->branches[$i]);
 				}elseif($format == 'tsv'){
@@ -405,7 +409,7 @@
 				}elseif($format == 'kml'){
 					throw new Exception ('Format not yet implemented');
 				}elseif($format == 'tskv'){
-					$select .= sprintf(',%s , COUNT(distinct ev%s_entries.entry)', $this->branchfields[$i], $this->branches[$i]);
+					$select .= sprintf(',%s , COUNT(distinct ev%s_entries.entry)', $bf, $this->branches[$i]);
 				}elseif($format != 'object'){
 					//throw new Exception ('Format not specified');
 				}
@@ -488,16 +492,17 @@
  			
  			if(!strstr($join, sprintf('ev%s', $sortField)) && $sortIsField)
  			{
- 				$join .= sprintf(' LEFT JOIN entryvalue ev%s on ev%s.entry = e.idEntry and ev%s.fieldName = \'%s\'', $sortField, $sortField, $sortField, $sortField);
+ 				$s_sortField = str_replace('.', '_', $sortField);
+ 				$join .= sprintf(' LEFT JOIN entryvalue ev%s on ev%s.entry = e.idEntry and ev%s.fieldName = \'%s\'', $s_sortField, $s_sortField, $s_sortField, $sortField);
  			}
 			
 			if($sortIsField)
 			{
-				$order = sprintf(' ORDER BY ev%s.value %s', $sortField, $sortDir);
+				$order = sprintf(' ORDER BY ev%s.value %s', str_replace('.', '_', $sortField), $sortDir);
 			}
 			elseif($child && $sortField == $child->name . '_entries')
 			{
-				$order = sprintf(' ORDER BY %s_entries.entries %s', $child->name, $sortDir);
+				$order = sprintf(' ORDER BY %s_entries.entries %s', str_replace('.', '_', $child->name), $sortDir);
 			}
 			elseif($sortField)
 			{

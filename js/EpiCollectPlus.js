@@ -20,9 +20,15 @@ EpiCollect.LoadingOverlay = function()
 	var ctx;
 	var step = (2 * Math.PI) / 300;
 	var i = 0;
-	ctx = $("#ecplus_loader")[0].getContext('2d');
-	ctx.translate(size/2, size/2);
-	ctx.font = "18pt sans-serif";
+	try{
+		ctx = $("#ecplus_loader")[0].getContext('2d');
+		ctx.translate(size/2, size/2);
+		ctx.font = "18pt sans-serif";
+	}
+	catch(err)
+	{
+		
+	}
 	
 	
 	this.setMessage = function (msg)
@@ -1107,6 +1113,24 @@ EpiCollect.Form = function()
 		}
 		xml = xml + "</form>";
 		return xml;
+	}
+	
+	this.validateFieldName = function(name, oldname)
+	{
+		if(!name.match(/^[0-9A-Z-_]+$/i))
+		{
+			alert("Field names must only contain letter, numbers, _ or -");
+			return false;
+		}
+		
+		if(this.fields[name] && name != oldname)
+		{
+			alert("Field names must be unique");
+			return false;
+		}
+		
+		
+		return true;
 	}
 }
 
