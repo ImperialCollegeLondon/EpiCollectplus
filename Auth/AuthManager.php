@@ -80,10 +80,10 @@
   		
   		$provider = strtoupper($provider);
   		
-  		$_SESSION["url"] = "http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}" . $requestedUrl;
+  		$_SESSION["url"] = "http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}/" . $requestedUrl;
   		if($provider != "" && array_key_exists($provider, $this->providers))
   		{
-  			return $this->providers[$provider]->requestLogin("http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}" . $requestedUrl, !$hasManagers);
+  			return $this->providers[$provider]->requestLogin("http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}/" . $requestedUrl, !$hasManagers);
   		}
   		else
   		{

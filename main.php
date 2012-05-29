@@ -2368,6 +2368,24 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 							array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid jump statement the jump to {$jBits[$i]} is set to happen when this field is {$jBits[$i+1]}. This value does not exist as an option.");
 						}
 					}
+					elseif($fld->type == 'numeric')
+					{
+						if(!preg_match('/NULL|all/i', $jBits[$i+1]))
+						{
+							$v = intval($jBits[$i+1], 10);
+							if($fld->max && $v > $fld->max)
+							{
+								$isValid = false;
+								array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid jump statement, the jump value exceeds the fields maximum;");
+							}
+							if($fld->min && $v < $fld->min)
+							{
+								$isValid = false;
+								array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid jump statement, the jump value is less than the fields maximum;");
+							}
+						}
+					}
+				
 				}
 			}
 			if($fld->type == "group")

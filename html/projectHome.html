@@ -61,9 +61,9 @@
 					for(fld in project.forms[frm].fields)
 					{
 						txt = project.forms[frm].fields[fld].text;
-						if(project.forms[frm].fields[fld].text.length > 20)
+						if(project.forms[frm].fields[fld].text.length > 40)
 						{
-							txt = txt.substr(0,10) + "...";
+							txt = txt.substr(0,37) + "...";
 						}
 						
 						if(fld == project.forms[frm].key)

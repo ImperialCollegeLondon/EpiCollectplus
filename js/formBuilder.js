@@ -78,14 +78,6 @@ $(function()
 			else if(sp.hasClass("form"))
 			{
 				switchToForm(sp.text());
-				/*if(currentForm){
-					updateForm();
-					project.forms[currentForm.name] = currentForm;
-				}
-				sp.addClass('selected');
-				currentForm = project.forms[sp.text()];
-				formName = currentForm.name;
-				drawFormControls(currentForm);*/
 			}
 		}
 	});
@@ -203,7 +195,17 @@ function removeOption(evt)
 function addJump()
 {
 	var panel = $("#jumps");
-	panel.append('<div class="jumpoption"><hr /><form><input type="radio" name="jumpType" value="is" selected="selected"> Jump when value is<br/><input type="radio" name="jumpType" value="not"> Jump when value is not<br/></form><label>Value</label> <select class="jumpvalues"></select><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >Remove Jump</a></div>');
+	
+	var sta = '<div class="jumpoption"><hr /><label>Jump when </label><select name="jumpType"><option value="">value is</option><option value="!">value is not</option><option value="NULL">field is blank</option><option value="ALL">field has any value</option></select>';
+	
+	if(currentControl.type == 'input')
+	{
+		panel.append(sta + '<label>Value</label><input type="text" class="jumpvalues" /><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >Remove Jump</a></div>');
+	}
+	else
+	{
+		panel.append(sta + '<label>Value</label> <select class="jumpvalues"></select><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >Remove Jump</a></div>');
+	}
 	
 	$("#jumps .remove").unbind('click').bind('click', removeJump);
 }
@@ -328,7 +330,10 @@ function updateSelected()
 	
 	for(var i = jn; i--;)
 	{
-		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + $(".jumpvalues", jumpCtrls[i]).val() + "," + jump;
+		var jumpType = $('[name=jumpType]', jumpCtrls[i]).val();
+		var jval = (jumpType.length > 1 ? jumpType :  jumpType + $(".jumpvalues", jumpCtrls[i]).val())
+		
+		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + jval + "," + jump;
 	}
 	
 	currentControl.jump = jump.trim(",");
@@ -426,6 +431,7 @@ function setSelected(jqEle)
 	
 	$("[allow]").hide();
 	$("[notfor]").show();
+
 	$("[allow*=" + type + "]").show();
 	$("[notfor*=" + type + "]").hide();
 	
@@ -520,7 +526,26 @@ function setSelected(jqEle)
 		
 		for( var i = 0; i < n; i += 2 )
 		{
-			$(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1]);
+			if(jumps[i+1] == "NULL")
+			{
+				$("[name=jumpType]", jumpCtrls[i/2]).val('NULL');
+				$(".jumpvalues", jumpCtrls[i/2]).val('');
+			}
+			else if(jumps[i+1] == "ALL")
+			{
+				$("[name=jumpType]", jumpCtrls[i/2]).val('ALL');
+				$(".jumpvalues", jumpCtrls[i/2]).val('');
+			}
+			else if(jumps[i+1][0] == "!")
+			{
+				$("[name=jumpType]", jumpCtrls[i/2]).val('!');
+				$(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1].substr(1));
+			}
+			else
+			{
+				$("[name=jumpType]", jumpCtrls[i/2]).val('');
+				$(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1]);
+			}
 			$(".jumpdestination", jumpCtrls[i/2]).val(jumps[i]);
 		}
 	}
