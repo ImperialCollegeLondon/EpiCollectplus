@@ -69,7 +69,7 @@
 			}
 		});
 		
-		$('#uploadxml').one('load', function(){
+		$('#uploadxml').on('load', function(){
 			if($('#uploadxml')[0].contentDocument.forms[0])
 			{
 		  		$($('#uploadxml')[0].contentDocument.forms[0].xml).change(function(){

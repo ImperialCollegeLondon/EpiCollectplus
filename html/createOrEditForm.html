@@ -257,11 +257,13 @@
 				        	<label for="inputVerify">Double Entry</label>
 				        	<input type="checkbox" id="verify" name="verify" value="true" />
 				     </div>
-				     <div allow="key">
+				     <div allow="key,fk">
 				      	<label for="inputHidden">Hidden</label>
-				      	 <input type="checkbox" id="hidden" name="hidden" value="true" />
+				      	<input type="checkbox" id="hidden" name="hidden" value="true" />
+				      </div>
+				      <div allow="key">
 				       	<label for="inputGenKey">Generate Key</label>
-				       	 <input type="checkbox" id="genkey" name="genkey" value="true" />
+				       	<input type="checkbox" id="genkey" name="genkey" value="true" />
 					</div> 
 					<div id="options" allow="select,radio,select1">
 						<hr />
@@ -277,7 +279,7 @@
 					<div id="jumps" allow="select,radio,select1,numeric">
 						<hr />
 						<h3>Jumps</h3>
-						<a href="javascript:addJump();updateJumps();" class="button">Add Jump</a>
+						<a href="javascript:addJump();updateLastJump();" class="button">Add Jump</a>
 						
 					</div>
 					<hr />

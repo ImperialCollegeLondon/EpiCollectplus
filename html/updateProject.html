@@ -182,10 +182,21 @@
   	
   	function save()
   	{
+  		var vals = $('form').serializeArray();
+  		var valStr = '';
+  		
+  		for(var i = vals.length; i--;)
+  		{
+  			if( vals[i].name == 'public' ) vals[i].value = $('#isPublic').attr('checked') == 'checked';
+  			if( vals[i].name == 'listed' ) vals[i].value = $('#isListed').attr('checked') == 'checked';
+  			if( valStr != '') valStr = valStr + '&';
+  			valStr += vals[i].name + '=' + vals[i].value;
+  		}
+  		  		
   		$.ajax({
   			url : location.href.replace("/manage", "/updateStructure"),
   			type : 'POST',
-  			data : $('form').serialize(),
+  			data : valStr,
   			success: function(data, status, xhr){
   				showMessage("Project updates saved", "go");  				
   			},
@@ -238,8 +249,8 @@
 				<h2>2. Visibility</h2>
 				<p>EpiCollect+ allows project data to either be public of private, please choose one of the following options</p>
 				<div id="public">
-					<input type="radio" name="public" id="isPublic" checked="checked"/><label for="isPublic">I would like anyone to be able <br />to view the data in this project.</label>
-					<input type="radio" name="public" id="isPrivate" /><label for="isPrivate">I only want people I specify to be able<br /> to view the data in this project.</label>
+					<input type="radio" name="public" id="isPublic" value="true" /><label for="isPublic">I would like anyone to be able <br />to view the data in this project.</label>
+					<input type="radio" name="public" id="isPrivate" value="false" /><label for="isPrivate">I only want people I specify to be able<br /> to view the data in this project.</label>
 				</div>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 				
@@ -248,8 +259,8 @@
 				<h2>3. Listing on the Homepage</h2>
 				<p>The front page of this server displays a list of projects that have been created on this server, please choose one of the following options</p>
 				<div id="listed">
-					<input type="radio" name="listed" id="isListed" /><label for="isListed">I would like this project to appear <br />on the list on the homepage of this server.</label>
-					<input type="radio" name="listed" id="notListed" /><label for="notListed">I would not like this project to appear <br />on the list on the homepage of this server.</label>
+					<input type="radio" name="listed" id="isListed" value="true" /><label for="isListed">I would like this project to appear <br />on the list on the homepage of this server.</label>
+					<input type="radio" name="listed" id="notListed" value="" /><label for="notListed">I would not like this project to appear <br />on the list on the homepage of this server.</label>
 				</div>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 			</div>
