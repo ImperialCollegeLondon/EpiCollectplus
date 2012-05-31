@@ -320,8 +320,16 @@ function updateSelected()
 	var fk = $("#parent").val();
 	
 	currentControl.required = !!$("#required").attr("checked");
-	currentControl.title = !!$("#title").attr("checked");
-	currentControl.isKey = !!$("#key").attr("checked");
+	currentControl.title = !!$("#title").attr("checked") == "checked";
+	if($("#key").attr("checked") == "checked")
+	{
+		currentControl.isKey = true;
+		currentForm.key = currentControl.id;
+	}
+	else
+	{
+		currentControl.isKey = false;
+	}
 	currentControl.regex = $("#regex").val();
 	currentControl.verify = !!$("#verify").attr("checked");
 	currentControl[(notset ? "date": "setDate")] = $("#date").val(); 
@@ -363,29 +371,6 @@ function updateSelected()
 	
 	currentControl.jump = jump.trim(",");
 	
-	if(name !== currentControl.id)
-	{
-		var newFlds = {};
-		var prevFlds = currentForm.fields;
-		
-		for(fld in prevFlds)
-		{
-			if(fld == name)
-			{
-				newFlds[currentControl.id] = currentControl
-			}
-			else
-			{
-				newFlds[fld] = prevFlds[fld];
-			}
-		}
-		
-		currentForm.fields = newFlds;
-		//delete currentForm.fields[name];
-		//currentForm.fields[currentControl.id] = currentControl;
-	}
-	
-	
 	jq.attr("id", currentControl.id);
 	$("p.title", jq).text(currentControl.text);
 	
@@ -405,6 +390,27 @@ function updateSelected()
 		currentControl.options = [];
 	}
 	
+	if(name !== currentControl.id)
+	{
+		var newFlds = {};
+		var prevFlds = currentForm.fields;
+		
+		$('#destination .ecplus-form-element').each(function(idx, ele){
+			if( $(ele).hasClass('selected') )
+			{
+				newFlds[ele.id] = currentControl;
+			}
+			else
+			{
+				newFlds[ele.id] = prevFlds[ele.id];
+			}
+		});
+		
+		currentForm.fields = newFlds;
+		//delete currentForm.fields[name];
+		//currentForm.fields[currentControl.id] = currentControl;
+	}
+	
 	return true;
 }
 
@@ -420,7 +426,7 @@ function updateForm()
 	{
 		var id = elements[i].id;
 		fields[id] = form.fields[id]; 
-		fields[id].position;
+		
 		if(fields[id].isKey) form.key = id;
 	}
 	
@@ -466,6 +472,7 @@ function updateJumps()
 		if(lbl.length > 25) lbl = lbl.substr(0,22) + "...";
 		if(field.type && !field.hidden) fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
 	}
+	fieldCtls.append("<option value=\"END\">END OF FORM</option>");
 	$(".jumpdestination").each(function(idx, ele){
 		 $(ele).val(vals[idx]);
 	});
@@ -493,7 +500,7 @@ function updateLastJump()
 		if(lbl.length > 25) lbl = lbl.substr(0,22) + "...";
 		if(field.type && !field.hidden) fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
 	}
-	
+	fieldCtls.append("<option value=\"END\">END OF SURVEY</option>");
 }
 
 function setSelected(jqEle)

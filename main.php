@@ -2341,7 +2341,7 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 						array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid jump statement the field {$jBits[$i]} that is the target when the value is {$jBits[$i+1]} does not exist in this form");
 					}
 					//check that the jump value exists in the form
-					if( $fld->type == "select1" || $fld->type == "radio")
+					if( $fld->type == "select1" || $fld->type == "radio" || $fld->type == "select")
 					{
 						$tval = preg_replace('/^!/', '',$jBits[$i + 1]);
 						if(!($jBits[$i + 1] == "all" ||  (preg_match('/^[0-9]+$/',$tval) && (intval($tval) <= count($fld->options)) && intval($tval) > 0)))
@@ -2355,7 +2355,6 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 						$found = false;
 						for($o = 0; $o < count($fld->options); $o++)
 						{
-
 							if(preg_match("/^!?" . $fld->options[$o]->value."$/", $jBits[$i +1 ]))
 							{
 								$found = true;

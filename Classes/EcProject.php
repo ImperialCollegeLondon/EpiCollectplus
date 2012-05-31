@@ -442,8 +442,10 @@ class EcProject{
 			global $auth;
 			$db=new dbConnection();
 
+			if( $this->submission_id == '' ) $this->submission_id = str_replace($this->name, ' ', '_');
+			
 			$res = $db->do_query("INSERT INTO project(name, submission_id, description, image, isPublic, isListed, publicSubmission, uploadToLocalServer, downloadFromLocalServer) VALUES ('{$this->name}', '{$this->submission_id}', '{$this->description}', '{$this->image}', " . ($this->isPublic ? "1" : "0") . ", " . ($this->isListed ? "1" : "0") . ", " . ($this->publicSubmission ? "1" : "0") . ", '{$this->uploadToLocalServer}', '{$this->downloadFromLocalServer}')");
-			if($res === true)
+			if( $res === true )
 			{
 				$this->fetch();
 				foreach($this->tables as $tbl)
