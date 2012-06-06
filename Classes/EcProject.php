@@ -148,6 +148,8 @@ class EcProject{
 				
 				$this->ecVersionNumber = "3";
 				
+				
+				
 				for($t = 0; $t < count($root->form); $t++)
 				{
 						$atts = $root->form[$t]->attributes();

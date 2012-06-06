@@ -10,6 +10,7 @@
 		private $server;// = $DBSERVER;
 		private $schema;// = $DBNAME;
 		private $port;// = 3306;
+		private $lastId;
 		
 		public $connected;
 		public $errorCode;
@@ -134,6 +135,7 @@
 				if($this->resSet)
 				{
 					$this->lastQuery = $qry;
+					$this->lastId = $this->con->insert_id;
 					return true;
 				}
 				else
@@ -230,7 +232,7 @@
 		
 		public function last_id()
 		{
-			return $this->con->insert_id;
+			return $this->lastId;
 		}
 		
 	}

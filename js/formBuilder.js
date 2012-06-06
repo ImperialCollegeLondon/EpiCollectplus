@@ -416,6 +416,7 @@ function updateSelected()
 
 function updateForm()
 {
+	if(!currentForm) return true;
 	if(!updateSelected()) return false;	
 	
 	var fields = {};

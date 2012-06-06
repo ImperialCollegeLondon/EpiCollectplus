@@ -357,7 +357,7 @@
 	  	if($this->localEnabled)
 	  	{
 	  	 	$res =  $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language, $hasManagers);
-	  	 	echo $res;
+	  	 	flash($res);
 	  	 	if($res === true)
 	  	 	{
 	  	 		return true;
@@ -369,7 +369,6 @@
 	  	}
 	  	else
 	  	{
-	  		
 	  		return false;
 	  	}
 	  }

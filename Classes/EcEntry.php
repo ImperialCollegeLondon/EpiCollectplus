@@ -76,7 +76,11 @@
 				$this->deviceId = 'web upload';
 			}
 				
-			if($this->form->isMain && $this->form->number > 1){
+			if(!$this->key || trim($this->key) == '')
+			{
+				throw new Exception('Message: The key field cannot be left blank.');
+			}
+			elseif($this->form->isMain && $this->form->number > 1){
 				$this->parent = $this->checkParentExists();
 			
 				if(!$this->parent)

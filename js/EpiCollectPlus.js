@@ -1247,6 +1247,8 @@ EpiCollect.Field = function()
 		var opts = xml.getElementsByTagName('item');
 		for(var o = 0; o < opts.length; o++)
 		{
+			if(!opts[o].getElementsByTagName('value')[0].firstChild){ throw 'Option ' + o + ' for field ' + this.id + ' does not have a value'; }
+			if(!opts[o].getElementsByTagName('label')[0].firstChild){ throw 'Option ' + o + ' for field ' + this.id + ' does not have a label'; }
 			this.options.push({value : opts[o].getElementsByTagName('value')[0].firstChild.data, label : opts[o].getElementsByTagName('label')[0].firstChild.data});  
 		}
 		

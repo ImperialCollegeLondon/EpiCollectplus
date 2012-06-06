@@ -188,6 +188,11 @@
 			text-align: left;
 		}
 		
+		.ecplus-table-footer .right
+		{
+			float : right;
+		}
+		
 	</style>
 {{/style}}
 
@@ -215,7 +220,7 @@
 			var sortCol = "created";
 			var sortDir = "asc";
 			var pageNo = 0;
-			var numEnts = 10;
+			var numEnts = 25;
 			
 			var filterField = "";
 			var filterValue = "";
@@ -249,6 +254,8 @@
 				"rgba(120,68,33,1)"
 			];
 			
+			if(localStorage && localStorage.getItem('num_entries')) numEnts = localStorage.getItem('num_entries');
+			
 			$(function()
 			{
 				url = location.href.trim("/");
@@ -277,6 +284,13 @@
 					}
 				});
 				
+				$('#num_entries').val(numEnts);
+				
+				$('#num_entries').change(function(e)
+				{
+					numEnts = $('#num_entries').val();
+					getData();
+				});
 				
 				$("#showHideFields").append("<a href=\"javascript:toggleMenu('#showHideFields')\">Show/Hide Fields</a><div class=\"ecplus-dropdown-menu\" style=\"display:none;\"></div>");
 				
@@ -1052,6 +1066,11 @@
 				
 			}
 			
+			function saveNumEntires()
+			{
+				if(localStorage) localStorage.setItem('num_entries', $('#num_entries').val());
+			}
+			
 	</script>
 	
 {{/script}}
@@ -1082,23 +1101,28 @@
 			</p>
 			
 			<p class="ecplus-table-footer">
-				<a href="javascript:firstPage();" title="Go to first page">
-					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_170_step_backward.png" alt="first"/>
-				</a> 
-				<a href="javascript:turnBackPage();" title="Go to previous page">
-					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_350_playback.png" alt="previous"/>
-				</a>
-				<span id="start"></span> to <span id="end"></span> of <span id="total"></span>
-				<a href="javascript:getData();"  title="Refresh entries">
-					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_081_refresh.png" alt="next"/>
-				</a>
-			
-				<a href="javascript:turnPage();"  title="Go to next page">
-					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/>
-				</a>
-				<a href="javascript:lastPage();"   title="Go to final page">
-					<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/>
-				</a>
+				<span class="left">
+					<a href="javascript:firstPage();" title="Go to first page">
+						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_170_step_backward.png" alt="first"/>
+					</a> 
+					<a href="javascript:turnBackPage();" title="Go to previous page">
+						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_350_playback.png" alt="previous"/>
+					</a>
+					<span id="start"></span> to <span id="end"></span> of <span id="total"></span>
+					<a href="javascript:getData();"  title="Refresh entries">
+						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_081_refresh.png" alt="next"/>
+					</a>
+				
+					<a href="javascript:turnPage();"  title="Go to next page">
+						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/>
+					</a>
+					<a href="javascript:lastPage();"   title="Go to final page">
+						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/>
+					</a>
+				</span>
+				<span class="right">
+					Show <input type="number" maxlengh="3" id="num_entries" /> entries per page <a href="javascript:saveNumEntires();">Save as my default</a> 
+				</span>
 			</p>
 			<hr />
 			<h3>Upload data from a CSV file</h3>

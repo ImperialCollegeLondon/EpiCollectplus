@@ -1033,8 +1033,8 @@ function uploadData()
 			$tn = $_POST["table"];
 			unset($_POST["table"]);
 
-			//try
-			//{
+			try
+			{
 				 
 				$ent = new EcEntry($prj->tables[$tn]);
 				if(array_key_exists("ecPhoneID", $_POST))
@@ -1099,7 +1099,7 @@ function uploadData()
 					$log->write("error",  "error : $res\r\n");
 					echo $res;
 				}
-			/*}
+			}
 			catch(Exception $e)
 			{
 				$log->write("error",  "error : " . $e->getMessage() . "\r\n");
@@ -1113,7 +1113,7 @@ function uploadData()
 					header("HTTP/1.1 405 Bad Request");
 				}
 				echo $msg;
-			}*/
+			}
 		}
 	}
 	fclose($flog);
@@ -1708,6 +1708,9 @@ function formHandler()
 			case "csv":
 				header("Cache-Control: no-cache, must-revalidate");
 				header("Content-Type: text/csv");
+				
+				ob_implicit_flush(false);
+				
 				//$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
 				//$arr = $arr[$frmName];
 				//echo assocToDelimStr($arr, ",");
@@ -1734,6 +1737,7 @@ function formHandler()
 				{
 					echo "$xml\n";
 				}
+				flush();
 				return;
 			
 			case "tsv":
@@ -2274,7 +2278,7 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 	}
 	catch(Exception $err)
 	{
-		array_push($msgs, "The XML for this project is invalid : " . $err->getMessage());
+		array_push($msgs, "The XML for this project is invalid : " . $err->getMessage() . ' ' .$err->getTraceAsString());
 	}
 
 	$prj->name = trim($prj->name);

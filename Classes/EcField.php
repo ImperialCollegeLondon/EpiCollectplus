@@ -190,30 +190,46 @@ class EcField{
 				if($res !== true) return $res;
 				//if($db->affectedRows() == 0) return "field {$this->name} ({$this->idField}) not found -- $sql";
 				
+				//$this->fetchId();
+				
 				$sql = "DELETE FROM `option` WHERE field = {$this->idField}";
 				$res = $db->do_query($sql);
 				if($res !== true) return $res;
 				
-				if(count($this->options) != 0){						
-					foreach($this->options as $opt)
+				$optcount = count($this->options);
+				if($optcount != 0){
+					$optqry = 'INSERT INTO `option` (`index`, `label`, `value`, `field`) VALUES';
+					
+					for($x = 0; $x < $optcount; ++$x)
 					{
-						$res = $db->exec_sp("addOption", array(
-							$this->form->survey->name,
-							$this->form->name,
-							$this->name,
-							$opt->idx,
-							$opt->label,
-							$opt->value
-						));
-						if($res !== true) return $res;
+						$optqry = sprintf('%s%s (%s, %s, %s, %s)', 
+								$optqry, 
+								($x > 0 ? ',' : ''), 
+								intval($this->options[$x]->idx),
+								$db->stringVal($this->options[$x]->label),
+								$db->stringVal($this->options[$x]->value),
+								intval($this->idField));
+						
+						//$res = $db->exec_sp("addOption", array(
+						//	$this->form->survey->name,
+						//	$this->form->name,
+						//	$this->name,
+						//	$opt->idx,
+						//	$opt->label,
+						//	$opt->value
+						//));
+						//if($res !== true) return $res;
 					}
+					$res = $db->do_query($optqry);
+					if($res !== true) return $res;
+					
 				}
 				return true;
 		}
 		
 		public function addToDb()
 		{
-				global $db;
+			global $db;
 			if(!$db) $db = new dbConnection();
 			$qry = "SELECT idFieldType FROM fieldtype where name = '{$this->type}'";
 			$db->do_query ($qry);
@@ -255,17 +271,45 @@ class EcField{
 			$res = $db->do_query($qry);
 			
 			if($res === true){
-				foreach($this->options as $opt)
-				{
-					$res = $db->exec_sp("addOption", array(
-						$this->form->survey->name,
-						$this->form->name,
-						$this->name,
-						$opt->idx,
-						$opt->label,
-						$opt->value
-					));
+				$this->idField = $db->last_id();
+				
+				$optcount = count($this->options);
+				if($optcount > 0){
+					$optqry = 'INSERT INTO `option` (`index`, `label`, `value`, `field`) VALUES';
+					
+					print_r($this->options);
+					
+					for($x = 0; $x < $optcount; ++$x)
+					{
+						
+						
+						$lab = $db->stringVal($this->options[$x]->label);
+						$val = $db->stringVal($this->options[$x]->value);
+						
+						if($lab == 'NULL') throw new Exception (sprintf('The label for option %d of field %s cannot be null.', $x, $this->name));
+						if($val == 'NULL') throw new Exception (sprintf('The value of option %d of field %s cannot be null.', $x, $this->name));
+						
+						$optqry = sprintf('%s%s (%s, %s, %s, %s)', 
+								$optqry, 
+								($x > 0 ? ',' : ''), 
+								intval($this->options[$x]->idx),
+								$lab,
+								$val,
+								intval($this->idField));
+						
+						//$res = $db->exec_sp("addOption", array(
+						//	$this->form->survey->name,
+						//	$this->form->name,
+						//	$this->name,
+						//	$opt->idx,
+						//	$opt->label,
+						//	$opt->value
+						//));
+						//if($res !== true) return $res;
+					}
+					$res = $db->do_query($optqry);
 					if($res !== true) return $res;
+					
 				}
 			}	
 			//echo "$qry\n";
@@ -381,6 +425,9 @@ class EcField{
 					$this->options[$oIdx]->label = (string)$opt->label[0];
 					$this->options[$oIdx]->value = (string)$opt->value[0];
 					$this->options[$oIdx]->idx = $oIdx;
+		
+					if($this->options[$oIdx]->label == '') throw new Exception(sprintf('Option number %d for the field %s has no label, the label cannot be empty', $oIdx, $this->label)); 
+					if($this->options[$oIdx]->value == '') throw new Exception(sprintf('Option number %d for the field %s has no value, the value cannot be empty', $oIdx, $this->name));
 					$oIdx++;
 				}
 			}
