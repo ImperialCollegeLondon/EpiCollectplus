@@ -277,7 +277,7 @@ class EcField{
 				if($optcount > 0){
 					$optqry = 'INSERT INTO `option` (`index`, `label`, `value`, `field`) VALUES';
 					
-					print_r($this->options);
+					//print_r($this->options);
 					
 					for($x = 0; $x < $optcount; ++$x)
 					{

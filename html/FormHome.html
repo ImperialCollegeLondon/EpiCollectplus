@@ -408,13 +408,13 @@
 				
 				$(".ecplus-data th").append("<img src=\"../images/uparrow.png\" class=\"asc\" width=\"12\" /><img src=\"../images/downarrow.png\" class=\"desc\" width=\"12\" />")
 				$(".ecplus-data th").click(function(evt){
-					var newSortCol = evt.target.classList[0];
-					
+					var newSortCol = evt.target.className;
+					newSortCol = newSortCol.substr(0, newSortCol.indexOf(' '));
 					
 					$(".ecplus-data th").removeClass("desc");
 					$(".ecplus-data th").removeClass("asc");
 		
-					console.debug(sortCol + " " + sortDir);
+					if( window['console'] ) console.debug(sortCol + " " + sortDir);
 					window.evt = evt;
 					if(newSortCol == sortCol && sortDir == "asc")
 					{
@@ -1097,7 +1097,7 @@
 				<span class="ecplus-toolbar-divider">&nbsp;</span> 
 				<a href="./{#formName#}.csv"><img src="{#SITE_ROOT#}/images/downloadcsv.png" title="Dowload Data as CSV" alt="Download CSV"></a>
 				<a href="./{#formName#}.tsv"><img src="{#SITE_ROOT#}/images/downloadtab.png" title="Dowload Data as TSV" alt="Download TSV"></a>
-				<a href="./{#formName#}.xml" target="__blank"><img src="{#SITE_ROOT#}/images/downloadxml.png" title="Dowload Data as XML" alt="Download XML"></a>
+				<a href="./{#formName#}.xml?mode=list" target="__blank"><img src="{#SITE_ROOT#}/images/downloadxml.png" title="Dowload Data as XML" alt="Download XML"></a>
 			</p>
 			
 			<p class="ecplus-table-footer">
