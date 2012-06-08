@@ -1602,7 +1602,7 @@ function formHandler()
 	}
 	else
 	{
-		ini_set('max_execution_time', 60);
+		ini_set('max_execution_time', 120);
 		
 		$offset = array_key_exists('start', $_GET) ? $_GET['start'] : 0;
 		$limit = array_key_exists('limit', $_GET) ? $_GET['limit'] : 0;;
@@ -1636,24 +1636,6 @@ function formHandler()
 						while($ent = $prj->tables[$frmName]->recieve(1))
 						{
 							echo $ent;
-// 							echo "<entry>";
-// 							foreach($ent as $key => $value)
-// 							{
-// 								if(array_key_exists($key, $prj->tables[$frmName]->fields) && ($prj->tables[$frmName]->fields[$key]->type == "gps" || $prj->tables[$frmName]->fields[$key]->type == "location" ))
-// 								{
-// 									$gps = json_decode($value);
-// 									foreach($gps as $gkey => $gval)
-// 									{
-// 										$suf = ($gkey != "provider" ? substr($gkey, 0, 3) : $key);
-// 										echo "\t\t\t<{$key}_{$suf}>" . str_replace("&", "&amp;", $gval) . "</{$key}_{$suf}>\n";
-// 									}
-// 								}
-// 								else
-// 								{
-// 									echo "<$key>$value</$key>";
-// 								}
-// 							}
-// 							echo "</entry>";
 						}
 						echo "</entries>";
 						return;

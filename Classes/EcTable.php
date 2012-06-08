@@ -585,7 +585,7 @@
 							foreach($obj as $key => $value)
 							{
 								$value = trim($value);
-								$str .= "<$key>$value</$key>";
+								$str .= sprintf('<%s>%s</%s>', $key, $value, $key);
 							}
 						}
 						elseif ($this->lastRequestFormat == 'csv')
@@ -611,6 +611,11 @@
 						$ret = str_replace($json_objects[0][0], $str, $ret);
 					}
 				}
+			}
+			
+			if($this->lastRequestFormat == 'xml')
+			{
+				$ret = str_replace('&', '&amp;', $ret);
 			}
 			
 			return (is_string($ret) ?  utf8_decode($ret) : $ret);
