@@ -140,7 +140,7 @@ function flash($msg, $type="msg")
 
 function setupDB()
 {
-	global $cfg, $auth;
+	global $cfg, $auth, $SITE_ROOT;
 
 	try{
 		$db = new dbConnection($_POST["un"], $_POST["pwd"]);
@@ -156,19 +156,6 @@ function setupDB()
 		echo "DB not connected";
 		return;
 	}
-
-	/*if(array_key_exists("create", $_POST) && $_POST["create"] == "true")
-		{
-	$res = $db->do_query("CREATE DATABASE $DBNAME;");
-	if($res !== true) echo $res;
-	return;
-	$res = $db->do_query("GRANT SELECT, INSERT, UPDATE, DELETE on $DBNAME to $DBUSER;");
-	if($res !== true) echo $res;
-	return;
-	$res = $db->do_query("USE $DBNAME;");
-	if($res !== true) echo $res;
-	return;
-	}*/
 
 	$sql = file_get_contents("./db/epicollect2.sql");
 
@@ -188,8 +175,9 @@ function setupDB()
 		}
 	}
 	
-	flash(sprintf("Please sign in to register as the first administartor of this server. %s", $res));
-	loginHandler();
+	flash('Please sign in to register as the first administartor of this server.');
+	header(sprintf('location: http://%s%s/login.php' , $_SERVER['HTTP_HOST'], $SITE_ROOT));
+	return;
 }
 
 function assocToDelimStr($arr, $delim)
@@ -2864,7 +2852,7 @@ function writeSettings()
 	}
 	else
 	{
-		header("location: $SITE_ROOT/test?edit=true");
+		header("location: $SITE_ROOT/test");
 	}
 }
 
