@@ -655,6 +655,8 @@ function siteTest()
 	$res = array();
 	global $cfg, $db;
 
+	$template = 'testResults.html';
+	
 	$doit = true;
 	if(!array_key_exists("database", $cfg->settings) || !array_key_exists("server", $cfg->settings["database"]) ||trim($cfg->settings["database"]["server"]) == "")
 	{
@@ -816,8 +818,9 @@ function siteTest()
 				}
 				if($i == 0)
 				{
+					$template = 'dbSetup.html';
 					$res["dbTableStatus"] = "fail";
-					$res["dbTableResult"] = "Database is blank,  enter an administrator username and password for the database to create the database tables<br />
+					$res["dbTableResult"] = "<p>Database is blank,  enter an <b>administrator</b> username and password for the database to create the database tables.</p>
 				<form method=\"post\" action=\"createDB\">
 					<b>Username : </b><input name=\"un\" type=\"text\" /> <b>Password : </b><input name=\"pwd\" type=\"password\" /> <input type=\"hidden\" name=\"create\" value=\"true\" /><input type=\"submit\" value=\"Create Database\" name=\"Submit\" />
 				</form>";
@@ -847,7 +850,7 @@ function siteTest()
 			
 		$res["endStatus"] = array_key_exists("dbTableStatus", $res) ? ($res["dbTableStatus"] == "fail" ? "fail" : "") : "fail";
 		$res["endMsg"] = ($res["endStatus"] == "fail" ? "The MySQL database is not ready, please correct the errors in red above and refresh this page. <a href = \"./test?edit=true\">Configuration tool</a>" : "You are now ready to create EpiCollect projects, place xml project definitions in {$_SERVER["PHP_SELF"]}/xml and visit the <a href=\"createProject.html\">create project</a> page");
-		echo applyTemplate("base.html", "testResults.html", $res);
+		echo applyTemplate("base.html", $template, $res);
 	}
 	else
 	{
@@ -1872,13 +1875,22 @@ function formHandler()
 	$mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>
 	<script type=\"text/javascript\" src=\"{$SITE_ROOT}/js/markerclusterer.js\"></script>
 	<script src=\"http://www.google.com/jsapi\"></script>" : "";
-	$vars = array("prevForm" => $p,"projectName" => $prj->name, "formName" => $frmName, "curate" =>  $permissionLevel > 1 ? "true" : "false", "mapScript" => $mapScript );
+	$vars = array(
+			"prevForm" => $p,
+			"projectName" => $prj->name,
+			"formName" => $frmName, 
+			"curate" =>  $permissionLevel > 1 ? "true" : "false", 
+			"mapScript" => $mapScript,
+			"curationbuttons" => $permissionLevel > 1 ? sprintf('<a href="javascript:project.forms[formName].displayForm({ vertical : false });"><img src="%s/images/glyphicons/glyphicons_248_asterisk.png" title="New Entry" alt="New Entry"></a>
+				<a href="javascript:project.forms[formName].displayForm({data : window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()], edit : true});"><img src="%s/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
+				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()][project.forms[formName].key]);"><img src="%s/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a>',
+				$SITE_ROOT, $SITE_ROOT, $SITE_ROOT): '' );
 	echo applyTemplate('base.html', './FormHome.html', $vars);
 }
 
 function entryHandler()
 {
-	global  $url, $log;
+	global  $url, $log, $SITE_ROOT;
 
 	header("Cache-Control: no-cache, must-revalidate");
 
@@ -1892,6 +1904,11 @@ function entryHandler()
 	$prj->name = $prjName;
 	$prj->fetch();
 
+	$permissionLevel = 0;
+	$loggedIn = $auth->isLoggedIn();
+	
+	if($loggedIn) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
+	
 	$ent = new EcEntry($prj->tables[$frmName]);
 	$ent->key = $entId;
 	$r = $ent->fetch();
@@ -1899,12 +1916,20 @@ function entryHandler()
 
 	if($_SERVER["REQUEST_METHOD"] == "DELETE")
 	{
+		if($permissionLevel != 3)
+		{
+			flash('You do not have permission to delete entries on this project');
+			header('HTTP/1.1 403 Forbidden', 403);	
+			return;
+		}
+		
 		if($r === true)
 		{
 			try
 			{
 				$ent->delete();
-			}catch(Exception $e)
+			}
+			catch(Exception $e)
 			{
 				if(preg_match("/^Message\s?:/", $e->getMessage()))
 				{
@@ -1917,12 +1942,20 @@ function entryHandler()
 				echo $e->getMessage();
 			}
 		}
-		else{
+		else
+		{
 			echo $r;
 		}
 	}
 	else if($_SERVER["REQUEST_METHOD"] == "PUT")
 	{
+		if($permissionLevel != 3)
+		{
+			flash('You do not have permission to edit entries on this project');
+			header('HTTP/1.1 403 Forbidden', 403);
+			return;
+		}
+		
 		if($r === true)
 		{
 			$request_vars = array();
@@ -2072,6 +2105,10 @@ function createFromXml()
 	elseif(array_key_exists("name", $_POST))
 	{
 		$prj->name = $_POST["name"];	
+	}
+	elseif(array_key_exists("raw_xml", $_POST))
+	{
+		$prj->parse($_POST["raw_xml"]);
 	}
 	
 	if(!$prj->name || $prj->name == "")
@@ -3004,7 +3041,13 @@ function userHandler()
 * as log files which may contain restricted data)
 */
 
-$hasManagers = $db->connected && count($auth->getServerManagers()) > 0;
+
+try{
+	$hasManagers = $db->connected && count($auth->getServerManagers()) > 0;
+}catch (Exception $err)
+{
+	$hasManagers = false;
+}
 
 $pageRules = array(
 		

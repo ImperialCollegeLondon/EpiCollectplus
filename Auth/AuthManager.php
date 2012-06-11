@@ -356,7 +356,7 @@
 	  	global $hasManagers;
 	  	if($this->localEnabled)
 	  	{
-	  	 	$res =  $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language, $hasManagers);
+	  	 	$res =  $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language, !$hasManagers);
 	  	 	flash($res);
 	  	 	if($res === true)
 	  	 	{

@@ -350,7 +350,7 @@
 			}elseif($format == 'xml'){
 				$select = 'SELECT CONCAT (\'<entry><id>\', e.idEntry, \'</id><DeviceID>\', e.DeviceID, \'</DeviceID><created>\', e.created, \'</created><lastEdited>\', IFNULL(e.lastEdited, \'\'),\'</lastEdited><uploaded>\', e.uploaded, \'</uploaded>\' , GROUP_CONCAT( CONCAT(\'<\', ev.fieldName, \'>\', REPLACE(REPLACE(ev.value, \'\<\', \'&lt;\'), \'\>\', \'&gt;\'), \'</\', ev.fieldName, \'>\') ORDER BY ev.field  SEPARATOR \'\'),';
 			}elseif($format == 'csv'){
-				$select = 'SELECT CONCAT_WS (\',\', e.idEntry, e.DeviceID, e.created, IFNULL(e.lastEdited, \'\'),e.uploaded, GROUP_CONCAT(IFNULL(ev.value,\'\') ORDER BY ev.field  SEPARATOR \',\') ';
+				$select = 'SELECT CONCAT_WS (\'","\', e.idEntry, e.DeviceID, e.created, IFNULL(e.lastEdited, \'\'),e.uploaded, GROUP_CONCAT(IFNULL(ev.value,\'\') ORDER BY ev.field  SEPARATOR \'","\') ';
 			}elseif($format == 'tsv'){
 				$select = 'SELECT CONCAT_WS (\'\t\', e.idEntry, e.DeviceID, e.created, IFNULL(e.lastEdited, \'\'),e.uploaded, GROUP_CONCAT(IFNULL(ev.value,\'\') ORDER BY ev.field  SEPARATOR \'\t\')';
 			}elseif($format == 'kml'){
@@ -590,7 +590,7 @@
 						}
 						elseif ($this->lastRequestFormat == 'csv')
 						{
-							$str = implode(",", array_values($obj));
+							$str = implode('","', array_values($obj));
 						}
 						elseif($this->lastRequestFormat == 'tsv')
 						{

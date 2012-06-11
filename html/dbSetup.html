@@ -1,0 +1,78 @@
+{{style}}
+	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />
+{{/style}}
+{{script}}
+	<style type="text/css">
+		td, th
+		{
+			padding: 3px 3px 3px 3px !important;
+			text-align : left;
+			border-bottom: 1px solid #CCCCCC;
+		}
+		
+		.fail
+		{
+			color: #880000;
+		}
+		
+		.succeed
+		{
+			color: #008800;
+		}
+		
+		.message
+		{
+			background : #FFCCCC;
+			border: 2px #CCCCCC solid;
+			padding : 5px 5px 5px 5px;
+			
+		}
+		
+	</style>
+	<script type="text/javascript">
+	
+		function do_request(url, callback)
+		{
+			
+				var xmlhttp;
+				if (window.XMLHttpRequest)
+				{// code for IE7+, Firefox, Chrome, Opera, Safari
+					xmlhttp=new XMLHttpRequest();
+					
+				}
+				else
+				{// code for IE6, IE5
+					xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				
+				xmlhttp.onreadystatechange=function()
+				{
+					if (xmlhttp.readyState==4 && xmlhttp.status==200)
+					{
+						callback(xmlhttp.responseText);
+					}
+				}
+				
+				xmlhttp.open("POST",url,true);
+				
+				xmlhttp.send();
+			
+		}
+	
+		function createDB()
+		{
+			do_request("./createDB", function(res){
+				if(res == "database set up")
+				{
+					location.reload()
+				}
+			});
+		}
+	</script>
+{{/script}}
+{{main}}
+	<h1>EpiCollect+ Server Database Setup</h1>
+	{#dbTableResult#}
+	
+	
+{{/main}}
