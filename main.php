@@ -109,8 +109,10 @@ $log = new Logger('Ec2');
 $db = false;
 
 $auth = new AuthManager();
-try{$db = @new dbConnection();
+try{
+	$db = @new dbConnection();
 }catch(Exception $err){
+	
 }
 /* class and function definitions */
 
@@ -1701,6 +1703,8 @@ function formHandler()
 					}
 				}
 				
+				$nxt = $prj->getNextTable($frmName, true);
+				if($nxt) $headers = sprintf('%s,%sEntries', $headers, $nxt->name);
 				
 				echo $headers . "\n";
 				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "csv");
