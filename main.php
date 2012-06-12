@@ -1530,7 +1530,7 @@ function formHandler()
 			}
 			else
 			{
-				ini_set("max_execution_time", 600);
+				ini_set("max_execution_time", 200);
 				if(preg_match("/\.csv$/", $_f["name"]))
 				{
 					$fh = fopen($_f["tmp_name"], 'r');
@@ -1593,7 +1593,7 @@ function formHandler()
 	}
 	else
 	{
-		ini_set('max_execution_time', 120);
+		ini_set('max_execution_time', 200);
 		
 		$offset = array_key_exists('start', $_GET) ? $_GET['start'] : 0;
 		$limit = array_key_exists('limit', $_GET) ? $_GET['limit'] : 0;;
@@ -2597,6 +2597,11 @@ function updateProject()
 			if($xml && $xml != "")
 			{
 				$prj->parse($xml);
+				if($prj->name != oldName) 
+				{
+					header("HTTP/1.1 400 CANNOT CHANGE NAME", 400);
+					return false;
+				}
 				$drty = true;
 			}
 			if($public !== false)

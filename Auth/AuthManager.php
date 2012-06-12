@@ -357,9 +357,10 @@
 	  	if($this->localEnabled)
 	  	{
 	  	 	$res =  $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language, !$hasManagers);
-	  	 	flash($res);
+	  
 	  	 	if($res === true)
 	  	 	{
+	  	 		if(!$hasManagers) flash('Please sign in with the user account you have just created.');
 	  	 		return true;
 	  	 	}
 	  	 	elseif(preg_match("/Duplicate entry '.*' for key 'Email'/", $res))

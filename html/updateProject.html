@@ -201,6 +201,7 @@
   				showMessage("Project updates saved", "go");  				
   			},
   			error : function(xhr, status, err){
+  				window.xhr = xhr;
   				showMessage("Project update failed", "err");		  				
   			}
   		});
