@@ -1708,7 +1708,8 @@ function formHandler()
 				if($res !== true) return;
 				while($xml = $prj->tables[$frmName]->recieve(1, "csv"))
 				{
-					echo "$xml\n";
+					echo sprintf('"%s"
+', $xml);
 				}
 				flush();
 				return;
