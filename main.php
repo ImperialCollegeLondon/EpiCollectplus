@@ -1883,7 +1883,7 @@ function formHandler()
 
 function entryHandler()
 {
-	global  $url, $log, $SITE_ROOT;
+	global $auth, $url, $log, $SITE_ROOT;
 
 	header("Cache-Control: no-cache, must-revalidate");
 

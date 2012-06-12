@@ -320,7 +320,7 @@ function updateSelected()
 	var fk = $("#parent").val();
 	
 	currentControl.required = !!$("#required").attr("checked");
-	currentControl.title = !!$("#title").attr("checked") == "checked";
+	currentControl.title = !!$("#title").attr("checked");
 	if($("#key").attr("checked") == "checked")
 	{
 		currentControl.isKey = true;
