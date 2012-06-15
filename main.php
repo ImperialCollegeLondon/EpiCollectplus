@@ -1466,7 +1466,6 @@ function downloadData()
 
 function formHandler()
 {
-
 	global $url,  $log, $auth;
 
 	$http_accept = getValIfExists($_SERVER, 'HTTP_ACCEPT');
@@ -1610,7 +1609,8 @@ function formHandler()
 					if($res !== true) die($res);
 					echo '[';		
 					$i = 0;			
-					while($str = $prj->tables[$frmName]->recieve(1))
+					while($str = str_replace('
+							', '\n', $prj->tables[$frmName]->recieve(1)))
 					{
 						echo ($i > 0 ? sprintf(',%s', $str) : $str);
 						$i++;
@@ -1682,40 +1682,49 @@ function formHandler()
 
 			case "csv":
 				header("Cache-Control: no-cache, must-revalidate");
+				//
+				
+				$filename = sprintf('ec/uploads/%s_%s_%s%s.csv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
+				if(!file_exists($filename))
+				{
+					//ob_implicit_flush(false);
+					$fp = fopen($filename, 'w+');
+					//$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
+					//$arr = $arr[$frmName];
+					//echo assocToDelimStr($arr, ",");
+					$headers = "entry,DeviceID,created,edited,uploaded," . implode(",", array_keys($prj->tables[$frmName]->fields));
+					
+					foreach($prj->tables[$frmName]->fields as $name => $fld)
+					{
+						if(!$fld->active)
+						{
+							$headers = str_replace(",$name", "", $headers);
+						}
+						elseif($fld->type == "gps" || $fld->type == "location")
+						{
+							$headers = str_replace(",$name", ",{$name}_lattitude,{$name}_longitude,{$name}_altitude,{$name}_accuracy,{$name}_provider", $headers);
+						}
+					}
+					
+					$nxt = $prj->getNextTable($frmName, true);
+					if($nxt) $headers = sprintf('%s,%sEntries', $headers, $nxt->name);
+					
+					fwrite($fp, "$headers\n");
+					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "csv");
+					if($res !== true) die($res);
+					if($res !== true) return;
+					while($xml = $prj->tables[$frmName]->recieve(1, "csv"))
+					{
+						fwrite($fp, sprintf('"%s"
+', $xml));
+					}
+				//flush();
+				}
+				
+				global $SITE_ROOT;
 				header("Content-Type: text/csv");
+				header(sprintf('location: http://%s%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT, $filename));
 				
-				ob_implicit_flush(false);
-				
-				//$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
-				//$arr = $arr[$frmName];
-				//echo assocToDelimStr($arr, ",");
-				$headers = "entry,DeviceID,created,edited,uploaded," . implode(",", array_keys($prj->tables[$frmName]->fields));
-				
-				foreach($prj->tables[$frmName]->fields as $name => $fld)
-				{
-					if(!$fld->active)
-					{
-						$headers = str_replace(",$name", "", $headers);
-					}
-					elseif($fld->type == "gps" || $fld->type == "location")
-					{
-						$headers = str_replace(",$name", ",{$name}_lattitude,{$name}_longitude,{$name}_altitude,{$name}_accuracy,{$name}_provider", $headers);
-					}
-				}
-				
-				$nxt = $prj->getNextTable($frmName, true);
-				if($nxt) $headers = sprintf('%s,%sEntries', $headers, $nxt->name);
-				
-				echo $headers . "\n";
-				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "csv");
-				if($res !== true) die($res);
-				if($res !== true) return;
-				while($xml = $prj->tables[$frmName]->recieve(1, "csv"))
-				{
-					echo sprintf('"%s"
-', $xml);
-				}
-				flush();
 				return;
 			
 			case "tsv":
@@ -1875,7 +1884,7 @@ function formHandler()
 			"curate" =>  $permissionLevel > 1 ? "true" : "false", 
 			"mapScript" => $mapScript,
 			"curationbuttons" => $permissionLevel > 1 ? sprintf('<a href="javascript:project.forms[formName].displayForm({ vertical : false });"><img src="%s/images/glyphicons/glyphicons_248_asterisk.png" title="New Entry" alt="New Entry"></a>
-				<a href="javascript:project.forms[formName].displayForm({data : window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()], edit : true});"><img src="%s/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
+				<a href="javascript:project.forms[formName].displayForm({data : window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()], edit : true, vertical: true});"><img src="%s/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
 				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()][project.forms[formName].key]);"><img src="%s/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a>',
 				$SITE_ROOT, $SITE_ROOT, $SITE_ROOT): '' );
 	echo applyTemplate('base.html', './FormHome.html', $vars);

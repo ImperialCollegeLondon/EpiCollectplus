@@ -653,7 +653,7 @@ EpiCollect.Form = function()
 		
 		for(var field in this.fields)
 		{
-			if(this.fields[field].type == "" || this.fields[field].hidden)
+			if(this.fields[field].type == "" || (this.fields[field].hidden && project.getPrevForm(this.name).key != field))
 			{
 				$("form", this.formElement).append("<div class=\"ecplus-question-hidden\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
 				$("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined, cnf.debug));

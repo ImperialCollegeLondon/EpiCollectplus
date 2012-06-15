@@ -141,7 +141,7 @@ function newForm(message, name)
 	
 	var par = project.getPrevForm(name);
 	
-	if(par)
+	if(par && frm.main)
 	{
 		frm.fields[par.key] = par.fields[par.key];
 		frm.fields[par.key].isKey = false;
@@ -741,6 +741,7 @@ function switchToBranch()
 	var frm = currentControl.connectedForm;
 	if(!project.forms[frm]) project.forms[frm] = new EpiCollect.Form();
 	currentForm = project.forms[frm];
+	currentForm.main = false;
 	formName = currentForm.name;
 	drawFormControls(currentForm);
 }
