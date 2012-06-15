@@ -666,6 +666,7 @@ EpiCollect.Form = function()
 			}
 		}
 		
+		
 		$("form", this.formElement).append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /></div>");
 		if(cnf.debug)
 		{

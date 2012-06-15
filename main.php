@@ -1609,8 +1609,7 @@ function formHandler()
 					if($res !== true) die($res);
 					echo '[';		
 					$i = 0;			
-					while($str = str_replace('
-							', '\n', $prj->tables[$frmName]->recieve(1)))
+					while($str = str_replace("\r\n". ' ', $prj->tables[$frmName]->recieve(1)))
 					{
 						echo ($i > 0 ? sprintf(',%s', $str) : $str);
 						$i++;
