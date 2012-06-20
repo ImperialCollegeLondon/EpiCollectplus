@@ -1602,41 +1602,41 @@ function formHandler()
 		
 		switch($format){
 			case 'json':
-					header('Cache-Control: no-cache, must-revalidate');
-					header('Content-Type: application/json');
-					
-					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "json");
+				header('Cache-Control: no-cache, must-revalidate');
+				header('Content-Type: application/json');
+				
+				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "json");
+				if($res !== true) die($res);
+				echo '[';		
+				$i = 0;			
+				while($str = preg_replace("/[\r\n]+/", '\n', $prj->tables[$frmName]->recieve(1)))
+				{
+					echo ($i > 0 ? sprintf(',%s', $str) : $str);
+					$i++;
+				}
+				echo ']';
+				return;
+				
+			case "xml":
+				header("Cache-Control: no-cache, must-revalidate");
+				header("Content-Type: text/xml");
+				if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
+				{
+					echo "<entries>";
+					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "xml");
 					if($res !== true) die($res);
-					echo '[';		
-					$i = 0;			
-					while($str = preg_replace("/[\r\n]+/", '\n', $prj->tables[$frmName]->recieve(1)))
+					while($ent = $prj->tables[$frmName]->recieve(1))
 					{
-						echo ($i > 0 ? sprintf(',%s', $str) : $str);
-						$i++;
+						echo $ent;
 					}
-					echo ']';
+					echo "</entries>";
 					return;
-					
-				case "xml":
-					header("Cache-Control: no-cache, must-revalidate");
-					header("Content-Type: text/xml");
-					if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
-					{
-						echo "<entries>";
-						$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "xml");
-						if($res !== true) die($res);
-						while($ent = $prj->tables[$frmName]->recieve(1))
-						{
-							echo $ent;
-						}
-						echo "</entries>";
-						return;
-					}
-					else
-					{
-						echo $prj->tables[$frmName]->toXml();
-						return;
-					}
+				}
+				else
+				{
+					echo $prj->tables[$frmName]->toXml();
+					return;
+				}
 			case "kml":
 				header("Cache-Control: no-cache, must-revalidate");
 				header("Content-Type: application/vnd.google-earth.kml+xml");

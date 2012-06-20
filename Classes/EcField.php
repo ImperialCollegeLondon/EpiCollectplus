@@ -264,7 +264,7 @@ class EcField{
 			$qry .= ($this->min ? "{$this->min}," : "NULL,");
 			$qry .= ($this->max ? "{$this->max}," : "NULL,");
 			$qry .= ($this->match ? "'{$this->match}'," : "NULL,");
-			$qry .= ($this->crumb ? "'{$this->crumb}," : "NULL,");
+			$qry .= ($this->crumb ? "'{$this->crumb}'," : "NULL,");
 			$qry .= ($this->defaultValue ? "'{$this->defaultValue}'," : "NULL,");
 			$qry .= "{$this->position})";
 			
@@ -281,8 +281,6 @@ class EcField{
 					
 					for($x = 0; $x < $optcount; ++$x)
 					{
-						
-						
 						$lab = $db->stringVal($this->options[$x]->label);
 						$val = $db->stringVal($this->options[$x]->value);
 						
@@ -325,87 +323,87 @@ class EcField{
 	
 				switch($name)
 				{
-						case 'ref':
-								$this->name = (string)$val;
-								break;
-						case 'name':
-								$this->name = (string)$val;
-								break;
-						case 'required':
-								$this->required = parseBool((string)$val);
-								break;
-						case 'title':
-								$this->title = parseBool((string)$val);
-								break;
-						case 'jump':
-								$this->jump = (string)$val;
-								break;
-						case 'integer':
-								$this->isInt = parseBool((string)$val);
-								break;
-						case 'decimal':
-								$this->isDouble = parseBool((string)$val);
-								break;
-						case 'regex':
-								$rx = (string)$val;
-								try
-								{
-										preg_match("/$rx/", "");
-								}
-								catch(Exception $e)
-								{
-										throw new Exception("The regex argument for the field {$this->name} in the form {$this->form->name} is not valud");
-								}
-								$this->regex = $rx;
-								break;
-						case 'verify':
-								$this->doubleEntry = false;
-								break;
-						case 'search' :
-								$this->search = parseBool((string)$val);
-								break;
-						case 'group_num':
-								$this->group_form = (string)$val;
-								break;
-						case 'branch_form':
-								$this->branch_form = (string)$val;
-								break;
-						case 'display' :
-								$this->display = parseBool((string)$val);
-								break;
-						case 'genkey' :
-								$this->genkey = parseBool((string)$val);
-								break;
-						case 'date':
-								$this->date = (string)$val;
-								break;
-						case 'time':
-								$this->time = (string)$val;
-								break;
-						case 'setdate':
-								$this->setDate =(string)$val;
-								break;
-						case 'settime':
-								$this->setTime = (string)$val;
-								break;
-						case 'edit' :
-								$this->edit = parseBool((string)$val);
-								break;
-						case 'min' :
-								$this->min = (string)$val;
-								break;
-						case 'max' :
-								$this->max = (string)$val;
-								break;
-						case 'match' :
-							$this->match = (string)$val;
+					case 'ref':
+							$this->name = (string)$val;
 							break;
-						case 'crumb' :
-							$this->crumb = (string)$val;
+					case 'name':
+							$this->name = (string)$val;
 							break;
-						case 'default' : 
-							$this->defaultValue = (string) $val;
+					case 'required':
+							$this->required = parseBool((string)$val);
 							break;
+					case 'title':
+							$this->title = parseBool((string)$val);
+							break;
+					case 'jump':
+							$this->jump = (string)$val;
+							break;
+					case 'integer':
+							$this->isInt = parseBool((string)$val);
+							break;
+					case 'decimal':
+							$this->isDouble = parseBool((string)$val);
+							break;
+					case 'regex':
+							$rx = (string)$val;
+							try
+							{
+								preg_match("/$rx/", "");
+							}
+							catch(Exception $e)
+							{
+								throw new Exception("The regex argument for the field {$this->name} in the form {$this->form->name} is not valud");
+							}
+							$this->regex = $rx;
+							break;
+					case 'verify':
+							$this->doubleEntry = false;
+							break;
+					case 'search' :
+							$this->search = parseBool((string)$val);
+							break;
+					case 'group_num':
+							$this->group_form = (string)$val;
+							break;
+					case 'branch_form':
+							$this->branch_form = (string)$val;
+							break;
+					case 'display' :
+							$this->display = parseBool((string)$val);
+							break;
+					case 'genkey' :
+							$this->genkey = parseBool((string)$val);
+							break;
+					case 'date':
+							$this->date = (string)$val;
+							break;
+					case 'time':
+							$this->time = (string)$val;
+							break;
+					case 'setdate':
+							$this->setDate =(string)$val;
+							break;
+					case 'settime':
+							$this->setTime = (string)$val;
+							break;
+					case 'edit' :
+							$this->edit = parseBool((string)$val);
+							break;
+					case 'min' :
+							$this->min = (string)$val;
+							break;
+					case 'max' :
+							$this->max = (string)$val;
+							break;
+					case 'match' :
+						$this->match = (string)$val;
+						break;
+					case 'crumb' :
+						$this->crumb = (string)$val;
+						break;
+					case 'default' : 
+						$this->defaultValue = (string) $val;
+						break;
 				} //end switch
 				
 			}//end foreach
@@ -489,11 +487,12 @@ class EcField{
 						case "date":
 								try
 								{
-										date_create_from_format($this->dtConvert($this->date), $this->defaultValue);
+									date_create_from_format($this->dtConvert($this->date), $this->defaultValue);
 								}
+								
 								catch(Exception $e)
 								{
-										throw new Exception("The field {$this->name} has a default that confilicts with its date attribute.");
+									throw new Exception("The field {$this->name} has a default that confilicts with its date attribute.");
 								}
 						case "setdate":
 								throw new Exception("The field {$this->name} has setdate and default attributes set, setdate implies a default of the current date and so default is not valid. If you wish to set a default please use date.");
