@@ -971,9 +971,10 @@
 				$hlan = count($headers);
 
 				$ttl = count($fields);
+				
 				for($f = 0; $f < $ttl; ++$f)
 				{
-					if($this->fields[$fields[$f]]->type == 'location' || $this->fields[$fields[$f]]->type == 'gps' )
+					if( $this->fields[$fields[$f]]->type == 'location' || $this->fields[$fields[$f]]->type == 'gps' )
 					{
 						$lat = sprintf('%s_lat', $fields[$f]);
 						$lon = sprintf('%s_lon', $fields[$f]);
@@ -989,6 +990,14 @@
 							'provider' => getValIfExists($ent, $src)
 						);
 					}
+					elseif ( ( $this->fields[$fields[$f]]->type == "photo" || $this->fields[$fields[$f]]->type == "video" || $this->fields[$fields[$f]]->type == "audio" ) 
+							&& preg_match('/^https?:\/\//', $ent[$fields[$f]]) )
+					{
+						$newfn = sprintf('%s_%s_%s', $this->projectName, $this->name, $ent[$this->key]);
+						$entry->values[$fields[$f]] = $newfn;
+						
+						/*$mqueue->writeMessage('getFile', array($ent[$fields[$f]], $newfn));*/
+					}
 					else
 					{	
 						if(array_key_exists($fields[$f], $ent))
@@ -996,6 +1005,19 @@
 							$entry->values[$fields[$f]] = $ent[$fields[$f]];
 						}
 					}
+				}
+				
+				
+				if( !preg_match('/^[0-9]+$/', $entry->created) )
+				{
+					$date = false;
+					try{
+						$date = new DateTime($entry->created, new DateTimeZone('UTC'));
+					}
+					catch(Exception $ex){
+						$date = new DateTime('now', new DateTimeZone('UTC'));
+					}
+					$entry->created = $date->getTimestamp();
 				}
 				
 				$entry->deviceId = 'web upload';
@@ -1051,9 +1073,7 @@
 					else
 					{
 						$entry->values[$key] = (string)$ent->$key;
-					}
-				;	
-					
+					}					
 				}
 				
 				
