@@ -1056,6 +1056,18 @@
 					
 				}
 				
+				
+				if( !preg_match('/^[0-9]+$/', $entry->created) )
+				{
+					$date = false;
+					try{
+						$date = new DateTime($entry->created, new DateTimeZone('UTC'));
+					}
+					catch(Exception $ex){
+						$date = new DateTime('now', new DateTimeZone('UTC'));
+					}
+					$entry->created = $date->getTimestamp();
+				}
 				//TODO: need to check field names in the xml against fields in the form, and possibly
 				//alert users to form version errors.
 				
