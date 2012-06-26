@@ -747,12 +747,47 @@ EpiCollect.Form = function()
 			}
 		});
 		
-		/*$(".ecplus-input", this.formElement).blur(function(evt){
-			if(!project.forms[formName].moveNext(true))
-			{
-				$(evt.target).focus();
-			}
-		});*/
+		if(vertical)
+		{
+			$(".ecplus-input", this.formElement).blur(function(evt){
+				var ctrl = $(evt.target);
+				var ctrlName = evt.target.id;
+				var frm = project.forms[formName];
+				
+				if(frm.fields[ctrlName].validate(ctrl.val()))
+				{
+					if(frm.fields[ctrlName].jump)
+					{
+						var jumped = false; // is a jump required
+						jbits = frm.fields[ctrlName].jump.split(",");
+														
+						for(var j = 0; j < jbits.length; j+=2)
+						{
+							if(jbits[j+1] == $("#" + frm.fields[ctrlName].id, frm.formElement).idx() + 1)
+							{
+								frm.doJump(jbits[j], ctrlName);
+								jumped = true;
+							}
+						}
+						
+						if(!jumped)
+						{
+							frm.doJump(false);
+						}
+					}
+				}
+			});
+		}
+		else
+		{
+			$(".ecplus-input", this.formElement).blur(function(evt){
+				console.debug('blurring ' + evt.target.id)
+				if(!project.forms[formName].moveNext(true))
+				{
+					$(evt.target).focus();
+				}
+			});
+		}
 		
 		this.jumpFormTo(this.formIndex);
 	};
@@ -763,38 +798,49 @@ EpiCollect.Form = function()
 		this.formElement.dialog("close");
 	};
 	
-	this.doJump = function(fieldName)
+	this.doJump = function(fieldName, startField)
 	{
-		console.debug(fieldName);
+		console.debug("Jump to : " + fieldName)
+		
 		var start = this.formIndex;
 		var done = false;
+		
+		if(startField)
+		{
+			start = $('#ecplus-question-' + startField).index();
+		}
 
+		console.debug('start at : ' + start + ' -- ' + startField);
+		
 		var _frm = this;
 		
 		$(".ecplus-question, .ecplus-question-hidden").each(function(idx, ele){
 			var fld = ele.id.replace("ecplus-question-", "");
-			if($(ele).hasClass('ecplus-question-hidden') && idx < start) start++;
+			
+			console.debug(idx + ' :: ' + start)
+			
+			if(!startField && $(ele).hasClass('ecplus-question-hidden') && idx < start) start++;
 			
 			if(idx <= start || !_frm.fields[fld] ) return;
 			if(fld == fieldName) done = true;
 			
 			if(!fieldName || done)
 			{
-				console.debug("show " + fld);
+			//	console.debug("show " + fld);
 				$(ele).show();
 				$(ele).addClass('ecplus-question');
 				$(ele).removeClass('ecplus-question-hidden');
 			}
 			else if(!done)
 			{
-				console.debug("hide " + fld);
+				//console.debug("hide " + fld);
 				$(ele).hide();
 				$(ele).removeClass('ecplus-question');
 				$(ele).addClass('ecplus-question-hidden');
 			}
 			else
 			{
-				console.debug("show " + fld);
+				//console.debug("show " + fld);
 				$(ele).show();
 				$(ele).addClass('ecplus-question');
 				$(ele).removeClass('ecplus-question-hidden');
@@ -858,6 +904,7 @@ EpiCollect.Form = function()
 			
 			if(!preventBlur)
 			{
+				console.debug('preventing blur');
 				$("#" + fldName, this.formElement)
 					.unbind("blur")
 					.blur()
@@ -1277,7 +1324,7 @@ EpiCollect.Field = function()
 		   }
 	   }
 	   
-	   if(!val && this.genkey) val = "web_" + new Date().getTime();
+	   if((!val) && (this.genkey || (this.required && this.hidden))) val = "web_" + new Date().getTime();
 	   
 	   if(this.crumb) pre = "<p>" + this.crumb + "</p>";
 	   
@@ -1308,7 +1355,7 @@ EpiCollect.Field = function()
 				   }
 				   
 				   this.required = true;
-				   ctrl = "<select name=\""  + this.id + "\" id=\""  + this.id + "\"" + (fkfld ? " childcontrol=\"" + fkfld + "\"" : "") + " class=\"ecplus-input\" >";
+				   ctrl = "<select name=\""  + this.id + "\" id=\""  + this.id + "\"" + (fkfld ? " childcontrol=\"" + fkfld + "\"" : "") + " class=\"ecplus-input loading\" >";
 				   //get options;
 				   var cname = this.id;
 				   var key = frm.key;
@@ -1324,11 +1371,13 @@ EpiCollect.Field = function()
 					   {
 						   $('#' + cname +'').append("<option value=\"" + data[i][key] +  "\" " + (pfield ? " parentvalue=\"" + data[i][pfield] + "\" " : "" ) + (val == data[i][key] ? " SELECTED" : "") + " >" +  data[i][title] + "</option>");
 					   }
+					   $('#' + cname +'').removeClass('loading');
 					   delete window[cb];
 				   }
 				   
-				   $.getJSON("./" + frm.name + ".json", undefined, window[cb]);
+				  
 				   ctrl += "</select>";
+				   $.getJSON("./" + frm.name + ".json", undefined, window[cb]);
 				   return pre + ctrl;
 			   }
 		   }

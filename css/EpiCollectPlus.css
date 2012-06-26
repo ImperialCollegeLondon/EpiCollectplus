@@ -298,6 +298,11 @@ tr.alt
 	vertical-align : top;
 }
 
+.ecplus-vertical-form .ecplus-question-hidden
+{
+	display : none;
+}
+
 .ecplus-table-footer a
 {
 	display: inline-block;
@@ -365,7 +370,13 @@ tr.alt
 	width : 19em;
 }
 
-
+.loading 
+{
+	-webkit-appearance: none;
+	background : #FFFFFF url('../images/loading-sm.gif') left top no-repeat;
+	border : 1px solid #8e9ba4;
+	min-width : 10em;
+}
 
 .ecplus-columns .first
 {
