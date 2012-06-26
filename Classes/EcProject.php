@@ -19,8 +19,6 @@ class EcProject{
 		
 		private function fromArr($arr)
 		{
-				
-				
 			if(array_key_exists("id", $arr)) $this->id = $arr["id"];
 			if(array_key_exists("submission_id", $arr)) $this->submission_id = $arr["submission_id"];
 			if(array_key_exists("name", $arr))$this->name = $arr["name"];
@@ -31,6 +29,7 @@ class EcProject{
 			if(array_key_exists("publicSubmission", $arr))$this->publicSubmission = $arr["publicSubmission"];
 			if(array_key_exists("uploadToLocalServer", $arr))$this->uploadToLocalServer = $arr["uploadToLocalServer"];
 			if(array_key_exists("downloadFromLocalServer", $arr))$this->downloadFromLocalServer = $arr["downloadFromLocalServer"];
+			if(array_key_exists("allowdownloadedits", $arr))$this->allowDownloadEdits = $arr["allowdownloadedits"];
 		}
 		
 		private function toArr()
@@ -44,7 +43,8 @@ class EcProject{
 				"isListed" => $this->isListed,
 				"publicSubmission" => $this->publicSubmission,
 				"downloadFromLocalServer" => $this->downloadFromLocalServer,
-				"uploadToLocalServer" => $this->uploadToLocalServer
+				"uploadToLocalServer" => $this->uploadToLocalServer,
+				"allowDownloadEdits" => $this->allowDownloadEdits
 			);
 		}
 		
@@ -60,6 +60,13 @@ class EcProject{
 				{
 					$this->fromArr($arr);
 				}
+				
+				if(preg_match('/^ec_ade::/', $this->submission_id))
+				{
+					$this->submission_id = str_replace('ec_ade::', '', $this->submission_id);
+					$this->allowDownloadEdits = true;
+				}
+				
 				$db = new dbConnection();
 				//get forms	
 				$res = $db->exec_sp("getForms", array($this->name));
@@ -446,7 +453,14 @@ class EcProject{
 
 			if( $this->submission_id == '' ) $this->submission_id = str_replace($this->name, ' ', '_');
 			
-			$res = $db->do_query("INSERT INTO project(name, submission_id, description, image, isPublic, isListed, publicSubmission, uploadToLocalServer, downloadFromLocalServer) VALUES ('{$this->name}', '{$this->submission_id}', '{$this->description}', '{$this->image}', " . ($this->isPublic ? "1" : "0") . ", " . ($this->isListed ? "1" : "0") . ", " . ($this->publicSubmission ? "1" : "0") . ", '{$this->uploadToLocalServer}', '{$this->downloadFromLocalServer}')");
+			$sub_id = $this->submission_id;
+			
+			if($this->allowDownloadEdits)
+			{
+				$sub_id = sprintf('ec_ade::%s', $sub_id);
+			}
+			
+			$res = $db->do_query("INSERT INTO project(name, submission_id, description, image, isPublic, isListed, publicSubmission, uploadToLocalServer, downloadFromLocalServer) VALUES ('{$this->name}', '{$sub_id}', '{$this->description}', '{$this->image}', " . ($this->isPublic ? "1" : "0") . ", " . ($this->isListed ? "1" : "0") . ", " . ($this->publicSubmission ? "1" : "0") . ", '{$this->uploadToLocalServer}', '{$this->downloadFromLocalServer}')");
 			if( $res === true )
 			{
 				$this->fetch();
