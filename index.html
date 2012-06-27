@@ -30,9 +30,10 @@
 		
 		</div> 
 		
-		<div id="breadcrumbs"><div id="loginStatus">
-			
-		</div></div>
+		<div id="breadcrumbs">
+			<div id="loginStatus">
+			</div>
+		</div>
 		
 		<div id="main">
 			<h1>Welcome to EpiCollect+</h1>
@@ -45,7 +46,7 @@
 			<p>Or if you are deploying EpiCollect in a sub directory of a website (e.g. http://www.example.com/epicollectplus)</p>
 			<p class="code">
 				RewriteEngine on<br/>
-				RewriteRule epicollectplus/.* epicollectplus/main.php	
+				RewriteRule /epicollectplus/.* /epicollectplus/main.php	
 			</p>
 			<h2>Setting up EpiCollect+ on IIS 7</h2>
 			<p>To use EpiCollect+ with IIS 7 you will need to install <a href="http://www.iis.net/download/urlrewrite">URL rewrite</a> on your IIS server. Then navigate through IIS manager to the website containing your EpiCollect instnace, open the URL Reqrite option, select 'Add rule...' from the right hand side and set up a rule to direct all requests to the root directory of EpiCollect+ to main.php.
