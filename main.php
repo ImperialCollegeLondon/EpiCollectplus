@@ -2122,9 +2122,12 @@ function createFromXml()
 	$prj->isPublic = $_REQUEST["public"] == "true";
 	$prj->publicSubmission = true;
 	$res = $prj->post();
+	if($res !== true)die($res);
 	
-	$prj->setManagers($_POST["managers"]);
-	$prj->setCurators($_POST["curators"]);
+	$res = $prj->setManagers($_POST["managers"]);
+	if($res !== true)die($res);
+	$res = $prj->setCurators($_POST["curators"]);
+	if($res !== true)die($res);
 	// TODO : add submitter $prj->setProjectPermissions($submitters,1);
 	
 	if($res === true)
@@ -2145,13 +2148,17 @@ function updateXML()
 	global $url, $SITE_ROOT;
 
 	$xml = '';
-	if(array_key_exists("xml", $_REQUEST) && $_REQUEST['xml'] != '')
+	if(array_key_exists("xml", $_REQUEST) && trim($_REQUEST['xml']) != '')
 	{
 		$xml = file_get_contents("ec/xml/{$_REQUEST["xml"]}");
 	}
 	elseif(array_key_exists("data", $_POST) && $_POST["data"] != '')
 	{
 		$xml = $_POST["data"];	
+	}
+	else 
+	{
+		$xml = false;
 	}
 		
 	$prj = new EcProject();
@@ -2184,13 +2191,13 @@ function updateXML()
 			echo "{ \"result\": false , \"message\" : \"" . $err->getMessage() . "\" }";
 			return;
 		}
+		
+		$prj->publicSubmission = true;
+		$res = $prj->put($prj->name);
 	}
 	//echo $prj->tables["Second_Form"]->fields["GPS"]->active;
 	if(array_key_exists("listed", $_REQUEST)) $prj->isListed = $_REQUEST["listed"] == "true";
 	if(array_key_exists("public", $_REQUEST)) $prj->isPublic = $_REQUEST["public"] == "true";
-	
-	$prj->publicSubmission = true;
-	$res = $prj->put($prj->name);
 
 	if(array_key_exists("managers", $_POST)) $prj->setManagers($_POST["managers"]);
 	if(array_key_exists("curators", $_POST)) $prj->setCurators($_POST["curators"]);

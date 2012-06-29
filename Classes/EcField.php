@@ -221,7 +221,8 @@ class EcField{
 						//if($res !== true) return $res;
 					}
 					$res = $db->do_query($optqry);
-					if($res !== true) return $res;
+					if($res !== true) print $res; 
+					return $res;
 					
 				}
 				return true;
