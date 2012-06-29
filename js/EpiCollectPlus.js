@@ -1465,7 +1465,7 @@ EpiCollect.Field = function()
 		if(this.type == "photo"){
 			if(value && !value.match(/null/i) && value != "-1")
 			{
-				return  "<a href=\"../ec/uploads/"+value+"\"><img src=\"../ec/uploads/"+value+"\" alt=\""+value+"\"/ height=\"125\"></a>";
+				return  "<a href=\"./" +formName+"/__getImage?img="+value+"\"><img src=\"./" +formName+"/__getImage?img="+value+"&thumbnail=true\" alt=\""+value+"\" height=\"125\"/></a>";
 			}
 			else
 			{

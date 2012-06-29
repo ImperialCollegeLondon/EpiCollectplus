@@ -2811,6 +2811,75 @@ function getMedia()
 	}
 }
 
+function getImage()
+{
+	global $url, $auth;
+	
+	$prj = new EcProject();
+	$pNameEnd = strpos($url, "/");
+	
+	$prj->name = substr($url, 0, $pNameEnd);
+	$prj->fetch();
+	
+	if(!$prj->id)
+	{
+		echo applyTemplate("./base.html", "./error.html", array("errorType" => "404 ", "error" => "The project {$prj->name} does not exist on this server"));
+		return;
+	}
+	
+	
+	$permissionLevel = 0;
+	$loggedIn = $auth->isLoggedIn();
+	
+	if($loggedIn) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
+	
+	if(!$prj->isPublic && !$loggedIn)
+	{
+		loginHandler($url);
+		return;
+	}
+	else if(!$prj->isPublic &&  $permissionLevel < 2)
+	{
+		echo applyTemplate("./base.html", "./error.html", array("errorType" => "403 ", "error" => "You do not have permission to view this project"));
+		return;
+	}
+	
+	$extStart = strrpos($url, '/');
+	$frmName = rtrim(substr($url, $pNameEnd + 1, ($extStart > 0 ?  $extStart : strlen($url)) - $pNameEnd - 1), "/");
+	
+	$picName = getValIfExists($_GET, 'img');
+	
+	header('Content-type: image/jpeg');
+	
+	if($picName)
+	{
+		
+		if(getValIfExists($_GET, 'thumb') && file_exists(sprintf('./ec/uploads/%s~tn~%s', $prj->name, $picName)))
+		{
+		//try with project and thumbnail prefix
+			echo file_get_contents(sprintf('./ec/uploads/%s~tn~%s', $prj->name, $picName));
+		}
+		elseif(file_exists(sprintf('./ec/uploads/%s~%s', $prj->name, $picName)))
+		{
+		//try with project prefix
+			echo file_get_contents(sprintf('./ec/uploads/%s~%s', $prj->name, $picName));
+		}
+		elseif(file_exists(sprintf('./ec/uploads/%s', $picName)))
+		{
+		//try with raw fiename
+			echo file_get_contents(sprintf('./ec/uploads/%s', $picName));
+		}
+		else
+		{
+			header('HTTP/1.1 404 NOT FOUND', 404);
+		}
+	}
+	else
+	{
+		header('HTTP/1.1 404 NOT FOUND', 404);
+	}
+}
+
 function getXML()
 {
 	if(array_key_exists('name', $_GET))
@@ -3110,7 +3179,7 @@ $pageRules = array(
 //generic, dynamic handlers
 		'getControls' =>  new PageRule(null, 'getControlTypes'),
 		'uploadFile.php' => new PageRule(null, 'uploadHandlerFromExt'),
-		'ec/uploads/.+\.(jpg)|(mp4)$' => new PageRule(null, 'getMedia'),
+		'ec/uploads/.+\.(jpe?g|mp4)$' => new PageRule(null, 'getMedia'),
 		'ec/uploads/.+' => new PageRule(null, null),
 	
 		'uploadTest.html' => new PageRule(null, 'defaultHandler', true),
@@ -3131,6 +3200,7 @@ $pageRules = array(
 		'[a-zA-Z0-9_-]+/updateStructure' =>new PageRule(null, 'updateXML', true),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__stats' =>new PageRule(null, 'tableStats'),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
+		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__getImage' =>new PageRule(null, 'getImage'),
 		
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.kml|\.js|\.css|/)?' => new PageRule(null, 'formHandler'),
 
