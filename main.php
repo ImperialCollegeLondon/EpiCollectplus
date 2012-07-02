@@ -2853,17 +2853,19 @@ function getImage()
 	
 	if($picName)
 	{
-		
-		if(getValIfExists($_GET, 'thumb') && file_exists(sprintf('./ec/uploads/%s~tn~%s', $prj->name, $picName)))
+		$tn = sprintf('./ec/uploads/%s~tn~%s', $prj->name, $picName);
+		$full = sprintf('./ec/uploads/%s~%s', $prj->name, $picName);
+		if(!getValIfExists($_GET, 'thumb') && file_exists($full))
+		{
+			//try with project prefix
+			echo file_get_contents($full);
+		}
+		elseif(file_exists($tn))
 		{
 		//try with project and thumbnail prefix
-			echo file_get_contents(sprintf('./ec/uploads/%s~tn~%s', $prj->name, $picName));
+			echo file_get_contents($tn);
 		}
-		elseif(file_exists(sprintf('./ec/uploads/%s~%s', $prj->name, $picName)))
-		{
-		//try with project prefix
-			echo file_get_contents(sprintf('./ec/uploads/%s~%s', $prj->name, $picName));
-		}
+		
 		elseif(file_exists(sprintf('./ec/uploads/%s', $picName)))
 		{
 		//try with raw fiename
