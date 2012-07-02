@@ -677,6 +677,7 @@
 				
 				for(var i = 0; i < data.length; i++)
 				{
+					if(!data[i][geoField].accuracy) data[i][geoField].accuracy = (data[i][geoField].latitude != 0 && data[i][geoField].longitude !=0) ? 100 : -1;
 					if(data[i][geoField].latitude >= -90 && data[i][geoField].latitude <= 90 && data[i][geoField].longitude >= -180 && data[i][geoField].longitude <= 180 && data[i][geoField].accuracy > 0)
 					{
 						var mkr = new google.maps.Marker({
@@ -1018,21 +1019,12 @@
 				$.plot(jq , s, {
 					series: {
 						pie: {
-							show : true ,
-							radius : 1,
-							label : {
-								formatter: function(label, series){
-				                        return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+label+'<br/>'+Math.round(series.percent)+'%</div>';
-			                    },
-			                    background: { 
-			                        opacity: 0.5,
-			                        color: '#000'
-			                    }
-							}
+							show : true 
+							
 						}
 					},
 					legend : {
-						show : false
+						show : true
 					}
 				});
 			}

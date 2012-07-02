@@ -2871,12 +2871,12 @@ function getImage()
 		}
 		else
 		{
-			header('HTTP/1.1 404 NOT FOUND', 404);
+			echo file_get_contents('./images/no_image.png');
 		}
 	}
 	else
 	{
-		header('HTTP/1.1 404 NOT FOUND', 404);
+		echo file_get_contents('./images/no_image.png');
 	}
 }
 
