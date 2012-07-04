@@ -333,7 +333,8 @@ function mimeType($f)
 			'json' => 'text/javascript',
 			'xml' => 'text/xml',
 			'php' => 'text/html',
-			'mp4' => 'video/mp4'
+			'mp4' => 'video/mp4',
+			'csv' => 'text/csv'
 	);
 
 	$f = preg_replace('/\?.*$/', '', $f);
@@ -2122,12 +2123,12 @@ function createFromXml()
 	$prj->isPublic = $_REQUEST["public"] == "true";
 	$prj->publicSubmission = true;
 	$res = $prj->post();
-	if($res !== true)die($res);
+	//if($res !== true)die($res);
 	
 	$res = $prj->setManagers($_POST["managers"]);
-	if($res !== true)die($res);
+	//if($res !== true)die($res);
 	$res = $prj->setCurators($_POST["curators"]);
-	if($res !== true)die($res);
+	//if($res !== true)die($res);
 	// TODO : add submitter $prj->setProjectPermissions($submitters,1);
 	
 	if($res === true)

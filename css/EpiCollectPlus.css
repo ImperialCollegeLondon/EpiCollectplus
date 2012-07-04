@@ -649,7 +649,7 @@ tr.alt
 .ecplus-settingspanel .ecplus-expansionbar
 {
 	height : 100%;
-	width : 5%;
+	width : 20px;
 	float : left;
 }
 
@@ -859,5 +859,17 @@ tr.alt
 #props label
 {
 	margin : .4em .2em .4em .2em;
+}
+
+#tooltip
+{
+	position: fixed;
+	top:0;
+	left:0;
+	background : rgba(255,255,255,0.8);
+	border: 2px solid #000000;
+	border-radius: 5px;
+	padding:0.5em 0.5em 0.5em 0.5em;
+	z-index: 100;
 }
 

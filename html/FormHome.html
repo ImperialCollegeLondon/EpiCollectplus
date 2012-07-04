@@ -151,6 +151,7 @@
 			position : absolute;
 			top : 1em;
 			width : 15em;
+			border-left: 2px solid rgba(0,0,0,0.4);
 		}
 		
 		.graphPanel
@@ -299,17 +300,31 @@
 				$.fn.disableSelection = function() {
 				    return this.each(function() {           
 				        $(this).attr('unselectable', 'on')
-				               .css({
-				                   '-moz-user-select':'none',
-				                   '-webkit-user-select':'none',
-				                   'user-select':'none',
-				                   '-ms-user-select':'none'
-				               })
-				               .each(function() {
-				                   this.onselectstart = function() { return false; };
-				               });
+			               .css({
+			                   '-moz-user-select':'none',
+			                   '-webkit-user-select':'none',
+			                   'user-select':'none',
+			                   '-ms-user-select':'none'
+			               })
+			               .each(function() {
+			                   this.onselectstart = function() { return false; };
+			               });
 				    });
 				};
+				
+				$(window).resize(function(){
+					$('#map').height($(window).height() - 450);
+					$('#graphbar').height($(window).height() - 350);
+				});
+				$(window).resize();
+				$('#graphbar').resizable({
+					handles: 'w',
+					resize: function(event, ui)
+					{
+						ui.helper.css('left', '');
+						$('#map, #bottombar').css('margin-right', ui.helper.width() + 'px');
+					}
+				});
 			});
 	
 			
@@ -914,7 +929,9 @@
 					legend = document.createElement('div');
 					legend.style.backgroundColor = '#EEEEEE';
 					legend.style.padding = '5px 5px 5px 5px';
-					legend.style.border = '1px solid #000000'
+					legend.style.border = '1px solid #000000';
+					legend.style.maxHeight = '70%';
+					legend.style.overflow = 'auto';
 					var inner = document.createTextNode('Hello World');
 					legend.appendChild(inner);
 					map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
@@ -989,9 +1006,35 @@
 				$.plot(jq , ser, {
 					xaxis: {
 						mode: "categories",
-			            tickLength: 0
-					}
+			            tickLength: 0,
+			            labelWidth: 50
+			            
+					},
+					grid: {
+			            hoverable: true,
+			            clickable: true
+			        },
+			        legend : {
+			        	show : false
+			        }
 				});
+				
+				jq.bind('plothover', function(event, pos, obj)
+						{
+							console.debug(JSON.stringify(pos));
+							if(!obj)
+							{
+								$('#tooltip').hide();
+							}
+							else
+							{
+								$('#tooltip').text(obj.series.data[0].join(','));
+								$('#tooltip').css('top', (pos.pageY - $('#tooltip').height() - 25)+ 'px');
+								$('#tooltip').css('left', (pos.pageX - $('#tooltip').width() - 25)+ 'px');
+								$('#tooltip').show();
+							}
+							
+						});
 			}
 			
 			function drawPie(jq, data, field)
@@ -1019,18 +1062,43 @@
 				$.plot(jq , s, {
 					series: {
 						pie: {
-							show : true 
-							
+							show : true,
+							label : {
+								show:false
+							},
+							radius : 1
 						}
 					},
 					legend : {
-						show : true
+						show : false
+					},
+					grid: {
+			            hoverable: true,
+			            clickable: true
+			        }
+				});
+				jq.bind('plothover', function(event, pos, obj)
+				{
+					console.debug(JSON.stringify(pos));
+					if(!obj)
+					{
+						$('#tooltip').hide();
 					}
+					else
+					{
+						$('#tooltip').text(obj.series.label + ',' + obj.series.data[0][1]);
+						$('#tooltip').css('top', (pos.pageY - $('#tooltip').height() - 25)+ 'px');
+						$('#tooltip').css('left', (pos.pageX - $('#tooltip').width() - 25)+ 'px');
+						
+						$('#tooltip').show();
+					}
+					
 				});
 			}
 			
 			function drawGraph(div, field, type)
 			{
+				
 				var jq = $(div);
 				
 				var d = mapData;
@@ -1046,7 +1114,7 @@
 				}
 				
 				var dat = [];
-				
+				jq.unbind();
 				if(type == "pie")
 				{
 					drawPie(jq, agg, field);
@@ -1055,6 +1123,7 @@
 				{
 					drawBar(jq, agg, field);
 				}
+				
 				
 			}
 			
@@ -1070,6 +1139,7 @@
 &gt; <a href="../{#projectName#}">Project : {#projectName#}</a> {#prevForm#} &gt; Form : {#formName#}
 {{/breadcrumbs}}
 {{main}}
+	<div id="tooltip" style="display:none;"></div>
 	<h1>{#projectName#} - {#formName#}</h1>
 	<div id="tabs">
 		<ul>
