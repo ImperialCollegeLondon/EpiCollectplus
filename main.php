@@ -1532,7 +1532,7 @@ function formHandler()
 			}
 			else
 			{
-				ini_set("max_execution_time", 200);
+				ini_set('max_execution_time', 200);
 				if(preg_match("/\.csv$/", $_f["name"]))
 				{
 					$fh = fopen($_f["tmp_name"], 'r');
@@ -2194,12 +2194,13 @@ function updateXML()
 		}
 		
 		$prj->publicSubmission = true;
-		$res = $prj->put($prj->name);
+		
 	}
 	//echo $prj->tables["Second_Form"]->fields["GPS"]->active;
 	if(array_key_exists("listed", $_REQUEST)) $prj->isListed = $_REQUEST["listed"] == "true";
 	if(array_key_exists("public", $_REQUEST)) $prj->isPublic = $_REQUEST["public"] == "true";
-
+	$res = $prj->put($prj->name);
+	
 	if(array_key_exists("managers", $_POST)) $prj->setManagers($_POST["managers"]);
 	if(array_key_exists("curators", $_POST)) $prj->setCurators($_POST["curators"]);
 	// TODO : add submitter $prj->setProjectPermissions($submitters,1);
@@ -2220,7 +2221,7 @@ function updateXML()
 function tableStats()
 {
 	global  $url, $log;
-	ini_set("max_execution_time", 60);
+	ini_set('max_execution_time', 60);
 	header("Cache-Control: no-cache, must-revalidate");
 
 	$prjEnd = strpos($url, "/");

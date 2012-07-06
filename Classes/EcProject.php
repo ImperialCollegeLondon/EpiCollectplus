@@ -384,38 +384,39 @@ class EcProject{
 		
 		private function setPermission ($emails, $lvl)
 		{
-				if(!preg_match('/([a-z0-9\._%+-]+@[a-z0-9\.-]+\.[a-z]{2,4}\,?)+$/i',$emails)) return "invalid email $emails";
-				if(!is_numeric($this->id) || strstr($this->id, ".")) return "ID {$this->id} is not properly set";
-				
-				global $auth;
-				$emails = rtrim(strtolower($emails), ","); //as emails are case insensitive we will make them all lowercase to make comparison easier
-				
-				$db = new dbConnection();
-				if($this->checkPermission($auth->getEcUserId()) == 3)
-				{
-						//add any new emails
-						$newUsers = str_replace(",", "' as Email UNION SELECT '", $emails);
-						$sql = "INSERT INTO user (Email) SELECT * FROM (SELECT '$newUsers' as Email) a where a.email NOT IN (SELECT Email from user);";
-						//echo $sql;
-						$res = $db->do_query($sql);
-						if($res !== true) return $res;
-						
-						$sql = "delete from userprojectpermission where project = {$this->id} and role = $lvl";
-						$res = $db->do_query($sql);
-						if($res===true)
-						{
-								$db = new dbConnection();
-								$emails = str_replace(",", "','", $emails);
-								$sql = "INSERT INTO userprojectpermission (user, project, role) SELECT idUsers, {$this->id}, $lvl From user where email in ('{$emails}')";
-								$res = $db->do_query($sql);
-								
-						}
-						return $res;
-				}
-				else
-				{
-						return "You do not have permission to update this project";
-				}
+			if(trim($emails) == '') return true;		
+			if(!preg_match('/([a-z0-9\._%+-]+@[a-z0-9\.-]+\.[a-z]{2,4}\,?)+$/i',$emails)) return "invalid email $emails";
+			if(!is_numeric($this->id) || strstr($this->id, ".")) return "ID {$this->id} is not properly set";
+			
+			global $auth;
+			$emails = rtrim(strtolower($emails), ","); //as emails are case insensitive we will make them all lowercase to make comparison easier
+			
+			$db = new dbConnection();
+			if($this->checkPermission($auth->getEcUserId()) == 3)
+			{
+					//add any new emails
+					$newUsers = str_replace(",", "' as Email UNION SELECT '", $emails);
+					$sql = "INSERT INTO user (Email) SELECT * FROM (SELECT '$newUsers' as Email) a where a.email NOT IN (SELECT Email from user);";
+					//echo $sql;
+					$res = $db->do_query($sql);
+					if($res !== true) return $res;
+					
+					$sql = "delete from userprojectpermission where project = {$this->id} and role = $lvl";
+					$res = $db->do_query($sql);
+					if($res===true)
+					{
+							$db = new dbConnection();
+							$emails = str_replace(",", "','", $emails);
+							$sql = "INSERT INTO userprojectpermission (user, project, role) SELECT idUsers, {$this->id}, $lvl From user where email in ('{$emails}')";
+							$res = $db->do_query($sql);
+							
+					}
+					return $res;
+			}
+			else
+			{
+					return "You do not have permission to update this project";
+			}
 		}
 		
 		public function setManagers($emails)

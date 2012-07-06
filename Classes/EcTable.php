@@ -159,7 +159,7 @@
 						$opt = new EcOption();
 						$opt->fromArray($arr);
 						$opt->idx = $arr["index"];
-						$fld->options[$opt->value] = $opt;
+						array_push($fld->options, $opt);
 					}
 					if($fld->type == "branch"){
 						array_push($this->branches, $fld->branch_form);
