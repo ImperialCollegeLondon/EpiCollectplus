@@ -1918,7 +1918,7 @@ function entryHandler()
 
 	if($_SERVER["REQUEST_METHOD"] == "DELETE")
 	{
-		if($permissionLevel != 3)
+		if($permissionLevel < 2)
 		{
 			flash('You do not have permission to delete entries on this project');
 			header('HTTP/1.1 403 Forbidden', 403);	
@@ -1951,7 +1951,7 @@ function entryHandler()
 	}
 	else if($_SERVER["REQUEST_METHOD"] == "PUT")
 	{
-		if($permissionLevel != 3)
+		if($permissionLevel < 2)
 		{
 			flash('You do not have permission to edit entries on this project');
 			header('HTTP/1.1 403 Forbidden', 403);
@@ -1987,9 +1987,36 @@ function entryHandler()
 	}
 	else if($_SERVER["REQUEST_METHOD"] == "GET")
 	{
-		$val = getValIfExists($_GET, "term");
-		echo $prj->tables[$frmName]->autoComplete($entId, $val);
-		
+		$val = getValIfExists($_GET, 'term');
+		$do  = getValIfExists($_GET, 'validate');
+		$key_from = getValIfExists($_GET, 'key_from');
+		$secondary_field = getValIfExists($_GET, 'secondary_field');
+		$secondary_value = getValIfExists($_GET, 'secondary_value');
+		if($entId == 'title')
+		{
+			if($do)
+			{
+				echo $prj->tables[$frmName]->validateTitle($val, $secondary_field, $secondary_value);				
+			}
+			elseif($key_from)
+			{
+
+				echo $prj->tables[$frmName]->getTitleFromKey($val);
+			}
+			else
+			{
+				
+				echo $prj->tables[$frmName]->autoCompleteTitle($val, $secondary_field, $secondary_value);
+			}
+		}
+		elseif($do)
+		{
+			echo $prj->tables[$frmName]->validate($entId, $val);
+		}
+		else
+		{
+			echo $prj->tables[$frmName]->autoComplete($entId, $val);
+		}
 	}
 }
 
@@ -2106,7 +2133,8 @@ function createFromXml()
 	}
 	elseif(array_key_exists("name", $_POST))
 	{
-		$prj->name = $_POST["name"];	
+		$prj->name = $_POST["name"];
+		$prj->submission_id = strtolower($prj->name);
 	}
 	elseif(array_key_exists("raw_xml", $_POST))
 	{
@@ -2123,12 +2151,12 @@ function createFromXml()
 	$prj->isPublic = $_REQUEST["public"] == "true";
 	$prj->publicSubmission = true;
 	$res = $prj->post();
-	//if($res !== true)die($res);
+	if($res !== true)die($res);
 	
 	$res = $prj->setManagers($_POST["managers"]);
-	//if($res !== true)die($res);
+	if($res !== true)die($res);
 	$res = $prj->setCurators($_POST["curators"]);
-	//if($res !== true)die($res);
+	if($res !== true)die($res);
 	// TODO : add submitter $prj->setProjectPermissions($submitters,1);
 	
 	if($res === true)

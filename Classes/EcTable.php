@@ -13,7 +13,7 @@
 		public $branches = array();
 		public $branchOf = false;
 		public $group = false;
-		
+		public $titleFields = array();
 		public $branchfields = array();
 		
 		public function __construct($s = null)
@@ -90,7 +90,7 @@
 		{
 			$db = new dbConnection();
 			//global $db;
-			
+			$this->titleFields = array();
 			$qry = "SELECT * from form WHERE";
 			if(is_numeric($this->id))
 			{
@@ -146,7 +146,9 @@
 					$fld->fromArray($arr);
 					$this->fields[$fld->name] = $fld;
 					if($fld->key) $this->key = $fld->name;
+					if($fld->title) array_push($this->titleFields, $fld->name);
 				}
+				
 				
 				foreach($this->fields as $fld)
 				{
@@ -165,7 +167,6 @@
 						array_push($this->branches, $fld->branch_form);
 						array_push($this->branchfields, $fld->name);
 					}
-					unset($db2);
 				}
 				
 				return true;
@@ -269,7 +270,7 @@
 			if(!$this->name || $this->name == "") throw new Exception("All forms must have a name,");
 			if(!$this->key || $this->key == "") throw new Exception("No key field specified for {$this->name}");
 			
-		
+			$this->titleFields = array();
 			//parse elements
 			$p = 0;
 			foreach($xml->children() as $field)
@@ -315,6 +316,7 @@
 						array_push($this->branches, $fld->branch_form);
 						array_push($this->branchfields, $fld->name);
 					}
+					if($fld->title) array_push($this->titleFields, $fld->name);
 					++$p;
 				
 				}
@@ -382,7 +384,7 @@
 					if( array_key_exists($k, $this->fields) && $this->fields[$k]->type != "" )
 					{
 						$join .= sprintf(' LEFT JOIN entryvalue ev%s on e.idEntry = ev%s.entry AND ev%s.projectName = \'%s\' AND ev%s.formName = \'%s\' AND ev%s.fieldName = \'%s\'', $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
-						if( $exact )
+						if( $exact === true )
 						{
 							$where .= sprintf(' AND ev%s.value = \'%s\'', $s_k, $v);
 						}
@@ -418,19 +420,21 @@
 				{
 					$join .= sprintf(' LEFT JOIN entryvalue ev%s on ev%s.entry = e.idEntry and ev%s.fieldName = \'%s\'', $this->key,$this->key,$this->key,$this->key);
 				}
+				
 				$join .= sprintf(' LEFT JOIN entryValue ev%s_entries  ON ev%s.value = ev%s_entries.value  AND ev%s_entries.projectName = \'%s\' AND ev%s_entries.formName = \'%s\' AND ev%s_entries.fieldName = \'%s\'',
-							$this->branches[$i],
-							$this->key, 
-							$this->branches[$i],
-							$this->branches[$i],
-							$this->survey->name,
-							$this->branches[$i], 
-							$this->branches[$i], 
-							$this->branches[$i], 
-							$this->key);
+						$this->branches[$i],
+						$this->key, 
+						$this->branches[$i],
+						$this->branches[$i],
+						$this->survey->name,
+						$this->branches[$i], 
+						$this->branches[$i], 
+						$this->branches[$i], 
+						$this->key);
 			}
 			
 			$child = $this->survey->getNextTable($this->name, true);
+			
  			if($child)
  			{
  				
@@ -464,7 +468,6 @@
  				}elseif($format == 'object'){
  					//throw new Exception ('Format not specified');
  				}
- 				
  				
  				if(!strstr($join, sprintf('ev%s', $this->key)))
 				{
@@ -525,7 +528,6 @@
 			$qry = sprintf('%s %s %s %s %s %s %s', $qry, $select, $join, $where, $group, $order, $limit_s);
 
 			unset($select, $join, $where, $group, $order, $limit_s);
-			//echo $qry;
 			
 			$res = $db->do_multi_query($qry);
 			if($res !== true) return $res;
@@ -1021,7 +1023,6 @@
 				}
 				
 				$entry->deviceId = 'web upload';
-				//echo $entry->created . '<br />\r\n';
 				array_push($ents, $entry);	
 				
 				if(++$x % 100 == 0)
@@ -1045,15 +1046,11 @@
 				$entry = new EcEntry($this);
 				$entry->deviceId = (string)$ent->ecPhoneID;
 				$entry->created = (string)$ent->ecTimeCreated;
-				//$entry->form = $this->id;
 				$entry->project = $this->project;
 				$entry->values = array();
 				
 				foreach($this->fields as $key => $fld){
-					//if($val->getName() != "ecPhoneID" && $val->getName() != "ecTimeCreated" && $this->fields[$val->getName()]->type != 'gps')
-					 //  $entry->values[$val->getName()] = (string)$val;
-					//elseif($this->fields[$val->getName()]->type != 'gps')
-					//{}
+			
 					if($fld->type == 'gps' || $fld->type == 'location')
 					{
 						$lat = "{$key}_lat";
@@ -1097,7 +1094,7 @@
 			return $res;
 		}
 		
-		public function autoComplete($field, $val)
+		public function autoComplete($field, $val, $secondaryField = Null, $secondaryValue = Null)
 		{
 			global $db;
 			
@@ -1132,6 +1129,110 @@
 			
 			$result .= "]";
 			return $result;
+		}
+		
+		public function autoCompleteTitle($val, $secondaryField = Null, $secondaryValue = Null)
+		{
+			global $db;
+			
+			$ents = '';
+			
+			if($secondaryField && $secondaryValue)
+			{
+				$select = sprintf('SELECT entry from entryValue WHERE projectname = \'%s\' AND formName = \'%s\' AND fieldName=\'%s\' AND value=\'%s\' ', $this->projectName, $this->name, $secondaryField, $secondaryValue);
+				$res = $db->do_query($select);
+				if($res !== true) die($res);
+				
+				while($row = $db->get_row_array())
+				{
+
+					if($ents != '') $ents .= ',';
+					$ents .= $row['entry'];	
+				}
+				
+				if($ents == '') return '[]';
+			}
+			
+			if($ents == '')
+			{
+				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \', \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $val );
+			}
+			else
+			{
+				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \', \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $val );
+			}
+			$res = $db->do_query($select);
+			if($res === true)
+			{
+				$res = "[";
+				while($row = $db->get_row_array())
+				{
+					$res .= sprintf('"%s",', $row['title']);
+				}
+				if(strlen($res) > 1) $res = substr($res, 0, -1);
+				$res .= "]";
+			}
+			else {
+				die($res);
+			}
+			return $res;							
+		}
+		
+		public function validate($field, $val, $secondaryField = Null, $secondaryValue = Null)
+		{
+		
+		}
+		
+		public function validateTitle($val, $secondaryField = Null, $secondaryValue = Null)
+		{
+			$bits = explode(', ', $val);
+			
+			if(count($bits) != count($this->titleFields)) return sprintf('{ "valid" : false, "msg" : "Title has the wrong number of elements, it should be %s elements and it is %s elements", "key" : "" }', count($this->titleFields), count($bits));
+			
+			$args = array_combine($this->titleFields, $bits);
+			$req = $this->ask($args, 0, 0, 'created', 'asc', true, 'object', false);
+			$output = '';
+			for ($i = 0; $obj = $this->recieve(); $i++)
+			{
+				if($secondaryField && $secondaryValue)
+				{
+					if($obj[$secondaryField] == $secondaryValue)
+					{
+						$output .= sprintf('{ "valid" : true, "msg" : null, "key" : "%s" }', $obj[$this->key]);
+					}
+					else
+					{
+						$output .= '{ "valid" : false, "msg" : "There is no entry that corresponds to this title, please choose a complete title from the list.", "key" : "" }';
+					}
+				}
+				else
+				{
+					$output .= sprintf('{ "valid" : true, "msg" : null, "key" : "%s" }', $obj[$this->key]);
+				}
+			}
+			if ($output == '')
+			{
+				$output .= '{ "valid" : false, "msg" : "There is no entry that corresponds to this title, please choose a complete title from the list.", "key" : "" }';
+			}
+			return $output;
+		}
+		
+		public function getTitleFromKey($key)
+		{
+			$args = array( $this->key => $key );
+			$req = $this->ask($args, 0, 0, 'created', 'asc', true, 'object', false);
+
+			$tstr = '';
+			$cnt = count($this->titleFields);
+			while($obj = $this->recieve())
+			{
+				for($i = 0; $i < $cnt; $i++)
+				{
+					if($i > 0) $tstr .= ",";
+					$tstr .= $obj[$this->titleFields[$i]]; 
+				}
+			}
+			return $tstr;
 		}
 		
 	}

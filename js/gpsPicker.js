@@ -175,10 +175,18 @@
 	  
 	  function toJSON()
 	  {
-		  return "{ \"latitude\" : " + $("#latitude", ctx).val() +
-		  	" , \"longitude\" : " + $("#longitude", ctx).val() + 
-		  	", \"accuracy\" : " +  $("#accuracy", ctx).val() +
-		  	", \"altitude\" : " +  $("#altitude", ctx).val() + 
+		  var lat = $("#latitude", ctx).val();
+		  lat = lat ? lat : "0";
+		  var lon = $("#longitude", ctx).val();
+		  lon = lon ? lon : "0";
+		  var acc = $("#accuracy", ctx).val();
+		  acc = acc ? acc : "-1";
+		  var alt = $("#altitude", ctx).val();
+		  alt = alt ? alt : "0";
+		  return  "{ \"latitude\" : " + lat +
+		  	" , \"longitude\" : " + lon + 
+		  	", \"accuracy\" : " +  acc +
+		  	", \"altitude\" : " + alt  + 
 		  	", \"provider\" : \"" + $("#provider", ctx).val()+ "\"}";
 	  }
 	  
@@ -195,7 +203,7 @@
 		  center = new google.maps.LatLng(obj.latitude, obj.longitude);
 		  mkr.setPosition(center);
 		  accCircle.setCenter(center);
-		  accCircle.setRadius(obj.accuracy);
+		  accCircle.setRadius(Number(obj.accuracy));
 	  }
   };
 })( jQuery );

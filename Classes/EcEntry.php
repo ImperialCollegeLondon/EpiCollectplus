@@ -66,7 +66,7 @@
 				$this->created = $dt->getTimestamp();
 			}
 			
-			if(!$this->key) $this->key = $this->values[$this->form->key];
+			
 			
 			$this->uploaded = getTimestamp('Y-m-d h:i:s');
 			
@@ -75,12 +75,14 @@
 			{
 				$this->deviceId = 'web upload';
 			}
-				
+			
+			if(!$this->key) $this->key = trim($this->values[$this->form->key]);
 			if(!$this->key || trim($this->key) == '')
 			{
 				throw new Exception('Message: The key field cannot be left blank.');
 			}
-			elseif($this->form->isMain && $this->form->number > 1){
+		
+			if($this->form->isMain && $this->form->number > 1){
 				$this->parent = $this->checkParentExists();
 			
 				if(!$this->parent)
@@ -229,10 +231,12 @@
 				$qry = 'INSERT INTO entryvalue (field, projectName, formName, fieldName, value, entry) VALUES ';
 				for($i = 0; $i < $len; ++$i)
 				{
+					if(trim($entries[$i]->values[$entries[$i]->form->key]) == '') return 'Key values cannot be blank'; 
 					$keys = array_keys($entries[$i]->values);
 					$length = count($keys);
 					for($j = 0; $j < $length; ++$j)
 					{
+						
 						if($entries[$i]->form->fields[$keys[$j]])
 						{
 							if(($entries[$i]->form->fields[$keys[$j]]->type == 'gps' || $entries[$i]->form->fields[$keys[$j]]->type == 'location') && !is_string($entries[$i]->values[$keys[$j]]))
@@ -283,6 +287,22 @@
 			
 			$ent->fetch();
 			if(!$ent->id) return "Entry does not exist";
+			
+			
+			if(!$this->key) $this->key = trim($this->values[$this->form->key]);
+			if(!$this->key || trim($this->key) == '')
+			{
+				throw new Exception('Message: The key field cannot be left blank.');
+			}
+			
+			if($this->form->isMain && $this->form->number > 1){
+				$this->parent = $this->checkParentExists();
+					
+				if(!$this->parent)
+				{
+					throw new Exception('Message: The parent of this entry is not present on the server.');
+				}
+			}
 			
 			$qry = "UPDATE entry SET lastEdited = Now() where idEntry = {$ent->id}";
 			$res = $db->do_query($qry);

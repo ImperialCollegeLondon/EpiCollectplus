@@ -128,6 +128,21 @@ tr.alt
 	
 }
 
+.ecplus-valid
+{
+	
+}
+
+.ecplus-checking
+{
+	border:1px solid #CCCC00;
+}
+
+.ecplus-invalid
+{
+	border:1px solid #FF0000;
+}
+
 .ecplus-data tr:hover, .ecplus-data tr.alt:hover
 {
 	cursor: pointer;

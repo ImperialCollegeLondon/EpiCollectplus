@@ -53,7 +53,7 @@
 	
 			function loadCallback(prj){
 				project = prj;		
-				
+				var _burl = location.href.trim("/");
 				for(frm in project.forms)
 				{
 					if(!project.forms[frm].main) continue;
@@ -75,7 +75,7 @@
 							opts = opts + "<option value=\"" +fld + "\">" + txt + "</option>"
 						}
 					}
-					$("#menu").append("<div class=\"form\"> <a class=\"frmHeader ui-state-default ui-corner-top\" href=\"" + location.href.trim("/") + "/" + frm + "\">" + frm + "</a> <form action=\"" + location.href + "/" + frm + "\"><a href=\"" + location.href + "/" + frm + "\">View All</a> or Show records where <select id=\"field_" + frm + "\">"+ opts +"</select> is similar to <input type=\"text\" id=\"" + frm + "\" name=\""+project.forms[frm].key+"\"> <input type=\"submit\" value=\"Show records\" /> </form></div>");
+					$("#menu").append("<div class=\"form\"> <a class=\"frmHeader ui-state-default ui-corner-top\" href=\"" + _burl + "/" + frm + "\">" + frm + "</a> <form action=\"" + _burl + "/" + frm + "\"><a href=\"" + location.href.trim("/") + "/" + frm + "\">View All</a> or Show records where <select id=\"field_" + frm + "\">"+ opts +"</select> is similar to <input type=\"text\" id=\"" + frm + "\" name=\""+project.forms[frm].key+"\"> <input type=\"submit\" value=\"Show records\" /> </form></div>");
 				}
 				
 				$("select").change(function(evt)

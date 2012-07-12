@@ -259,6 +259,9 @@
 			
 			$(function()
 			{
+				var ele = document.createElement('img');
+				ele.src = "../images/loading.gif";
+				
 				url = location.href.trim("/");
 				if(url.indexOf("?") > 0)url = url.substr(0, url.indexOf("?"));
 				formName = url.substr(url.lastIndexOf("/") + 1).replace(/#.*$/, "");
@@ -377,7 +380,6 @@
 						break;
 					}
 				}
-				
 				
 				
 				if(hasMap)
@@ -563,8 +565,12 @@
 					urlStr += "&" + filterField + "=" + filterValue;
 					statUrl += "&" + filterField + "=" + filterValue; 
 				}
-				$.getJSON(urlStr , dataLoad).error(function(){loader.stop();}).success(function(){$.getJSON(statUrl , statLoad);});
-				
+				$.ajax({
+					url: urlStr , 
+					success: dataLoad,
+					async : true
+				}).error(function(){loader.stop();}).success(function(){$.getJSON(statUrl , statLoad);});
+								
 				$('#start').text(offset);
 			}
 			
