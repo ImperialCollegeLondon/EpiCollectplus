@@ -1220,10 +1220,12 @@
 		public function getTitleFromKey($key)
 		{
 			$args = array( $this->key => $key );
-			$req = $this->ask($args, 0, 0, 'created', 'asc', true, 'object', false);
 
 			$tstr = '';
 			$cnt = count($this->titleFields);
+			if($cnt == 0 || ($cnt == 1 && $this->key == $this->titleFields[0])) return $key;
+			
+			$req = $this->ask($args, 0, 0, 'created', 'asc', true, 'object', false);
 			while($obj = $this->recieve())
 			{
 				for($i = 0; $i < $cnt; $i++)

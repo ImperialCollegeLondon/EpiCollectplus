@@ -32,14 +32,15 @@
 					//set
 					if(ele.type == "radio")
 					{
-						if(value == ele.value)
+						if(value == ele.value || value == ele.getAttribute('labeltext'))
 							ele.checked = "checked";
 						else
 							ele.checked = "";
 					}
 					else if(ele.type == "checkbox")
 					{
-						if(ele.value.match(new RegExp("(,|^)" + value + "(,|$)")))
+					
+						if(value.match(new RegExp("(,|^)" + ele.value + "(,|$)")))
 							ele.checked = "checked";
 						else
 							ele.checked = "";

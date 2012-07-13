@@ -705,6 +705,7 @@ EpiCollect.Form = function()
 		{
 			for(var field in data)
 			{
+				if(data[field] == "NULL" || data[field] == "undefined") data[field] = "";
 				$("#" + field, this.formElement).val(data[field]);
 			}
 		}
@@ -724,7 +725,7 @@ EpiCollect.Form = function()
 				var ctrlName = evt.target.id;
 				var frm = project.forms[formName];
 				
-				//if(ctrl.hasClass('eplus-ac')) ctrlName = ctrlName.replace('-ac', '');
+				if(ctrl.hasClass('ecplus-ac')) ctrlName = ctrlName.replace('-ac', '');
 				
 				if(frm.fields[ctrlName].validate(ctrl.val()))
 				{
@@ -753,7 +754,7 @@ EpiCollect.Form = function()
 		else
 		{
 			$(".ecplus-input", this.formElement).blur(function(evt){
-				console.debug('blurring ' + evt.target.id)
+				
 				if(!project.forms[formName].moveNext(true))
 				{
 					$(evt.target).focus();
@@ -761,7 +762,7 @@ EpiCollect.Form = function()
 			});
 		}
 		
-		console.debug('autocomplete init');
+	
 		$('.ecplus-ac').each(function(idx, ele)
 		{
 			var jq = $(ele);
@@ -1292,156 +1293,169 @@ EpiCollect.Field = function()
     
    this.getInput = function(val, debug)
    {
-	   pre = "";
-	   
-	   if(!val || (typeof val == 'string' && val.match(/null|undefined/i)))
-	   {
-		   //console.debug(this.id);
-		   if(this.id == "created" || this.id == "uploaded")
+	   try{
+		   pre = "";
+		   
+		   if(!val || (typeof val == 'string' && val.match(/null|undefined/i)))
 		   {
-			   val = new Date().getTime().toString();
-		   }
-		   else if(this.id == "DeviceID")
-		   {
-			   val = "web";
-		   }
-		   else if(this.genkey || (this.isKey && this.hidden))
-		   {
-			   val = "web_" + new Date().getTime();
-		   }
-		   else
-		   {
-			   val = "";
-		   }
-	   }
-	   
-	   
-	   if(this.crumb) pre = "<p>" + this.crumb + "</p>";
-	   
-	   //recursively check to see if this field is a key field from another form
-	   //also need to make sure that 
-	   var fkfrm;
-	   var fkfld;
-	   for(var frm = this.form; frm; frm = project.getPrevForm(frm.name))
-	   {
-		   if(frm.name == this.form.name) continue;
-		   if(this.id == frm.key)
-		   {
-			   if(debug)
+			   //console.debug(this.id);
+			   if(this.id == "created" || this.id == "uploaded")
 			   {
-				   return pre + "<div>This is a key field from another form, when the form is being used a drop down list of keys from the previous form will appear here.</div>";
+				   val = new Date().getTime().toString();
+			   }
+			   else if(this.id == "DeviceID")
+			   {
+				   val = "web";
+			   }
+			   else if(this.genkey || (this.isKey && this.hidden))
+			   {
+				   val = "web_" + new Date().getTime();
 			   }
 			   else
 			   {
-				   var pfield;
-				   var pfrm = project.getPrevForm(frm.name);
-				   if(pfrm && this.form.fields[pfrm.key])
+				   val = "";
+			   }
+		   }
+		   
+		   
+		   if(this.crumb) pre = "<p>" + this.crumb + "</p>";
+		   
+		   //recursively check to see if this field is a key field from another form
+		   //also need to make sure that 
+		   var fkfrm;
+		   var fkfld;
+		   for(var frm = this.form; frm; frm = project.getPrevForm(frm.name))
+		   {
+			   if(frm.name == this.form.name) continue;
+			   if(this.id == frm.key)
+			   {
+				   if(debug)
 				   {
-					   pfield = pfrm.key;
+					   return pre + "<div>This is a key field from another form, when the form is being used a drop down list of keys from the previous form will appear here.</div>";
 				   }
 				   else
 				   {
-					   pfield = false;
+					   var pfield;
+					   var pfrm = project.getPrevForm(frm.name);
+					   if(pfrm && this.form.fields[pfrm.key])
+					   {
+						   pfield = pfrm.key;
+					   }
+					   else
+					   {
+						   pfield = false;
+					   }
+					   
+					   this.required = true;
+					  // ctrl = "<select name=\""  + this.id + "\" id=\""  + this.id + "\"" + (fkfld ? " childcontrol=\"" + fkfld + "\"" : "") + " class=\"ecplus-input loading\" >";
+					   //get options;
+					   var cname = this.id;
+					   var key = frm.key;
+					   var title = frm.titleField;
+					   
+				
+					    
+					   var ctrl = '<input name="' + cname + '-ac" id="' + cname +  '-ac" class="ecplus-input ecplus-ac loading" pfield="' + key + '" pform="' + frm.name + '" ' + (fkfld ? ' childcontrol="' + fkfld + '"' : '') + ' /><input type="hidden" name="' + cname + '" id="' + cname +  '" value="' + val + '" class="ecplus-input-hidden" />';
+					   
+					   if(val)
+					   {
+						   $.ajax({
+							   url : baseUrl + '/../' + this.fkTable + '/title?term=' + val + '&key_from=true',
+							   success : function(data, status, xhr)
+							   {
+								   $('#' + this.id + '-ac').val(data).removeClass('loading');
+								   
+							   },
+							   context : this
+						   })
+					   }
+						  
+					   return pre + ctrl;
 				   }
-				   
-				   this.required = true;
-				  // ctrl = "<select name=\""  + this.id + "\" id=\""  + this.id + "\"" + (fkfld ? " childcontrol=\"" + fkfld + "\"" : "") + " class=\"ecplus-input loading\" >";
-				   //get options;
-				   var cname = this.id;
-				   var key = frm.key;
-				   var title = frm.titleField;
-				   
-			
-				    
-				   var ctrl = '<input name="' + cname + '-ac" id="' + cname +  '-ac" class="ecplus-input ecplus-ac loading" pfield="' + key + '" pform="' + frm.name + '" ' + (fkfld ? ' childcontrol="' + fkfld + '"' : '') + ' /><input type="hidden" name="' + cname + '" id="' + cname +  '" value="' + val + '" class="ecplus-input-hidden" />';
-				   
-				   if(val)
-				   {
-					   $.ajax({
-						   url : baseUrl + '/../' + this.fkTable + '/title?term=' + val + '&key_from=true',
-						   success : function(data, status, xhr)
-						   {
-							   $('#' + this.id + '-ac').val(data).removeClass('loading');
-							   
-						   },
-						   context : this
-					   })
-				   }
-					  
-				   return pre + ctrl;
 			   }
+			   else
+			   {
+				   fkfrm = frm.name;
+				   fkfld = frm.key;
+			   }
+		   }
+			   
+		   if(this.type == "branch")
+		   {
+			   return pre + "<div id=\"" + this.id + "\" class=\"ecplus-input\"><a href=\"javascript:project.forms['"+ this.form.name+"'].openBranch('" + this.connectedForm + "')\">Add Branch</a><p>This entry currently has <span>" +(val ? val : 0) +"</span> branch entries</p></div>";
+		   }
+		   else if(this.type == "select1")
+		   {
+			   ret =  "<select name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input\" > ";
+			   for(var i = 0; i < this.options.length; i++)
+			   {
+				   
+				   ret += "<option value=\"" + this.options[i].value + "\" " + (this.options[i].value == val || this.options[i].label == val ? "SELECTED" : "")  + ">" + this.options[i].label + "</option>";
+			   }
+			   ret +="</select>";
+			   return pre +  ret;
+		   }
+		   else if(this.type == "select")
+		   {
+			   ret =  "<p id=\"" + this.id + "\"  class=\"ecplus-check-group ecplus-input\">";
+			   for(var i = 0; i < this.options.length; i++)
+			   {
+				   var regex = new RegExp('/(^|,)' + this.options[i].value + '|' + this.options[i].label + '(,|$)/');
+				   ret += "<input type=\"checkbox\" name=\"" + this.id + "\" value=\"" + this.options[i].value + "\" " + (val.match(regex) ? " checked=\"checked\" " : "") + " /><label>" + this.options[i].label + "</label><br />";
+				   
+			   }
+			   return pre + "</p>" + ret;
+		   }
+		   else if(this.type == "radio")
+		   {
+			   ret =  "<p id=\"" + this.id + "\" class=\"ecplus-radio-group ecplus-input\">";
+			   for(var i = 0; i < this.options.length; i++)
+			   {
+				   //console.debug();
+				   if((this.options[i].value == val) || (this.options[i].label == val))
+				   {
+					   ret += "<input type=\"radio\" name=\"" + this.id + "\" value=\"" + this.options[i].value + "\" checked=\"checked\" labelText=\"" + this.options[i].label + "\" /><label>" + this.options[i].label + "</label><br />";
+				   }
+				   else
+				   {
+					   ret += "<input type=\"radio\" name=\"" + this.id + "\" value=\"" + this.options[i].value + "\" labelText=\"" + this.options[i].label + "\"  /><label>" + this.options[i].label + "</label><br />";
+				   }
+			   }
+			   return pre + "</p>" + ret;
+		   }
+		   else if(this.type == "textarea")
+		   {
+			   return pre + "<textarea name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input\">" + val + "</textarea>";
+		   }
+		   else if(this.date || this.setDate)
+		   {
+			   //Custom Date Picker
+			   return pre + "<input type=\"date\" name=\"" + this.id + "\" value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input\" />";
+		   }
+		   else if(this.time || this.setTime)
+		   {
+			   
+			   return pre + "<input type=\"time\" name=\"" + this.id + "\"  value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input\" />";
+		   }
+		   else if(this.type == "input" || this.type == "barcode")
+		   {
+
+			   var valstring = val && val != 'NULL' ? "value=\"" + val + "\"" : "";		   
+			   return pre + "<input type=\"text\" name=\"" + this.id + "\" " + valstring + " id=\"" + this.id + "\" class=\"ecplus-input\" />";
+		   }
+		   else if(this.type == "video" || this.type == "audio" || this.type == "photo")
+		   {
+			   return pre + "<iframe id=\"" + this.id + "_iframe\" src=\"" + this.form.name + "/uploadMedia\" class=\"ecplus-input ecplus-media-input\" ></iframe><input type=\"hidden\" id=\"" + this.id + "\" name=\"" + this.id + "\" value=\"" + val + "\" />";
+		   }
+		   if(this.type == "location")
+		   {
+			   return pre + "<div id=\"" + this.id+ "\" class=\"locationControl ecplus-input\" ></div>";
 		   }
 		   else
 		   {
-			   fkfrm = frm.name;
-			   fkfld = frm.key;
+			   return pre + "<input type=\"hidden\"id=\"" + this.id + "\" class=\"ecplus-input\" name=\"" + this.id + "\" value=\"" + val + "\" />";
 		   }
-	   }
-		   
-	   if(this.type == "branch")
-	   {
-		   return pre + "<div id=\"" + this.id + "\" class=\"ecplus-input\"><a href=\"javascript:project.forms['"+ this.form.name+"'].openBranch('" + this.connectedForm + "')\">Add Branch</a><p>This entry currently has <span>" +(val ? val : 0) +"</span> branch entries</p></div>";
-	   }
-	   else if(this.type == "select1")
-	   {
-		   ret =  "<select name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input\" > ";
-		   for(var i = 0; i < this.options.length; i++)
-		   {
-			   ret += "<option value=\"" + this.options[i].value + "\" " + (this.options[i].value == val || this.options[i].label == val ? "SELECTED" : "")  + ">" + this.options[i].label + "</option>";
-		   }
-		   ret +="</select>";
-		   return pre +  ret;
-	   }
-	   else if(this.type == "select")
-	   {
-		   ret =  "";
-		   for(var i = 0; i < this.options.length; i++)
-		   {
-			   ret += "<p id=\"" + this.id + "\"  class=\"ecplus-check-group ecplus-input\"><input type=\"checkbox\" name=\"" + this.name + "\" value=\"" + this.options[i].value + "\" " + (this.options[i].value == val || this.options[i].label == val ? "checked=\"checked\"" : "") + "><label>" + this.options[i].label + "</label></p>";
-		   }
-		   return pre + ret;
-	   }
-	   else if(this.type == "radio")
-	   {
-		   ret =  "<p id=\"" + this.id + "\" class=\"ecplus-radio-group ecplus-input\">";
-		   for(var i = 0; i < this.options.length; i++)
-		   {
-			   var regex = new RegExp('/(^|,)' + this.options[i].value + '|' + this.options[i].label + '(,|$)/');
-			   ret += "<input type=\"radio\" name=\"" + this.id + "\" value=\"" + this.options[i].value + "\" " + (val.match(regex) ? "checked=\"checked\"" : "") + "><label>" + this.options[i].label + "</label><br />";
-		   }
-		   return pre + "</p>" + ret;
-	   }
-	   else if(this.type == "textarea")
-	   {
-		   return pre + "<textarea name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input\">" + val + "</textarea>";
-	   }
-	   else if(this.date || this.setDate)
-	   {
-		   //Custom Date Picker
-		   return pre + "<input type=\"date\" name=\"" + this.id + "\" value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input\" />";
-	   }
-	   else if(this.time || this.setTime)
-	   {
-		   
-		   return pre + "<input type=\"time\" name=\"" + this.id + "\"  value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input\" />";
-	   }
-	   else if(this.type == "input" || this.type == "barcode")
-	   {
-		   var valstring = val ? "value=\"" + val + "\"" : "";		   
-		   return pre + "<input type=\"text\" name=\"" + this.id + "\" " + valstring + " id=\"" + this.id + "\" class=\"ecplus-input\" />";
-	   }
-	   else if(this.type == "video" || this.type == "audio" || this.type == "photo")
-	   {
-		   return pre + "<iframe id=\"" + this.id + "_iframe\" src=\"" + this.form.name + "/uploadMedia\" class=\"ecplus-input ecplus-media-input\" ></iframe><input type=\"hidden\" id=\"" + this.id + "\" name=\"" + this.id + "\" value=\"" + val + "\" />";
-	   }
-	   if(this.type == "location")
-	   {
-		   return pre + "<div id=\"" + this.id+ "\" class=\"locationControl ecplus-input\" ></div>";
-	   }
-	   else
-	   {
-		   return pre + "<input type=\"hidden\"id=\"" + this.id + "\" class=\"ecplus-input\" name=\"" + this.id + "\" value=\"" + val + "\" />";
-	   }
+	   }catch(err){console.debug(err);}
    }
 	
    this.populateControl = function(data)
@@ -1455,39 +1469,39 @@ EpiCollect.Field = function()
    
 	this.formatValue = function(value, data)
 	{
-		if(!value || (typeof value == "string" && (value == "undefined" || value.match(/null/i))))
+		if( !value || (typeof value == "string" && (value == "undefined" || value.match(/null/i))) )
 		{
 			return '';
 		}
-		if(this.type == "select1" || this.type == "radio")
+		if( this.type == "select1" || this.type == "radio" )
 		{
 			
 			var opts = this.options;
 			var l = opts.length;
-			for(var i = l; i--; )
+			for( var i =0; i < l; i++ )
 			{
-				if(opts[i].value == value)
+				if( opts[i].value == value || opts[i].label == value )
 				{
 					return opts[i].label;
 				}
 			}
 			return '<i color="FF0000">' + value + '</i>';
 		}
-		else if (this.type == "select" )
+		else if( this.type == "select" )
 		{
 			var sels = value.split(',');
 			var opts = this.options;
 			var l = opts.length;
 			
 			var ret = '';
-			for(var i = l; i--; )
+			for( var i =0; i < l; i++ )
 			{
 				var l_s = sels.length;
-				for(var j = l_s; j--;)
+				for( var j = 0; j < l_s; j++ )
 				{
-					if(opts[i].value == sels[j] || sels[j])
+					if( opts[i].value == sels[j] || opts[i].label == sels[j] )
 					{
-						ret = ret + ', ' + opts[i].label;
+						ret = ret + (ret != '' ? ', ' : '') + opts[i].label;
 						sels.splice(j, 1);
 						break;
 					}
@@ -1498,6 +1512,7 @@ EpiCollect.Field = function()
 				if(ret != '') ret = ret + ', ';
 				ret = ret + sels.join(',');
 			}
+			return ret;
 		}
 		else if(this.type == "photo"){
 			if(value && !value.match(/^null$/i) && value != "-1")
@@ -1570,7 +1585,6 @@ EpiCollect.Field = function()
 				var ctx = this;
 				$.ajax({
 					url : baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true',
-					async : false,
 					success : function(data, status, xhr)
 					{
 						var res = JSON.parse(data);
