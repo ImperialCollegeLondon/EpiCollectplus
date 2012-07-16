@@ -8,6 +8,10 @@ baseUrl = baseUrl.indexOf('#') > 0 ? baseUrl.substr(0, baseUrl.indexOf('#')) : b
 
 EpiCollect = {};
 
+EpiCollect.KEYWORDS = [
+     
+];
+
 EpiCollect.LoadingOverlay = function()
 {
 	var message = "Loading ...";
@@ -683,20 +687,28 @@ EpiCollect.Form = function()
 			$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question", this.formElement).width() * $(".ecplus-question", this.formElement).length + 1) + "px");
 		}
 		
-		$("input[type=date]", this.formElement).each(function(idx, ele) { 
-			var fmt = project.forms[formName].fields[ele.name].date;
-			if(project.forms[formName].fields[ele.name].setDate)
-			{
-				fmt = project.forms[formName].fields[ele.name].setDate;
-			}
-			fmt = fmt.replace("MM", "mm").replace("yyyy", "yy");
-			
-			$(ele).datepicker({ dateFormat : fmt });
-			if(project.forms[formName].fields[ele.name].setDate)
-			{
-				$(ele).datepicker("setDate", new Date());
-			}
-		});
+		// TODO : Previously the idea was to set the type of the field to date and the use jQuery to augment the browsers that don't yet support
+		// type=date. However as HTML 5 does nto support formats that doesn't work. That said we should look at whether the date should
+		// be stored in-format or as unix timestamp/ISO format then displayed according to the locality settings of the browser/phone
+		// NB this could be a setting to localStorage, as number of rows is.
+		//
+		//if(!$.browser.webkit)
+		//{
+			$("input.ecplus-datepicker", this.formElement).each(function(idx, ele) { 
+				var fmt = project.forms[formName].fields[ele.name].date;
+				if(project.forms[formName].fields[ele.name].setDate)
+				{
+					fmt = project.forms[formName].fields[ele.name].setDate;
+				}
+				fmt = fmt.replace("MM", "mm").replace("yyyy", "yy");
+				console.debug(fmt);
+				$(ele).datepicker({ dateFormat : fmt });
+				if(project.forms[formName].fields[ele.name].setDate)
+				{
+					$(ele).datepicker("setDate", new Date());
+				}
+			});
+		//}
 		if(this.gpsFlds.length > 0) $(".locationControl", this.formElement).gpsPicker()
 		$(".ecplus-radio-group, .ecplus-check-group, select", this.formElement).controlgroup();
 		$(".ecplus-media-input", this.formElement).mediainput();
@@ -715,7 +727,6 @@ EpiCollect.Form = function()
 			var child = $("#" + ctrl.attr("childcontrol"));
 			child.attr('parentvalue', ctrl.val());
 			child.attr('parentfield', ctrl.attr('id'));
-
 		});
 		
 		if(vertical)
@@ -1430,7 +1441,7 @@ EpiCollect.Field = function()
 		   else if(this.date || this.setDate)
 		   {
 			   //Custom Date Picker
-			   return pre + "<input type=\"date\" name=\"" + this.id + "\" value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input\" />";
+			   return pre + "<input type=\"text\" name=\"" + this.id + "\" value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input ecplus-datepicker\" />";
 		   }
 		   else if(this.time || this.setTime)
 		   {

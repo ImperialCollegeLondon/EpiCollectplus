@@ -566,9 +566,8 @@ tr.alt
 	display : inline-block;
 	font-size : 10pt;
 	margin : 0.25em 0.25em 0.25em 0.25em;
-	padding : 0.25em;
+	padding : 0.25em 1.5em 0.25em 1.5em;
 	text-align : center;
-	width : 7em;
 }
 
 .button:hover
