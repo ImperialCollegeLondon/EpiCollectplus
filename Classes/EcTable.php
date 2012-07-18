@@ -396,7 +396,16 @@
 				}
 			}
 			
-			for($i = count($this->branchfields); $i--;)
+			if(!strstr($join, sprintf('ev%s', $this->key)))
+			{
+				$k = $this->key;
+				$s_k = str_replace('.', '_', $k);
+					
+				$join = sprintf('%s LEFT JOIN entryvalue ev%s on e.idEntry = ev%s.entry AND ev%s.projectName = \'%s\' AND ev%s.formName = \'%s\' AND ev%s.fieldName = \'%s\'', $join, $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
+				
+			}
+			
+			for($i = count($this->branchfields); $i-- && $includeChildCount;)
 			{
 				$bf =  str_replace('.', '_', $this->branchfields[$i]);
 				
@@ -435,7 +444,7 @@
 			
 			$child = $this->survey->getNextTable($this->name, true);
 			
- 			if($child)
+ 			if($child && $includeChildCount)
  			{
  				
  				$qry = sprintf('CREATE TEMPORARY TABLE %s_entries (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
@@ -473,7 +482,14 @@
 				{
 					$join .= sprintf(' LEFT JOIN %s_entries on %s_entries.entry = e.idEntry',  $child->name, $child->name);
 				}
+				
+				if(!strstr($join, sprintf('ev%s', $child->name)))
+ 				{
+ 					$join .= sprintf(' LEFT JOIN %s_entries on %s_entries.entry = e.idEntry',  $child->name, $child->name);
+ 				}
  			}
+ 			
+ 			
  			
  			if($format == 'json'){
  				$select .= ' \'}\') as `data` ';
@@ -1188,8 +1204,9 @@
 			$bits = explode(', ', $val);
 			
 			if(count($bits) != count($this->titleFields)) return sprintf('{ "valid" : false, "msg" : "Title has the wrong number of elements, it should be %s elements and it is %s elements", "key" : "" }', count($this->titleFields), count($bits));
-			
+		
 			$args = array_combine($this->titleFields, $bits);
+
 			$req = $this->ask($args, 0, 0, 'created', 'asc', true, 'object', false);
 			$output = '';
 			for ($i = 0; $obj = $this->recieve(); $i++)

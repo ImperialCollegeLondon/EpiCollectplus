@@ -418,6 +418,7 @@ function updateForm()
 {
 	if(!currentForm) return true;
 	if(!updateSelected()) return false;	
+	if(!currentForm.key) return false;
 	
 	var fields = {};
 	var form = currentForm;

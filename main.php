@@ -916,7 +916,7 @@ function siteHome()
 		return;
 	}
 
-	$res = $db->do_query("SELECT name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name");
+	$res = $db->do_query("SELECT name, ttl, ttl24 FROM (SELECT name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name) a order by ttl desc LIMIT 10");
 	if($res !== true)
 	{
 			
@@ -926,7 +926,7 @@ function siteHome()
 		header("location: $rurl");
 		return;
 	}
-	$vals["projects"] = "<h1>Projects on this server</h1>" ;
+	$vals["projects"] = "<h1>Most popular projects on this server</h1>" ;
 
 	$i = 0;
 
@@ -1992,6 +1992,7 @@ function entryHandler()
 		$key_from = getValIfExists($_GET, 'key_from');
 		$secondary_field = getValIfExists($_GET, 'secondary_field');
 		$secondary_value = getValIfExists($_GET, 'secondary_value');
+		ini_set('max_execution_time',11);
 		if($entId == 'title')
 		{
 			if($do)

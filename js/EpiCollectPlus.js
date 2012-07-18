@@ -353,6 +353,8 @@ EpiCollect.Form = function()
 	
 	this.deletedBranches = [];
 	
+	this.pendingReqs = [];
+	
     this.parse = function(xml)
     {
         var tblData = xml.getElementsByTagName('table_data')[0];
@@ -670,6 +672,7 @@ EpiCollect.Form = function()
 		
 		if(popup)
 		{
+			var frm = this;
 			var w = window.innerWidth ? window.innerWidth * 0.75 : 500;
 			var h = window.innerHeight ? window.innerHeight * 0.75 : 400;
 			this.formElement.dialog({
@@ -680,6 +683,11 @@ EpiCollect.Form = function()
 				title : (data ? "Edit " : "Add ") + this.name,
 				close : function(event, ui)
 				{
+					while(frm.pendingReqs.length > 0)
+					{
+						frm.pendingReqs.pop().abort();
+					}
+					$(".ecplus-input", this.formElement).unbind("blur");
 					$(event.target).remove();
 				}
 			});
@@ -790,6 +798,11 @@ EpiCollect.Form = function()
 	
 	this.closeForm = function()
 	{
+		console.debug('closing...');
+		while(this.pendingReqs.length > 0)
+		{
+			this.pendingReqs.pop().abort();
+		}
 		$(".ecplus-input", this.formElement).unbind("blur");
 		this.formElement.dialog("close");
 	};
@@ -884,7 +897,7 @@ EpiCollect.Form = function()
 			{
 				$(".ecplus-form-pane").scrollLeft($(".ecplus-form-pane").scrollLeft() - step);
 			}
-		}, 5)
+		}, 5);
 		
 	}
 	
@@ -987,10 +1000,14 @@ EpiCollect.Form = function()
 	
 	this.closeForm = function()
 	{
+		while(this.pendingReqs.length > 0)
+		{
+			this.pendingReqs.pop().abort();
+		}
+		$(".ecplus-input", this.formElement).unbind("blur");
+		this.formElement.dialog("close");
 		if(this.branchOf == formName)
 		{
-			
-			this.formElement.dialog("close");
 			project.forms[formName].displayForm(undefined, project.forms[formName].getSavedEntry(), false, project.forms[formName].formIndex)
 		}
 		else
@@ -1370,7 +1387,7 @@ EpiCollect.Field = function()
 					   
 					   if(val)
 					   {
-						   $.ajax({
+						   this.form.pendingReqs.push($.ajax({
 							   url : baseUrl + '/../' + this.fkTable + '/title?term=' + val + '&key_from=true',
 							   success : function(data, status, xhr)
 							   {
@@ -1378,7 +1395,7 @@ EpiCollect.Field = function()
 								   
 							   },
 							   context : this
-						   })
+						   }));
 					   }
 						  
 					   return pre + ctrl;
@@ -1594,7 +1611,7 @@ EpiCollect.Field = function()
 					_url += 'seconda_field=' + this.parentfld + '&secondary_value=' + this.parentval;  
 				}
 				var ctx = this;
-				$.ajax({
+				this.form.pendingReqs.push($.ajax({
 					url : baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true',
 					success : function(data, status, xhr)
 					{
@@ -1628,7 +1645,7 @@ EpiCollect.Field = function()
 							$('#' + this.id).val('');
 						}
 					}
-				});
+				}));
 			}
 			else if(this.isinteger){
 				if(!value.match(/^[0-9]+$/))
