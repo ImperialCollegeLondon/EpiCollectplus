@@ -1383,10 +1383,11 @@ EpiCollect.Field = function()
 					   
 				
 					    
-					   var ctrl = '<input name="' + cname + '-ac" id="' + cname +  '-ac" class="ecplus-input ecplus-ac loading" pfield="' + key + '" pform="' + frm.name + '" ' + (fkfld ? ' childcontrol="' + fkfld + '"' : '') + ' /><input type="hidden" name="' + cname + '" id="' + cname +  '" value="' + val + '" class="ecplus-input-hidden" />';
+					   var ctrl = '<input name="' + cname + '-ac" id="' + cname +  '-ac" class="ecplus-input ecplus-ac" pfield="' + key + '" pform="' + frm.name + '" ' + (fkfld ? ' childcontrol="' + fkfld + '"' : '') + ' /><input type="hidden" name="' + cname + '" id="' + cname +  '" value="' + val + '" class="ecplus-input-hidden" />';
 					   
 					   if(val)
 					   {
+						   ctrl.replace('ecplus-ac"', 'ecplus-ac loading"')
 						   this.form.pendingReqs.push($.ajax({
 							   url : baseUrl + '/../' + this.fkTable + '/title?term=' + val + '&key_from=true',
 							   success : function(data, status, xhr)
@@ -1613,6 +1614,7 @@ EpiCollect.Field = function()
 				var ctx = this;
 				this.form.pendingReqs.push($.ajax({
 					url : baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true',
+					async : false,
 					success : function(data, status, xhr)
 					{
 						var res = JSON.parse(data);
