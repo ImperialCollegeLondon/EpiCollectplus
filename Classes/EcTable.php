@@ -1248,7 +1248,10 @@
 				for($i = 0; $i < $cnt; $i++)
 				{
 					if($i > 0) $tstr .= ",";
-					$tstr .= $obj[$this->titleFields[$i]]; 
+					if(array_key_exists($this->titleFields[$i], $obj))
+					{
+						$tstr .= $obj[$this->titleFields[$i]];
+					}
 				}
 			}
 			return $tstr;
