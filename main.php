@@ -291,7 +291,6 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 				$fPos = $sEnd + strlen($id) + 3;
 				//echo ("$fPos --- " . strlen($data) . " $id :: ");
 			}
-
 		}
 		else
 		{
@@ -863,9 +862,12 @@ function siteTest()
 
 function getClusterMarker()
 {
-	include "/utils/markers.php";
+	include '/utils/markers.php';
 	$colours = getValIfExists($_GET, "colours");
 	$counts = getValIfExists($_GET, "counts");
+	
+	$colours = trim($colours, '|');
+	$counts = trim($counts, '|');
 	
 	
 	if(!$colours)
@@ -895,17 +897,18 @@ function getPointMarker()
 	include "/utils/markers.php";
 	
 	$colour = getValIfExists($_GET, "colour");
+	$shape = getValIfExists($_GET, "shape");
 	if(!$colour) $colour = "FF0000";
 	$colour = trim($colour, "#");
 	header("Content-type: image/svg+xml");
-	echo getMapMaker($colour);
+	echo getMapMaker($colour, $shape);
 }
 
 function siteHome()
 {
 	header("Cache-Control: no-cache, must-revalidate");
 
-	global $SITE_ROOT, $db, $log;
+	global $SITE_ROOT, $db, $log,$auth;
 	$vals = array();
 	$server = trim($_SERVER["HTTP_HOST"], "/");
 	$root = trim($SITE_ROOT, "/");
@@ -926,23 +929,37 @@ function siteHome()
 		header("location: $rurl");
 		return;
 	}
-	$vals["projects"] = "<h1>Most popular projects on this server</h1>" ;
+	$vals["projects"] = "<div class=\"ecplus-projectlist\"><h1>Most popular projects on this server</h1>" ;
 
 	$i = 0;
 
 	while($row = $db->get_row_array())
 	{
-		$vals["projects"]  .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$row["name"]}\">{$row["name"]}</a></div><div class=\"total\">{$row["ttl"]} entries with <b>" . ($row["ttl24"] ? $row["ttl24"] : "0") ."</b> in the last 24 hours </div>";
+		$vals["projects"] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$row["name"]}\">{$row["name"]}</a></div><div class=\"total\">{$row["ttl"]} entries with <b>" . ($row["ttl24"] ? $row["ttl24"] : "0") ."</b> in the last 24 hours </div>";
 		$i++;
 	}
-
+	
 	if($i == 0)
 	{
 		$vals["projects"] = "<p>No projects exist on this server, <a href=\"createProject.html	\">create a new project</a></p>";
 	}
 	else
 	{
-		$vals["projects"] .= "<p style=\"margin-top:1.2em;\"> <a href=\"createProject.html	\">create a new project</a></p>";
+		$vals["projects"] .= "<p style=\"margin-top:1.2em;\"> <a href=\"createProject.html	\">create a new project</a></p></div>";
+	}
+	
+	if($auth->isLoggedIn())
+	{
+		$vals['userprojects'] = '<div class="ecplus-userprojects"><h1>My Projects</h1>';
+		
+		$prjs = EcProject::getUserProjects($auth->getEcUserId());
+		$count = count($prjs);
+		for($i = 0; $i < $count; $i++)
+		{
+			$vals['userprojects'] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$prjs[$i]["name"]}\">{$prjs[$i]["name"]}</a></div><div class=\"total\">{$prjs[$i]["ttl"]} entries with <b>" . ($prjs[$i]["ttl24"] ? $prjs[$i]["ttl24"] : "0") ."</b> in the last 24 hours </div>";
+		}
+		
+		$vals['userprojects'] .= '</div>';
 	}
 
 	echo applyTemplate("base.html","index.html",$vals);

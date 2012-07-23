@@ -452,7 +452,7 @@ function updateJumps()
 	fieldCtls.html(fieldCtls.html());
 	for(var i = opts.length; i; i--)
 	{
-		fieldCtls.html("<option value=\"" + i + "\">" + opts[i-1].label + "</option>" + fieldCtls.html());
+		fieldCtls.html("<option value=\"" + i + "\" >" + opts[i-1].label + "</option>" + fieldCtls.html());
 	}
 	
 	$(".jumpvalues").each(function(idx, ele){
@@ -476,7 +476,20 @@ function updateJumps()
 	}
 	fieldCtls.append("<option value=\"END\">END OF FORM</option>");
 	$(".jumpdestination").each(function(idx, ele){
-		 $(ele).val(vals[idx]);
+		 var jq = $(ele);
+		 var opts = $('option', jq);
+		 var len = opts.length;
+		 
+		 var hide = false;
+		 var cField = $('.ecplus-form-element.selected').attr('id');
+		 
+		 for(var i = len; i--; )
+		 {
+			console.debug(opts[i].value + ' == ' + cField);
+			hide = hide || opts[i].value == cField;
+			$(opts[i]).toggle(!hide);
+		 }
+		 jq.val(vals[idx]);
 	});
 }
 
@@ -495,14 +508,32 @@ function updateLastJump()
 	
 	fieldCtls = $(".jumpdestination:last");
 	
+	var cField = $('.ecplus-form-element.selected').attr('id');
+	var hide = true;
+	var val;
+	
 	for(fld in currentForm.fields)
 	{
 		var field = currentForm.fields[fld];
 		var lbl = currentForm.fields[fld].text;
 		if(lbl.length > 25) lbl = lbl.substr(0,22) + "...";
-		if(field.type && !field.hidden) fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
+		
+		if(field.type && !field.hidden)
+		{
+			if(hide)
+			{
+				fieldCtls.append("<option value=\"" + fld + "\" style=\"display:none;\">" + lbl + "</option>");
+			}
+			else
+			{
+				if(!val) val = fld;
+				fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
+			}
+		}
+		hide = hide && fld != cField;
 	}
 	fieldCtls.append("<option value=\"END\">END OF SURVEY</option>");
+	fieldCtls.val(val);
 }
 
 function setSelected(jqEle)

@@ -47,7 +47,7 @@ fieldset
 
 p
 {
-	margin : 0.5em 0 0.5em 0;	
+	margin : 0.5em 0 1.75em 0;	
 }
 
 .ecplus-data th
@@ -161,6 +161,21 @@ tr.alt
 	display: inline-block;
 	margin : 0 0.25em 0 0.25em;
 	vertical-align: middle;
+}
+
+.ecplus-projectlist, .ecplus-userprojects
+{
+	display: inline-block;
+	width : 49%;
+	vertical-align:top;
+	padding: .25em .25em .25em .25em;
+	border-radius : .25em;
+}
+
+.ecplus-userprojects
+{
+	background-color : #EEEEEE;
+	overflow:auto;
 }
 
 /* For slidy form */
