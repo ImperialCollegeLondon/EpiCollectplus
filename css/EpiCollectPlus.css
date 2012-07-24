@@ -50,6 +50,11 @@ p
 	margin : 0.5em 0 1.75em 0;	
 }
 
+form p
+{
+	margin : 0.5em 0 0.5em 0;	
+}
+
 .ecplus-data th
 {
 	color: #EEEEEE;
