@@ -2353,9 +2353,10 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 	}
 	catch(Exception $err)
 	{
-		array_push($msgs, "The XML for this project is invalid : " . $err->getMessage() . ' ' .$err->getTraceAsString());
+		array_push($msgs, "The XML for this project is invalid : " . $err->getMessage());
 	}
-
+	if(count($msgs) == 0)
+	{
 	$prj->name = trim($prj->name);
 	
 	if(!$prj->name || $prj->name == "")
@@ -2508,6 +2509,7 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL)
 		}
 	}
 	$name = $prj->name;
+	}
 	if(getValIfExists($_POST, "json"))
 	{
 		echo "{\"valid\" : " . (count($msgs) == 0 ? "true" : "false") . ", \"msgs\" : [ \"" .implode("\",\"", $msgs)  . "\" ], \"name\" : \"$name\", \"file\" :\"$fn\" }";
