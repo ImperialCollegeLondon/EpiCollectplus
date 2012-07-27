@@ -861,7 +861,7 @@
 					var d = data[i];
 					
 					var vis = filterFunction(data[i]);
-					mkrs[i].setVisible(vis);
+					if( mkrs[i] ) mkrs[i].setVisible(vis);
 					
 				}
 				markerClusterer.repaint();
@@ -874,7 +874,7 @@
 				
 				for(var i = len; i--;)
 				{
-					mkrs[i].setVisible(true);
+					if( mkrs[i] ) mkrs[i].setVisible(true);
 				}
 				markerClusterer.repaint();
 				

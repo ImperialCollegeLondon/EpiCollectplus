@@ -50,10 +50,12 @@ p
 	margin : 0.5em 0 1.75em 0;	
 }
 
-form p
+form p, .ecplus-form-element p, .filterControl p
 {
 	margin : 0.5em 0 0.5em 0;	
 }
+
+
 
 .ecplus-data th
 {
@@ -403,6 +405,7 @@ tr.alt
 	position: absolute;
 	top: 0;
 	width : 19em;
+	overflow : auto;
 }
 
 .loading 

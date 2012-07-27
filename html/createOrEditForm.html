@@ -28,7 +28,7 @@
 				margin : 0.5em 0em .5em 0em;
 				padding : 1.5em 0.5em 1em 0.5em;
 				text-align : center;
-				width : 6em;
+				min-width : 6em;
 				vertical-align :middle;
 			}
 			
@@ -84,6 +84,11 @@
 				min-width : 5em;
 			}
 			
+			.end 
+			{
+				height : 3em;
+			}
+			
 		</style>
 {{/style}}
 {{script}}				
@@ -114,65 +119,71 @@
 
 	<div class="ecplus-columns">
 		<div id="source" class="column first">
-			<h3>Form Elements</h3>
-			<hr />
-			<div class="ecplus-form-element ecplus-fk-element" type="fk">
-      			<p class="title">Link from another form</p> 
+      		<h3><a href="#">Basic inputs</a></h3>
+      		<div>
+	      		<div class="ecplus-form-element ecplus-text-element" type="text">
+	      			<p class="title">Text</p> 
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-numeric-element" type="numeric">
+	      			<p class="title">Numeric</p> 
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-date-element" type="date">
+	      			<p class="title">Date</p> 
+	       			
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-time-element" type="time">
+	      			<p class="title">Time</p> 
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-select1-element" type="select1">
+	      			<p class="title">Drop-down list</p> 
+	      			<p class="option">Option One</p>
+	      			<p class="option">Option Two</p>
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-radio-element" type="radio">
+	      			<p class="title">Radio Buttons</p> 
+	      			<p class="option">Option One</p>
+	      			<p class="option">Option Two</p>
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-select-element" type="select">
+	      			<p class="title">Check boxes</p> 
+	      			<p class="option">Option One</p>
+	      			<p class="option">Option Two</p>
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-textarea-element" type="textarea">
+	      			<p class="title">Multi-line Text</p> 
+	      		</div>
+	      	</div>
+	      	<h3><a href="#">Media inputs</a></h3>
+      		<div>
+	      		<div class="ecplus-form-element ecplus-location-element" type="location">
+	      			<p class="title">Location</p> 
+	      			
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-photo-element" type="photo">
+	      			<p class="title">Photograph</p> 
+	      			
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-video-element" type="video">
+	      			<p class="title">Video</p> 
+	      			
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-audio-element" type="audio">
+	      			<p class="title">Audio</p> 
+	      			
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-barcode-element" type="barcode">
+	      			<p class="title">Barcode</p> 
+	      			
+	      		</div>
       		</div>
-      		<div class="ecplus-form-element ecplus-text-element" type="text">
-      			<p class="title">Text</p> 
-      		</div>
-      		<div class="ecplus-form-element ecplus-numeric-element" type="numeric">
-      			<p class="title">Numeric</p> 
-      		</div>
-      		<div class="ecplus-form-element ecplus-date-element" type="date">
-      			<p class="title">Date</p> 
-       			
-      		</div>
-      		<div class="ecplus-form-element ecplus-time-element" type="time">
-      			<p class="title">Time</p> 
-      		</div>
-      		<div class="ecplus-form-element ecplus-select1-element" type="select1">
-      			<p class="title">Drop-down list</p> 
-      			<p class="option">Option One</p>
-      			<p class="option">Option Two</p>
-      		</div>
-      		<div class="ecplus-form-element ecplus-radio-element" type="radio">
-      			<p class="title">Radio Buttons</p> 
-      			<p class="option">Option One</p>
-      			<p class="option">Option Two</p>
-      		</div>
-      		<div class="ecplus-form-element ecplus-select-element" type="select">
-      			<p class="title">Check boxes</p> 
-      			<p class="option">Option One</p>
-      			<p class="option">Option Two</p>
-      		</div>
-      		<div class="ecplus-form-element ecplus-textarea-element" type="textarea">
-      			<p class="title">Multi-line Text</p> 
-      			
-      		</div>
-      		<div class="ecplus-form-element ecplus-location-element" type="location">
-      			<p class="title">Location</p> 
-      			
-      		</div>
-      		<div class="ecplus-form-element ecplus-photo-element" type="photo">
-      			<p class="title">Photograph</p> 
-      			
-      		</div>
-      		<div class="ecplus-form-element ecplus-video-element" type="video">
-      			<p class="title">Video</p> 
-      			
-      		</div>
-      		<div class="ecplus-form-element ecplus-audio-element" type="audio">
-      			<p class="title">Audio</p> 
-      			
-      		</div>
-      		<div class="ecplus-form-element ecplus-barcode-element" type="barcode">
-      			<p class="title">Barcode</p> 
-      			
-      		</div>
-      		<div class="ecplus-form-element ecplus-branch-element" type="branch">
-      			<p class="title">Branch Form</p> 
+      		<h3><a href="#">Links with other forms</a></h3>
+			<div>
+				<div class="ecplus-form-element ecplus-fk-element" type="fk">
+	      			<p class="title">Link from another form</p> 
+	      		</div>
+	      		<div class="ecplus-form-element ecplus-branch-element" type="branch">
+      				<p class="title">Branch Form</p> 
+      			</div>
       		</div>
     	</div> <!--source-->
 	    <div id="middle" class="column second">
@@ -182,7 +193,7 @@
 				Preview: <a href="#webbie"  id="web" onclick="web();">Web</a>|<a href="#android"  id="web" onclick="android();">Android</a>|<a href="#iphone"  id="web" onclick="iphone();">iPhone</a>
 			</p>-->
 	        <hr />
-	        <div class="ui-sortable" id="destination"><span>&nbsp;</span></div>
+	        <div class="ui-sortable" id="destination"><div class="end">&nbsp;</div></div>
 			<hr />
 	    </div>
 	    <div id="details" class="column last">

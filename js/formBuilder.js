@@ -7,8 +7,12 @@ $(function()
 	var url = location.href;
 	EpiCollect.loadProject(url.substr(0, url.lastIndexOf("/")) + ".xml", drawProject);
 	
+	var details_top = $("#details").offset().top;
+	var toolbox_top =  $("#toolbox").offset().top;
+	details_top = details_top - $("#toolbox").height();
+	
 	$(window).scroll(function(evt){
-		if($(document.body).scrollTop() > $("#toolbox")[0].offsetTop) 
+		if($(document.body).scrollTop() > $("#toolbox").offset().top) 
 		{  
 			$("#toolbox-inner").css({
 				"position":"fixed",
@@ -19,14 +23,30 @@ $(function()
 				"position":"relative"
 			}); 
 		}
-			
+		if($(document.body).scrollTop() > details_top) 
+		{  
+			$("#details").css({
+				"position":"fixed",
+				"top" : $("#toolbox-inner").height() + 10 + "px",
+				"right" : "25px"
+			}); 
+		}else{
+			$("#details").css({
+				"position":"absolute",
+				"top" : "0px",
+				"right" : "0px"
+			}); 
+		}	
 	});
+	
+	$('.first').accordion({ collapsible : true });
 	
 	$("[allow]").hide();
 	$("[notfor]").show();
 	
 	$('#destination').sortable({
 		revert : 50,
+		tolerance : 'pointer',
 		start : function(evt, ui)
 		{
 			ui.placeholder.css("visibility", "");
@@ -42,6 +62,8 @@ $(function()
 			else
 			{
 				setSelected($(ui.item));
+				var jq = $('#destination .end').remove();
+				$('#destination').append(jq[0]);
 			}
 		}
 	});
@@ -50,7 +72,8 @@ $(function()
 		connectToSortable: "#destination",
 		helper: "clone",
 		revert: "invalid",
-		revertDuration : 100
+		revertDuration : 100,
+		appendTo : 'body'
 	});
 	
 	$('#destination').click(function(evt){
@@ -541,6 +564,11 @@ function updateLastJump()
 	fieldCtls.val(val);
 }
 
+function genID()
+{
+	return 'ecplus-ctrl' + $('#destination .ecplus-form-element').length;
+}
+
 function setSelected(jqEle)
 {
 	
@@ -550,6 +578,7 @@ function setSelected(jqEle)
 			if(!updateSelected()) return;
 			$(".last input[type=text]").val("");
 			$(".last input[type=checkbox]").attr("checked", false);
+			$('#inputId').val(genID);
 		}
 		
 		if(currentForm.fields[jqEle.attr("id")])
@@ -581,8 +610,14 @@ function setSelected(jqEle)
 			jqEle.addClass("selected");
 			
 			$('#inputLabel').val(currentControl.text);
-			$('#inputId').val(currentControl.id);
-			
+			if(currentControl.id && currentControl.id != '')
+			{
+				$('#inputId').val(currentControl.id);
+			}
+			else
+			{
+				$('#inputId').val(genID);
+			}
 			$("#required").attr("checked", (currentControl.required));
 			$("#title").attr("checked", (currentControl.title));
 			$("#key").attr("checked", (currentControl.isKey));

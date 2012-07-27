@@ -894,7 +894,7 @@ function getClusterMarker()
 
 function getPointMarker()
 {
-	include "/utils/markers.php";
+	include "./utils/markers.php";
 	
 	$colour = getValIfExists($_GET, "colour");
 	$shape = getValIfExists($_GET, "shape");

@@ -877,7 +877,7 @@
 			}
 			else
 			{
-				$sql2 = "SELECT COUNT(idEntry) as ttl from Entry WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
+				$sql2 = "SELECT COUNT(idEntry) as ttl from entry WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
 			}
 			
 			$res = $db->do_query($sql2);

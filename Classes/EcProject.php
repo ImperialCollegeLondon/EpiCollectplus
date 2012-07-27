@@ -704,7 +704,7 @@ class EcProject{
 		{
 			global $db;
 			
-			$qry = sprintf('SELECT p.name as name, p.ttl as ttl, p.ttl24 as ttl24 FROM (SELECT id,name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name) p join userprojectpermission upp on p.id = upp.project WHERE upp.user = %s order by p.name asc', $uid);
+			$qry = sprintf('SELECT p.name as name, p.ttl as ttl, p.ttl24 as ttl24 FROM (SELECT id,name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName group by project.name) p join userprojectpermission upp on p.id = upp.project WHERE upp.user = %s order by p.name asc', $uid);
 			$res = $db->do_query($qry);
 			$projects = array();
 			if($res === true)
