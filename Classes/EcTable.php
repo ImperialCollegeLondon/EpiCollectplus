@@ -146,7 +146,7 @@
 					$fld->fromArray($arr);
 					$this->fields[$fld->name] = $fld;
 					if($fld->key) $this->key = $fld->name;
-					if($fld->title) array_push($this->titleFields, $fld->name);
+					if($fld->title && $fld->active) array_push($this->titleFields, $fld->name);
 				}
 				
 				
@@ -448,7 +448,7 @@
  			{
  				
  				$qry = sprintf('CREATE TEMPORARY TABLE %s_entries (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
- 					FROM EntryValue a, EntryValue b 
+ 					FROM entryvalue a, entryvalue b 
  					WHERE a.projectName = \'%s\' and a.formName =\'%s\' and a.fieldName = \'%s\' and a.value = b.value and b.formName = \'%s\' 
  					and b.fieldName = \'%s\' GROUP BY a.value, b.entry ORDER BY a.value;',
  					$child->name,
@@ -555,7 +555,7 @@
 		function checkExists($keyValue)
 		{
 			global $db;
-			$sql = sprintf('SELECT entry, count(idEntryValue) AS cnt FROM entryValue WHERE projectName = \'%s\' AND formName = \'%s\' AND fieldName= \'%s\' AND value = \'%s\'', $this->projectName, $this->name, $this->key, $keyValue);
+			$sql = sprintf('SELECT entry, count(idEntryValue) AS cnt FROM entryvalue WHERE projectName = \'%s\' AND formName = \'%s\' AND fieldName= \'%s\' AND value = \'%s\'', $this->projectName, $this->name, $this->key, $keyValue);
 			
 			$res = $db->do_query($sql);
 			$count = 0;
