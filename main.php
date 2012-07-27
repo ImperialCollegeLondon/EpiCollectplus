@@ -1700,7 +1700,7 @@ function formHandler()
 			case "csv":
 				header("Cache-Control: no-cache, must-revalidate");
 				//
-				
+				if( !file_exists('ec/uploads')) mkdir('ec/uploads');
 				$filename = sprintf('ec/uploads/%s_%s_%s%s.csv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
 				if(!file_exists($filename))
 				{
