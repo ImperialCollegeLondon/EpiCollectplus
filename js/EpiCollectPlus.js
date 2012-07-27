@@ -9,7 +9,7 @@ baseUrl = baseUrl.indexOf('#') > 0 ? baseUrl.substr(0, baseUrl.indexOf('#')) : b
 EpiCollect = {};
 
 EpiCollect.KEYWORDS = [
-     
+     'test', 'markers', 'images', 'js', 'css', 'ec', 'pc', 'create'
 ];
 
 EpiCollect.LoadingOverlay = function()
@@ -49,8 +49,6 @@ EpiCollect.LoadingOverlay = function()
 		$("#ecplus_loader_bg").show();
 		try{
 			ctx = $("#ecplus_loader")[0].getContext('2d');
-		
-			
 			drawer = setInterval(this.draw, 10);
 		}catch(err){}
 	}
@@ -124,24 +122,27 @@ String.prototype.padRight = function(length, char)
 	return str;
 };
 
-String.prototype.trim = function(chars)
+if(!String.prototype.trim)
 {
-	// Extends the string class to incluide the trim method.
-	str = this;
-	for(char in chars)
+	String.prototype.trim = function(chars)
 	{
-		if(chars[char] == this[0])
+		// Extends the string class to incluide the trim method.
+		str = this;
+		for(char in chars)
 		{
-			str = str.substr(1);
+			if(chars[char] == this[0])
+			{
+				str = str.substr(1);
+			}
+			if(chars[char] == str[str.length -1])
+			{
+				str = str.substr(0, str.length - 1);
+			}
+				
 		}
-		if(chars[char] == str[str.length -1])
-		{
-			str = str.substr(0, str.length - 1);
-		}
-			
-	}
-	return str.toString();
-};
+		return str.toString();
+	};
+}
 
 Date.prototype.format = function(fmt)
 {
@@ -154,6 +155,25 @@ Date.prototype.format = function(fmt)
 		.replace("mm", this.getMinutes().toString().padLeft(2, "0"))
 		.replace("ss", this.getSeconds().toString().padLeft(2, "0"));
 }
+
+
+if(!Object.keys)
+{
+	Object.keys = function(obj)
+	{
+		var arr = [];
+		for(key in obj)
+		{
+			if(key != 'keys')
+			{
+				arr.push(key);
+			}
+		}
+		return arr;
+	}
+	
+}
+
 
 EpiCollect.onload = null;
 
@@ -251,6 +271,7 @@ EpiCollect.Project = function()
 		{
 			if (name == kw[i]) return false;
 		}
+		if(name == form) return false;
 		return !!name.match(/^[a-z0-9_\-]+$/gi);
 	}
 	
@@ -1562,7 +1583,14 @@ EpiCollect.Field = function()
 				return "<i>No Media</i>";
 			}
 		}else if(this.type == "location" || this.type == "gps"){
-			return value.latitude + ", " + value.longitude;
+			if(value)
+			{
+				return value.latitude + ", " + value.longitude;
+			}
+			else
+			{
+				return "No Value";
+			}
 		}
 		else if(this.id == 'created')
 		{

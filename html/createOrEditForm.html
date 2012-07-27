@@ -234,11 +234,25 @@
 				    </div>
 				    <div allow="date">	
 				        	<label for="date">Date Format</label> 
-				        	<input type="text" id="date" name="date" />
+				        	<select id="date" name="date" >
+				        		<option value="">Choose a format ...</option>
+				        		<option value="dd/MM/yyyy">Day/Month/Year</option>
+				        		<option value="MM/dd/yyyy">Month/Day/Year</option>
+				        		<option value="yyyy/MM/dd">Year/Month/Day</option>
+				        		<option value="MM/yyyy">Month/Year</option>
+				        		<option value="dd/MM">Day/Month</option>
+				        	</select>
 				    </div>
 				    <div allow="time">
 				        	<label for="inputmax">Time Format</label> 
-				        	<input type="text" id="time" name="time" />
+				        	<select id="time" name="time" >
+				        		<option value="">Choose a format ...</option>
+				        		<option value="HH:mm:ss">Hours:Minutes:Seconds (24 hours)</option>
+				        		<option value="hh:mm:ss">Hours:Minutes:Seconds (12 hours)</option>
+				        		<option value="HH:mm">Hours:Minutes (24 hours)</option>
+				        		<option value="hh:mm">Hours:Minutes (12 hours)</option>
+				        		<option value="mm:ss">Minutes:Seconds</option>
+				        	</select>
 				    </div>
 				   	<div allow="date,time">
 				        	<label for="inputSet">Set default to current date/time</label> 
@@ -252,7 +266,7 @@
 				       	<label for="inputregex">Regular Expression</label> 
 				       	<input type="text" id="regex" name="regex" />
 				     </div>
-				     <div allow="text,numeric,date,time">
+				     <div allow="text,numeric,date,time,barcode">
 				        	<label for="inputVerify">Double Entry</label>
 				        	<input type="checkbox" id="verify" name="verify" value="true" />
 				     </div>
@@ -275,7 +289,7 @@
 									<br><a href="javascript:void(0);" class="button removeOption">Remove Option</a>	 
 						 </div> 
 					</div>
-					<div id="jumps" allow="select,radio,select1,numeric">
+					<div id="jumps" allow="select,radio,select1">
 						<hr />
 						<h3>Jumps</h3>
 						<a href="javascript:addJump();updateLastJump();" class="button">Add Jump</a>

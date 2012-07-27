@@ -323,9 +323,9 @@
 				
 			}
 			
-			if(!array_key_exists($this->key, $this->fields)) throw new Exception("The form {$this->name} does not contain the field {$this->key} which was specified as the primary key.");
+			if( !array_key_exists($this->key, $this->fields) && $this->number > 0 ) throw new Exception("The form {$this->name} does not contain the field {$this->key} which was specified as the primary key.");
 			
-			$this->fields[$this->key]->key = true;
+			if( array_key_exists($this->key, $this->fields) ) $this->fields[$this->key]->key = true;
 		}
 		
 		public function ask($args = false, $offset = 0, $limit = 0, $sortField = 'created', $sortDir = 'asc', $exact = false, $format = 'object', $includeChildCount = true)
@@ -812,7 +812,8 @@
 			global $db;// = new dbConnection();
 			
 			$db->beginTransaction();
-			$sql = "UPDATE form set version = {$this->version}, name = '{$this->name}', keyField = '{$this->key}', isMain = " . ($this->isMain ? 1 : 0) . ", `group` = " . $db->numVal($this->group)  . " WHERE project = {$this->survey->id} AND table_num = {$this->number};";
+			$sql = "UPDATE form set version = {$this->version}, name = '{$this->name}', keyField = '{$this->key}', table_num = {$this->number}, isMain = " . ($this->isMain ? 1 : 0) . ", `group` = " . $db->numVal($this->group)  . " WHERE project = {$this->survey->id} AND idForm = " . $this->id;
+			
 			$res = $db->do_query($sql);
 			if($res !== true){
 				$db->rollbackTransaction();

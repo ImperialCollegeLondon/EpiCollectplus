@@ -358,7 +358,7 @@ class EcField{
 							$this->regex = $rx;
 							break;
 					case 'verify':
-							$this->doubleEntry = false;
+							$this->doubleEntry = parseBool((string)$val);
 							break;
 					case 'search' :
 							$this->search = parseBool((string)$val);

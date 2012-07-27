@@ -83,7 +83,7 @@ class EcProject{
 						
 						$frm->fetch();
 						//get options
-						$this->tables[$frm->name] = $frm;
+						if($frm->number > 0) $this->tables[$frm->name] = $frm;
 						
 					}
 					foreach($this->tables as $tname => $tbl)
@@ -142,6 +142,11 @@ class EcProject{
 				}
 			}
 			
+			if(!$this->submission_id || $this->submission_id == '_' || $this->submission_id == '')
+			{
+				$this->submission_id = strtolower($this->name);
+			}
+			
 			if(!$adeIsSet) throw new Exception("allowDownloadEdits must be set for every project.");
 			
 			//check the version of the xml (version 1 does not contain table tags)
@@ -154,9 +159,6 @@ class EcProject{
 			{
 				
 				$this->ecVersionNumber = "3";
-				
-				
-				
 				for($t = 0; $t < count($root->form); $t++)
 				{
 						$atts = $root->form[$t]->attributes();
@@ -167,7 +169,8 @@ class EcProject{
 						}
 						elseif($this->tables[(string)$atts['name']]->id)
 						{
-							$tbl = $this->tables[(string)$atts['name']];
+							$tbl = new EcTable($this);
+							$tbl->id = $this->tables[(string)$atts['name']]->id;
 						}
 						else
 						{
@@ -535,7 +538,7 @@ class EcProject{
 				foreach($this->tables as $tbl)
 				{
 						$log->write('info', "Updating form {$tbl->name}");
-				
+					
 						$res = $tbl->id ? $tbl->update() : $tbl->addToDb();
 						if($res !== true) {
 								$log->write('error', "Updating form {$tbl->name} failed $res");
@@ -719,6 +722,20 @@ class EcProject{
 			}
 //			$json .= ']';
 			return $projects;
+		}
+		
+		public static function projectExists($name)
+		{
+			global $db;
+			
+			$qry = sprintf('SELECT * FROM project WHERE name=\'%s\'', $name);
+			$res = $db->do_query($qry);
+			if($res !== true) return false;
+			
+			for($i = 0; $row = $db->get_row_array(); $i++){}
+			
+			return $i > 0;
+			
 		}
 	}
 ?>

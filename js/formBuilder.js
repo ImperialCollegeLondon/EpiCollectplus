@@ -270,7 +270,7 @@ function drawFormControls(form)
 			var forms = project.forms;
 			for(f in forms)
 			{
-				if(f != form.name && fld.id == forms[f].key) cls = "ecplus-fk-element";
+				if(f != form.name && fld.id == forms[f].key && fld.form.num > forms[f].num) cls = "ecplus-fk-element";
 			}
 		}
 		else cls = "ecplus-" + fld.type + "-element";
@@ -287,12 +287,7 @@ function updateSelected()
 	if(jq == undefined || jq.length == 0) return true;
 	
 	var name = currentControl.id; 
-	if(!currentForm.validateFieldName($('#inputId').val(), name))
-	{
-		return false;
-	}
-	
-	if(jq.type == 'fk')
+	if(jq.attr("type") == 'fk')
 	{
 		currentControl.id = project.forms[$('#parent').val()].key;
 	}
@@ -302,7 +297,13 @@ function updateSelected()
 		currentControl.text = $('#inputLabel').val();
 	}
 	
-	if(jq.attr("type").match(/^(text|numeric|date|time|fk)/))
+	if(!currentForm.validateFieldName(currentControl.id, name))
+	{
+		alert('Field name must be unique within the form, not the same as the form name and not one of ' + EpiCollect.KEYWORDS.join(', '));
+		return false;
+	}
+	
+	if(jq.attr("type").match(/^(text|numeric|date|time|fk)$/))
 	{
 		currentControl.type = "input";
 		if(jq.attr("type") == "fk")
@@ -340,8 +341,12 @@ function updateSelected()
 	currentControl.hidden = !!$("#hidden").attr("checked");
 	currentControl.isinteger = !!$("#integer").attr("checked");
 	currentControl.isdouble = !!$("#decimal").attr("checked");
-	currentControl.min = $("#min").val();
-	currentControl.max = $("#max").val();
+	if(currentControl.isinteger || currentControl.isdouble)
+	{
+		currentControl.min = $("#min").val();
+		currentControl.max = $("#max").val();
+	}
+	if( $("#default").val() !== '' && !currentControl.validate($("#default").val()) ) throw 'Default value does not match the format of the control';
 	currentControl.defaultValue = $("#default").val();
 	currentControl.search = !!$("#search").attr("checked");
 	
@@ -424,7 +429,7 @@ function updateForm()
 	var form = currentForm;
 	
 	var elements = $("#destination div");
-	for(var i = 0; i < elements.length; i++)
+	for(var i = 0; i < elements.length && form; i++)
 	{
 		var id = elements[i].id;
 		fields[id] = form.fields[id]; 
@@ -583,8 +588,8 @@ function setSelected(jqEle)
 			$("#key").attr("checked", (currentControl.isKey));
 			$("#decimal").attr("checked", currentControl.isdouble);
 			if(! currentControl.isdouble) $("#integer").attr("checked", currentControl.isinteger);
-			$("#min").val(currentControl.min);
-			$("#max").val(currentControl.max);
+			$("#min").val(currentControl.min ? Number(currentControl.min) : '');
+			$("#max").val(currentControl.max ? Number(currentControl.max) : '');
 			
 			if(currentControl.date)$("#date").val(currentControl.date);
 			if(!!currentControl.setDate)
@@ -704,20 +709,28 @@ function setSelected(jqEle)
 
 function removeForm(name)
 {
+	
 	if(confirm('Are you sure you want to remove the form ' + name + '?'))
 	{
+		currentForm = false;
 		$('#' + name, $("#formList")).remove();
 		var key = project.forms[name].key;
-		delete project.forms[name];
+		var num = project.forms[name].num;
+		project.forms[name].num = -1;
 		
 		for( frm in project.forms )
 		{
+			if(!currentForm) switchToForm(frm);
 			for( fld in project.forms[frm].fields )
 			{
 				if( fld == key )
 				{
 					delete project.forms[frm].fields[fld];
 				}
+			}
+			if(project.forms[frm].num > num)
+			{
+				project.forms[frm].num = Number(project.forms[frm].num) - 1;
 			}
 		}
 	}
@@ -763,15 +776,31 @@ function renameForm(name)
 
 function switchToBranch()
 {
+	var ctrlname = $('destination .selected').attr('id')
 	$('.form').removeClass("selected");
+	updateSelected();
 	
+	var frm = currentControl.connectedForm;
+	if(!frm || frm == '')
+	{
+		frm = currentControl.id + "_form";
+		currentControl.connectedForm = frm;
+	}
+	
+	
+
 	if(currentForm){
 		updateForm();
 		project.forms[currentForm.name] = currentForm;
 	}
 	
-	var frm = currentControl.connectedForm;
-	if(!project.forms[frm]) project.forms[frm] = new EpiCollect.Form();
+	
+	if(!project.forms[frm])
+	{
+		project.forms[frm] = new EpiCollect.Form();
+		project.forms[frm].num = Object.keys(project.forms).length;
+		project.forms[frm].name = frm;
+	}
 	currentForm = project.forms[frm];
 	currentForm.main = false;
 	formName = currentForm.name;

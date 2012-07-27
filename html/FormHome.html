@@ -698,6 +698,7 @@
 				
 				for(var i = 0; i < data.length; i++)
 				{
+					if(!data[i][geoField]) continue;
 					if(!data[i][geoField].accuracy) data[i][geoField].accuracy = (data[i][geoField].latitude != 0 && data[i][geoField].longitude !=0) ? 100 : -1;
 					if(data[i][geoField].latitude >= -90 && data[i][geoField].latitude <= 90 && data[i][geoField].longitude >= -180 && data[i][geoField].longitude <= 180 && data[i][geoField].accuracy > 0)
 					{
