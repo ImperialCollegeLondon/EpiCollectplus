@@ -448,7 +448,7 @@
  			{
  				
  				$qry = sprintf('CREATE TEMPORARY TABLE %s_entries (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
- 					FROM EntryValue a, EntryValue b 
+ 					FROM entryvalue a, entryvalue b 
  					WHERE a.projectName = \'%s\' and a.formName =\'%s\' and a.fieldName = \'%s\' and a.value = b.value and b.formName = \'%s\' 
  					and b.fieldName = \'%s\' GROUP BY a.value, b.entry ORDER BY a.value;',
  					$child->name,
