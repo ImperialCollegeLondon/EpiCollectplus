@@ -442,6 +442,10 @@ function updateSelected()
 	return true;
 }
 
+function updateSelectedCtl(){
+	updateSelected();
+}
+
 function updateForm()
 {
 	if(!currentForm) return true;
