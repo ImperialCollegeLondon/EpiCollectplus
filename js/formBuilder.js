@@ -108,11 +108,11 @@ $(function()
 	$("#key").change(function(evt){
 		if(evt.target.checked)
 		{
-			$("[allow=key]").show();
+			$("[allow*=key]").show();
 		}
 		else
 		{
-			$("[allow=key]").hide();
+			$("[allow*=key]").hide();
 		}
 	});
 	
@@ -442,11 +442,19 @@ function updateSelected()
 	return true;
 }
 
+function updateSelectedCtl(){
+	updateSelected();
+}
+
 function updateForm()
 {
 	if(!currentForm) return true;
 	if(!updateSelected()) return false;	
-	if(!currentForm.key) return false;
+	if(!currentForm.key)
+	{
+		alert("The form " + currentForm.name + " needs a key defined.")
+		return false;
+	}
 	
 	var fields = {};
 	var form = currentForm;
@@ -600,7 +608,7 @@ function setSelected(jqEle)
 		
 		if(currentControl.isKey)
 		{
-			$("[allow=key]").show();
+			$("[allow*=key]").show();
 		}
 		if(jqEle.hasClass("ecplus-form-element"))
 		{
@@ -872,13 +880,15 @@ function switchToForm(name)
 
 function saveProject()
 {
+	
+	
+	if(!updateSelected()) return;
+	if(!updateForm()) return;
+	
 	var loader = new EpiCollect.LoadingOverlay();
 	loader.setMessage('Saving...');
 	loader.start();
 	window.loader = loader;
-	
-	if(!updateSelected()) return;
-	if(!updateForm()) return;
 	
 	$.ajax("./updateStructure" ,{
 		type : "POST",
