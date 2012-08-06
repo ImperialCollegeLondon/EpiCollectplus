@@ -1875,7 +1875,7 @@ EpiCollect.Field = function()
 		if(this.regex) xml = xml + " regex=\"" + this.regex + "\"";
 		if(this.verify) xml = xml + " verify=\"true\"";
 		if(this.genkey) xml = xml + " genkey=\"true\"";
-		if(!this.display || this.hidden) xml = xml + " hidden=\"true\"";
+		if(!this.display || this.hidden) xml = xml + " display=\"false\"";
 		if(this.edit) xml = xml + " edit=\"true\"";
 		if(this.date && this.date != "") xml = xml + " date=\"" + this.date + "\"";
 		if(this.time && this.time != "") xml = xml + " time=\"" + this.time + "\"";
