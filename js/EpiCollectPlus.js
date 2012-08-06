@@ -583,16 +583,6 @@ EpiCollect.Form = function()
 		this.markers = {};
 	};
 	
-	
-	
-	/**
-	 * @author Chris I Powell
-	 * 
-	 * 
-	 */
-	
-	
-	
 	/**
 	 * @author Chris I Powell
 	 * 
@@ -603,7 +593,7 @@ EpiCollect.Form = function()
 	 */
 	this.displayForm = function(cnf)//(ele, data, vertical, index, editMode )
 	{
-		if(!cnf) cnf = {};
+		if(!cnf) cnf = {};	
 		var ele = cnf.element;
 		var data = cnf.data;
 		var vertical = cnf.vertical;
@@ -614,7 +604,7 @@ EpiCollect.Form = function()
 		if(index == undefined)
 			this.formIndex = 0;
 		else
-			this.formIndex = 1;
+			this.formIndex = index+1;
 			
 		if(data) data["updated"] = new Date().getTime().toString();
 		
@@ -640,7 +630,7 @@ EpiCollect.Form = function()
 			.dialog("option", "title", "Add Location")
 			.empty()
 			.attr("title", (editMode ? "Edit " : "Add ") + this.name)
-			.addClass(vertical ? "ecplus-vertical-form" :"ecplus-form")
+			.addClass(vertical ? "ecplus-vertical-form" : "ecplus-form")
 			.removeClass(vertical ? "ecplus-form" :"ecplus-vertical-form")
 			.append("<div class=\"ecplus-form-next\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].moveNext();\">Next</a></div>")
 			.append("<div class=\"ecplus-form-previous\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].movePrevious();\">Previous</a></div>")
@@ -933,6 +923,7 @@ EpiCollect.Form = function()
 			{
 				val = $("#" + fldName + '-ac', this.formElement).val();
 			}
+			
 			var valid = this.fields[fldName].validate(val);
 			$("#" + fldName + "-messages").empty();
 			
@@ -942,7 +933,7 @@ EpiCollect.Form = function()
 				$("#" + fldName, this.formElement)
 					.unbind("blur")
 					.blur()
-					.blur(function(evt){
+					$("#" + fldName, this.formElement).blur(function(evt){
 						project.forms[formName].moveNext(true);
 					});
 			}
@@ -992,7 +983,7 @@ EpiCollect.Form = function()
 		
 	this.getValues = function()
 	{
-		vals = {};
+		var vals = {};
 		for(fld in this.fields)
 		{
 			vals[fld] = $("#" + fld).val();
@@ -1011,7 +1002,7 @@ EpiCollect.Form = function()
 		}
 		this.saveEntry();
 		this.closeForm();
-		project.forms[branchName].displayForm(undefined, rec, false);
+		project.forms[branchName].displayForm({data : rec});
 		if(newEntry)
 		{
 			$("#" + this.key, project.forms[branchName].formElement).append('<option value="' + rec[this.key] + '" SELECTED>' + rec[this.key] + '</option>'  );
@@ -1029,7 +1020,10 @@ EpiCollect.Form = function()
 		this.formElement.dialog("close");
 		if(this.branchOf == formName)
 		{
-			project.forms[formName].displayForm(undefined, project.forms[formName].getSavedEntry(), false, project.forms[formName].formIndex)
+			project.forms[formName].displayForm({ 
+				data : project.forms[formName].getSavedEntry(),
+				index: project.forms[formName].formIndex
+			});
 		}
 		else
 		{
@@ -1043,9 +1037,16 @@ EpiCollect.Form = function()
 		{
 			$.ajax(baseUrl + "/" + key, {
 				type : "DELETE",
-				success:function()
+				success : function()
 				{
 					getData();
+				},
+				error : function(xhr, err, statusText)
+				{
+					if(statusText.toUpperCase() == "CONFLICT")
+					{
+						alert('cannot delete a record with child records.');
+					}
 				}
 			});
 		}
@@ -1066,7 +1067,6 @@ EpiCollect.Form = function()
 			data : this.getValues(),
 			success:function(data, status, xhr)
 			{
-				
 				var obj = JSON.parse(data);
 				if(obj.success)
 				{
@@ -1074,7 +1074,6 @@ EpiCollect.Form = function()
 					{
 						for(var qfrm in entryQueue)
 						{
-						
 							var queue = entryQueue[qfrm];
 							var len = queue.length;
 							
@@ -1104,14 +1103,13 @@ EpiCollect.Form = function()
 						$(frm.formElement).dialog("close");
 						getData();
 					}
-					
 				}
 				else
 				{
 					alert(obj.msg);
 				}
 			},
-			failure:function()
+			error:function()
 			{
 				alert("Add request failed");
 			}	
@@ -1140,9 +1138,9 @@ EpiCollect.Form = function()
 		var ent = project.forms[formName].getSavedEntry();
 		var flds = project.forms[formName].fields;
 		
-		for(f in  flds)
+		for( f in flds )
 		{
-			if(flds[f].connectedForm == this.name) {
+			if( flds[f].connectedForm == this.name ) {
 				if(ent[f]){
 					ent[f]++;
 				}
@@ -1157,7 +1155,7 @@ EpiCollect.Form = function()
 		
 	this.editEntry = function()
 	{
-		if(this.branchOf)
+		if( this.branchOf )
 		{
 			this.saveBranch();
 			this.closeForm();
@@ -1185,10 +1183,10 @@ EpiCollect.Form = function()
 					alert(obj.msg);
 				}
 			},
-			failure:function()
+			error:function()
 			{
 				alert("Edit request failed");
-			}	
+			}
 		});
 	}
 	
@@ -1622,7 +1620,7 @@ EpiCollect.Field = function()
 	
 	this.validate = function(value)
 	{
-		console.debug('checking...' + this.id);
+		console.debug('checking...' + this.id + '  = ' + value);
 		var msgs = [];
 		if(this.required && (!value || value == "")) msgs.push("This field is required");
 		if(value && value != "")
