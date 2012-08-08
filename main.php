@@ -1576,6 +1576,7 @@ function formHandler()
 			
 			foreach(array_keys($ent->values) as $key)
 			{
+				if(!$prj->tables[$frmName]->fields[$key]->active) continue;
 				if(array_key_exists($key, $_POST))
 				{
 					$ent->values[$key] = $_POST[$key];

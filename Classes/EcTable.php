@@ -383,14 +383,14 @@
 					if( $v == '' ) continue;
 					if( array_key_exists($k, $this->fields) && $this->fields[$k]->type != "" )
 					{
-						$join .= sprintf(' LEFT JOIN entryvalue ev%s on e.idEntry = ev%s.entry AND ev%s.projectName = \'%s\' AND ev%s.formName = \'%s\' AND ev%s.fieldName = \'%s\'', $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
+						$join .= sprintf(' LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
 						if( $exact === true )
 						{
-							$where .= sprintf(' AND ev%s.value = \'%s\'', $s_k, $v);
+							$where .= sprintf(' AND `ev%s`.value = \'%s\'', $s_k, $v);
 						}
 						else
 						{
-							$where .= sprintf(' AND ev%s.value Like \'%s\'', $s_k, $v);
+							$where .= sprintf(' AND `ev%s`.value Like \'%s\'', $s_k, $v);
 						}
 					}
 				}
@@ -401,7 +401,7 @@
 				$k = $this->key;
 				$s_k = str_replace('.', '_', $k);
 					
-				$join = sprintf('%s LEFT JOIN entryvalue ev%s on e.idEntry = ev%s.entry AND ev%s.projectName = \'%s\' AND ev%s.formName = \'%s\' AND ev%s.fieldName = \'%s\'', $join, $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
+				$join = sprintf('%s LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $join, $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
 				
 			}
 			
@@ -410,27 +410,27 @@
 				$bf =  str_replace('.', '_', $this->branchfields[$i]);
 				
 				if($format == 'json'){
-					$select .= sprintf(' \', "%s" : \' , COUNT(distinct ev%s_entries.entry) ,', $bf, $this->branches[$i]);
+					$select .= sprintf(' \', "%s" : \' , COUNT(distinct `ev%s_entries`.entry) ,', $bf, $this->branches[$i]);
 				}elseif($format == 'xml'){
-					$select .= sprintf(' \'<%s>\', COUNT(distinct ev%s_entries.entry), \'</%s>\',', $bf, $this->branches[$i], $bf);
+					$select .= sprintf(' \'<%s>\', COUNT(distinct `ev%s_entries`.entry), \'</%s>\',', $bf, $this->branches[$i], $bf);
 				}elseif($format == 'csv'){
-					$select .= sprintf(', COUNT(distinct ev%s_entries.entry) ', $this->branches[$i]);
+					$select .= sprintf(', COUNT(distinct `ev%s_entries`.entry) ', $this->branches[$i]);
 				}elseif($format == 'tsv'){
-					$select .= sprintf(', COUNT(distinct ev%s_entries.entry)  ', $this->branches[$i]);
+					$select .= sprintf(', COUNT(distinct `ev%s_entries`.entry)  ', $this->branches[$i]);
 				}elseif($format == 'kml'){
 					throw new Exception ('Format not yet implemented');
 				}elseif($format == 'tskv'){
-					$select .= sprintf(',%s , COUNT(distinct ev%s_entries.entry)', $bf, $this->branches[$i]);
+					$select .= sprintf(',%s , COUNT(distinct `ev%s_entries`.entry)', $bf, $this->branches[$i]);
 				}elseif($format != 'object'){
 					//throw new Exception ('Format not specified');
 				}
 				
 				if(!strstr($join, sprintf('ev%s', $this->key)))
 				{
-					$join .= sprintf(' LEFT JOIN entryvalue ev%s on ev%s.entry = e.idEntry and ev%s.fieldName = \'%s\'', $this->key,$this->key,$this->key,$this->key);
+					$join .= sprintf(' LEFT JOIN entryvalue `ev%s` on `ev%s`.entry = e.idEntry and `ev%s`.fieldName = \'%s\'', $this->key,$this->key,$this->key,$this->key);
 				}
 				
-				$join .= sprintf(' LEFT JOIN entryValue ev%s_entries  ON ev%s.value = ev%s_entries.value  AND ev%s_entries.projectName = \'%s\' AND ev%s_entries.formName = \'%s\' AND ev%s_entries.fieldName = \'%s\'',
+				$join .= sprintf(' LEFT JOIN entryValue `ev%s_entries`  ON `ev%s`.value = `ev%s_entries`.value  AND `ev%s_entries`.projectName = \'%s\' AND `ev%s_entries`.formName = \'%s\' AND `ev%s_entries`.fieldName = \'%s\'',
 						$this->branches[$i],
 						$this->key, 
 						$this->branches[$i],
@@ -447,7 +447,7 @@
  			if($child && $includeChildCount)
  			{
  				
- 				$qry = sprintf('CREATE TEMPORARY TABLE %s_entries (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
+ 				$qry = sprintf('CREATE TEMPORARY TABLE `%s_entries` (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
  					FROM entryvalue a, entryvalue b 
  					WHERE a.projectName = \'%s\' and a.formName =\'%s\' and a.fieldName = \'%s\' and a.value = b.value and b.formName = \'%s\' 
  					and b.fieldName = \'%s\' GROUP BY a.value, b.entry ORDER BY a.value;',
@@ -463,29 +463,29 @@
  				//if($res !== true) die($res);
  				
  				if($format == 'json'){
- 					$select .= sprintf(' \', "%s_entries" : \' , IFNULL(%s_entries.entries, 0)  ,', $child->name, $child->name);
+ 					$select .= sprintf(' \', "%s_entries" : \' , IFNULL(`%s_entries`.`entries`, 0)  ,', $child->name, $child->name);
  				}elseif($format == 'xml'){
- 					$select .= sprintf(' \'<%s_entries>\',   IFNULL(%s_entries.entries, 0), \'</%s_entries>\',', $child->name, $child->name, $child->name);
+ 					$select .= sprintf(' \'<%s_entries>\',   IFNULL(`%s_entries`.entries, 0), \'</%s_entries>\',', $child->name, $child->name, $child->name);
  				}elseif($format == 'csv'){
- 					$select .= sprintf(',     IFNULL(%s_entries.entries, 0)  ', $child->name);
+ 					$select .= sprintf(',     IFNULL(`%s_entries`.entries, 0)  ', $child->name);
  				}elseif($format == 'tsv'){
- 					$select .=sprintf( ',     IFNULL(%s_entries.entries, 0)) ', $child->name);
+ 					$select .=sprintf( ',     IFNULL(`%s_entries`.entries, 0)) ', $child->name);
  				}elseif($format == 'kml'){
  					throw new Exception ('Format not yet implemented');
  				}elseif($format == 'tskv'){
- 					$select .= sprintf(',%s_entries ,  IFNULL(%s_entries.entries, 0)', $child->name, $child->name);
+ 					$select .= sprintf(',`%s_entries `,  IFNULL(`%s_entries.entries`, 0)', $child->name, $child->name);
  				}elseif($format == 'object'){
  					//throw new Exception ('Format not specified');
  				}
  				
  				if(!strstr($join, sprintf('ev%s', $this->key)))
 				{
-					$join .= sprintf(' LEFT JOIN %s_entries on %s_entries.entry = e.idEntry',  $child->name, $child->name);
+					$join .= sprintf(' LEFT JOIN `%s_entries` on `%s_entries`.entry = e.idEntry',  $child->name, $child->name);
 				}
 				
 				if(!strstr($join, sprintf('ev%s', $child->name)))
  				{
- 					$join .= sprintf(' LEFT JOIN %s_entries on %s_entries.entry = e.idEntry',  $child->name, $child->name);
+ 					$join .= sprintf(' LEFT JOIN `%s_entries` on `%s_entries`.entry = e.idEntry',  $child->name, $child->name);
  				}
  			}
  			
@@ -512,16 +512,16 @@
  			if(!strstr($join, sprintf('ev%s', $sortField)) && $sortIsField)
  			{
  				$s_sortField = str_replace('.', '_', $sortField);
- 				$join .= sprintf(' LEFT JOIN entryvalue ev%s on ev%s.entry = e.idEntry and ev%s.fieldName = \'%s\'', $s_sortField, $s_sortField, $s_sortField, $sortField);
+ 				$join .= sprintf(' LEFT JOIN entryvalue `ev%s` on `ev%s`.entry = e.idEntry and `ev%s`.fieldName = \'%s\'', $s_sortField, $s_sortField, $s_sortField, $sortField);
  			}
 			
 			if($sortIsField)
 			{
-				$order = sprintf(' ORDER BY ev%s.value %s', str_replace('.', '_', $sortField), $sortDir);
+				$order = sprintf(' ORDER BY `ev%s`.value %s', str_replace('.', '_', $sortField), $sortDir);
 			}
 			elseif($child && $sortField == $child->name . '_entries')
 			{
-				$order = sprintf(' ORDER BY %s_entries.entries %s', str_replace('.', '_', $child->name), $sortDir);
+				$order = sprintf(' ORDER BY `%s_entries`.entries %s', str_replace('.', '_', $child->name), $sortDir);
 			}
 			elseif($sortField)
 			{
@@ -542,9 +542,9 @@
 				$limit_s = '';
 			}
 			$qry = sprintf('%s %s %s %s %s %s %s', $qry, $select, $join, $where, $group, $order, $limit_s);
-
-			unset($select, $join, $where, $group, $order, $limit_s);
 			
+			unset($select, $join, $where, $group, $order, $limit_s);
+						
 			$res = $db->do_multi_query($qry);
 			if($res !== true) return $res;
 			
