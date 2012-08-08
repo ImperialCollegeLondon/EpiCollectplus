@@ -2213,11 +2213,13 @@ function updateXML()
 	$prj->name = substr($url, 0, strpos($url, "/"));
 	$prj->fetch();
 	
+	
+	
 	//echo '--', $xml , '--';
 	if($xml)
 	{
 		$n = '';
-		$validation = validate(NULL,$xml, $n, true);
+		$validation = validate(NULL,$xml, $n, true, true);
 		if($validation !== true)
 		{
 			echo "{ \"result\": false , \"message\" : \"" . $validation . "\" }";
@@ -2335,7 +2337,7 @@ function projectCreator()
 	}
 }
 
-function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false)
+function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $returnJson = false)
 {
 	global $SITE_ROOT;
 
@@ -2520,13 +2522,17 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false)
 		}
 		$name = $prj->name;
 	}
-	if(getValIfExists($_POST, "json"))
+	if($returnJson)
 	{
-		echo "{\"valid\" : " . (count($msgs) == 0 ? "true" : "false") . ", \"msgs\" : [ \"" .implode("\",\"", $msgs)  . "\" ], \"name\" : \"$name\", \"file\" :\"$fn\" }";
+		return count($msgs) == 0 ? true : str_replace('"', '\"', implode("\",\"", $msgs));
+	}
+	elseif(getValIfExists($_REQUEST, "json"))
+	{
+		echo "{\"valid\" : " . (count($msgs) == 0 ? "true" : "false") . ", \"msgs\" : [ \"" . str_replace('"', '\"', implode("\",\"", $msgs))  . "\" ], \"name\" : \"$name\", \"file\" :\"$fn\" }";
 	}
 	else
 	{
-		return count($msgs) == 0 ? true : "<ol><li>" . implode("</li><li>", $msgs) . "</li></ol>";
+		return count($msgs) == 0 ? true : "<ol><li>" . str_replace('"', '\"', implode("</li><li>", $msgs)) . "</li></ol>";
 	}
 }
 

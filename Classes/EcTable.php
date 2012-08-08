@@ -273,6 +273,8 @@
 			$this->titleFields = array();
 			//parse elements
 			$p = 0;
+			$keyFieldParsed = false;
+			
 			foreach($xml->children() as $field)
 			{
 				
@@ -300,6 +302,8 @@
 					
 					$fld->parse($field);
 					
+					if($fld->name == $this->key) $keyFieldParsed = true;
+					
 					$fld->form = $this;
 					foreach($this->survey->tables as $tbl)
 					{
@@ -313,6 +317,10 @@
 					$fld->position = $p;
 					$this->fields[$fld->name] = $fld;
 					if($fld->type == "branch"){
+						if(!$keyFieldParsed)
+						{
+							throw new Exception(sprintf('The key field "%s" must be positioned before the branch form "%s" ', $this->key, $fld->name));
+						}
 						array_push($this->branches, $fld->branch_form);
 						array_push($this->branchfields, $fld->name);
 					}
