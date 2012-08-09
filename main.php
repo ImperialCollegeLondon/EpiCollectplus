@@ -7,13 +7,14 @@ $dat = new DateTime('now');
 $dfmat = '%s.u';
 
 $SITE_ROOT = '';
+$XML_VERSION = 1.0;
+$CODE_VERSION = "1.0";
 
 session_start();
 
 function getValIfExists($array, $key)
 {
 	if(array_key_exists($key, $array))
-
 	{
 		return $array[$key];
 	}
@@ -207,12 +208,12 @@ function regexEscape($s)
 
 function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 {
-	global $db, $SITE_ROOT, $DIR, $auth;
+	global $db, $SITE_ROOT, $DIR, $auth, $CODE_VERSION;
 
 	$template = file_get_contents(sprintf('%shtml/%s', $DIR, trim( $baseUri,'.')));
 	$templateVars['SITE_ROOT'] = ltrim($SITE_ROOT, '\\');
 	$templateVars['uid'] = md5($_SERVER['HTTP_HOST']);
-
+	$templateVars['codeVersion'] = $CODE_VERSION;
 
 	// Is there a user logged in?
 
@@ -2511,22 +2512,19 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
 					}
 					catch(Exception $err)
 					{
-	
 						array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid regular expression in it's regex attribute \"($fld->regex)\".");
-					}
-						
+					}		
 				}
-	
-	
 			}
 		}
 		$name = $prj->name;
 	}
-	if($returnJson)
+	
+	if( $returnJson )
 	{
 		return count($msgs) == 0 ? true : str_replace('"', '\"', implode("\",\"", $msgs));
 	}
-	elseif(getValIfExists($_REQUEST, "json"))
+	elseif( getValIfExists($_REQUEST, "json") )
 	{
 		echo "{\"valid\" : " . (count($msgs) == 0 ? "true" : "false") . ", \"msgs\" : [ \"" . str_replace('"', '\"', implode("\",\"", $msgs))  . "\" ], \"name\" : \"$name\", \"file\" :\"$fn\" }";
 	}
