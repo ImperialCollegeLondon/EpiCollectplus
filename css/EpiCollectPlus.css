@@ -622,12 +622,14 @@ tr.alt
 {
 	background-color :#EEEEFF;
 	color : #0000AA;
+	padding : 0.5em 0.25em 0.5em 0.25em ;
 }
 
 .err
 {
 	background-color :#FFEEEE;
 	color : #AA0000;
+	padding : 0.5em 0.25em 0.5em 0.25em ;
 }
 
 .go

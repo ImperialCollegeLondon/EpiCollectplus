@@ -8,7 +8,7 @@ $dfmat = '%s.u';
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.0";
+$CODE_VERSION = "1.0a";
 
 session_start();
 
@@ -37,7 +37,6 @@ else
 	$SITE_ROOT = str_replace(array($_SERVER['DOCUMENT_ROOT'], '/main.php') , '', $_SERVER['SCRIPT_FILENAME']);
 }
 
-
 include (sprintf('%s/utils/HttpUtils.php', $DIR));
 include (sprintf('%s/Auth/AuthManager.php', $DIR));
 include (sprintf('%s/db/dbConnection.php', $DIR));
@@ -48,8 +47,6 @@ if($SITE_ROOT != '') $url = str_replace($SITE_ROOT, '', $url);
 if(strpos($url, '?')) $url = substr($url, 0, strpos($url, '?'));
 $url = trim($url, '/');
 $url = urldecode($url);
-
-
 
 include (sprintf('%s/Classes/PageSettings.php', $DIR));
 include (sprintf('%s/Classes/configManager.php', $DIR));
@@ -2238,6 +2235,7 @@ function updateXML()
 		try 
 		{
 			$prj->parse($xml);
+			
 		}catch(Exception $err)
 		{
 			echo "{ \"result\": false , \"message\" : \"" . $err->getMessage() . "\" }";
@@ -2245,9 +2243,8 @@ function updateXML()
 		}
 		
 		$prj->publicSubmission = true;
-		
 	}
-	//echo $prj->tables["Second_Form"]->fields["GPS"]->active;
+	
 	if(array_key_exists("listed", $_REQUEST)) $prj->isListed = $_REQUEST["listed"] == "true";
 	if(array_key_exists("public", $_REQUEST)) $prj->isPublic = $_REQUEST["public"] == "true";
 	$res = $prj->put($prj->name);
