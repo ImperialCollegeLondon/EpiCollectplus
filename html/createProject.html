@@ -58,15 +58,20 @@
 		$('#managers').val(curEmail);
  		
 		$('input[name=name]').change(function(evt){
-			
-			if(evt.target.value)
-			{
-				$('#pdNext').button("enable");
-			}
-			else if(!$('#uploadStatus').hasClass("go"))
-			{
-				$('#pdNext').button("disable");
-			}
+			$.ajax({
+				url: './' + $(evt.target).val(),
+				error: function(xhr, status, s){
+					$('#pdNext').button("enable");
+					$(evt.target).removeClass('ecplus-invalid');
+					$('#projectNameMsg').html('<p class="msg">Project name available.</p>');
+				},
+				success: function(){
+					$('#pdNext').button("disable");
+					
+					$(evt.target).addClass('ecplus-invalid');
+					$('#projectNameMsg').html('<p class="err">Project name is already in use. Project name must be unique.</p>');
+				}
+			});
 		});
 		
 		$('#uploadxml').on('load', function(){
@@ -172,6 +177,7 @@
 			  	<h2>1. Project Definition</h2>
 			  	<p>Choose a name for the project</p>
 			  	<input name="name" />
+			  	<div id="projectNameMsg"></div>
 			  	<p>Or</p>
 			  	<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
 		  		<div id="uploadStatus" class="flash"></div>

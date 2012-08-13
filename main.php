@@ -7,13 +7,14 @@ $dat = new DateTime('now');
 $dfmat = '%s.u';
 
 $SITE_ROOT = '';
+$XML_VERSION = 1.0;
+$CODE_VERSION = "1.0a";
 
 session_start();
 
 function getValIfExists($array, $key)
 {
 	if(array_key_exists($key, $array))
-
 	{
 		return $array[$key];
 	}
@@ -36,7 +37,6 @@ else
 	$SITE_ROOT = str_replace(array($_SERVER['DOCUMENT_ROOT'], '/main.php') , '', $_SERVER['SCRIPT_FILENAME']);
 }
 
-
 include (sprintf('%s/utils/HttpUtils.php', $DIR));
 include (sprintf('%s/Auth/AuthManager.php', $DIR));
 include (sprintf('%s/db/dbConnection.php', $DIR));
@@ -47,8 +47,6 @@ if($SITE_ROOT != '') $url = str_replace($SITE_ROOT, '', $url);
 if(strpos($url, '?')) $url = substr($url, 0, strpos($url, '?'));
 $url = trim($url, '/');
 $url = urldecode($url);
-
-
 
 include (sprintf('%s/Classes/PageSettings.php', $DIR));
 include (sprintf('%s/Classes/configManager.php', $DIR));
@@ -207,12 +205,12 @@ function regexEscape($s)
 
 function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 {
-	global $db, $SITE_ROOT, $DIR, $auth;
+	global $db, $SITE_ROOT, $DIR, $auth, $CODE_VERSION;
 
 	$template = file_get_contents(sprintf('%shtml/%s', $DIR, trim( $baseUri,'.')));
 	$templateVars['SITE_ROOT'] = ltrim($SITE_ROOT, '\\');
 	$templateVars['uid'] = md5($_SERVER['HTTP_HOST']);
-
+	$templateVars['codeVersion'] = $CODE_VERSION;
 
 	// Is there a user logged in?
 
@@ -2237,6 +2235,7 @@ function updateXML()
 		try 
 		{
 			$prj->parse($xml);
+			
 		}catch(Exception $err)
 		{
 			echo "{ \"result\": false , \"message\" : \"" . $err->getMessage() . "\" }";
@@ -2244,9 +2243,8 @@ function updateXML()
 		}
 		
 		$prj->publicSubmission = true;
-		
 	}
-	//echo $prj->tables["Second_Form"]->fields["GPS"]->active;
+	
 	if(array_key_exists("listed", $_REQUEST)) $prj->isListed = $_REQUEST["listed"] == "true";
 	if(array_key_exists("public", $_REQUEST)) $prj->isPublic = $_REQUEST["public"] == "true";
 	$res = $prj->put($prj->name);
@@ -2511,22 +2509,19 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
 					}
 					catch(Exception $err)
 					{
-	
 						array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid regular expression in it's regex attribute \"($fld->regex)\".");
-					}
-						
+					}		
 				}
-	
-	
 			}
 		}
 		$name = $prj->name;
 	}
-	if($returnJson)
+	
+	if( $returnJson )
 	{
 		return count($msgs) == 0 ? true : str_replace('"', '\"', implode("\",\"", $msgs));
 	}
-	elseif(getValIfExists($_REQUEST, "json"))
+	elseif( getValIfExists($_REQUEST, "json") )
 	{
 		echo "{\"valid\" : " . (count($msgs) == 0 ? "true" : "false") . ", \"msgs\" : [ \"" . str_replace('"', '\"', implode("\",\"", $msgs))  . "\" ], \"name\" : \"$name\", \"file\" :\"$fn\" }";
 	}

@@ -109,10 +109,24 @@ $(function()
 		if(evt.target.checked)
 		{
 			$("[allow*=key]").show();
+			$("[notfor*=key]").hide();
 		}
 		else
 		{
 			$("[allow*=key]").hide();
+			$("[notfor*=key]").show();
+		}
+	});
+	$('#genkey').change(function(evt){
+		if(evt.target.checked)
+		{
+			$("[allow*=gen]").show();
+			$("[notfor*=gen]").hide();
+		}
+		else
+		{
+			$("[allow*=gen]").hide();
+			$("[notfor*=gen]").show();
 		}
 	});
 	
@@ -166,11 +180,15 @@ function newForm(message, name)
 	
 	if(par && frm.main)
 	{
-		frm.fields[par.key] = par.fields[par.key];
+		frm.fields[par.key] = new EpiCollect.Field();
+		frm.fields[par.key].id = par.key;
+		frm.fields[par.key].text = par.fields[par.key].text;
 		frm.fields[par.key].isKey = false;
 		frm.fields[par.key].title = false;
-		frm.fields[par.key].type = 'input';
+		frm.fields[par.key].type = 'fk';
 	}
+	
+	switchToForm(name);
 }
 
 function addFormToList(name)
@@ -325,11 +343,11 @@ function updateSelected()
 		alert('Field name must be unique within the form, not the same as the form name and not one of ' + EpiCollect.KEYWORDS.join(', '));
 		return false;
 	}
-	
-	if(jq.attr("type").match(/^(text|numeric|date|time|fk)$/))
+	var _type = jq.attr("type");
+	if(_type.match(/^(text|numeric|date|time|fk)$/))
 	{
 		currentControl.type = "input";
-		if(jq.attr("type") == "fk")
+		if(_type == "fk")
 		{
 			var f = $("#parent").val();
 			var frm = project.forms[f]
@@ -337,7 +355,7 @@ function updateSelected()
 			currentControl.text = frm.fields[frm.key].text;
 		}
 	}
-	else{ currentControl.type = jq.attr("type"); }
+	else{ currentControl.type = _type; }
 	
 	var notset = !$("#set").attr("checked");
 	//TODO: need to set other params;
@@ -354,21 +372,39 @@ function updateSelected()
 	{
 		currentControl.isKey = false;
 	}
+	
+	console.debug()
+	
 	currentControl.regex = $("#regex").val();
 	currentControl.verify = !!$("#verify").attr("checked");
-	currentControl[(notset ? "date": "setDate")] = $("#date").val(); 
-	currentControl[(notset ? "time": "setTime")] = $("#time").val();
-	currentControl[(notset ? "setDate" : "date")] = false; 
-	currentControl[(notset ? "setTime": "time")] = false;
-	currentControl.genkey = !!$("#genkey").attr("checked");
-	currentControl.hidden = !!$("#hidden").attr("checked");
-	currentControl.isinteger = !!$("#integer").attr("checked");
-	currentControl.isdouble = !!$("#decimal").attr("checked");
-	if(currentControl.isinteger || currentControl.isdouble)
+	currentControl.date = false;
+	currentControl.time = false;
+	currentControl.setDate = false;
+	currentControl.setTime = false;
+	currentControl.isdouble = false;
+	currentControl.isinteger = false;
+	currentControl.min = false;
+	currentControl.max = false;
+	
+	if(_type == 'date')
 	{
+		currentControl[(notset ? "date": "setDate")] = $("#date").val();
+	}
+	else if(_type == 'time')
+	{
+		currentControl[(notset ? "time": "setTime")] = $("#time").val();
+	}
+	else if(_type == 'numeric')
+	{
+		currentControl.isinteger = !!$("#integer").attr("checked");
+		currentControl.isdouble = !!$("#decimal").attr("checked");
+	
 		currentControl.min = $("#min").val();
 		currentControl.max = $("#max").val();
 	}
+	currentControl.genkey = !!$("#genkey").attr("checked");
+	currentControl.hidden = !!$("#hidden").attr("checked");
+	
 	if( $("#default").val() !== '' && !currentControl.validate($("#default").val()) ) throw 'Default value does not match the format of the control';
 	currentControl.defaultValue = $("#default").val();
 	currentControl.search = !!$("#search").attr("checked");
@@ -394,7 +430,7 @@ function updateSelected()
 		var jumpType = $('[name=jumpType]', jumpCtrls[i]).val();
 		var jval = (jumpType.length > 1 ? jumpType :  jumpType + $(".jumpvalues", jumpCtrls[i]).val())
 		
-		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + jval + "," + jump;
+		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + jval + (jump == "" ? "" : "," + jump);
 	}
 	
 	currentControl.jump = jump.trim(",");
@@ -474,11 +510,13 @@ function updateForm()
 
 function updateJumps()
 {
+	try{
 	var opts = currentControl.options;
 	
 	var fieldCtls = $(".jumpvalues");
 	
 	var vals = [];
+	
 	
 	fieldCtls.each(function(idx, ele){
 		vals[idx] = $(ele).val();
@@ -486,9 +524,9 @@ function updateJumps()
 	
 	fieldCtls.empty();
 	fieldCtls.html(fieldCtls.html());
-	for(var i = opts.length; i; i--)
+	for(var i = opts.length; i--;)
 	{
-		fieldCtls.html("<option value=\"" + i + "\" >" + opts[i-1].label + "</option>" + fieldCtls.html());
+		fieldCtls.html("<option value=\"" + i + "\" >" + opts[i].label + "</option>" + fieldCtls.html());
 	}
 	
 	$(".jumpvalues").each(function(idx, ele){
@@ -527,6 +565,10 @@ function updateJumps()
 		 }
 		 jq.val(vals[idx]);
 	});
+	}catch(err)
+	{
+		alert(err);
+	}
 }
 
 function updateLastJump()
@@ -574,7 +616,12 @@ function updateLastJump()
 
 function genID()
 {
-	return 'ecplus-ctrl' + $('#destination .ecplus-form-element').length;
+	var name;
+	for(var x = $('#destination .ecplus-form-element').length; !currentForm.fields['ecplus-ctrl' + x]; x++)
+	{
+		name = currentForm.fields['ecplus-ctrl' + x];
+	}
+	return name;
 }
 
 function setSelected(jqEle)
@@ -588,6 +635,9 @@ function setSelected(jqEle)
 			$(".last input[type=checkbox]").attr("checked", false);
 			$('#inputId').val(genID);
 		}
+		
+		$('#date').val('');
+		$('#time').val('');
 		
 		if(currentForm.fields[jqEle.attr("id")])
 		{	
@@ -605,11 +655,19 @@ function setSelected(jqEle)
 	
 		$("[allow*=" + type + "]").show();
 		$("[notfor*=" + type + "]").hide();
+	
 		
 		if(currentControl.isKey)
 		{
 			$("[allow*=key]").show();
+			$("[notfor*=key]").hide();
 		}
+		if(currentControl.genkey)
+		{
+			$("[allow*=gen]").show();
+			$("[notfor*=gen]").hide();
+		}
+		
 		if(jqEle.hasClass("ecplus-form-element"))
 		{
 		
@@ -689,7 +747,6 @@ function setSelected(jqEle)
 				}
 			}
 			
-			//TODO: Jumps
 			$(".jumpoption").remove();
 			
 			if(currentControl.jump)
@@ -727,6 +784,7 @@ function setSelected(jqEle)
 					}
 					$(".jumpdestination", jumpCtrls[i/2]).val(jumps[i]);
 				}
+				updateJumps();
 			}
 		}
 		else
@@ -737,6 +795,10 @@ function setSelected(jqEle)
 		if(currentControl){ $(".last").show();}
 		else {$(".last").hide();}
 	
+		if(type == 'numeric' && !($('#integer').attr('checked') || $('#decimal').attr('checked')))
+		{
+			$('#integer').attr('checked', 'checked');
+		}
 		
 		if( currentControl.id == project.getPrevForm(currentForm.name).key )
 		{
@@ -776,12 +838,16 @@ function removeForm(name)
 				project.forms[frm].num = Number(project.forms[frm].num) - 1;
 			}
 		}
+		$('#destination').empty();
 	}
 }
 
 function removeSelected()
 {
 	var jq = $("#destination .selected")
+	
+	if(currentControl.isKey) currentForm.key = null;
+	
 	delete currentForm.fields[jq.attr("id")];
 	jq.remove();
 	

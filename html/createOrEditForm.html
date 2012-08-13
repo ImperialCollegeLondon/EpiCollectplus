@@ -237,7 +237,7 @@
 				        	<label for="inputDec">Decimal</label> 
 				        	<input type="radio" id="decimal" name="numeric" value="decimal" />
 				        	<label for="inputInt">Integer</label> 
-				        	<input type="radio" id="integer"  name="numeric" value="integer" />
+				        	<input type="radio" id="integer"  name="numeric" value="integer" /><br/>
 				        	<label for="inputmin">Minumum Value</label> 
 				        	<input type="number" id="min" name="min" />
 				        	<label for="inputmax">Maximum Value</label> 
@@ -269,7 +269,7 @@
 				        	<label for="inputSet">Set default to current date/time</label> 
 				        	<input type="checkbox" id="set" name="set" value="true" />
 				    </div>
-				    <div allow="text,numeric">
+				    <div allow="text,numeric" notfor="key">
 				        	<label for="inputdefault">Default</label>
 				        	<input type="text" id="default" name="defaultValue" />
 				     </div>
@@ -281,14 +281,14 @@
 				        	<label for="inputVerify">Double Entry</label>
 				        	<input type="checkbox" id="verify" name="verify" value="true" />
 				     </div>
-				     <div allow="key,fk,text,numeric,date,time,barcode">
-				      	<label for="inputHidden">Hidden</label>
-				      	<input type="checkbox" id="hidden" name="hidden" value="true" />
-				      </div>
-				      <div allow="key">
+				     <div allow="key">
 				       	<label for="inputGenKey">Generate Key</label>
 				       	<input type="checkbox" id="genkey" name="genkey" value="true" />
-					</div> 
+					</div>
+					<div allow="gen,fk">
+				      	<label for="inputHidden">Hidden</label>
+				      	<input type="checkbox" id="hidden" name="hidden" value="true" />
+				    </div> 
 					<div id="options" allow="select,radio,select1">
 						<hr />
 						<h3>Options</h3>

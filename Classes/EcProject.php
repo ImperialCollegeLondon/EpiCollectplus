@@ -102,10 +102,28 @@ class EcProject{
 			}		
 		}
 		
-		
 		public function parse($xml, $edit=false)
 		{
+			global $XML_VERSION;
+			
 			$root = simplexml_load_string($xml);
+			
+			foreach($root->attrubutes as $name => $val)
+			{
+				if( $name == 'version' ) 
+				{
+					$ecv = doubleval($val);
+					if( $ecv <= $XML_VERSION )
+					{
+						$this->ecml_version = $ecv; 
+					}
+					else
+					{
+						throw new Exception(sprintf('This version of the server will only handle XML version %s or earlier.', $XML_VERSION));
+					}
+				}
+			}
+			
 			$model = $root->model[0];
 			if($model->uploadToLocalServer){
 				$this->uploadToLocalServer = (string)$model->uploadToLocalServer[0];
@@ -653,13 +671,13 @@ class EcProject{
 		
 		public function toXML()
 		{
-				global $SITE_ROOT;
+				global $SITE_ROOT, $XML_VERSION;
 		
 				$protocol = 'http';
 				if (getValIfExists($_SERVER, "HTTPS")== 'on'){$protocol = 'https';}
 				
 				$xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
-<xform>
+<ecml version=\"$XML_VERSION\">
 	<model>
 		<submission id=\"{$this->submission_id}\" projectName=\"{$this->name}\" allowDownloadEdits=\"". ($this->allowDownloadEdits ? "true" : "false") . "\" versionNumber=\"{$this->ecVersionNumber}\" />
 		<uploadToServer>$protocol://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/{$this->name}/upload</uploadToServer>
@@ -672,7 +690,7 @@ class EcProject{
 					$xml .= $tbl->toXML();
 				}
 				
-				$xml.="\n</xform>";
+				$xml.="\n</ecml>";
 				return $xml;
 		}
 		
