@@ -187,8 +187,15 @@ class EcProject{
 						}
 						elseif($this->tables[(string)$atts['name']]->id)
 						{
+							$oldTbl = $this->tables[(string)$atts['name']];
+							
 							$tbl = new EcTable($this);
-							$tbl->id = $this->tables[(string)$atts['name']]->id;
+							$tbl->id = $oldTbl->id;
+							foreach($oldTbl->fields as $name => $fld)
+							{
+								$tbl->fields[$name] = new EcField();
+								$tbl->fields[$name]->idField = $fld->idField;
+							}
 						}
 						else
 						{

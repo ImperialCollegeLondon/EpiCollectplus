@@ -720,11 +720,25 @@ EpiCollect.Form = function()
 					fmt = project.forms[formName].fields[ele.name].setDate;
 				}
 				fmt = fmt.replace("MM", "mm").replace("yyyy", "yy");
-				console.debug(fmt);
+
 				$(ele).datepicker({ dateFormat : fmt });
 				if(project.forms[formName].fields[ele.name].setDate)
 				{
 					$(ele).datepicker("setDate", new Date());
+				}
+			});
+			
+			$("input.ecplus-timepicker", this.formElement).each(function(idx, ele) { 
+				var fmt = project.forms[formName].fields[ele.name].time;
+				if(project.forms[formName].fields[ele.name].setTime)
+				{
+					fmt = project.forms[formName].fields[ele.name].setTime;					
+				}
+				
+				$(ele).timepicker({ format : fmt });
+				if(project.forms[formName].fields[ele.name].setTime)
+				{
+					$(ele).timepicker("setTime", new Date());
 				}
 			});
 		//}
@@ -854,6 +868,7 @@ EpiCollect.Form = function()
 			else if(!done)
 			{
 				//console.debug("hide " + fld);
+				$(ele).val('');
 				$(ele).hide();
 				$(ele).removeClass('ecplus-question');
 				$(ele).addClass('ecplus-question-hidden');
@@ -1482,8 +1497,7 @@ EpiCollect.Field = function()
 		   }
 		   else if(this.time || this.setTime)
 		   {
-			   
-			   return pre + "<input type=\"time\" name=\"" + this.id + "\"  value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input\" />";
+			   return pre + "<input type=\"text\" name=\"" + this.id + "\"  value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input ecplus-timepicker\" />";
 		   }
 		   else if(this.type == "input" || this.type == "barcode")
 		   {
