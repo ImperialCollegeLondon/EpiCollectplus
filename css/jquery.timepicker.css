@@ -1,0 +1,50 @@
+.ecplus-timepicker
+{
+	display : block;
+}
+
+.ecplus-timepicker-section
+{
+	display		: inline-block;
+	font-size	: 24pt;
+	position	: relative;
+	padding		: 0.5em 1em 0.5em 0em;
+	
+}
+
+.ecplus-timepicker-section-number
+{
+	font-size	: 24pt !important;
+	text-align	: center !important;
+	border		: none;
+	height 		: 1em;
+	position	: relative;
+	width 		: 2em;
+}
+
+.ecplus-timepicker-section-up
+{
+	background  : url('../images/glyphicons/glyphicons_213_up_arrow.png') 50% 50% no-repeat;
+	height 		: 0.95em;
+	opacity		: 0.4;
+	position	: absolute;
+	top			: 0px;
+	right		: 0px;
+	width		: 1em;
+}
+
+.ecplus-timepicker-section-down
+{
+	background  : url('../images/glyphicons/glyphicons_212_down_arrow.png') 50% 50% no-repeat;
+	bottom		: 0px;
+	height 		: 0.95em;
+	opacity		: 0.4;
+	position	: absolute;
+	right		: 0px;
+	width		: 1em;
+}
+
+.ecplus-timepicker-section-up:hover, .ecplus-timepicker-section-down:hover
+{
+	opacity : 1;
+}

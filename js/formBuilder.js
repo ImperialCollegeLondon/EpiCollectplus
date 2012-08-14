@@ -428,7 +428,7 @@ function updateSelected()
 	for(var i = jn; i--;)
 	{
 		var jumpType = $('[name=jumpType]', jumpCtrls[i]).val();
-		var jval = (jumpType.length > 1 ? jumpType :  jumpType + $(".jumpvalues", jumpCtrls[i]).val())
+		var jval = (jumpType.length > 1 ? jumpType :  jumpType + (Number($(".jumpvalues", jumpCtrls[i]).val()) + 1));
 		
 		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + jval + (jump == "" ? "" : "," + jump);
 	}
