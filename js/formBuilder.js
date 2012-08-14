@@ -616,10 +616,10 @@ function updateLastJump()
 
 function genID()
 {
-	var name;
-	for(var x = $('#destination .ecplus-form-element').length; !currentForm.fields['ecplus-ctrl' + x]; x++)
+	var name= 'ecplus-ctrl0';
+	for(var x = $('#destination .ecplus-form-element').length; currentForm.fields['ecplus-ctrl' + x]; x++)
 	{
-		name = currentForm.fields['ecplus-ctrl' + x];
+		name = 'ecplus-ctrl' + x;
 	}
 	return name;
 }
