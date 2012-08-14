@@ -616,8 +616,9 @@ function updateLastJump()
 
 function genID()
 {
-	var name= 'ecplus-ctrl0';
-	for(var x = $('#destination .ecplus-form-element').length; currentForm.fields['ecplus-ctrl' + x]; x++)
+	var x = $('#destination .ecplus-form-element').length
+	var name= 'ecplus-ctrl' + x;
+	for(; currentForm.fields[name]; x++)
 	{
 		name = 'ecplus-ctrl' + x;
 	}
