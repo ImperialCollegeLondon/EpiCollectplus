@@ -2,6 +2,19 @@ var map;
 var completed;
 var succeeded;
 var project;
+var checker = new URLChecker();
+var checking = {};
+var nchecks = 0;
+
+checker.oncheck = function(evt)
+{
+	var jq = $('#' + checking[evt.url]);
+	
+	if(!evt.exists)
+	{
+		jq.replaceWith('<i>File not uploaded</i>');
+	}
+}
 
 var baseUrl = (location.href.indexOf("?") > 0 ? location.href.substr(0, location.href.indexOf("?")) :location.href );
 baseUrl = baseUrl.indexOf('#') > 0 ? baseUrl.substr(0, baseUrl.indexOf('#')) : baseUrl;
@@ -848,12 +861,12 @@ EpiCollect.Form = function()
 		
 		var _frm = this;
 		
-		$(".ecplus-question, .ecplus-question-hidden").each(function(idx, ele){
+		$(".ecplus-question, .ecplus-question-jumped").each(function(idx, ele){
 			var fld = ele.id.replace("ecplus-question-", "");
 			
 			console.debug(idx + ' :: ' + start)
 			
-			if(!startField && $(ele).hasClass('ecplus-question-hidden') && idx < start) start++;
+			if(!startField && $(ele).hasClass('ecplus-question-jumped') && idx < start) start++;
 			
 			if(idx <= start || !_frm.fields[fld] ) return;
 			if(fld == fieldName) done = true;
@@ -863,7 +876,7 @@ EpiCollect.Form = function()
 			//	console.debug("show " + fld);
 				$(ele).show();
 				$(ele).addClass('ecplus-question');
-				$(ele).removeClass('ecplus-question-hidden');
+				$(ele).removeClass('ecplus-question-jumped');
 			}
 			else if(!done)
 			{
@@ -871,14 +884,14 @@ EpiCollect.Form = function()
 				$(ele).val('');
 				$(ele).hide();
 				$(ele).removeClass('ecplus-question');
-				$(ele).addClass('ecplus-question-hidden');
+				$(ele).addClass('ecplus-question-jumped');
 			}
 			else
 			{
 				//console.debug("show " + fld);
 				$(ele).show();
 				$(ele).addClass('ecplus-question');
-				$(ele).removeClass('ecplus-question-hidden');
+				$(ele).removeClass('ecplus-question-jumped');
 			}
 		});
 	}
@@ -1001,7 +1014,14 @@ EpiCollect.Form = function()
 		var vals = {};
 		for(fld in this.fields)
 		{
-			vals[fld] = $("#" + fld).val();
+			if( $("#" + fld).parent().hasClass('ecplus-question-jumped') )
+			{
+				vals[fld] = '';
+			}
+			else
+			{
+				vals[fld] = $("#" + fld).val();
+			}
 		}
 		return vals;
 	}
@@ -1588,7 +1608,12 @@ EpiCollect.Field = function()
 		}else if(this.type == "video" || this.type == "audio"){
 			if(value)
 			{
-				return "<a href=\"../ec/uploads/"+value+"\"> View Media </a>";
+				var checkid = 'check' + (nchecks++);
+				var checkurl = (location.href.replace(project.name + '/' + formName, '') + "ec/uploads/"+value).trim('/') ;
+				checking[checkurl] = checkid;
+				checker.startCheck(checkurl);
+				
+				return "<a id=\"" + checkid + "\" href=\"../ec/uploads/"+value+"\"> View Media </a>";
 			}
 			else
 			{

@@ -335,7 +335,7 @@ tr.alt
 	vertical-align : top;
 }
 
-.ecplus-vertical-form .ecplus-question-hidden
+.ecplus-vertical-form .ecplus-question-hidden, .ecplus-vertical-form .ecplus-question-jumped
 {
 	display : none;
 }
