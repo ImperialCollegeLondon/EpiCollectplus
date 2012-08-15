@@ -177,6 +177,9 @@ class EcField{
 //				print_r($this);
 				$qry = "SELECT idFieldType FROM fieldtype where name = '{$this->type}'";
 				$db->do_query ($qry);
+				
+				$fieldType = 1;
+				
 				while($arr = $db->get_row_array())
 				{
 					$fieldType = $arr["idFieldType"];
