@@ -511,6 +511,8 @@ function updateForm()
 function updateJumps()
 {
 	try{
+	updateForm();
+		
 	var opts = currentControl.options;
 	
 	var fieldCtls = $(".jumpvalues");
@@ -785,7 +787,7 @@ function setSelected(jqEle)
 					}
 					$(".jumpdestination", jumpCtrls[i/2]).val(jumps[i]);
 				}
-				updateJumps();
+				
 			}
 		}
 		else

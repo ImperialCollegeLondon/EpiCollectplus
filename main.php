@@ -2865,11 +2865,16 @@ function getMedia()
 			header("Content-type: " . mimeType($url));
 			echo file_get_contents("./" . $url);
 		}
-		else
+		elseif(file_exists('./'. str_replace("~", "~tn~", $url)))
 		{
 			$u = str_replace("~", "~tn~", $url);
 			header("Content-type: " . mimeType($u));
 			echo file_get_contents("./" . $u);
+		}
+		else
+		{
+			header('HTTP/1.1 404 NOT FOUND', 404);
+			return;
 		}
 	}
 }
