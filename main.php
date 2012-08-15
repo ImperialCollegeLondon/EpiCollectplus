@@ -2403,7 +2403,7 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
 					$isValid = false;
 					array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid name, field names cannot start with a number");
 				}
-				if(!$fld->label || $field->label == '')
+				if(!$fld->label || $fld->label == '')
 				{
 					$isValid = false;
 					array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has no label. All fields must have a label and the label must not be null. If you have added a label to the field please make sure the tags are all in lower case i.e. <label>...</label> not <Label>...</Label>");
