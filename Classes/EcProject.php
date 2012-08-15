@@ -188,7 +188,7 @@ class EcProject{
 						elseif($this->tables[(string)$atts['name']]->id)
 						{
 							$oldTbl = $this->tables[(string)$atts['name']];
-							
+							//unset($this->tables[(string)$atts['name']]);
 							$tbl = new EcTable($this);
 							$tbl->id = $oldTbl->id;
 							foreach($oldTbl->fields as $name => $fld)
@@ -196,6 +196,7 @@ class EcProject{
 								$tbl->fields[$name] = new EcField();
 								$tbl->fields[$name]->idField = $fld->idField;
 							}
+							unset($oldTbl);
 						}
 						else
 						{
@@ -206,6 +207,7 @@ class EcProject{
 						
 						$tbl->parse($root->form[$t]);
 						$this->tables[$tbl->name] = $tbl;
+						
 				}
 				
 			}
@@ -221,7 +223,7 @@ class EcProject{
 						if(!array_key_exists((string) $root->table[$t]->name, $this->tables)|| $this->tables[(string) $root->table[$t]->name]->id)
 						{
 							 $tbl = new EcTable($this);
-						}
+						}	
 						else
 						{
 							 throw new Exception("Table names must be unique. More that one table called " .(string)$atts['name'] . "in {$this->name}" );
