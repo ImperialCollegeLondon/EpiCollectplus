@@ -373,7 +373,7 @@ function updateSelected()
 		currentControl.isKey = false;
 	}
 	
-	console.debug()
+	//console.debug()
 	
 	currentControl.regex = $("#regex").val();
 	currentControl.verify = !!$("#verify").attr("checked");
@@ -561,7 +561,7 @@ function updateJumps()
 		 
 		 for(var i = len; i--; )
 		 {
-			console.debug(opts[i].value + ' == ' + cField);
+			//console.debug(opts[i].value + ' == ' + cField);
 			hide = hide || opts[i].value == cField;
 			$(opts[i]).toggle(!hide);
 		 }

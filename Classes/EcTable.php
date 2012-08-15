@@ -331,6 +331,14 @@
 				
 			}
 			
+			foreach($this->fields as $name => $field)
+			{
+				if($field->name == '' || !$field->name)
+				{
+					unset($this->fields[$name]);
+				}
+			}
+			
 			if( !array_key_exists($this->key, $this->fields) && $this->number > 0 ) throw new Exception("The form {$this->name} does not contain the field {$this->key} which was specified as the primary key.");
 			
 			if( array_key_exists($this->key, $this->fields) ) $this->fields[$this->key]->key = true;
@@ -840,7 +848,7 @@
 				if($fld->idField){
 					$res = $fld->update();
 				}
-				else
+				else if($fld->name)
 				{
 					$res = $fld->addToDb();
 				}

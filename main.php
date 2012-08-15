@@ -2211,8 +2211,6 @@ function updateXML()
 	$prj->name = substr($url, 0, strpos($url, "/"));
 	$prj->fetch();
 	
-	
-	
 	//echo '--', $xml , '--';
 	if($xml)
 	{
@@ -2400,12 +2398,12 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
 			//array_push($msgs, "<b>$tbl->name</b>");
 			foreach($tbl->fields as $fld)
 			{
-				if(preg_match("/^[0-9]/", $fld->name))
+				if(preg_match("/^[0-9]/", $fld->name) || $fld->name == '')
 				{
 					$isValid = false;
 					array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid name, field names cannot start with a number");
 				}
-				if(!$fld->label)
+				if(!$fld->label || $fld->label == '')
 				{
 					$isValid = false;
 					array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has no label. All fields must have a label and the label must not be null. If you have added a label to the field please make sure the tags are all in lower case i.e. <label>...</label> not <Label>...</Label>");
