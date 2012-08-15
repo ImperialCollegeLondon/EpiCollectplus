@@ -1,7 +1,7 @@
 var URLChecker = function(){
 	if(window["Worker"])
 	{
-		this.checker = new Worker('checkurl_worker.js');
+		this.checker = new Worker('../js/checkurl_worker.js');
 		
 		var scope = this;
 		document.addEventListener('__urlchecked', function(evt)
