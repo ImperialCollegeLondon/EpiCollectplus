@@ -380,6 +380,11 @@
 					}
 				}
 				
+				if(!window["google"] || !google.maps)
+				{
+					hasMap = false;
+					$('#main h1:first').after('<p class="err">Google maps is not currently available so the mapping interface has been disabled.</p>')
+				}
 				
 				if(hasMap)
 				{
