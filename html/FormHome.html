@@ -357,7 +357,7 @@
 				
 				map = new _maps.Map(doc.getElementById(div), {
 					center : new _maps.LatLng(0,0),
-					mapTypeId:_maps.MapTypeId.HYBRID,
+					mapTypeId:_maps.MapTypeId.ROADMAP,
 					zoom : 2,
 					panControl: true,
 					rotateControl: true,
@@ -380,7 +380,7 @@
 					}
 				}
 				
-				if(!window["google"] || !google.maps)
+				if(hasMap && (!window["google"] || !google.maps))
 				{
 					hasMap = false;
 					$('#main h1:first').after('<p class="err">Google maps is not currently available so the mapping interface has been disabled.</p>')
@@ -1141,6 +1141,19 @@
 			function saveNumEntires()
 			{
 				if(localStorage) localStorage.setItem('num_entries', $('#num_entries').val());
+			}
+			
+			function editSelected()
+			{
+				
+				if($('.ecplus-data tbody tr.selected').length > 0)
+				{
+					project.forms[formName].displayForm({data : window.ecplus_entries[$('.ecplus-data tbody tr.selected').index()], edit : true, vertical: true});
+				}
+				else
+				{
+					alert("Please select an entry to edit");
+				}
 			}
 			
 	</script>

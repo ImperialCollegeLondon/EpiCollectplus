@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS `entryvaluehistory` (
   `formName` varchar(100) NOT NULL,
   `fieldName` varchar(45) NOT NULL
 ) ENGINE=ARCHIVE DEFAULT CHARSET=utf8 ~
+
 CREATE TABLE IF NOT EXISTS `field` (
   `idField` int(11) NOT NULL AUTO_INCREMENT,
   `form` int(11) NOT NULL,
@@ -124,6 +125,7 @@ CREATE TABLE IF NOT EXISTS `field` (
   `settime` varchar(255) DEFAULT NULL,
   `setdate` varchar(255) DEFAULT NULL,
   `genkey` tinyint(1) NOT NULL DEFAULT b'0',
+  `upperCase` tinyint(1) NOT NULL DEFAULT b'0',
   `min` double DEFAULT NULL,
   `max` double DEFAULT NULL,
   `crumb` varchar(255) DEFAULT NULL,

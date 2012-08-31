@@ -1,5 +1,4 @@
 {{style}}	
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/jquery-ui-1.8.17.custom.css" />
 	<style type="text/css">
 		#uploadxml
 		{
@@ -41,7 +40,6 @@
 {{/style}}
 
 {{script}}
-  <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui-1.8.17.custom.min.js"></script>
   <script type="text/javascript">
   	var obj;
   	var publicOpts;
@@ -119,7 +117,14 @@
   		
   		goTo('projectDef');
 		
+		$('#pdNext').mouseover(function(evt){
+			$('input[name=name]').change();
+		});
 		
+		$('#uploadBox').accordion({
+			collapsible : true,
+			active: false
+		});
   	});
   	
   	function goTo(sectionId)
@@ -179,10 +184,15 @@
 			  	<input name="name" />
 			  	<div id="projectNameMsg"></div>
 			  	<p>Or</p>
-			  	<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
-		  		<div id="uploadStatus" class="flash"></div>
-		 		<input type="hidden" name="xml"/>
-		 		<br/>
+			  	<div id="uploadBox">
+			  		<h3><a href="#">Upload an existing EpiCollect project definition</a></h3>
+			  		<div>
+			  			<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
+		  				<div id="uploadStatus" class="flash"></div>
+		 				<input type="hidden" name="xml"/>
+		 			</div>
+		 			<br/>
+		 		</div>
 		 		<a class="panelSwitcher" id="pdNext" href="javascript:goTo('visibility');"> Continue </a>
 	 		</div>
 		 	<div id="visibility" class="section">
@@ -205,7 +215,8 @@
 					<input type="radio" name="listed" id="notListed" value="false" /><label for="notListed">I would not like this project to appear <br />on the list on the homepage of this server.</label>
 				</div>
 				<br/>
-				<a class="panelSwitcher" href="javascript:goTo('s_managers');"> Continue </a>	
+				<a class="panelSwitcher" href="javascript:document.forms[0].submit();"> Create Project </a>	
+				<!-- <a class="panelSwitcher" href="javascript:goTo('s_managers');"> Continue </a> -->	
 				<a class="panelSwitcher" href="javascript:goTo('visibility');"> Back </a>
 			</div>
 			<div id="s_managers"  class="section">

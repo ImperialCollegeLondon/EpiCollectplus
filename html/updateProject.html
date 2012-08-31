@@ -124,7 +124,21 @@
 	  				$('#pdNext').button("enable");
 	  			}
 	  		});
-		})
+		});
+		
+		$('#uploadimage').load(function(evt){
+			var ele = evt.target;
+			var doc = ele.contentDocument;
+			var img = $('img', doc);
+			if(img.length > 0)
+			{
+				$('input[name=projectImage]').val(img.attr('src').replace('~tn', ''));
+			}
+			else
+			{
+				$('input[name=projectImage]').val('');
+			}
+		});
   		
   		//goTo('projectDef');
 		
@@ -235,6 +249,7 @@
 	  <form id="projectOptions" action="updateStructure" method="POST">
 	  		<ul>
 	  			<li><a href="#projectDef">Project Definition</a></li>
+	  			<li><a href="#description">Description</a></li>
 	  			<li><a href="#visibility">Visibility</a></li>
 	  			<li><a href="#listing">Listing</a></li>
 	  			<li><a href="#s_managers">Managers</a></li>
@@ -242,15 +257,26 @@
 	  			<li><a href="#s_delete">Delete Project</a></li>
 	  		</ul>
 		  	<div id="projectDef" class="section">
-			  	<h2>1. Project Definition</h2>
+			  	<h2>Project Definition</h2>
 			  	<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
 		  		<div id="uploadStatus" class="flash"></div>
 		 		<input type="hidden" name="xml"/>
 		 		<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 		 		
 	 		</div>
+	 		<div id="description" class="section">
+			  	<h2>Project Description and Image</h2>
+			  	<p>Enter a few lines of text to describe your project</p>
+			  	<textarea rows="10" cols="50" id="description" name="description"></textarea>
+			  	<p>If your project has a logo or an image you can upload it here</p>
+			  	<iframe id="uploadimage" src="uploadMedia"></iframe>
+		  		<div id="uploadStatusImage" class="flash"></div>
+		 		<input type="hidden" name="projectImage"/>
+		 		<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
+		 		
+	 		</div>
 		 	<div id="visibility" class="section">
-				<h2>2. Visibility</h2>
+				<h2>Visibility</h2>
 				<p>EpiCollect+ allows project data to either be public of private, please choose one of the following options</p>
 				<div id="public">
 					<input type="radio" name="public" id="isPublic" value="true" /><label for="isPublic">I would like anyone to be able <br />to view the data in this project.</label>
@@ -260,7 +286,7 @@
 				
 			</div>
 			<div id="listing" class="section">
-				<h2>3. Listing on the Homepage</h2>
+				<h2>Listing on the Homepage</h2>
 				<p>The front page of this server displays a list of projects that have been created on this server, please choose one of the following options</p>
 				<div id="listed">
 					<input type="radio" name="listed" id="isListed" value="true" /><label for="isListed">I would like this project to appear <br />on the list on the homepage of this server.</label>
@@ -269,7 +295,7 @@
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 			</div>
 			<div id="s_managers" class="section">
-				<h2>4. Project Managers</h2>
+				<h2>Project Managers</h2>
 				<p>Any users in this group have the ability to add and remove other project managers and curators, they can also update the project 
 				settings and the project definition. Managers can also Add, edit and remove data using the web interface.</p>
 				<table> 
@@ -284,7 +310,7 @@
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 			</div>
 			<div id="s_curators" class="section">
-				<h2>5. Project Curators</h2>
+				<h2>Project Curators</h2>
 				<p>Any users in this group are allowed to use the web interface to add, edit and remove data. Anyone can upload data from the EpiCollect+ Android App. If this project is not public then 
 				only Curators and managers will be able to use the web interface for this project.</p>
 				<table> 

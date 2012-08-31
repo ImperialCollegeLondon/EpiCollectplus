@@ -520,7 +520,7 @@ class EcProject{
 			/**
 			 * 
 			 */
-			
+						
 			//$log = new Logger('Ec2');
 			$log->write('info', 'Starting project update');
 			

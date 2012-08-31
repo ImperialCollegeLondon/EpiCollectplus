@@ -28,6 +28,7 @@ class EcField{
 		public $match = false;
 		
 		public $genkey= false;
+		public $upperCase = false;
 		
 		public $position = 0;
 		public $date = false;
@@ -106,6 +107,7 @@ class EcField{
 			if($this->branch_form) $xml .= " branch_form=\"{$this->branch_form}\"";
 			if(!$this->display) $xml .= " display=\"false\"";
 			if($this->genkey) $xml .= " genkey=\"true\"";
+			if($this->upperCase) $xml .= " uppercase=\"true\"";
 			if($this->date) $xml .= " date=\"{$this->date}\"";
 			if($this->time) $xml .= " time=\"{$this->time}\"";
 			if($this->setDate) $xml .= " setdate=\"{$this->setDate}\"";
@@ -138,6 +140,7 @@ class EcField{
 			if($this->branch_form) $json .= " \"branch_form\":\"{$this->branch_form}\",";
 			if(!$this->display) $json .= " \"display\":\"false\",";
 			if($this->genkey) $json .= " \"genkey\":\"true\",";
+			if($this->upperCase) $json .= " \"uppercase\":\"true\",";
 			if($this->date) $json .= " \"date\":\"{$this->date}\",";
 			if($this->time) $json .= " \"time\":\"{$this->time}\",";
 			if($this->setDate) $json .= " \"setdate\":\"{$this->date}\",";
@@ -187,7 +190,7 @@ class EcField{
 				
 				$sql = "UPDATE field SET type = {$fieldType}, name = " . $db->stringVal($this->name) .", label = " . $db->stringVal($this->label) .", language = " . $db->stringVal($this->language) .", regex = " . $db->stringVal($this->regex) .", title = " . $db->boolVal($this->title) . 
 						", `key` = " . $db->boolVal($this->key) . ", isinteger= " . $db->boolVal($this->isInt) . ", isdouble= " . $db->boolVal($this->isDouble) . ", active = 1, doubleentry = " . $db->boolVal($this->doubleEntry) . ", jump= " . $db->stringVal($this->jump) . ", required = " . $db->boolVal($this->required) . ", search = " . $db->boolVal($this->search) . 
-						",group_form=  " . $db->stringVal($this->group_form) . ", branch_form=  " . $db->stringVal($this->branch_form) . ", display= " . $db->boolVal2($this->display) . ", genkey = " . $db->boolVal($this->genkey) . ", date = " . $db->stringVal($this->date) .", time = " . $db->stringVal($this->time) .
+						",group_form=  " . $db->stringVal($this->group_form) . ", branch_form=  " . $db->stringVal($this->branch_form) . ", display= " . $db->boolVal2($this->display) . ", genkey = " . $db->boolVal($this->genkey) . ", upperCase = " . $db->boolVal($this->upperCase) . ", date = " . $db->stringVal($this->date) .", time = " . $db->stringVal($this->time) .
 						",setdate  = " . $db->stringVal($this->setDate) .", settime  = " . $db->stringVal($this->setTime) .", position = {$this->position}, min = " . $db->numVal($this->min) . ", max = " . $db->numVal($this->max) . ", defaultValue = " . $db->stringVal($this->defaultValue) . ", active = " . $db->boolVal($this->active). " WHERE idField = {$this->idField};";
 				$res = $db->do_query($sql);
 				if($res !== true) return $res;
@@ -245,7 +248,7 @@ class EcField{
 			
 			$lbl = $db->escapeArg($this->label);
 			
-			$qry ="INSERT INTO field (form, projectName, formName, type, name, label, language, regex, title, `key`, isinteger, isdouble, active, doubleentry, jump, required, search, group_form, branch_form, display, genkey, date, time, setdate, settime, `min`, `max`, `match`, crumb, defaultValue, position) VALUES
+			$qry ="INSERT INTO field (form, projectName, formName, type, name, label, language, regex, title, `key`, isinteger, isdouble, active, doubleentry, jump, required, search, group_form, branch_form, display, genkey, upperCase, date, time, setdate, settime, `min`, `max`, `match`, crumb, defaultValue, position) VALUES
 								 ({$this->form->id}, '{$this->form->survey->name}', '{$this->form->name}', $fieldType, '{$this->name}','{$lbl}', '{$this->language}',";
 			$qry .= ($this->regex != "" ? $db->stringVal($this->regex) . "," : "NULL,");
 			$qry .= ($this->title ? "1," : "0,");
@@ -261,6 +264,7 @@ class EcField{
 			$qry .= ($this->branch_form ? "'{$this->branch_form}'," : "NULL,");
 			$qry .= ($this->display ? "1," : "0,");
 			$qry .= ($this->genkey ? "1," : "0,");
+			$qry .= ($this->upperCase ? "1," : "0,");
 			$qry .= ($this->date ? "'{$this->date}'," : "NULL,");
 			$qry .= ($this->time ? "'{$this->time}'," : "NULL,");
 			$qry .= ($this->setDate ? "'{$this->setDate}'," : "NULL,");
@@ -378,6 +382,9 @@ class EcField{
 					case 'genkey' :
 							$this->genkey = parseBool((string)$val);
 							break;
+					case 'uppercase' :
+						$this->upperCase = parseBool((string)$val);
+						break;
 					case 'date':
 							$this->date = (string)$val;
 							break;
@@ -493,7 +500,6 @@ class EcField{
 								{
 									date_create_from_format($this->dtConvert($this->date), $this->defaultValue);
 								}
-								
 								catch(Exception $e)
 								{
 									throw new Exception("The field {$this->name} has a default that confilicts with its date attribute.");

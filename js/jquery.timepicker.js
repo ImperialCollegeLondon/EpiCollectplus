@@ -1,8 +1,14 @@
 (function( $ ) {
-	$.fn.timepicker = function(cnf) {
+	$.fn.timepicker = function(cnf, val) {
 		if( cnf == 'setTime' )
 		{
+			var i = 0;
+			var t = val.split(':');
+			console.debug(val);
 			
+			$('.ecplus-timepicker-section input').each(function(idx, ele){
+				if(t[i]) $(ele).val(t[i++]);
+			});
 		}
 		else if( cnf == 'getTime' )
 		{

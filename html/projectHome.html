@@ -54,8 +54,13 @@
 			function loadCallback(prj){
 				project = prj;		
 				var _burl = location.href.trim("/");
+				
+				var frmCount = 0;
+				
 				for(frm in project.forms)
 				{
+					frmCount++;
+					
 					if(!project.forms[frm].main) continue;
 					opts = "";
 					for(fld in project.forms[frm].fields)
@@ -78,6 +83,14 @@
 					$("#menu").append("<div class=\"form\"> <a class=\"frmHeader ui-state-default ui-corner-top\" href=\"" + _burl + "/" + frm + "\">" + frm + "</a> <form action=\"" + _burl + "/" + frm + "\"><a href=\"" + location.href.trim("/") + "/" + frm + "\">View All</a> or Show records where <select id=\"field_" + frm + "\">"+ opts +"</select> is similar to <input type=\"text\" id=\"" + frm + "\" name=\""+project.forms[frm].key+"\"> <input type=\"submit\" value=\"Show records\" /> </form></div>");
 				}
 				
+				if(frmCount == 0)
+				{
+					$("#main p").remove();
+					$("#menu").append("<p>This project's homepage is <a href=\"" + location.href + "\">" + location.href + "</a></p>");
+					$("#menu").append('<p>Now that you have created this project you can <a href="' + location.href + '/formBuilder">create the project forms</a> and <a href="' + location.href + 'manage">update the project\'s settings</a> to change who can access the project and add an image or desctription to the project</p>');
+					$("#menu").append('<p>Once you have created your forms you can update the forms using the <a href="' + location.href + '/formBuilder">Edit Forms</a> option and manager the other project settings using <a href="' + location.href + '/manage">Manage</a> option above this message.</p>');
+				}
+				
 				$("select").change(function(evt)
 				{
 					$("#" + evt.target.id.replace("field_","")).attr("name", $(evt.target).val());
@@ -94,8 +107,8 @@
 {{main}}
 	<h1>{#projectName#}</h1>
 	<div id="projectPanel">{#adminMenu#} <a href="{#projectName#}.xml" class="button" target="_blank">Show XML</a></div>
-	<div id="projectDescription" style="display:none">
-		<img class="projectImage" src="{#projectImage#}" alt="Project Image" width="{#imgWidth#}" height="{#imgHeight#}" />{#projectDescription#}</div>
+	<p id="projectDescription">
+		<img class="projectImage" src="{#projectImage#}" alt="Project Image" width="{#imgWidth#}" height="{#imgHeight#}" />{#projectDescription#}</p>
 	<p>To view all data from a particular table click the relevant button, or to search, enter an ID in the text box and then click the button</p>
 	<div id="menu"></div>
 	

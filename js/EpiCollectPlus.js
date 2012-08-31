@@ -164,7 +164,8 @@ Date.prototype.format = function(fmt)
 	return fmt.replace("dd", this.getDate())
 		.replace("MM" , months[this.getMonth()])
 		.replace("yyyy", this.getFullYear())
-		.replace("hh", this.getHours().toString().padLeft(2, "0"))
+		.replace("HH", this.getHours().toString().padLeft(2, "0"))
+		.replace("hh", (this.getHours() % 12).toString().padLeft(2, "0"))
 		.replace("mm", this.getMinutes().toString().padLeft(2, "0"))
 		.replace("ss", this.getSeconds().toString().padLeft(2, "0"));
 }
@@ -751,7 +752,8 @@ EpiCollect.Form = function()
 				$(ele).timepicker({ format : fmt });
 				if(project.forms[formName].fields[ele.name].setTime)
 				{
-					$(ele).timepicker("setTime", new Date());
+					if(!data[ele.name]) $(ele).timepicker("setTime", new Date().format(fmt));
+					else $(ele).timepicker("setTime", data[ele.name]);
 				}
 			});
 		//}
@@ -1469,7 +1471,7 @@ EpiCollect.Field = function()
 		   }
 		   else if(this.type == "select1")
 		   {
-			   ret =  "<select name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input\" > ";
+			   ret =  "<select name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input\" ><option value=\"\">Select an Option...</option> ";
 			   for(var i = 0; i < this.options.length; i++)
 			   {
 				   
@@ -1599,7 +1601,7 @@ EpiCollect.Field = function()
 		else if(this.type == "photo"){
 			if(value && !value.match(/^null$/i) && value != "-1")
 			{
-				return  "<a href=\"./" +formName+"/__getImage?img="+value+"\"><img src=\"./" +formName+"/__getImage?img="+value+"&thumbnail=true\" alt=\""+value+"\" height=\"125\"/></a>";
+				return  "<a href=\"./" +formName+"/__getImage?img="+value+"\" target=\"__blank\"><img src=\"./" +formName+"/__getImage?img="+value+"&thumbnail=true\" alt=\""+value+"\" height=\"125\"/></a>";
 			}
 			else
 			{
@@ -1613,7 +1615,7 @@ EpiCollect.Field = function()
 				checking[checkurl] = checkid;
 				checker.startCheck(checkurl);
 				
-				return "<a id=\"" + checkid + "\" href=\"../ec/uploads/"+value+"\"> View Media </a>";
+				return "<a id=\"" + checkid + "\" href=\"../ec/uploads/"+value+"\" target=\"__blank\"> View Media </a>";
 			}
 			else
 			{

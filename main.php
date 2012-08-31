@@ -1900,7 +1900,7 @@ function formHandler()
 			"curate" =>  $permissionLevel > 1 ? "true" : "false", 
 			"mapScript" => $mapScript,
 			"curationbuttons" => $permissionLevel > 1 ? sprintf('<a href="javascript:project.forms[formName].displayForm({ vertical : false });"><img src="%s/images/glyphicons/glyphicons_248_asterisk.png" title="New Entry" alt="New Entry"></a>
-				<a href="javascript:project.forms[formName].displayForm({data : window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()], edit : true, vertical: true});"><img src="%s/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
+				<a href="javascript:editSelected();"><img src="%s/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
 				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()][project.forms[formName].key]);"><img src="%s/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a>',
 				$SITE_ROOT, $SITE_ROOT, $SITE_ROOT): '' );
 	echo applyTemplate('base.html', './FormHome.html', $vars);
@@ -2242,6 +2242,10 @@ function updateXML()
 		
 		$prj->publicSubmission = true;
 	}
+	
+	$prj->description = getValIfExists($_POST, "description");
+	
+	$prj->image = getValIfExists($_POST, "projectImage");
 	
 	if(array_key_exists("listed", $_REQUEST)) $prj->isListed = $_REQUEST["listed"] == "true";
 	if(array_key_exists("public", $_REQUEST)) $prj->isPublic = $_REQUEST["public"] == "true";
@@ -2672,6 +2676,8 @@ function updateProject()
 			$public = getValIfExists($_POST, "public");
 			$listed = getValIfExists($_POST, "listed");
 
+			
+			
 			$drty = false;
 			if($xml && $xml != "")
 			{
@@ -2683,6 +2689,20 @@ function updateProject()
 				}
 				$drty = true;
 			}
+			
+			echo 'description ' . $prj->description . ' ' .getValIfExists($_POST, "description") ;
+			if($prj->description != getValIfExists($_POST, "description"))
+			{
+				
+				$prj->description = getValIfExists($_POST, "description");
+				$drty = true;
+			}
+			if($prj->image != getValIfExists($_POST, "projectImage"))
+			{
+				$prj->image = getValIfExists($_POST, "projectImage");
+				$drty = true;
+			}
+			
 			if($public !== false)
 			{
 				$prj->isPublic = $public === "true";
@@ -2763,6 +2783,8 @@ function uploadMedia()
 	$fNameEnd = strpos($url, "/", $pNameEnd + 1);
 	$frmName = rtrim(substr($url, $pNameEnd + 1, $fNameEnd - $pNameEnd), "/");
 
+	if($frmName == 'uploadMedia') $frmName = false;
+	
 	$tvals = array("project" => $pname,"form" => $frmName);
 
 	if(!file_exists('ec/uploads')) mkdir('ec/uploads');
@@ -2838,7 +2860,7 @@ function uploadMedia()
 
 	if(array_key_exists("fn", $_GET))
 	{
-		$fn = "ec/uploads/{$pname}~tn~".$_GET["fn"];
+		$fn = "ec/uploads/{$pname}~".$_GET["fn"];
 		$tvals["mediaTag"] = "<img src=\"$SITE_ROOT/{$fn}\" height=\"150\" />";
 		$tvals["fn"] = str_replace("ec/uploads/", "", $fn);
 	}
@@ -3267,6 +3289,7 @@ $pageRules = array(
 		'[a-zA-Z0-9_-]+/manage' =>new PageRule(null, 'updateProject', true),
 		'[a-zA-Z0-9_-]+/updateStructure' =>new PageRule(null, 'updateXML', true),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__stats' =>new PageRule(null, 'tableStats'),
+		'[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__getImage' =>new PageRule(null, 'getImage'),
 		

@@ -10,7 +10,7 @@
 				var inputId = "#" + evt.target.id.replace("_iframe","");
 				var eles = evt.target.contentDocument.getElementsByTagName("img");
 
-				var path = eles.lenght > 0 ? eles[0].src : evt.target.contentDocument.getElementsByTagName("a")[0].href;
+				var path = eles.length > 0 ? eles[0].src : evt.target.contentDocument.getElementsByTagName("a")[0].href;
 				
 				$(inputId).val(path.substr(path.lastIndexOf("/") + 1));
 			});
