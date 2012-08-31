@@ -328,7 +328,9 @@ function updateSelected()
 	if(jq == undefined || jq.length == 0) return true;
 	
 	var name = currentControl.id; 
-	if(jq.attr("type") == 'fk')
+	var _type = jq.attr("type");
+	
+	if(_type == 'fk')
 	{
 		currentControl.id = project.forms[$('#parent').val()].key;
 	}
@@ -336,6 +338,17 @@ function updateSelected()
 	{
 		currentControl.id = $('#inputId').val();
 		currentControl.text = $('#inputLabel').val();
+		if(_type == "date" || _type == "time")
+		{
+			var suf = '(' + $('#' + _type).val() + ')';
+			var rxsuf = '\\(' + $('#' + _type).val().replace(/\//g, '\\/') + '\\)';
+			
+			console.debug (new RegExp(rxsuf +'$', 'g'));
+			if(!currentControl.text.match(new RegExp(rxsuf +'$', 'g')))
+			{
+				currentControl.text = currentControl.text + ' ' + suf;
+			}
+		}
 	}
 	
 	if(!currentForm.validateFieldName(currentControl.id, name))
@@ -343,7 +356,7 @@ function updateSelected()
 		alert('Field name must be unique within the form, not the same as the form name and not one of ' + EpiCollect.KEYWORDS.join(', '));
 		return false;
 	}
-	var _type = jq.attr("type");
+	
 	if(_type.match(/^(text|numeric|date|time|fk)$/))
 	{
 		currentControl.type = "input";
@@ -388,10 +401,20 @@ function updateSelected()
 	
 	if(_type == 'date')
 	{
+		if($("#date").val() == "")
+		{
+			alert("You must select a date format.");
+			throw "You must select a date format.";
+		}
 		currentControl[(notset ? "date": "setDate")] = $("#date").val();
 	}
 	else if(_type == 'time')
 	{
+		if($("#time").val() == "")
+		{
+			alert("You must select a time format.");
+			throw "You must select a time format.";
+		}
 		currentControl[(notset ? "time": "setTime")] = $("#time").val();
 	}
 	else if(_type == 'numeric')
@@ -411,7 +434,6 @@ function updateSelected()
 	
 	//TODO: get and add options
 	var optCtrls = $(".selectOption");
-	
 	var options = [];
 	
 	var n = optCtrls.length;
@@ -428,7 +450,7 @@ function updateSelected()
 	for(var i = jn; i--;)
 	{
 		var jumpType = $('[name=jumpType]', jumpCtrls[i]).val();
-		var jval = (jumpType.length > 1 ? jumpType :  jumpType + (Number($(".jumpvalues", jumpCtrls[i]).val()) + 1));
+		var jval = (jumpType.length > 1 ? jumpType :  jumpType + (Number($(".jumpvalues", jumpCtrls[i]).val())));
 		
 		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + jval + (jump == "" ? "" : "," + jump);
 	}

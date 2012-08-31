@@ -97,6 +97,11 @@ table.ecplus-data
 	border : 1px solid #CCCCCC;
 }
 
+textarea
+{ 
+	border: 1px solid #888888 !important;
+}
+
 label
 {
 	display : inline-block;

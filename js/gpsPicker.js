@@ -113,7 +113,7 @@
 			  
 			  $("#latitude", ctx).val(pos.lat());
 			  $("#longitude", ctx).val(pos.lng());
-			  $("#accuracy", ctx).val(accCircle.radius);
+			  $("#accuracy", ctx).val(Math.max(accCircle.radius, 100));
 			  $("#provider", ctx).val("Geocoding");
 			  
 			  mkr.setPosition(pos);
