@@ -387,6 +387,8 @@ function loginHandler()
 	{
 		$frm = $auth->requestlogin($cb_url);
 	}
+
+	
 	echo applyTemplate('./base.html', './loginbase.html', array( 'form' => $frm));
 }
 
