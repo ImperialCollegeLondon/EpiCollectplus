@@ -308,6 +308,7 @@ tr.alt
 
 .ecplus-vertical-form .ecplus-question
 {
+	margin-top : 1em;
 	position: relative;
 	display : block;
 }
@@ -317,6 +318,7 @@ tr.alt
 .ecplus-vertical-form .ecplus-question label{
 	display : inline-block;
 	font-weight: bold;
+	vertical-align : top;
 	width : 10em;
 }
 
@@ -917,3 +919,7 @@ tr.alt
 	z-index: 100;
 }
 
+#ecplus-save-button
+{
+	margin-bottom : 1.5em;
+}

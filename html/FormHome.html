@@ -287,6 +287,11 @@
 					}
 				});
 				
+				$('#csvform').accordion({
+					collapsible : true,
+					active: false
+				});
+				
 				$('#num_entries').val(numEnts);
 				
 				$('#num_entries').change(function(e)
@@ -500,9 +505,8 @@
 					$('#mapFilterValue').autocomplete("option", "source" , baseUrl+ "/" + $('#mapFilterField').val());
 				});
 				
+				$('#filter_value').bind('autocompletechange', function(){doFilter($('#filter_fields').val(), $('#filter_value').val())});
 				
-				
-				$('#filter_value').blur(function(){doFilter($('#filter_fields').val(), $('#filter_value').val())})
 				var t = new Date().getTime()
 				$( "#slider-range" ).slider({
 					range: true,
@@ -634,7 +638,7 @@
 					if(nextFormName)
 					{
 						
-						html += "<td>" + entries[i][nextFormName + "_entries"]  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "\">View entries</a></td>";
+						html += "<td>" + entries[i][nextFormName + "_entries"]  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "&prevForm=" + formName + "\">View entries</a></td>";
 					}
 					html += "</tr>";
 				}
@@ -869,6 +873,15 @@
 					
 				}
 				markerClusterer.repaint();
+				
+				mapFilterFunction = filterFunction;
+				
+				$('.graphPanel').each(function(idx,ele){
+					if($('.flot-base', ele).length)
+					{
+						$('a', ele).click()
+					}
+				});
 			}
 			
 			function clearMapFilter()
@@ -882,10 +895,21 @@
 				}
 				markerClusterer.repaint();
 				
+				mapFilterFunction = false;
+				
+				$("#mapFilterField").val('');
+				$("#mapFilterValue").val('');
+				
 				$(".filterControl").removeClass("active");
 				$("#slider-range").slider("values", 0, $("#slider-range").slider("option", "min"));
 				$("#slider-range").slider("values", 1, $("#slider-range").slider("option", "max"));
-				
+			
+				$('.graphPanel').each(function(idx,ele){
+					if($('.flot-base', ele).length)
+					{
+						$('a', ele).click()
+					}
+				});
 			}
 			
 			function doMapFieldFilter()
@@ -1119,9 +1143,11 @@
 				
 				for(var i = len; i--;)
 				{
-					var val = d[i][field];
-					
-					if(!agg[val]){ agg[val] = 1;} else {agg[val]++;}					
+					if( mapFilterFunction && mapFilterFunction(d[i]) )
+					{
+						var val = d[i][field];
+						if( !agg[val] ){ agg[val] = 1; } else { agg[val]++; }
+					}
 				}
 				
 				var dat = [];
@@ -1154,6 +1180,16 @@
 				{
 					alert("Please select an entry to edit");
 				}
+			}
+			
+			function showGPS(gps)
+			{
+				content = '';
+				for(var x in gps)
+				{
+					content += '<p> ' + x + ' : ' + gps[x] + '</p>';
+				}
+				new EpiCollect.Dialog({content : content});
 			}
 			
 	</script>
@@ -1208,12 +1244,7 @@
 					Show <input type="number" maxlengh="3" id="num_entries" /> entries per page <a href="javascript:saveNumEntires();">Save as my default</a> 
 				</span>
 			</p>
-			<hr />
-			<h3>Upload data from a CSV file</h3>
-			<form method="POST" enctype="multipart/form-data" >
-				<label for="upload">File to upload : </label><input type="file" name="upload" /><br />
-				<input type="submit" name="submit" value="Upload File" />
-			</form>	
+			{#csvform#}
 		</div>
 		<div id="mapTab">
 			<div id="sidebar">
