@@ -416,13 +416,19 @@
 			<form method="POST" action="{#SITE_ROOT#}/writeSettings">
 				<h1>Security and Authentication</h1>
 				
-					<label for="security\auth_method">User Authentication Methods</label>
-					<p><input type="checkbox" id="_OPENID" />OpenID <input type="hidden" id="openid" name="security\use_openID" /></p>
-					<p><input type="checkbox" id="_LDAP" />LDAP (Windows Active Directory) <input type="hidden" id="ldap" name="security\use_ldap" /></p>
-					<p><input type="checkbox" id="_LOCAL" />Accounts defined within this server<input type="hidden" id="local" name="security\use_local" /></p>
-				
-				<p class="formRow ldap_option"><label for="security\ldap_domain">LDAP Domain</label><input type="text" name="security\ldap_domain" /></p>
-				<p class="formRow ldap_option"><label for="security\ldap_ug">Active Directory Group (optional)</label><input type="text" name="security\ldap_ug" /></p>
+				<label for="security\auth_method">User Authentication Methods</label>
+				<p><input type="checkbox" id="_OPENID" />OpenID <input type="hidden" id="openid" name="security\use_openID" /></p>
+				<p><input type="checkbox" id="_LDAP" />LDAP (Windows Active Directory) <input type="hidden" id="ldap" name="security\use_ldap" /></p>
+				<p><input type="checkbox" id="_LOCAL" />Accounts defined within this server<input type="hidden" id="local" name="security\use_local" /></p>
+				<hr class="formRow ldap_option" />
+				<h2 class="formRow ldap_option">LDAP Options</h2>
+				<p class="formRow ldap_option"><label for="security\ldap_server_uri">LDAP Server</label><input type="text" name="security\ldap_server_uri" /></p>
+				<p class="formRow ldap_option"><label for="security\ldap_bind_user"> User to bind to LDAP server with</label><input type="text" name="security\ldap_bind_user" /></p>
+				<p class="formRow ldap_option"><label for="security\ldap_bind_pwd">LDAP Password</label><input type="text" name="security\ldap_bind_pwd" /></p>
+				<p class="formRow ldap_option"><label for="security\ldap_username_attr">Which attribute will the username be stored in</label><input type="text" name="security\ldap_username_attr" /></p>
+				<p class="formRow ldap_option"><label for="security\ldap_search_filter">Search filter for LDAP</label><input type="text" name="security\ldap_search_filter" /></p>
+				<p class="formRow ldap_option"><label for="security\ldap_search_base">Search base for LDAP</label><input type="text" name="security\ldap_search_base" /></p>
+				<hr class="formRow ldap_option" />
 				<p class="formRow"><label for="security\session_length_base">How long should a user be logged in before they have to re-enter their user name and password</label><input type="text" id="session_length_base" class="session_comp"/>
 					<select id="session_length_mutiplier" class="session_comp">
 						<option value="1">Seconds</option>

@@ -18,7 +18,9 @@ $(function()
 				"position":"fixed",
 				"top" : "0px"
 			}); 
-		}else{
+		}
+		else
+		{
 			$("#toolbox-inner").css({
 				"position":"relative"
 			}); 
@@ -30,7 +32,9 @@ $(function()
 				"top" : $("#toolbox-inner").height() + 10 + "px",
 				"right" : "25px"
 			}); 
-		}else{
+		}
+		else
+		{
 			$("#details").css({
 				"position":"absolute",
 				"top" : "0px",
@@ -177,7 +181,7 @@ function newForm(message, name)
 	}
 	
 	var par = project.getPrevForm(name);
-	
+	 
 	if(par && frm.main)
 	{
 		frm.fields[par.key] = new EpiCollect.Field();
@@ -641,17 +645,16 @@ function updateLastJump()
 function genID()
 {
 	var x = $('#destination .ecplus-form-element').length
-	var name= 'ecplus-ctrl' + x;
+	var name= 'ecplus-' + currentForm.name + '-ctrl' + x;
 	for(; currentForm.fields[name]; x++)
 	{
-		name = 'ecplus-ctrl' + x;
+		name = 'ecplus-' + currentForm.name + '-ctrl' + x;
 	}
 	return name;
 }
 
 function setSelected(jqEle)
 {
-	
 	try{
 		if(window["currentControl"])
 		{
@@ -915,14 +918,14 @@ function switchToBranch()
 	updateSelected();
 	
 	var frm = currentControl.connectedForm;
+	var par_frm = currentForm.name;
+	
 	if(!frm || frm == '')
 	{
 		frm = currentControl.id + "_form";
 		currentControl.connectedForm = frm;
 	}
 	
-	
-
 	if(currentForm){
 		updateForm();
 		project.forms[currentForm.name] = currentForm;
@@ -934,6 +937,17 @@ function switchToBranch()
 		project.forms[frm] = new EpiCollect.Form();
 		project.forms[frm].num = Object.keys(project.forms).length;
 		project.forms[frm].name = frm;
+		
+		var key = currentForm.key;
+		var fklabel = currentForm.fields[currentForm.key].text;
+		var flds = project.forms[frm].fields;
+		
+		flds[key] = new EpiCollect.Field();
+		flds[key].id = key;
+		flds[key].isKey = false;
+		flds[key].title = false;
+		flds[key].type = 'fk';
+		flds[key].text = fklabel;
 	}
 	currentForm = project.forms[frm];
 	currentForm.main = false;
@@ -983,7 +997,7 @@ function saveProject()
 	
 	$.ajax("./updateStructure" ,{
 		type : "POST",
-		data : {data : project.toXML()},
+		data : {data : project.toXML(), skipdesc : true},
 		success : saveProjectCallback,
 		error : saveProjectError
 	});

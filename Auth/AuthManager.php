@@ -1,7 +1,7 @@
 <?php
- require "OpenIDProvider.php";
- require "Ldap.php";
- require "LocalAuthProvider.php";
+ require "./Auth/OpenIDProvider.php";
+ require "./Auth/Ldap.php";
+ require "./Auth/LocalAuthProvider.php";
  
  class AuthManager
  {
@@ -43,10 +43,13 @@
 		
 		if($this->openIdEnabled)
 	  	{
-	  		try{
-	   			$this->providers["OPENID"] = new OpenIDProvider("http://test.mlst.net/index.php");
-	  		}catch(Exception $err)
+	  		try
 	  		{
+	   			$this->providers["OPENID"] = new OpenIDProvider("http://test.mlst.net/index.php");
+	  		}
+	  		catch(Exception $err)
+	  		{
+	  			echo '===' . $err;
 	  			$err = null;
 	  			$this->openIdEnabled = false;
 	  			
@@ -65,7 +68,7 @@
   	function getProviderType()
   	{
   		//return $this->provider->getType();
-  		return "LOCAL";
+  		return $_SESSION['provider'];
   	}
   	
   	function getUserName()
@@ -81,6 +84,8 @@
   		$provider = strtoupper($provider);
   		
   		$_SESSION["url"] = "http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}/" . trim($requestedUrl, '/');
+  		
+  		
   		if(($provider != "" && array_key_exists($provider, $this->providers)) || count($this->providers) == 1)
   		{
   			if($provider == '' && count($this->providers) == 1)
@@ -233,7 +238,7 @@
   		  		
   		$res = $db->do_query("DELETE FROM ecsession WHERE id = '" . session_id() . "'");
   		if(!$res) die("$res - $sql");
-  		
+  		$_SESSION['provider'] = null;
   		$params = session_get_cookie_params();
 	    setcookie(session_name(), '', time() - 42000,
 	        $params["path"], $params["domain"],

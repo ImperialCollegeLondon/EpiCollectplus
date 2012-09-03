@@ -387,6 +387,8 @@ function loginHandler()
 	{
 		$frm = $auth->requestlogin($cb_url);
 	}
+
+	
 	echo applyTemplate('./base.html', './loginbase.html', array( 'form' => $frm));
 }
 
@@ -1073,13 +1075,15 @@ function uploadData()
 						$alt = "{$key}_alt";
 						$acc = "{$key}_acc";
 						$src = "{$key}_provider";
-
+						$bearing = "{$key}_bearing";
+						
 						$ent->values[$key] = array(
 							'latitude' => (string) getValIfExists($_POST, $lat),
 							'longitude' => (string)getValIfExists($_POST,$lon),
 							'altitude' => (string)getValIfExists($_POST,$alt),
 							'accuracy' => (string) getValIfExists($_POST,$acc), 
-							'provider' => (string)getValIfExists($_POST,$src)
+							'provider' => (string)getValIfExists($_POST,$src),
+							'bearing' =>  (string)getValIfExists($_POST,$bearing),
 						);
 					}
 					else if(!array_key_exists($key, $_POST))
@@ -1342,6 +1346,7 @@ function downloadData()
 									fwrite($fxml,"\t\t\t<{$fld}_acc>{$gpsObj->accuracy}</{$fld}_acc>\n");
 									fwrite($fxml,"\t\t\t<{$fld}_provider>{$gpsObj->provider}</{$fld}_provider>\n");
 									fwrite($fxml,"\t\t\t<{$fld}_alt>{$gpsObj->altitude}</{$fld}_alt>\n");
+									fwrite($fxml,"\t\t\t<{$fld}_bearing>{$gpsObj->bearing}</{$fld}_bearing>\n");
 								}
 								catch(ErrorException $e)
 								{
@@ -1350,6 +1355,7 @@ function downloadData()
 									fwrite($fxml,"\t\t\t<{$fld}_acc>-1</{$fld}_acc>\n");
 									fwrite($fxml,"\t\t\t<{$fld}_provider>None</{$fld}_provider>\n");
 									fwrite($fxml,"\t\t\t<{$fld}_alt>0</{$fld}_alt>\n");
+									fwrite($fxml,"\t\t\t<{$fld}_bearing>0</{$fld}_bearing>\n");
 									$e = null;
 								}
 								$gpsObj = null;
@@ -1374,6 +1380,7 @@ function downloadData()
 								fwrite($tsv,"{$fld}_acc{$delim}{$gpsObj->accuracy}{$delim}");
 								fwrite($tsv,"{$fld}_provider{$delim}{$gpsObj->provider}{$delim}");
 								fwrite($tsv,"{$fld}_alt{$delim}{$gpsObj->altitude}{$delim}");
+								fwrite($tsv,"{$fld}_bearing{$delim}{$gpsObj->bearing}{$delim}");
 							}
 							else
 							{
@@ -1756,7 +1763,7 @@ function formHandler()
 					}
 					elseif($fld->type == "gps" || $fld->type == "location")
 					{
-						$headers = str_replace("\t$name", "\t{$name}_lattitude\t{$name}_longitude\t{$name}_altitude\t{$name}_accuracy\t{$name}_provider", $headers);
+						$headers = str_replace("\t$name", "\t{$name}_lattitude\t{$name}_longitude\t{$name}_altitude\t{$name}_accuracy\t{$name}_provider\t{$name}_bearing", $headers);
 					}
 				}	
 				echo "$headers\r\n";	
@@ -1889,6 +1896,8 @@ function formHandler()
 			$p .= "&gt; <a href=\"{$k}\">{$k} : $v </a>";
 		}
 	}
+	
+	
 		
 	$mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>
 	<script type=\"text/javascript\" src=\"{$SITE_ROOT}/js/markerclusterer.js\"></script>
@@ -1902,7 +1911,16 @@ function formHandler()
 			"curationbuttons" => $permissionLevel > 1 ? sprintf('<a href="javascript:project.forms[formName].displayForm({ vertical : false });"><img src="%s/images/glyphicons/glyphicons_248_asterisk.png" title="New Entry" alt="New Entry"></a>
 				<a href="javascript:editSelected();"><img src="%s/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
 				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()][project.forms[formName].key]);"><img src="%s/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a>',
-				$SITE_ROOT, $SITE_ROOT, $SITE_ROOT): '' );
+				$SITE_ROOT, $SITE_ROOT, $SITE_ROOT): '',
+			"csvform" => $permissionLevel > 1 ?$csvform = '<div id="csvform">
+				<h3><a href="#">Upload data from a CSV file</a></h3>
+				<div>
+					<form method="POST" enctype="multipart/form-data" >
+						<label for="upload">File to upload : </label><input type="file" name="upload" /><br />
+						<input type="submit" name="submit" value="Upload File" />
+					</form>
+				</div>
+			</div>' : '' );
 	echo applyTemplate('base.html', './FormHome.html', $vars);
 }
 
@@ -2242,10 +2260,12 @@ function updateXML()
 		
 		$prj->publicSubmission = true;
 	}
-	
-	$prj->description = getValIfExists($_POST, "description");
-	
-	$prj->image = getValIfExists($_POST, "projectImage");
+
+	if(!getValIfExists($_POST, "skipdesc"))
+	{	
+		$prj->description = getValIfExists($_POST, "description");
+		$prj->image = getValIfExists($_POST, "projectImage");
+	}
 	
 	if(array_key_exists("listed", $_REQUEST)) $prj->isListed = $_REQUEST["listed"] == "true";
 	if(array_key_exists("public", $_REQUEST)) $prj->isPublic = $_REQUEST["public"] == "true";

@@ -1016,13 +1016,15 @@
 						$alt = sprintf('%s_alt', $fields[$f]);
 						$acc = sprintf('%s_acc', $fields[$f]);
 						$src = sprintf('%s_provider', $fields[$f]);
+						$bearing = sprintf('%s_bearing', $fields[$f]);
 						
 						$entry->values[$fields[$f]] = array(
 							'latitude' => $ent[$lat],
 							'longitude' => $ent[$lon],
 							'altitude' => getValIfExists($ent, $alt),
 							'accuracy' => getValIfExists($ent, $acc),
-							'provider' => getValIfExists($ent, $src)
+							'provider' => getValIfExists($ent, $src),
+							'bearing' => getValIfExists($ent, $bearing)
 						);
 					}
 					elseif ( ( $this->fields[$fields[$f]]->type == "photo" || $this->fields[$fields[$f]]->type == "video" || $this->fields[$fields[$f]]->type == "audio" ) 
@@ -1091,13 +1093,15 @@
 						$alt = "{$key}_alt";
 						$acc = "{$key}_acc";
 						$src = "{$key}_provider";
+						$bearing = "{$key}_bearing";
 						
 						$entry->values[$key] = array(
 							'latitude' => (string)$ent->$lat,
 							'longitude' => (string)$ent->$lon,
 							'altitude' => (string)$ent->$alt,
 							'accuracy' => (string) $ent->$acc, 
-							'provider' => (string)$ent->$src
+							'provider' => (string)$ent->$src,
+							'bearing' => (string)$ent->$bearing
 						);
 					}
 					else

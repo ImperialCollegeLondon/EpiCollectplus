@@ -22,6 +22,7 @@
 	  		"<label for=\"longitude\">Longitude (Decimal Degrees)</label><input type=\"number\" id=\"longitude\"/>" +
 	  		"<label for=\"altitude\">Altitude (in meters)</label><input type=\"number\" id=\"altitude\"/>" +
 	  		"<label for=\"accuracy\">Accuracy (in meters)</label><input type=\"number\" id=\"accuracy\"/>" +
+	  		"<label for=\"bearing\">Bearing</label><input type=\"number\" id=\"bearing\"/>" +
 	  		"<label for=\"provider\">Source of the Position</label><input type=\"text\" id=\"provider\"/>" +
 	  		"</fieldset></div>");
 	  
@@ -75,8 +76,9 @@
 			  
 			  $("#latitude", ctx).val((cnf.mapType == "osm" ? mkr.getLatLng().lat : mkr.getPosition().lat()));
 			  $("#longitude", ctx).val((cnf.mapType == "osm" ? mkr.getLatLng().lng : mkr.getPosition().lng()));
-			  $("#accuracy", ctx).val(accCircle.radius);
+			  $("#accuracy", ctx).val(Math.max(accCircle.radius, 100));
 			  $("#provider", ctx).val("Marker Dropped");
+			  $("#bearing", ctx).val("0");
 			  
 			  if(eleService)
 			  {
@@ -115,6 +117,7 @@
 			  $("#longitude", ctx).val(pos.lng());
 			  $("#accuracy", ctx).val(Math.max(accCircle.radius, 100));
 			  $("#provider", ctx).val("Geocoding");
+			  $("#bearing", ctx).val("0");
 			  
 			  mkr.setPosition(pos);
 			  accCircle.setCenter(pos);
@@ -183,10 +186,13 @@
 		  acc = acc ? acc : "-1";
 		  var alt = $("#altitude", ctx).val();
 		  alt = alt ? alt : "0";
+		  var bear = $("#bearing", ctx).val();
+		  bear = bear ? bear : "0";
 		  return  "{ \"latitude\" : " + lat +
 		  	" , \"longitude\" : " + lon + 
 		  	", \"accuracy\" : " +  acc +
-		  	", \"altitude\" : " + alt  + 
+		  	", \"altitude\" : " + alt  +
+		  	", \"bearing\" : " + bear  + 
 		  	", \"provider\" : \"" + $("#provider", ctx).val()+ "\"}";
 	  }
 	  

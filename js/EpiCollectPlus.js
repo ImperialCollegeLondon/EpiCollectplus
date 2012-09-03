@@ -25,6 +25,33 @@ EpiCollect.KEYWORDS = [
      'test', 'markers', 'images', 'js', 'css', 'ec', 'pc', 'create'
 ];
 
+EpiCollect.Dialog = function(conf)
+{
+	var diajq = $('#ec_dialog');
+	if(diajq.length == 0)
+	{
+		$(document.body).append('<div id="ec_dialog"></div>');
+		diajq = $('#ec_dialog');
+	}
+	diajq.hide();
+	diajq.html(conf.content);
+	if(!conf.buttons)
+	{
+		diajq.dialog({
+			buttons: {
+				'OK' : function(){
+					$( this ).dialog("close");
+				}
+			},
+			resizable : false
+		});
+	}
+	else
+	{
+		
+	}
+};
+
 EpiCollect.LoadingOverlay = function()
 {
 	var message = "Loading ...";
@@ -682,15 +709,15 @@ EpiCollect.Form = function()
 		$("form", this.formElement).append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /></div>");
 		if(cnf.debug)
 		{
-			$("#ecplus-save-button", this.formElement).append("<a href=\"javascript:project.forms['" + this.name +  "'].closeForm();\">End of Form</a>");
+			$("#ecplus-save-button", this.formElement).append("<a class=\"button\" href=\"javascript:project.forms['" + this.name +  "'].closeForm();\">End of Form</a>");
 		}
 		else if(editMode)
 		{
-			$("#ecplus-save-button", this.formElement).append("<a href=\"javascript:project.forms['" + this.name +  "'].editEntry();\">Save Entry</a>");
+			$("#ecplus-save-button", this.formElement).append("<a class=\"button\" href=\"javascript:project.forms['" + this.name +  "'].editEntry();\">Save Entry</a>");
 		}
 		else
 		{
-			$("#ecplus-save-button", this.formElement).append("<a href=\"javascript:project.forms['" + this.name +  "'].addEntry();\">Save Entry</a>");
+			$("#ecplus-save-button", this.formElement).append("<a class=\"button\" href=\"javascript:project.forms['" + this.name +  "'].addEntry();\">Save Entry</a>");
 		}
 		
 		$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question").width() * $(".ecplus-question").length + 1) + "px");
@@ -735,7 +762,25 @@ EpiCollect.Form = function()
 				}
 				fmt = fmt.replace("MM", "mm").replace("yyyy", "yy");
 
-				$(ele).datepicker({ dateFormat : fmt });
+				$(ele).datepicker({ 
+					dateFormat : fmt,
+					beforeShow : function(input, inst)
+					{
+						$(input).off('blur');
+					},
+					onClose:function(input, inst)
+					{
+						$( input ).focusin();
+						$( input ).on('blur', function(evt)
+						{
+							if(!project.forms[formName].moveNext(true))
+							{
+								$(evt.target).focus();
+							}
+						});
+					}
+										
+				});
 				if(project.forms[formName].fields[ele.name].setDate)
 				{
 					$(ele).datepicker("setDate", new Date());
@@ -752,7 +797,7 @@ EpiCollect.Form = function()
 				$(ele).timepicker({ format : fmt });
 				if(project.forms[formName].fields[ele.name].setTime)
 				{
-					if(!data[ele.name]) $(ele).timepicker("setTime", new Date().format(fmt));
+					if(!data || !data[ele.name]) $(ele).timepicker("setTime", new Date().format(fmt));
 					else $(ele).timepicker("setTime", data[ele.name]);
 				}
 			});
@@ -1624,7 +1669,7 @@ EpiCollect.Field = function()
 		}else if(this.type == "location" || this.type == "gps"){
 			if(value)
 			{
-				return value.latitude + ", " + value.longitude;
+				return value.latitude + ", " + value.longitude + ' <a href="javascript:showGPS(' + JSON.stringify(value).replace(/"/g, '\'').replace(/[\n\r]/g, '') + ')">Show Details</a>' ;
 			}
 			else
 			{
@@ -1643,7 +1688,7 @@ EpiCollect.Field = function()
 			}
 			else
 			{
-				return value + (data ?  ' <a href="' + this.connectedForm + '?' + this.form.key +  '=' + data[this.form.key] + '">View entries</a>' : '');
+				return value + (data ?  ' <a href="' + this.connectedForm + '?' + this.form.key +  '=' + data[this.form.key] + '?trail=' + this.form.name +  '">View entries</a>' : '');
 			}
 		}
 		else
