@@ -25,7 +25,11 @@ EpiCollect.KEYWORDS = [
      'test', 'markers', 'images', 'js', 'css', 'ec', 'pc', 'create'
 ];
 
-EpiCollect.Dialog = function(conf)
+/**
+ * Function to produce a dialog box.
+ */
+
+EpiCollect.dialog = function(conf)
 {
 	var diajq = $('#ec_dialog');
 	if(diajq.length == 0)
@@ -35,9 +39,12 @@ EpiCollect.Dialog = function(conf)
 	}
 	diajq.hide();
 	diajq.html(conf.content);
+	if(conf.title) diajq.attr('title', conf.title);
+	else diajq.attr('title', 'EpiCollect+ Message');
 	if(!conf.buttons)
 	{
 		diajq.dialog({
+			modal : true,
 			buttons: {
 				'OK' : function(){
 					$( this ).dialog("close");
@@ -51,6 +58,44 @@ EpiCollect.Dialog = function(conf)
 		
 	}
 };
+
+EpiCollect.prompt = function(conf)
+{
+	var diajq = $('#ec_dialog');
+	if(diajq.length == 0)
+	{
+		$(document.body).append('<div id="ec_dialog"></div>');
+		diajq = $('#ec_dialog');
+	}
+	diajq.hide();
+	diajq.html(conf.content);
+	
+	diajq.append('<br /><br /><input type="text" style="width: 80%" name="ecplus-dialog-input" />');
+	
+	if(conf.title) diajq.attr('title', conf.title);
+	else diajq.attr('title', 'EpiCollect+ Prompt');
+	
+	if(!conf.buttons)
+	{
+		diajq.dialog({
+			modal : true,
+			buttons: {
+				'OK' : function(){
+					conf.callback($( 'input', this ).val());
+					$( this ).dialog('close');
+				},
+				'Cancel' : function(){
+					$( this ).dialog('close');
+				}
+			},
+			resizable : false
+		});
+	}
+	else
+	{
+		
+	}
+}
 
 EpiCollect.LoadingOverlay = function()
 {
@@ -1127,7 +1172,7 @@ EpiCollect.Form = function()
 				{
 					if(statusText.toUpperCase() == "CONFLICT")
 					{
-						alert('cannot delete a record with child records.');
+						EpiCollect.dialog({ content: 'cannot delete a record with child records.' });
 					}
 				}
 			});
@@ -1188,12 +1233,12 @@ EpiCollect.Form = function()
 				}
 				else
 				{
-					alert(obj.msg);
+					EpiCollect.dialog({content : obj.msg});
 				}
 			},
 			error:function()
 			{
-				alert("Add request failed");
+				EpiCollect.dialog({content : "Add request failed"});
 			}	
 		});
 	}
@@ -1262,12 +1307,12 @@ EpiCollect.Form = function()
 				}
 				else
 				{
-					alert(obj.msg);
+					EpiCollect.dialog({ content : obj.msg });
 				}
 			},
 			error:function()
 			{
-				alert("Edit request failed");
+				EpiCollect.dialog({content : "Edit request failed" });
 			}
 		});
 	}
@@ -1286,13 +1331,13 @@ EpiCollect.Form = function()
 	{
 		if(!name.match(/^[0-9A-Z-_]+$/i))
 		{
-			alert("Field names must only contain letter, numbers, _ or -");
+			EpiCollect.dialog({ content : "Field names must only contain letter, numbers, _ or -" });
 			return false;
 		}
 		
 		if(this.fields[name] && name != oldname)
 		{
-			alert("Field names must be unique");
+			EpiCollect.dialog({content : "Field names must be unique" });
 			return false;
 		}
 		
@@ -1920,12 +1965,18 @@ EpiCollect.Field = function()
 				if(!$("#" + this.id).hasClass("ecplus-valid"))
 				{
 					$("#" + this.id).hide();
-					if(prompt("Please re-enter the value for " + this.text + " to confirm the value") != value)
-					{
-						msgs.push("field values must match");
-						$("#" + this.id).val("");
-					}
-					$("#" + this.id).show();
+					var ct = this;
+					EpiCollect.prompt({ content : "Please re-enter the value for " + this.text + " to confirm the value", callback : function(new_value){
+						if(newvalue != value)
+						{
+							EpiCollect.dialog({ content : "field values must match" }) 
+							msgs.push("field values must match");
+							$("#" + ct.id).val("");
+							$("#" + ct.id).removeClass("ecplus-valid");
+							$("#" + ct.id).addClass("ecplus-invalid");
+						}
+						$("#" + ct.id).show();
+					}});
 				}
 				
 			}

@@ -60,7 +60,7 @@ $(function()
 		{
 			if(!currentForm)
 			{
-				alert("You need to choose a form in order to change the controls on it.")
+				EpiCollect.dialog({ content : "You need to choose a form in order to change the controls on it."});
 				$("#destination div").remove();
 			}
 			else
@@ -164,35 +164,38 @@ function newForm(message, name)
 	{
 		message = "\r\n\r\n" + message;
 	}
-	var name = prompt("What would you like to call the new form?" + message, name);
-	if(name && project.validateFormName(name))
-	{
+	var name = EpiCollect.prompt({ content : "What would you like to call the new form?" + message, callback : function(name){ 
+		if(name && project.validateFormName(name))
+		{
+			
+			var frm = new EpiCollect.Form();
+			frm.name = name;
+			frm.num = $('.form').length + 1;
+			project.forms[name] = frm;
+			
+			addFormToList(name);
+		}
+		else if(name)
+		{
+			newForm("The form name must only contain letters, numbers and _ or - and be unique within this project.", name);
+		}
 		
-		var frm = new EpiCollect.Form();
-		frm.name = name;
-		frm.num = $('.form').length + 1;
-		project.forms[name] = frm;
+		var par = project.getPrevForm(name);
+		 
+		if(par && frm.main)
+		{
+			frm.fields[par.key] = new EpiCollect.Field();
+			frm.fields[par.key].id = par.key;
+			frm.fields[par.key].text = par.fields[par.key].text;
+			frm.fields[par.key].isKey = false;
+			frm.fields[par.key].title = false;
+			frm.fields[par.key].type = 'fk';
+		}
 		
-		addFormToList(name);
-	}
-	else if(name)
-	{
-		newForm("The form name must only contain letters, numbers and _ or - and be unique within this project.", name);
-	}
+		switchToForm(name);
+		
+	}});
 	
-	var par = project.getPrevForm(name);
-	 
-	if(par && frm.main)
-	{
-		frm.fields[par.key] = new EpiCollect.Field();
-		frm.fields[par.key].id = par.key;
-		frm.fields[par.key].text = par.fields[par.key].text;
-		frm.fields[par.key].isKey = false;
-		frm.fields[par.key].title = false;
-		frm.fields[par.key].type = 'fk';
-	}
-	
-	switchToForm(name);
 }
 
 function addFormToList(name)
@@ -357,7 +360,7 @@ function updateSelected()
 	
 	if(!currentForm.validateFieldName(currentControl.id, name))
 	{
-		alert('Field name must be unique within the form, not the same as the form name and not one of ' + EpiCollect.KEYWORDS.join(', '));
+		EpiCollect.dialog({ content : 'Field name must be unique within the form, not the same as the form name and not one of ' + EpiCollect.KEYWORDS.join(', ') });
 		return false;
 	}
 	
@@ -407,7 +410,7 @@ function updateSelected()
 	{
 		if($("#date").val() == "")
 		{
-			alert("You must select a date format.");
+			EpiCollect.dialog({ content : "You must select a date format." });
 			throw "You must select a date format.";
 		}
 		currentControl[(notset ? "date": "setDate")] = $("#date").val();
@@ -416,7 +419,7 @@ function updateSelected()
 	{
 		if($("#time").val() == "")
 		{
-			alert("You must select a time format.");
+			EpiCollect.dialog({ content : "You must select a time format." });
 			throw "You must select a time format.";
 		}
 		currentControl[(notset ? "time": "setTime")] = $("#time").val();
@@ -514,7 +517,8 @@ function updateForm()
 	if(!updateSelected()) return false;	
 	if(!currentForm.key)
 	{
-		alert("The form " + currentForm.name + " needs a key defined.")
+		EpiCollect.dialog({ content : "The form " + currentForm.name + " needs a key defined." });
+		throw "The form " + currentForm.name + " needs a key defined.";
 		return false;
 	}
 	
@@ -582,20 +586,24 @@ function updateJumps()
 		 var opts = $('option', jq);
 		 var len = opts.length;
 		 
-		 var hide = false;
+		 var show = false;
 		 var cField = $('.ecplus-form-element.selected').attr('id');
+		 var fidx;
 		 
-		 for(var i = len; i--; )
+		 for(var i = 0; i < len; i++ )
 		 {
-			//console.debug(opts[i].value + ' == ' + cField);
-			hide = hide || opts[i].value == cField;
-			$(opts[i]).toggle(!hide);
+			$(opts[i]).toggle(show);
+			if( opts[i].value == cField ) {
+				// hide the next + 1 element as there's no point jumping to the next question!
+				$(opts[++i]).toggle(show);
+				show = true;
+			}
 		 }
-		 jq.val(vals[idx]);
+		 if(vals.length > idx) jq.val(vals[idx]);
 	});
 	}catch(err)
 	{
-		alert(err);
+		/*alert(err)*/;
 	}
 }
 
@@ -837,7 +845,7 @@ function setSelected(jqEle)
 		{
 			$(".removeControl").show();
 		}
-	}catch(err){alert(err);}
+	}catch(err){/*alert(err)*/;}
 }
 
 function removeForm(name)
@@ -886,9 +894,7 @@ function removeSelected()
 
 function renameForm(name)
 {
-	var newName = prompt('What would you like to rename the form ' + name + ' to?');
-	if(newName)
-	{
+	EpiCollect.prompt({ content : 'What would you like to rename the form ' + name + ' to?', callback : function(newName){
 		var forms = project.forms;
 		var form = forms[name];
 		var newForms = {};
@@ -908,7 +914,7 @@ function renameForm(name)
 		
 		project.forms = newForms;
 		drawProject(project);
-	}
+	}});
 }
 
 function switchToBranch()
@@ -1011,15 +1017,15 @@ function saveProjectCallback(data, status, xhr)
 	if(result.result)
 	{
 		
-		alert("Project Saved");
+		new  EpiCollect.Dialog({content:"Project Saved"});
 	}
 	else
 	{
-		alert("Project not saved : " + result.message);
+		EpiCollect.dialog({content : "Project not saved : " + result.message });
 	}
 }
 
 function saveProjectError(xhr, status, err)
 {
-	alert("Project not saved : " + status);
+	EpiCollect.dialog({content : "Project not saved : " + status });
 }

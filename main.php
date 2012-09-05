@@ -8,7 +8,7 @@ $dfmat = '%s.u';
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.0a";
+$CODE_VERSION = "1.0b";
 
 session_start();
 
@@ -1380,7 +1380,8 @@ function downloadData()
 								fwrite($tsv,"{$fld}_acc{$delim}{$gpsObj->accuracy}{$delim}");
 								fwrite($tsv,"{$fld}_provider{$delim}{$gpsObj->provider}{$delim}");
 								fwrite($tsv,"{$fld}_alt{$delim}{$gpsObj->altitude}{$delim}");
-								fwrite($tsv,"{$fld}_bearing{$delim}{$gpsObj->bearing}{$delim}");
+								if(property_exists($gpsObj, 'bearing')) fwrite($tsv,"{$fld}_bearing{$delim}{$gpsObj->bearing}{$delim}");
+								
 							}
 							else
 							{
@@ -1398,10 +1399,36 @@ function downloadData()
 					foreach(array_keys($ent) as $fld)
 					{
 						if($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields)) continue;
-						if($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $ent[$fld] != "" && file_exists("$root\\ec\\uploads\\tn_".$ent[$fld]))
+						if($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $ent[$fld] != "")// && file_exists("$root\\ec\\uploads\\tn_".$ent[$fld]))
 						{
-							if(!$arc->addFile( "$root\\ec\\uploads\\tn_" . $ent[$fld], $ent[$fld])) die("fail -- \\ec\\uploads\\tn_" . $ent[$fld]);
-							$files_added++;
+							$fn = "$root\\ec\\uploads\\";
+							$bfn = "$root\\ec\\uploads\\" . $ent[$fld];
+							if(strstr($ent[$fld], '~tn~'))
+							{
+								//for images where the value was stored as a thumbnail
+								$fn .= $ent[$fld];
+							}
+							elseif(strstr($ent[$fld], '~'))
+							{
+								//for images stored as a value with the project name
+								$fn .= str_replace('~', '~tn~', $ent[$fld]);
+							}
+							else
+							{
+								//otherwise
+								$fn .= $survey->name . '~tn~' . $ent[$fld];
+							}
+							
+							if(file_exists($fn))
+							{
+								if(!$arc->addFile( $fn, $ent[$fld])) die("fail -- " . $fn);
+								$files_added++;
+							}
+							elseif (file_exists($bfn))
+							{
+								if(!$arc->addFile( $bfn, $ent[$fld])) die("fail -- " . $bfn);
+								$files_added++;
+							}
 						}
 					}
 				}
@@ -1409,11 +1436,37 @@ function downloadData()
 				{
 					foreach(array_keys($ent) as $fld)
 					{
-						if($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields)) continue;
-						if($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $ent[$fld] != "" && file_exists("$root\\ec\\uploads\\".$ent[$fld]))
+					if($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields)) continue;
+						if($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $ent[$fld] != "")// && file_exists("$root\\ec\\uploads\\".$ent[$fld]))
 						{
-							if(!$arc->addFile( "$root\\ec\\uploads\\" . $ent[$fld], $ent[$fld])) die("fail -- \\ec\\uploads\\" . $ent[$fld]);
-							$files_added++;
+							$fn = "$root\\ec\\uploads\\";
+							$bfn = "$root\\ec\\uploads\\" . $ent[$fld];
+							if(strstr($ent[$fld], '~tn~'))
+							{
+								//for images where the value was stored as a thumbnail
+								$fn .= str_replace('~tn~', '~', $ent[$fld]);
+							}
+							elseif(strstr($ent[$fld], '~'))
+							{
+								//for images stored as a value with the project name
+								$fn .=  $ent[$fld];
+							}
+							else
+							{
+								//otherwise
+								$fn .= $survey->name . '~' . $ent[$fld];
+							}
+							
+							if(file_exists($fn))
+							{
+								if(!$arc->addFile( $fn, $ent[$fld])) die("fail -- " . $fn);
+								$files_added++;
+							}
+							elseif (file_exists($bfn))
+							{
+								if(!$arc->addFile( $bfn, $ent[$fld])) die("fail -- " . $bfn);
+								$files_added++;
+							}
 						}
 					}
 				}
@@ -1436,7 +1489,7 @@ function downloadData()
 				$nxtCVals[$ent[$survey->tables[$tbls[$t]]->key]] = true;
 			}
 
-			fflush($xml ? $fxml : $tsv);
+	
 		}
 		
 		if($dataType == "data" && $xml)
@@ -1715,35 +1768,73 @@ function formHandler()
 					//$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
 					//$arr = $arr[$frmName];
 					//echo assocToDelimStr($arr, ",");
-					$headers = "entry,DeviceID,created,edited,uploaded," . implode(",", array_keys($prj->tables[$frmName]->fields));
+					$headers = array_merge(array('DeviceID','created','lastEdited','uploaded'), array_keys($prj->tables[$frmName]->fields));
+					$_off = 4;
+										
+					$num_h = count($headers) - $_off;
 					
-					foreach($prj->tables[$frmName]->fields as $name => $fld)
+					$nxt = $prj->getNextTable($frmName, true);
+					if($nxt) array_push($headers, sprintf('%s_entries', $nxt->name));
+					
+					$real_flds = $headers;
+					for( $i = 0; $i < $num_h; $i++ )
 					{
+						$fld = $prj->tables[$frmName]->fields[$headers[$i + $_off]];
 						if(!$fld->active)
 						{
-							$headers = str_replace(",$name", "", $headers);
+							array_splice($headers, $i + $_off, 1);
 						}
 						elseif($fld->type == "gps" || $fld->type == "location")
 						{
-							$headers = str_replace(",$name", ",{$name}_lattitude,{$name}_longitude,{$name}_altitude,{$name}_accuracy,{$name}_provider", $headers);
+							$name = $fld->name;
+							//$headers = str_replace(",$name", ",{$name}_lattitude,{$name}_longitude,{$name}_altitude,{$name}_accuracy,{$name}_provider", $headers);
+							array_splice($headers, $i + $_off, 1, array("{$name}_lattitude","{$name}_longitude","{$name}_altitude","{$name}_accuracy","{$name}_provider", "{$name}_bearing"));
+							$i = $i + 5;
 						}
 					}
 					
-					$nxt = $prj->getNextTable($frmName, true);
-					if($nxt) $headers = sprintf('%s,%sEntries', $headers, $nxt->name);
-					
-					fwrite($fp, "$headers\n");
-					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "csv");
+					fwrite($fp, sprintf("\"%s\"\n", implode('","', $headers)));
+					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object");
 					if($res !== true) die($res);
 					if($res !== true) return;
-					while($xml = $prj->tables[$frmName]->recieve(1, "csv"))
+					
+					$count_h = count($real_flds);
+					
+					while($xml = $prj->tables[$frmName]->recieve(1, "object"))
 					{
-						fwrite($fp, sprintf('"%s"
-', $xml));
+//						fwrite($fp, sprintf('"%s"
+//', $xml));	
+						///print_r($xml); 
+						for( $i = 0; $i < $count_h; $i++ )
+						{
+							if( $i > 0 ) fwrite($fp, ',');
+							fwrite($fp, '"');
+							
+							if (array_key_exists($real_flds[$i], $xml))
+							{
+								if($i > $_off && ($i != $count_h - 1) && ($prj->tables[$frmName]->fields[$real_flds[$i]]->type == "gps" || $prj->tables[$frmName]->fields[$real_flds[$i]]->type == "location"))
+								{
+									if(is_string($xml[$real_flds[$i]])) $xml[$real_flds[$i]] = json_decode($xml[$real_flds[$i]], true);
+									fwrite($fp, implode('","', $xml[$real_flds[$i]]));
+									for($fieldsIn = count($xml[$real_flds[$i]]); $fieldsIn < 6; $fieldsIn++)
+									{
+										fwrite($fp, '","');
+									}
+										
+								
+								}
+								else
+								{
+									fwrite($fp, $xml[$real_flds[$i]]);
+								}
+							}
+							fwrite($fp, '"');
+						}
+						
+						fwrite($fp, "\r\n");
 					}
-				//flush();
 				}
-				
+			
 				global $SITE_ROOT;
 				header("Content-Type: text/csv");
 				header(sprintf('location: http://%s%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT, $filename));
@@ -2891,7 +2982,7 @@ function uploadMedia()
 function getMedia()
 {
 	global $url;
-
+	
 	if(preg_match('~tn~', $url) )
 	{
 		//if the image is a thumbnail just try and open it
@@ -2963,20 +3054,29 @@ function getImage()
 	{
 		$tn = sprintf('./ec/uploads/%s~tn~%s', $prj->name, $picName);
 		$full = sprintf('./ec/uploads/%s~%s', $prj->name, $picName);
-		if(!getValIfExists($_GET, 'thumb') && file_exists($full))
+		
+		$thumbnail = getValIfExists($_GET, 'thumbnail') === 'true';
+		
+		$raw_not_tn = str_replace('~tn~', '~', $picName);
+		
+		if(!$thumbnail && file_exists($full))
 		{
 			//try with project prefix
 			echo file_get_contents($full);
 		}
 		elseif(file_exists($tn))
 		{
-		//try with project and thumbnail prefix
+			//try with project and thumbnail prefix
 			echo file_get_contents($tn);
 		}
-		
+		elseif(!$thumbnail && file_exists(sprintf('./ec/uploads/%s', $raw_not_tn)))
+		{
+			//try with raw non thumbnail filename
+			echo file_get_contents(sprintf('./ec/uploads/%s', $raw_not_tn));
+		}
 		elseif(file_exists(sprintf('./ec/uploads/%s', $picName)))
 		{
-		//try with raw fiename
+			//try with raw filename
 			echo file_get_contents(sprintf('./ec/uploads/%s', $picName));
 		}
 		else
