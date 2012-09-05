@@ -12,7 +12,7 @@
 
 				var path = eles.length > 0 ? eles[0].src : evt.target.contentDocument.getElementsByTagName("a")[0].href;
 				
-				$(inputId).val(path.substr(path.lastIndexOf("/") + 1));
+				$(inputId).val(path.substr(path.lastIndexOf("/") + 1).replace(/^[a-z0-9\-_]+~tn~/i, ''));
 			});
 		});
     }

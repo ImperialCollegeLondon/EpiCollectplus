@@ -305,6 +305,7 @@
 					if($fld->name == $this->key) $keyFieldParsed = true;
 					
 					$fld->form = $this;
+					
 					foreach($this->survey->tables as $tbl)
 					{
 						if($tbl->key == $fld->name)
@@ -313,10 +314,13 @@
 							$fld->fkField = $tbl->key;
 						}
 					}
+					
 					$fld->active = true;
 					$fld->position = $p;
 					$this->fields[$fld->name] = $fld;
-					if($fld->type == "branch"){
+					
+					if($fld->type == "branch")
+					{
 						if(!$keyFieldParsed)
 						{
 							throw new Exception(sprintf('The key field "%s" must be positioned before the branch form "%s" ', $this->key, $fld->name));
@@ -351,6 +355,9 @@
 			if(!$sortField) $sortField = 'created';
 			if(!$sortDir) $sortDir = 'asc';
 			$qry = '';
+			
+			$fields = '\'' . implode('\',\'', array_keys($this->fields)) . '\'';
+			
 			//$db = new dbConnection();
 			/*
 			 * with fields being pulled from the database and concatinated at that point it makes sense to concatinate them in such a way that post-processing isn't required to
@@ -438,7 +445,7 @@
 				}elseif($format == 'tskv'){
 					$select .= sprintf(',%s , COUNT(distinct `ev%s_entries`.entry)', $bf, $this->branches[$i]);
 				}elseif($format != 'object'){
-					//throw new Exception ('Format not specified');
+					$select .= sprintf(', COUNT(distinct `ev%s_entries`.entry) as %s_entries', $this->branches[$i], $this->branches[$i]);
 				}
 				
 				if(!strstr($join, sprintf('ev%s', $this->key)))
@@ -489,9 +496,9 @@
  				}elseif($format == 'kml'){
  					throw new Exception ('Format not yet implemented');
  				}elseif($format == 'tskv'){
- 					$select .= sprintf(',`%s_entries `,  IFNULL(`%s_entries.entries`, 0)', $child->name, $child->name);
+ 					$select .= sprintf(',`%s_entries `,  IFNULL(`%s_entries`.`entries`, 0)', $child->name, $child->name);
  				}elseif($format == 'object'){
- 					//throw new Exception ('Format not specified');
+ 					$select .= sprintf(', IFNULL(`%s_entries`.`entries`, 0) as `%s_entries`', $child->name, $child->name);
  				}
  				
  				if(!strstr($join, sprintf('ev%s', $this->key)))
@@ -557,10 +564,9 @@
 			{
 				$limit_s = '';
 			}
-			$qry = sprintf('%s %s %s %s %s %s %s', $qry, $select, $join, $where, $group, $order, $limit_s);
-			
+			$qry = sprintf('%s %s %s %s AND ev.fieldName in (%s) %s %s %s', $qry, $select, $join, $where, $fields, $group, $order, $limit_s);
 			unset($select, $join, $where, $group, $order, $limit_s);
-						
+			
 			$res = $db->do_multi_query($qry);
 			if($res !== true) return $res;
 			
@@ -607,13 +613,14 @@
 				{
 					$ret = $arr["data"];
 					$json_objects = array();
-					preg_match_all('/\{.*\}/', $ret, $json_objects);
-			
+					preg_match_all('/\{[^\}]*\}/', $ret, $json_objects);
+					
 					for($j = count($json_objects); $j--;)
 					{
 						if(count($json_objects[$j]) == 0) continue;
 						$obj = json_decode($json_objects[$j][0], true);
 						$str = '';
+						
 						if($this->lastRequestFormat == 'xml')
 						{
 							foreach($obj as $key => $value)
@@ -1031,7 +1038,7 @@
 							&& preg_match('/^https?:\/\//', $ent[$fields[$f]]) )
 					{
 						$newfn = sprintf('%s_%s_%s', $this->projectName, $this->name, $ent[$this->key]);
-						$entry->values[$fields[$f]] = $newfn;
+						$entry->values[$fields[$f]] = str_replace('~tn', '', $newfn);
 						
 						/*$mqueue->writeMessage('getFile', array($ent[$fields[$f]], $newfn));*/
 					}
