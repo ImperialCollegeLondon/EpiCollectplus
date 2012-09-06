@@ -216,7 +216,7 @@
 			var mapData = [];
 			var markers = [];			
 			
-			var qry = location.search.trim("?");
+			var qry = location.search.trimChars("?");
 			var sortCol = "created";
 			var sortDir = "asc";
 			var pageNo = 0;
@@ -261,7 +261,7 @@
 				var ele = document.createElement('img');
 				ele.src = "../images/loading.gif";
 				
-				url = location.href.trim("/");
+				url = location.href.trimChars("/");
 				if(url.indexOf("?") > 0)url = url.substr(0, url.indexOf("?"));
 				formName = url.substr(url.lastIndexOf("/") + 1).replace(/#.*$/, "");
 				url = url.substr(0, url.lastIndexOf("/"));
@@ -302,7 +302,7 @@
 				
 				$("#showHideFields").append("<a href=\"javascript:toggleMenu('#showHideFields')\">Show/Hide Fields</a><div class=\"ecplus-dropdown-menu\" style=\"display:none;\"></div>");
 				
-				EpiCollect.loadProject(url + ".xml", loadCallback);
+				EpiCollect.loadProject(url.trimChars('/') + ".xml", loadCallback);
 				
 				$.fn.disableSelection = function() {
 				    return this.each(function() {           
@@ -737,7 +737,7 @@
 					maxcreated = Math.max(maxcreated, Number(data[i]["created"]));
 					
 					var ttl = data[i][project.forms[formName].titleField];
-					if(!ttl || ttl.trim() == '') ttl = '<i>' + data[i]['created'] + '</i>';
+					if(!ttl || ttl.trimChars(' ') == '') ttl = '<i>' + data[i]['created'] + '</i>';
 					
 					addToSidebar(i, ttl);
 				}
@@ -1143,7 +1143,7 @@
 				
 				for(var i = len; i--;)
 				{
-					if( mapFilterFunction && mapFilterFunction(d[i]) )
+					if( !window["mapFilterFunction"] || mapFilterFunction(d[i]) )
 					{
 						var val = d[i][field];
 						if( !agg[val] ){ agg[val] = 1; } else { agg[val]++; }
@@ -1184,12 +1184,13 @@
 			
 			function showGPS(gps)
 			{
-				content = '';
+				content = '<table>';
 				for(var x in gps)
 				{
-					content += '<p> ' + x + ' : ' + gps[x] + '</p>';
+					content += '<tr><th>' + x + '</th><td>' + gps[x] + '</td></tr>';
 				}
-				new EpiCollect.Dialog({content : content});
+				content += '</table>';
+				new EpiCollect.dialog({ content : content });
 			}
 			
 	</script>
@@ -1201,6 +1202,7 @@
 {{main}}
 	<div id="tooltip" style="display:none;"></div>
 	<h1>{#projectName#} - {#formName#}</h1>
+	{#flashes#}
 	<div id="tabs">
 		<ul>
 			<li><a href="#tableTab">Table View</a>

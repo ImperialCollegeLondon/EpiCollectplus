@@ -207,27 +207,26 @@ String.prototype.padRight = function(length, char)
 	return str;
 };
 
-if(!String.prototype.trim)
+
+String.prototype.trimChars = function(chars)
 {
-	String.prototype.trim = function(chars)
+	// Extends the string class to incluide the trim method.
+	str = this;
+	for(var char = 0; char < chars.length; char++)
 	{
-		// Extends the string class to incluide the trim method.
-		str = this;
-		for(char in chars)
+		if(chars[char] == this[0])
 		{
-			if(chars[char] == this[0])
-			{
-				str = str.substr(1);
-			}
-			if(chars[char] == str[str.length -1])
-			{
-				str = str.substr(0, str.length - 1);
-			}
-				
+			str = str.substr(1);
 		}
-		return str.toString();
-	};
-}
+		if(chars[char] == str[str.length -1])
+		{
+			str = str.substr(0, str.length - 1);
+		}
+			
+	}
+	return str.toString();
+};
+
 
 Date.prototype.format = function(fmt)
 {
@@ -1701,7 +1700,7 @@ EpiCollect.Field = function()
 			if(value)
 			{
 				var checkid = 'check' + (nchecks++);
-				var checkurl = (location.href.replace(project.name + '/' + formName, '') + "ec/uploads/"+value).trim('/') ;
+				var checkurl = (location.href.replace(project.name + '/' + formName, '') + "ec/uploads/"+value).trimChars('/') ;
 				checking[checkurl] = checkid;
 				checker.startCheck(checkurl);
 				
@@ -1733,7 +1732,7 @@ EpiCollect.Field = function()
 			}
 			else
 			{
-				return value + (data ?  ' <a href="' + this.connectedForm + '?' + this.form.key +  '=' + data[this.form.key] + '?trail=' + this.form.name +  '">View entries</a>' : '');
+				return value + (data ?  ' <a href="' + this.connectedForm + '?' + this.form.key +  '=' + data[this.form.key] + '&trail=' + this.form.name +  '">View entries</a>' : '');
 			}
 		}
 		else

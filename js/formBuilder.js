@@ -134,6 +134,7 @@ $(function()
 		}
 	});
 	
+	
 	$("#options .removeOption").unbind('click').bind('click', removeOption);
 	$("#jumps .remove").unbind('click').bind('click', removeOption);
 });
@@ -749,6 +750,7 @@ function setSelected(jqEle)
 			{
 				if(!currentControl.setDate) $("#set").attr("checked", false);
 			}
+	
 			$("#default").val(currentControl.defaultValue);
 			$("#regex").val(currentControl.regex);
 			$("#verify").attr("checked", currentControl.verify);

@@ -117,7 +117,7 @@
 				
 			}
 			
-			$qry = "SELECT f.idField as idField, f.key, f.name, f.label, ft.name as type, f.required, f.jump, f.isinteger as isInt, f.isDouble, f.title, f.regex, f.doubleEntry, f.search, f.group_form, f.branch_form, f.display, f.genkey, f.date, f.time, f.setDate, f.setTime, f.min, f.max, f.crumb, f.`match`, f.active, f.defaultValue FROM field f LEFT JOIN fieldtype ft on ft.idFieldType = f.type WHERE ";
+			$qry = "SELECT f.idField as idField, f.key, f.name, f.label, ft.name as type, f.required, f.jump, f.isinteger as isInt, f.isDouble, f.title, f.regex, f.doubleEntry, f.search, f.group_form, f.branch_form, f.display, f.genkey, f.date, f.time, f.setDate, f.setTime, f.min, f.max, f.crumb, f.`match`, f.active, f.defaultValue, f.otherFieldProperties FROM field f LEFT JOIN fieldtype ft on ft.idFieldType = f.type WHERE ";
 			if(is_numeric($this->id))
 			{
 				$qry = "$qry f.form = {$this->id} ORDER BY f.position";
@@ -144,6 +144,7 @@
 					
 					$fld->form = $this;
 					$fld->fromArray($arr);
+					$fld->otherAttributes = json_decode($arr['otherFieldProperties']);
 					$this->fields[$fld->name] = $fld;
 					if($fld->key) $this->key = $fld->name;
 					if($fld->title && $fld->active) array_push($this->titleFields, $fld->name);
@@ -1026,8 +1027,8 @@
 						$bearing = sprintf('%s_bearing', $fields[$f]);
 						
 						$entry->values[$fields[$f]] = array(
-							'latitude' => $ent[$lat],
-							'longitude' => $ent[$lon],
+							'latitude' => getValIfExists($ent, $lat),
+							'longitude' => getValIfExists($ent, $lon),
 							'altitude' => getValIfExists($ent, $alt),
 							'accuracy' => getValIfExists($ent, $acc),
 							'provider' => getValIfExists($ent, $src),
