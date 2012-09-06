@@ -48,12 +48,12 @@
 			
 			$(function()
 			{
-				EpiCollect.loadProject(location.href.trim("/") + ".xml", loadCallback);
+				EpiCollect.loadProject(location.href.trimChars("/") + ".xml", loadCallback);
 			});
 	
 			function loadCallback(prj){
 				project = prj;		
-				var _burl = location.href.trim("/");
+				var _burl = location.href.trimChars("/");
 				
 				var frmCount = 0;
 				
@@ -80,15 +80,16 @@
 							opts = opts + "<option value=\"" +fld + "\">" + txt + "</option>"
 						}
 					}
-					$("#menu").append("<div class=\"form\"> <a class=\"frmHeader ui-state-default ui-corner-top\" href=\"" + _burl + "/" + frm + "\">" + frm + "</a> <form action=\"" + _burl + "/" + frm + "\"><a href=\"" + location.href.trim("/") + "/" + frm + "\">View All</a> or Show records where <select id=\"field_" + frm + "\">"+ opts +"</select> is similar to <input type=\"text\" id=\"" + frm + "\" name=\""+project.forms[frm].key+"\"> <input type=\"submit\" value=\"Show records\" /> </form></div>");
+					$("#menu").append("<div class=\"form\"> <a class=\"frmHeader ui-state-default ui-corner-top\" href=\"" + _burl + "/" + frm + "\">" + frm + "</a> <form action=\"" + _burl + "/" + frm + "\"><a href=\"" + location.href.trimChars("/") + "/" + frm + "\">View All</a> or Show records where <select id=\"field_" + frm + "\">"+ opts +"</select> is similar to <input type=\"text\" id=\"" + frm + "\" name=\""+project.forms[frm].key+"\"> <input type=\"submit\" value=\"Show records\" /> </form></div>");
 				}
 				
 				if(frmCount == 0)
 				{
+					var curpage = location.href.trimChars('/');
 					$("#main p").remove();
-					$("#menu").append("<p>This project's homepage is <a href=\"" + location.href + "\">" + location.href + "</a></p>");
-					$("#menu").append('<p>Now that you have created this project you can <a href="' + location.href + '/formBuilder">create the project forms</a> and <a href="' + location.href + 'manage">update the project\'s settings</a> to change who can access the project and add an image or desctription to the project</p>');
-					$("#menu").append('<p>Once you have created your forms you can update the forms using the <a href="' + location.href + '/formBuilder">Edit Forms</a> option and manager the other project settings using <a href="' + location.href + '/manage">Manage</a> option above this message.</p>');
+					$("#menu").append("<p>This project's homepage is <a href=\"" + curpage + "\">" + curpage + "</a></p>");
+					$("#menu").append('<p>Now that you have created this project you can <a href="' + curpage + '/formBuilder">create the project forms</a> and <a href="' + curpage + '/manage">update the project\'s settings</a> to change who can access the project and add an image or desctription to the project</p>');
+					$("#menu").append('<p>Once you have created your forms you can update the forms using the <a href="' + curpage + '/formBuilder">Edit Forms</a> option and manager the other project settings using <a href="' + curpage + '/manage">Manage</a> option above this message.</p>');
 				}
 				
 				$("select").change(function(evt)

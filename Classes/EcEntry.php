@@ -197,10 +197,22 @@
 				
 				$len = count($entries);
 				$sessId =  session_id();
+				
+				$prj = new EcProject();
+				$prj->name = $entries[0]->projectName;
+				$prj->fetch();
+				
+				$keyfield = $prj->tables[$entries[0]->formName]->key;
+				
 				for( $i = 0; $i < $len; ++$i)
 				{
 					if( !$entries[$i]->created || $entries[$i]->created == "NULL") { $entries[$i]->created = getTimestamp(); }
 					
+					
+					if($prj->tables[$entries[$i]->formName]->checkExists($entries[$i]->values[$keyfield]))
+					{
+						throw new Exception(sprintf('Your data could not be uploaded, there was a duplicate key for entry %s on line %s of your CSV file', $entries[$i]->values[$keyfield], $i + 2));
+					}
 					
 					$entries[$i]->insert_key = sprintf('%s%s', $sessId, $i);  
 					$qry .= sprintf('%s (%s, %s, %s, %s, %s, \'%s\', 0, \'%s\')', 
@@ -232,8 +244,10 @@
 				for($i = 0; $i < $len; ++$i)
 				{
 					if(trim($entries[$i]->values[$entries[$i]->form->key]) == '') return 'Key values cannot be blank'; 
+					
 					$keys = array_keys($entries[$i]->values);
 					$length = count($keys);
+					
 					for($j = 0; $j < $length; ++$j)
 					{
 						

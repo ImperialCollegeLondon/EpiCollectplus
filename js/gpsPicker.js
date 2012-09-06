@@ -111,16 +111,21 @@
 	  {
 		  if(status == google.maps.GeocoderStatus.OK)
 		  {
-			  pos = results[0].geometry.location;
+			  var res = results[0].geometry
+			  pos = res.location;
+			  
+			  var bnds = res.bounds;
+			  var acc = google.maps.geometry.spherical.computeDistanceBetween(bnds.getCenter(), bnds.getNorthEast());
 			  
 			  $("#latitude", ctx).val(pos.lat());
 			  $("#longitude", ctx).val(pos.lng());
-			  $("#accuracy", ctx).val(Math.max(accCircle.radius, 100));
+			  $("#accuracy", ctx).val(acc);
 			  $("#provider", ctx).val("Geocoding");
 			  $("#bearing", ctx).val("0");
 			  
 			  mkr.setPosition(pos);
 			  accCircle.setCenter(pos);
+			  accCircle.setRadius(acc);
 			  
 			  if(eleService)
 			  {

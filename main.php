@@ -608,22 +608,22 @@ function projectHome()
 					}
 					
 					$adminMenu = '';
-					
+					$curpage = trim($_SERVER['REQUEST_URI'] ,'/');
+					$curpage = sprintf('http://%s/%s', $_SERVER['HTTP_HOST'], $curpage);
 					if( $role == 3 )
 					{
-						$adminMenu = "<a href=\"{$prj->name}/manage\" class=\"button\">Manage Project</a> <a href=\"{$prj->name}/formBuilder\" class=\"button\">Edit Forms</a>";
+						$adminMenu = "<a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Edit Forms</a>";
 					}
 					
 					$vals =  array(
 						'projectName' => $prj->name,
 						'projectDescription' => $prj->description && $prj->description != "" ? $prj->description : "Project homepage for {$prj->name}",
-						'projectImage' => $imgName,
+						'projectImage' => str_replace($prj->name, $imgName, $curpage),
 						'imageWidth' => $imgSize[0],
 						'imageHeight' =>$imgSize[1],
 						'tables' => $tblList,
 						'adminMenu' => $adminMenu,
 						'userMenu' => ''
-	
 					);
 					
 					
@@ -929,7 +929,7 @@ function siteHome()
 		header("location: $rurl");
 		return;
 	}
-	$vals["projects"] = "<div class=\"ecplus-projectlist\"><h1>Most popular projects on this server</h1>" ;
+	$vals["projects"] = "<p style=\"margin-top:1.2em;\"> <a href=\"createProject.html	\" class=\"button\">Create a New Project</a></p><div class=\"ecplus-projectlist\"><h1>Most popular projects on this server</h1>" ;
 
 	$i = 0;
 
@@ -945,7 +945,7 @@ function siteHome()
 	}
 	else
 	{
-		$vals["projects"] .= "<p style=\"margin-top:1.2em;\"> <a href=\"createProject.html	\">create a new project</a></p></div>";
+		$vals["projects"] .= "</div>";
 	}
 	
 	if($auth->isLoggedIn())
@@ -1598,7 +1598,7 @@ function formHandler()
 		
 		$_f = getValIfExists($_FILES, "upload");
 		
-		if($_f)
+		if( $_f )
 		{
 			if($_f['tmp_name'] == '')
 			{
@@ -1607,20 +1607,27 @@ function formHandler()
 			}
 			else
 			{
-				ini_set('max_execution_time', 200);
-				if(preg_match("/\.csv$/", $_f["name"]))
+				try{
+					ini_set('max_execution_time', 200);
+					if( preg_match("/\.csv$/", $_f["name"]) )
+					{
+						$fh = fopen($_f["tmp_name"], 'r');
+						
+						$res = $prj->tables[$frmName]->parseEntriesCSV($fh);
+						
+						fclose($fh);
+						unset ($fh);
+					}
+					elseif( preg_match("/\.xml$/", $_f["name"]) )
+					{
+						$res = $prj->tables[$frmName]->parseEntries(simplexml_load_string(file_get_contents($_f["tmp_name"])));
+					}
+					//echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
+					flash ("Upload Complete");
+				}catch(Exception $ex)
 				{
-					$fh = fopen($_f["tmp_name"], 'r');
-					$res = $prj->tables[$frmName]->parseEntriesCSV($fh);
-					fclose($fh);
-					unset ($fh);
+					flash($ex->getMessage(), 'err');
 				}
-				elseif(preg_match("/\.xml$/", $_f["name"]))
-				{
-					$res = $prj->tables[$frmName]->parseEntries(simplexml_load_string(file_get_contents($_f["tmp_name"])));
-				}
-				//echo "{\"success\":" . ($res === true ? "true": "false") .  ", \"msg\":\"" . ($res==="true" ? "success" : $res) . "\"}";
-				flash ("Upload Complete");
 			}
 		}
 		else
@@ -1632,7 +1639,7 @@ function formHandler()
 			$ent->uploaded = getTimestamp('Y-m-d H:i:s');
 			$ent->user = 0;
 			
-			foreach(array_keys($ent->values) as $key)
+			foreach( array_keys($ent->values) as $key )
 			{
 				if(!$prj->tables[$frmName]->fields[$key]->active) continue;
 				if(array_key_exists($key, $_POST))
@@ -1788,7 +1795,7 @@ function formHandler()
 						{
 							$name = $fld->name;
 							//$headers = str_replace(",$name", ",{$name}_lattitude,{$name}_longitude,{$name}_altitude,{$name}_accuracy,{$name}_provider", $headers);
-							array_splice($headers, $i + $_off, 1, array("{$name}_lattitude","{$name}_longitude","{$name}_altitude","{$name}_accuracy","{$name}_provider", "{$name}_bearing"));
+							array_splice($headers, $i + $_off, 1, array("{$name}_lat","{$name}_lon","{$name}_alt","{$name}_acc","{$name}_provider", "{$name}_bearing"));
 							$i = $i + 5;
 						}
 					}
@@ -1991,8 +1998,7 @@ function formHandler()
 	
 		
 	$mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>
-	<script type=\"text/javascript\" src=\"{$SITE_ROOT}/js/markerclusterer.js\"></script>
-	<script src=\"http://www.google.com/jsapi\"></script>" : "";
+	<script type=\"text/javascript\" src=\"{$SITE_ROOT}/js/markerclusterer.js\"></script>" : "";
 	$vars = array(
 			"prevForm" => $p,
 			"projectName" => $prj->name,
@@ -2536,7 +2542,8 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
 						
 					for($i = 0; $i + 1 < count($jBits); $i += 2)
 					{
-	
+						$jBits[$i] = trim($jBits[$i]);
+						$jBits[$i + 1] = trim($jBits[$i + 1]);
 						//check that the jump destination exists in the current form
 						if(!preg_match( '/END/i', $jBits[$i]) && !array_key_exists($jBits[$i], $tbl->fields))
 						{
