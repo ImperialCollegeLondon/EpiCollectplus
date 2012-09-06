@@ -608,8 +608,9 @@ function projectHome()
 					}
 					
 					$adminMenu = '';
-					$curpage = trim($_SERVER['REQUEST_URI'] ,'/');
-					$curpage = sprintf('http://%s/%s', $_SERVER['HTTP_HOST'], $curpage);
+					$curpage = trim($url ,'/');
+					$curpage = sprintf('http://%s%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT, $curpage);
+					
 					if( $role == 3 )
 					{
 						$adminMenu = "<a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Edit Forms</a>";
