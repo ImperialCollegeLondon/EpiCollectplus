@@ -190,7 +190,8 @@ function newForm(message, name)
 			frm.fields[par.key].text = par.fields[par.key].text;
 			frm.fields[par.key].isKey = false;
 			frm.fields[par.key].title = false;
-			frm.fields[par.key].type = 'fk';
+			frm.fields[par.key].type = 'input';
+			frm.fields[par.key].form = frm;
 		}
 		
 		switchToForm(name);
@@ -954,8 +955,9 @@ function switchToBranch()
 		flds[key].id = key;
 		flds[key].isKey = false;
 		flds[key].title = false;
-		flds[key].type = 'fk';
+		flds[key].type = 'input';
 		flds[key].text = fklabel;
+		flds[key].form = project.forms[frm];
 	}
 	currentForm = project.forms[frm];
 	currentForm.main = false;
@@ -1019,7 +1021,7 @@ function saveProjectCallback(data, status, xhr)
 	if(result.result)
 	{
 		
-		new  EpiCollect.Dialog({content:"Project Saved"});
+		new  EpiCollect.dialog({content:"Project Saved"});
 	}
 	else
 	{
