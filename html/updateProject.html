@@ -90,7 +90,7 @@
  		
 		$('form').tabs();
 		
-		$('#uploadxml').load(function(){
+		/*$('#uploadxml').load(function(){
 			$('#uploadxml')[0].contentDocument.forms[0].update.value = true
 			$('#uploadxml').unbind('load');
 			if($('#uploadxml')[0].contentDocument.forms[0])
@@ -124,7 +124,7 @@
 	  				$('#pdNext').button("enable");
 	  			}
 	  		});
-		});
+		});*/
 		
 		$('#uploadimage').load(function(evt){
 			var ele = evt.target;
@@ -248,7 +248,7 @@
 	  <div id="message"></div>
 	  <form id="projectOptions" action="updateStructure" method="POST">
 	  		<ul>
-	  			<li><a href="#projectDef">Project Definition</a></li>
+	  			<!-- <li><a href="#projectDef">Project Definition</a></li> -->
 	  			<li><a href="#description">Description</a></li>
 	  			<li><a href="#visibility">Visibility</a></li>
 	  			<li><a href="#listing">Listing</a></li>
@@ -256,14 +256,14 @@
 	  			<li><a href="#s_curators">Curators</a></li>
 	  			<li><a href="#s_delete">Delete Project</a></li>
 	  		</ul>
-		  	<div id="projectDef" class="section">
+		  	<!-- <div id="projectDef" class="section">
 			  	<h2>Project Definition</h2>
 			  	<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
 		  		<div id="uploadStatus" class="flash"></div>
 		 		<input type="hidden" name="xml"/>
 		 		<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 		 		
-	 		</div>
+	 		</div> -->
 	 		<div id="description" class="section">
 			  	<h2>Project Description and Image</h2>
 			  	<p>Enter a few lines of text to describe your project</p>

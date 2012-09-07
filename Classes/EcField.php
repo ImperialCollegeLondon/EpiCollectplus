@@ -397,8 +397,8 @@ class EcField{
 							$this->genkey = parseBool((string)$val);
 							break;
 					case 'uppercase' :
-						$this->upperCase = parseBool((string)$val);
-						break;
+							$this->upperCase = parseBool((string)$val);
+							break;
 					case 'date':
 							$this->date = (string)$val;
 							break;

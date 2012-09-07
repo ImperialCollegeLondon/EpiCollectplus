@@ -56,6 +56,8 @@
 		$('#managers').val(curEmail);
  		
 		$('input[name=name]').change(function(evt){
+			if($('.projectName').text() != '') return;
+			
 			$.ajax({
 				url: './' + $(evt.target).val(),
 				error: function(xhr, status, s){
@@ -107,7 +109,7 @@
 	  				$('#uploadStatus').removeClass("err");
 	  			
 	  				$('#uploadStatus').append("XML is valid for the project " + obj.name);
-	  				$('.projectName').empty().append(obj.name);
+	  				$('.projectName').text(obj.name);
 	  				$(document.forms[0].xml).val(obj.file);
 	  				$('#pdNext').button("enable");
 	  			}
@@ -146,7 +148,7 @@
   		}
   		else
   		{
-  			$('#message').empty().append("<p class=\"flash err\">" + uType + " must be added using their email address, <em>" + email+ "</em> is not an email address</p>")	
+  			$('#message').html("<p class=\"flash err\">" + uType + " must be added using their email address, <em>" + email+ "</em> is not an email address</p>")	
   		}
   	}
   	
