@@ -156,13 +156,15 @@
   	{
   		global  $cfg, $db, $SITE_ROOT, $url;
   		
+  		
+  		
   		if( $this->isLoggedIn() ) 
   		{
-  			header("location: {$_SESSION["url"]}"); return;
+  			header("location: http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/{$_SESSION["url"]}"); return;
   		}
   		
   		if(!array_key_exists($provider, $this->providers)) {
-  			header("location: /");
+  			header("location: http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/");
   			//echo "provider error";
   		}
   		  		
