@@ -213,7 +213,9 @@
   			
   			$res = $db->do_query($sql);
   			if($res !== true && !preg_match("/Duplicate Key/i", $res)) die($res . "\n" . $sql);
+  
   			header("location: {$_SESSION["url"]}");
+  			return;
   		}
   		else
   		{

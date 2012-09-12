@@ -211,7 +211,7 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 	$templateVars['SITE_ROOT'] = ltrim($SITE_ROOT, '\\');
 	$templateVars['uid'] = md5($_SERVER['HTTP_HOST']);
 	$templateVars['codeVersion'] = $CODE_VERSION;
-
+	$templateVars['protocol'] = ($_SERVER['HTTPS'] == 'on' ? 'https' : 'http');
 	// Is there a user logged in?
 
 	$flashes = '';
@@ -908,11 +908,14 @@ function getPointMarker()
 function siteHome()
 {
 	header("Cache-Control: no-cache, must-revalidate");
-
+	
 	global $SITE_ROOT, $db, $log,$auth;
 	$vals = array();
 	$server = trim($_SERVER["HTTP_HOST"], "/");
 	$root = trim($SITE_ROOT, "/");
+	
+	//if($_SERVER["HTTPS"] == 'on'){ header(sprintf('location: http://%s%s ', $server, $root));}
+	
 	if(!$db->connected)
 	{
 		$rurl = "http://$server/$root/test?redir=true";
@@ -1998,7 +2001,7 @@ function formHandler()
 	
 	
 		
-	$mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>
+	$mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"" . ($_SERVER['HTTPS'] ? 'https' : 'http') . "://maps.google.com/maps/api/js?sensor=false\"></script>
 	<script type=\"text/javascript\" src=\"{$SITE_ROOT}/js/markerclusterer.js\"></script>" : "";
 	$vars = array(
 			"prevForm" => $p,
