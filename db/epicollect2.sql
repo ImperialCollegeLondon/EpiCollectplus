@@ -132,6 +132,7 @@ CREATE TABLE IF NOT EXISTS `field` (
   `match` varchar(255) DEFAULT NULL,
   `defaultValue` varchar(1000) DEFAULT NULL,
   `position` int(11) NOT NULL COMMENT 'zero-indexed position in the form.',
+  `otherFieldProperties` VARCHAR(1000) DEFAULT NULL,
   PRIMARY KEY (`idField`),
   KEY `fk_form` (`form`),
   KEY `fk_field` (`type`)
