@@ -160,7 +160,7 @@
 						}
 						else
 						{
-							array_push($ins, sprintf('( %s, \'%s\', \'%s\', \'%s\', %s, %u)', 
+							array_push($ins, sprintf('( %s, \'%s\', \'%s\', \'%s\', %s, %s)', 
 									$this->form->fields[$keys[$i]]->idField, $this->form->survey->name, $this->form->name, $keys[$i], $db->stringVal($this->values[$keys[$i]]), $this->id));
 						}
 					}
@@ -342,12 +342,12 @@
 								$this->form->name,
 								$keys[$i],
 								$db->stringVal(json_encode($this->values[$key])),
-								$this->id);
+								$ent->id);
 					}
 					else
 					{
 						$in = sprintf('( %s, \'%s\', \'%s\', \'%s\', %s, %u)',
-								$this->form->fields[$key]->idField, $this->form->survey->name, $this->form->name, $key, $db->stringVal($this->values[$key]), $this->id);
+								$this->form->fields[$key]->idField, $this->form->survey->name, $this->form->name, $key, $db->stringVal($this->values[$key]), $ent->id);
 					}
 					$qry .= $in;
 					$res = $db->do_query($qry);

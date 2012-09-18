@@ -370,7 +370,7 @@
 			
 			if($format == 'object')
 			{
-				$select = 'SELECT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded, GROUP_CONCAT( CONCAT_WS(\'::\', ev.fieldName, ev.value) ORDER BY ev.field SEPARATOR \'~~\') as data ';
+				$select = 'SELECT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded, GROUP_CONCAT( CONCAT_WS(\'::\', ev.fieldName, ev.value) ORDER BY ev.field, ev. SEPARATOR \'~~\') as data ';
 			}elseif($format == 'json'){
 				$select = 'SELECT CONCAT (\'{\"id\" : \', e.idEntry, \', \"DeviceID\": \"\', e.DeviceID, \'\",\"created\" : \', e.created, \' , \"lastEdited\":\"\', IFNULL(e.lastEdited, \'\'),\'\" , \"uploaded\":\"\', e.uploaded, \'\",\' , GROUP_CONCAT( CONCAT(\'\"\', ev.fieldName, \'\" : \"\', IFNULL(ev.value, \'\'), \'\"\') ORDER BY ev.field  SEPARATOR \',\'),  ';
 			}elseif($format == 'xml'){
