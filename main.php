@@ -211,7 +211,7 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 	$templateVars['SITE_ROOT'] = ltrim($SITE_ROOT, '\\');
 	$templateVars['uid'] = md5($_SERVER['HTTP_HOST']);
 	$templateVars['codeVersion'] = $CODE_VERSION;
-	$templateVars['protocol'] = ($_SERVER['HTTPS'] == 'on' ? 'https' : 'http');
+	$templateVars['protocol'] = (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] == 'on' ? 'https' : 'http');
 	// Is there a user logged in?
 
 	$flashes = '';

@@ -1755,6 +1755,12 @@ EpiCollect.Field = function()
 		if(this.required && (!value || value == "")) msgs.push("This field is required");
 		if(value && value != "")
 	    {
+			if( this.uppercase )
+			{
+				value = value.toUpperCase()
+				$('#' + this.id).val(value);
+			}
+			
 			console.debug('checking...' + (this.fkField && this.fkTable) + this.fkField + " : " + this.fkTable);
 			if(this.fkField && this.fkTable)
 			{
@@ -1805,19 +1811,21 @@ EpiCollect.Field = function()
 					}
 				}));
 			}
-			else if(this.isinteger){
-				if(!value.match(/^[0-9]+$/))
+			else if( this.isinteger )
+			{
+				if( !value.match(/^[0-9]+$/) )
 				{
 					msgs.push("This field must be an Integer");
 				}
 			}
-			else if(this.isdouble){
+			else if( this.isdouble )
+			{
 				if(!value.match(/^[0-9]+(\.[0-9]+)?$/))
 				{
 					msgs.push("This field must be an decimal");
 				}
 			}
-			else if(this.date || this.setDate)
+			else if( this.date || this.setDate )
 			{
 				// will consist of dd MM and yyyy
 				var fmt = this.date + this.setDate; 
@@ -1827,7 +1835,7 @@ EpiCollect.Field = function()
 				var month = null
 				var year = null;
 				
-				for(var i = 0; i < fmt.length; i ++)
+				for( var i = 0; i < fmt.length; i++ )
 				{
 					if(fmt[i] == "d")
 					{
@@ -1842,9 +1850,9 @@ EpiCollect.Field = function()
 							throw "Invalid date format";
 						}
 					}
-					else if(fmt[i] == "M")
+					else if( fmt[i] == "M" )
 					{
-						if(fmt[i+1] == "M")
+						if( fmt[i+1] == "M" )
 						{
 							month = Number(value.substr(i,2));
 							if(month == NaN) msgs.push("Month is not a number");
@@ -1855,9 +1863,9 @@ EpiCollect.Field = function()
 							throw "Invalid date format";
 						}
 					}
-					else if(fmt[i] == "y")
+					else if( fmt[i] == "y" )
 					{
-						if(fmt[i+1] == "y" && fmt[i+2] == "y" && fmt[i+3] == "y" )
+						if( fmt[i+1] == "y" && fmt[i+2] == "y" && fmt[i+3] == "y" )
 						{
 							year = Number(value.substr(i,4));
 							if(year == NaN) msgs.push("Year is not a number");
@@ -1886,7 +1894,7 @@ EpiCollect.Field = function()
 					}
 				}
 			}
-			else if(this.time || this.setTime)
+			else if( this.time || this.setTime )
 			{
 				var fmt = this.date + this.setDate; 
 				var sep = null;
@@ -1895,12 +1903,12 @@ EpiCollect.Field = function()
 				var minutes = null
 				var seconds = null;
 				
-				for(var i = 0; i < fmt.length; i ++)
+				for( var i = 0; i < fmt.length; i ++ )
 				{
-					if(fmt[i] == "H")
+					if( fmt[i] == "H" )
 					{
-						if(fmt[i+1] == "H")
-						{
+						if( fmt[i+1] == "H" )
+						{ 
 							hours = Number(value.substr(i, 2));
 							if(hours == NaN) msgs.push("Hours are not a number");
 							if(hours < 0 || hours > 23) msgs.push("Hours out of range");
@@ -1911,9 +1919,9 @@ EpiCollect.Field = function()
 							throw "Time Format is invalid";
 							
 					}
-					else if(fmt[i] == "m")
+					else if( fmt[i] == "m" ) 
 					{
-						if(fmt[i+1] == "m")
+						if( fmt[i+1] == "m" )
 						{
 							minutes == Number(value.substr(i,2));
 							if(minutes == NaN) msgs.push("Minutes are not a number");
@@ -1921,9 +1929,9 @@ EpiCollect.Field = function()
 							i++
 						}
 					}
-					else if(fmt[i] == "s")
+					else if( fmt[i] == "s" )
 					{
-						if(fmt[i+1] == "s")
+						if( fmt[i+1] == "s" )
 						{
 							seconds == Number(value.substr(i,2));
 							if(seconds == NaN) msgs.push("Seconds are not a number");
@@ -1933,22 +1941,22 @@ EpiCollect.Field = function()
 					}
 				}
 			}
-			else if(this.regex)
+			else if( this.regex )
 			{
 				if(!value.match(new RegExp(this.regex))) msgs.push(this.regexMessage ? this.regexMessage : "The value you have entered is not in the right format.");
 			}
 			
-			if(this.max)
+			if( this.max )
 			{
 				if(Number(value) > this.max) msgs.push("Value must be less than  or equal to" + this.max);
 			}
 			
-			if(this.min)
+			if( this.min )
 			{
 				if(Number(value) < this.min) msgs.push("Value must be greater than or equal to " + this.min);
 			}
 			
-			if(this.match)
+			if( this.match )
 			{
 				//in this version the match field must be present on the page and filled in
 				info = this.match.split(",");
@@ -1959,14 +1967,14 @@ EpiCollect.Field = function()
 				if(valStr != matchStr) msgs.push("The value does not match the string from the parent field");
 			}
 			
-			if(this.verify)
+			if( this.verify )
 			{
-				if(!$("#" + this.id).hasClass("ecplus-valid"))
+				if( !$("#" + this.id).hasClass("ecplus-valid" ))
 				{
 					$("#" + this.id).hide();
 					var ct = this;
 					EpiCollect.prompt({ content : "Please re-enter the value for " + this.text + " to confirm the value", callback : function(new_value){
-						if(newvalue != value)
+						if( newvalue != value )
 						{
 							EpiCollect.dialog({ content : "field values must match" }) 
 							msgs.push("field values must match");
@@ -1981,7 +1989,7 @@ EpiCollect.Field = function()
 			}
 	    }
 		
-		if(msgs.length == 0)
+		if( msgs.length == 0 )
 		{
 			$("#" + this.id).removeClass("ecplus-invalid");
 			$("#" + this.id).addClass("ecplus-valid");
@@ -1997,7 +2005,7 @@ EpiCollect.Field = function()
 	
 	this.toXML = function()
 	{
-		if(!this.type) return "";
+		if( !this.type ) return "";
 		
 		var xml = "<" + this.type + " ref=\"" + this.id + "\"";
 		//TODO: Other settings
