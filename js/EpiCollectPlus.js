@@ -1409,6 +1409,7 @@ EpiCollect.Field = function()
 		this.genkey = xml.getAttribute('genkey') == "true";
 		this.hidden = xml.getAttribute('display') == "false";
 		this.search = xml.getAttribute('search') == "true";
+		this.uppercase = xml.getAttribute('uppercase') == "true";
 		
 		this.date = xml.getAttribute('date');
 		this.time = xml.getAttribute('time');
