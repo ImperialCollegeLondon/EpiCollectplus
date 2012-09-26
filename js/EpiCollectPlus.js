@@ -917,9 +917,24 @@ EpiCollect.Form = function()
 			var pform = jq.attr('pform');
 			jq.autocomplete({
 				source : baseUrl+ "/../" + pform + "/title",
-				minLength : 2
+				minLength : 2,
+				open : function(evt, ui)
+				{
+					 $(evt.target).off('blur');
+				},
+				close : function(evt, ui)
+				{
+					var ele = $(evt.target);
+					ele.focusin();
+					ele.on('blur', function(evt2)
+					{
+						if(!project.forms[formName].moveNext(true) && $('.ecplus-question')[project.forms[formName].formIndex].id.replace('ecplus-question-','') == evt2.target.id)
+						{
+							$(evt2.target).focus();
+						}
+					});
+				}
 			});
-			
 		});
 		
 		this.jumpFormTo(this.formIndex);
@@ -927,7 +942,7 @@ EpiCollect.Form = function()
 	
 	this.closeForm = function()
 	{
-		console.debug('closing...');
+		//console.debug('closing...');
 		while(this.pendingReqs.length > 0)
 		{
 			this.pendingReqs.pop().abort();
@@ -957,19 +972,19 @@ EpiCollect.Form = function()
 			
 			console.debug(idx + ' :: ' + start)
 			
-			if(!startField && $(ele).hasClass('ecplus-question-jumped') && idx < start) start++;
+			if( !startField && $(ele).hasClass('ecplus-question-jumped') && idx < start ) start++;
 			
-			if(idx <= start || !_frm.fields[fld] ) return;
-			if(fld == fieldName) done = true;
+			if( idx <= start || !_frm.fields[fld] ) return;
+			if( fld == fieldName ) done = true;
 			
-			if(!fieldName || done)
+			if( !fieldName || done )
 			{
 			//	console.debug("show " + fld);
 				$(ele).show();
 				$(ele).addClass('ecplus-question');
 				$(ele).removeClass('ecplus-question-jumped');
 			}
-			else if(!done)
+			else if( !done )
 			{
 				//console.debug("hide " + fld);
 				$(ele).val('');
@@ -995,10 +1010,10 @@ EpiCollect.Form = function()
 	
 	this.moveFormTo = function(idx)
 	{
-		if($(".ecplus-form").length == 0) return;
+		if( $(".ecplus-form").length == 0 ) return;
 		
-		if(window["interval"]) clearInterval(interval);
-		if(idx < 0 || idx > $(".ecplus-question").length)
+		if( window["interval"] ) clearInterval(interval);
+		if( idx < 0 || idx > $(".ecplus-question").length )
 		{
 			this.formIndex = 0;
 			return;
@@ -1768,6 +1783,7 @@ EpiCollect.Field = function()
 				var fld = '#' + this.id + '-ac';
 				console.debug('checking...' + this.id);
 				$(fld).addClass('ecplus-checking');
+				$(fld).removeClass('ecplus-invalid');
 				
 				var _url =  baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true';
 				if(this.parentval && this.parentfld)
@@ -1775,6 +1791,10 @@ EpiCollect.Field = function()
 					_url += 'seconda_field=' + this.parentfld + '&secondary_value=' + this.parentval;  
 				}
 				var ctx = this;
+				for(var req = this.form.pendingReqs.pop(); this.form.pendingReqs.length; req = this.form.pendingReqs.pop())
+				{
+					req.abort();
+				}
 				this.form.pendingReqs.push($.ajax({
 					url : baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true',
 					async : false,
