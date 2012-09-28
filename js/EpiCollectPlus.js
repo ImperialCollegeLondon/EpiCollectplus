@@ -884,7 +884,7 @@ EpiCollect.Form = function()
 														
 						for(var j = 0; j < jbits.length; j+=2)
 						{
-							if(jbits[j+1] == $("#" + frm.fields[ctrlName].id, frm.formElement).idx() + 1)
+							if( jbits[j+1] == $("#" + frm.fields[ctrlName].id, frm.formElement).idx() + 1 || jbits[j+1].toLowerCase() == 'all' )
 							{
 								frm.doJump(jbits[j], ctrlName);
 								jumped = true;
@@ -963,14 +963,14 @@ EpiCollect.Form = function()
 			start = $('#ecplus-question-' + startField).index();
 		}
 
-		console.debug('start at : ' + start + ' -- ' + startField);
+		//console.debug('start at : ' + start + ' -- ' + startField);
 		
 		var _frm = this;
 		
 		$(".ecplus-question, .ecplus-question-jumped").each(function(idx, ele){
 			var fld = ele.id.replace("ecplus-question-", "");
 			
-			console.debug(idx + ' :: ' + start)
+			//console.debug(idx + ' :: ' + start)
 			
 			if( !startField && $(ele).hasClass('ecplus-question-jumped') && idx < start ) start++;
 			
@@ -1081,7 +1081,7 @@ EpiCollect.Form = function()
 													
 					for(var j = 0; j < jbits.length; j+=2)
 					{
-						if(jbits[j+1] == $("#" + this.fields[fldName].id, this.formElement).idx() + 1)
+						if(jbits[j+1] == $("#" + this.fields[fldName].id, this.formElement).idx() + 1 || jbits[j+1].toLowerCase() == 'all')
 						{
 							this.doJump(jbits[j]);
 							jumped = true;
@@ -1777,7 +1777,7 @@ EpiCollect.Field = function()
 				$('#' + this.id).val(value);
 			}
 			
-			console.debug('checking...' + (this.fkField && this.fkTable) + this.fkField + " : " + this.fkTable);
+			//console.debug('checking...' + (this.fkField && this.fkTable) + this.fkField + " : " + this.fkTable);
 			if(this.fkField && this.fkTable)
 			{
 				var fld = '#' + this.id + '-ac';
