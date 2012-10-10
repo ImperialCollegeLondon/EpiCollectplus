@@ -635,7 +635,7 @@
 					if(nextFormName)
 					{
 						
-						html += "<td>" + entries[i][nextFormName + "_entries"]  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "&prevForm=" + formName + "\">View entries</a></td>";
+						html += "<td>" + entries[i][nextFormName + "_entries"]  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "&prevForm=" + formName + "\">View entries</a> | <a href=\"javascript:project.forms[project.getNextForm(formName).name].displayForm({ vertical : false, data : { '" + keyfield + "': '" + entries[i][keyfield] + "'} });\">Add " + project.getNextForm(formName).name  + "</a></td>";
 					}
 					html += "</tr>";
 				}

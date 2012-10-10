@@ -1744,11 +1744,11 @@ EpiCollect.Field = function()
 		{
 			if(!value)
 			{
-				return '0';
+				return '0 <a href="javascript:project.forms[\'' + this.connectedForm + '\'].displayForm({ vertical : false, data : { \'' + this.form.key + '\': \'' + data[this.form.key] + '\'} });">Add ' +  this.connectedForm + '</a>' ;
 			}
 			else
 			{
-				return value + (data ?  ' <a href="' + this.connectedForm + '?' + this.form.key +  '=' + data[this.form.key] + '&trail=' + this.form.name +  '">View entries</a>' : '');
+				return value + (data ?  ' <a href="' + this.connectedForm + '?' + this.form.key +  '=' + data[this.form.key] + '&trail=' + this.form.name +  '">View entries</a> | <a href="javascript:project.forms[\'' + this.connectedForm + '\'].displayForm({ vertical : false, data : { \'' + this.form.key + '\': \'' + data[this.form.key] + '\'} });">Add ' +  this.connectedForm + '</a>' : '0 <a href="javascript:project.forms[\'' + this.connectedForm + '\'].displayForm({ vertical : false, data : { \'' + this.form.key + '\': \'' + data[this.form.key] + '\'} });">Add ' +  this.connectedForm + '</a>');
 			}
 		}
 		else
