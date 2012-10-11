@@ -209,7 +209,7 @@
 				           	<label for="inputId">
 				           		<a href="http://www.epicollect.net/formHelp.asp#ids" target="_blank">ID</a>
 				           	</label>
-				           	<input id="inputId" name="id" type="text" />
+				           	<input id="inputId" name="id" type="text"  maxlength="45" />
 				    </div>
 				    <div id="requiredCtrl" notfor="fk">
 				           	<label for="inputRequired">Required</label>
@@ -271,12 +271,12 @@
 				    </div>
 				    <div allow="text,numeric" notfor="key,audio,fk,video,location,photo,date,time,branch">
 				        	<label for="inputdefault">Default</label>
-				        	<input type="text" id="default" name="defaultValue" />
+				        	<input type="text" id="default" name="defaultValue"  maxlength="1000" />
 				     </div>
 				     <div allow="text,textarea,barcode">
 		
 				       	<label for="inputregex">Regular Expression</label> 
-				       	<input type="text" id="regex" name="regex" title="Enter a regular expression without the opening and closing slashes."/>
+				       	<input type="text" id="regex" name="regex" maxlength="255" title="Enter a regular expression without the opening and closing slashes."/>
 		 
 				     </div>
 				     <div allow="text,numeric,date,time,barcode">
