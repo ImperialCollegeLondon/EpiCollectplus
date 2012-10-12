@@ -634,8 +634,18 @@
 					}
 					if(nextFormName)
 					{
+						var par_obj = {};
 						
-						html += "<td>" + entries[i][nextFormName + "_entries"]  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "&prevForm=" + formName + "\">View entries</a> | <a href=\"javascript:project.forms[project.getNextForm(formName).name].displayForm({ vertical : false, data : { '" + keyfield + "': '" + entries[i][keyfield] + "'} });\">Add " + project.getNextForm(formName).name  + "</a></td>";
+						
+						for(var p_frm = project.forms[formName]; p_frm; p_frm = project.getPrevForm(p_frm.name, true))
+						{
+							if(entries[i][p_frm.key])
+							{
+								par_obj[p_frm.key] = entries[i][p_frm.key];
+							}
+						}
+						
+						html += "<td>" + entries[i][nextFormName + "_entries"]  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "&prevForm=" + formName + "\">View entries</a> | <a href=\"javascript:project.forms[project.getNextForm(formName).name].displayForm({ vertical : false, data : " + JSON.stringify(par_obj).replace(/"/g, '\'') + " });\">Add " + project.getNextForm(formName).name  + "</a></td>";
 					}
 					html += "</tr>";
 				}

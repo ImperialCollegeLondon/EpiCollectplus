@@ -1276,7 +1276,7 @@
 			{
 				for($i = 0; $i < $cnt; $i++)
 				{
-					if($i > 0) $tstr .= ",";
+					if($i > 0) $tstr .= ", ";
 					if(array_key_exists($this->titleFields[$i], $obj))
 					{
 						$tstr .= $obj[$this->titleFields[$i]];

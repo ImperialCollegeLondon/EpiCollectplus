@@ -798,7 +798,9 @@ EpiCollect.Form = function()
 		//
 		//if(!$.browser.webkit)
 		//{
-			$("input.ecplus-datepicker", this.formElement).each(function(idx, ele) { 
+			$("input.ecplus-datepicker", this.formElement).each(function(idx, ele) {
+				if(!project.forms[formName].fields[ele.name]) return;
+				
 				var fmt = project.forms[formName].fields[ele.name].date;
 				if(project.forms[formName].fields[ele.name].setDate)
 				{
