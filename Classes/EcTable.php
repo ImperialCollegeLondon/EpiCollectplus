@@ -878,7 +878,7 @@
 			//TODO : filter summary based on $args
 			global $db;
 			//$qry = "SELECT count(1) as ttl, max(created) as lastCreated, max(uploaded) as uploaded, max(lastEdited) as lastEdited, count(DISTINCT deviceID) as devices, count(distinct user) as users from entry where projectName = '{$this->projectName}' and formName = '{$this->name}' Group By projectName, formName";
-			
+			if(array_key_exists('prevForm', $args)) unset($args['prevForm']);
 			$sql2 = "SELECT count(a.entry) as ttl from (SELECT entry, count(value) as count FROM entryvalue WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
 			if(is_array($args) && count($args) > 0)
 			{
@@ -903,10 +903,10 @@
 			{
 				$sql2 = "SELECT COUNT(idEntry) as ttl from entry WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
 			}
-			
+
 			$res = $db->do_query($sql2);
 			
-			if($res !== true) return $res;
+			if($res !== true) throw new Exception($res);
 			$arr = array();	
 			while($a = $db->get_row_array()){$arr = $a;}
 
