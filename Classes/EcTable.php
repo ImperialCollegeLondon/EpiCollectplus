@@ -1258,7 +1258,18 @@
 			}
 			if ($output == '')
 			{
-				$output .= '{ "valid" : false, "msg" : "There is no entry that corresponds to this title, please choose a complete title from the list.", "key" : "" }';
+				$args = array($this->key => $val);
+				$req = $this->ask($args, 0, 0, 'created', 'asc', true, 'object', false);
+				if($req !== true) return $req;
+				
+				$e = 0;
+				while($this->recieve()){ $e++; }
+				if($e > 0)
+				{
+					$output .= sprintf('{ "valid" : true, "msg" : null, "key" : "%s" }', $val);
+				}else{
+					$output .= '{ "valid" : false, "msg" : "There is no entry that corresponds to this title, please choose a complete title from the list.", "key" : "" }';
+				}
 			}
 			return $output;
 		}
@@ -1282,6 +1293,7 @@
 						$tstr .= $obj[$this->titleFields[$i]];
 					}
 				}
+				if($tstr == '') $tstr = $obj[$this->key]; 
 			}
 			return $tstr;
 		}

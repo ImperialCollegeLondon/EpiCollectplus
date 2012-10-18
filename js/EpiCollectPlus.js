@@ -720,7 +720,9 @@ EpiCollect.Form = function()
 			.append("<div class=\"ecplus-form-next\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].moveNext();\">Next</a></div>")
 			.append("<div class=\"ecplus-form-previous\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].movePrevious();\">Previous</a></div>")
 			.append("<div class=\"ecplus-form-pane\"><form name=\"" + this.name + "\"></form></div>");
-				
+		
+		if(editMode) { this.formElement.addClass('editing'); } else { this.formElement.removeClass('editing'); } 
+		
 		/*$(".ecplus-form-next a, .ecplus-form-previous a").mouseover(function(evt)
 		{
 			window.evt = evt;
@@ -1083,7 +1085,7 @@ EpiCollect.Form = function()
 													
 					for(var j = 0; j < jbits.length; j+=2)
 					{
-						if(jbits[j+1] == $("#" + this.fields[fldName].id, this.formElement).idx() + 1 || jbits[j+1].toLowerCase() == 'all')
+						if(jbits[j+1] == $("#" + this.fields[fldName].id, this.formElement).idx() + 1 || jbits[j+1].toLowerCase().trim() == 'all')
 						{
 							this.doJump(jbits[j]);
 							jumped = true;
@@ -1555,7 +1557,14 @@ EpiCollect.Field = function()
 							   url : baseUrl + '/../' + this.fkTable + '/title?term=' + val + '&key_from=true',
 							   success : function(data, status, xhr)
 							   {
-								   $('#' + this.id + '-ac').val(data).removeClass('loading');
+								   console.debug(data);
+								   if(data.trim() != "")
+								   {
+									   $('#' + this.id + '-ac')
+								   			.val(data)
+								   			.removeClass('loading');
+									   
+								   }
 								   
 							   },
 							   context : this
@@ -1778,9 +1787,22 @@ EpiCollect.Field = function()
 				value = value.toUpperCase()
 				$('#' + this.id).val(value);
 			}
-			
-			//console.debug('checking...' + (this.fkField && this.fkTable) + this.fkField + " : " + this.fkTable);
-			if(this.fkField && this.fkTable)
+			if(this.isKey && !$('#ecplus-form-' + this.form.name ).hasClass('editing'))
+			{
+				var ctx = this;
+				this.form.pendingReqs.push($.ajax({
+					url : baseUrl + '/../' + this.form.name + '.json?' + this.id + '=' + value,
+					async : false,
+					success : function(data,status,xhr)
+					{
+						if(data.length > 0)
+						{
+							msgs.push("This field must be unique, the value " + value + " had already been saved for this form.");
+						}
+					}
+				}));
+			}
+			else if(this.fkField && this.fkTable)
 			{
 				var fld = '#' + this.id + '-ac';
 				console.debug('checking...' + this.id);

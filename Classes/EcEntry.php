@@ -107,7 +107,7 @@
 				while($arr = $db->get_row_array()) array_push($ents, $arr);
 				if(count($ents) > 0)
 				{
-					if($this->form->survey->allowDownloadEdits || ($ents[0]['deviceId'] == $this->deviceId && $this->deviceId != 'web'))
+					if(($this->form->survey->allowDownloadEdits || $ents[0]['deviceId'] == $this->deviceId) && $this->deviceId != 'web')
 					{
 						$res = $this->put();
 						return $res;
