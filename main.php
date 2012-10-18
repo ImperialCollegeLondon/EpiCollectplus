@@ -1187,18 +1187,14 @@ function downloadData()
 	//NOTE: This will be the same for EC+ as the upload directory is project-independant
 	$pos = max(strrpos($_SERVER["SCRIPT_FILENAME"], "\\") ,strrpos($_SERVER["SCRIPT_FILENAME"], "/"));
 	$root =substr($_SERVER["SCRIPT_FILENAME"], 0, $pos);
+	
 	$wwwroot = "http://{$_SERVER["HTTP_HOST"]}$SITE_ROOT";
-
-	
-	
 	$startTbl = (array_key_exists('select_table', $_GET) ? getValIfExists($_GET, "table") : false);
 	$endTbl = (array_key_exists('select_table', $_GET) ? getValIfExists($_GET, "select_table") :  getValIfExists($_GET, "table"));
 	$entry = getValIfExists($_GET, "entry");
 	$dataType = (array_key_exists('type', $_GET) ? $_GET["type"] : "data");
 	$xml = !(array_key_exists('xml', $_GET) && $_GET['xml'] === "false");
 
-	
-	
 	$files_added = 0;
 
 	$delim = "\t";
@@ -1305,10 +1301,13 @@ function downloadData()
 		$x = $arc->open($zfn, ZipArchive::CREATE);
 		if(!$x) die("Could not create the zip file.");
 	}
-
+	
 
 	for($t = 0; $t <= $end && array_key_exists($t, $tbls); $t++)
 	{
+		//echo '...' . $cField . "\r\n";
+		//print_r($cVals);
+		
 		if($dataType == "data" && $xml)
 		{
 			fwrite($fxml, "<table><table_name>{$tbls[$t]}</table_name>");
@@ -1486,21 +1485,20 @@ function downloadData()
 						}
 					}
 				}
-			}
 				
-			if($ent && !array_key_exists($ent[$survey->tables[$tbls[$t]]->key], $nxtCVals))
-			{
-				$nxtCVals[$ent[$survey->tables[$tbls[$t]]->key]] = true;
+			
+				if($ent && !array_key_exists($ent[$survey->tables[$tbls[$t]]->key], $nxtCVals))
+				{	
+					$nxtCVals[$ent[$survey->tables[$tbls[$t]]->key]] = true;
+				}
 			}
-
-	
 		}
 		
 		if($dataType == "data" && $xml)
 		{
 			fwrite($fxml,  "</table>");
 		}
-		
+		//print_r($nxtCVals);
 		if($entry)
 		{
 			$cField = $survey->tables[$tbls[$t]]->key;
@@ -1515,12 +1513,14 @@ function downloadData()
 		fclose($fxml);
 		header("location: $fx_url");
 		return;
+		//echo file_get_contents($fxn);
 	}
 	elseif ($dataType == "data")
 	{
 		fclose($tsv);
 		header("location: $ts_url");
 		return;
+		//echo file_get_contents($txn);
 	}
 	else
 	{
@@ -2127,7 +2127,7 @@ function entryHandler()
 		$key_from = getValIfExists($_GET, 'key_from');
 		$secondary_field = getValIfExists($_GET, 'secondary_field');
 		$secondary_value = getValIfExists($_GET, 'secondary_value');
-		ini_set('max_execution_time',11);
+		ini_set('max_execution_time', 60);
 		if($entId == 'title')
 		{
 			if($do)

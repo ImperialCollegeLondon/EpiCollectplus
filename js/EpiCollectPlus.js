@@ -1851,12 +1851,13 @@ EpiCollect.Field = function()
 			else if( this.date || this.setDate )
 			{
 				// will consist of dd MM and yyyy
-				var fmt = this.date + this.setDate; 
+				var fmt = this.date ? this.date : this.setDate; 
 				var sep = null;
 				
 				var day = null;
 				var month = null
 				var year = null;
+				
 				
 				for( var i = 0; i < fmt.length; i++ )
 				{
@@ -1864,9 +1865,10 @@ EpiCollect.Field = function()
 					{
 						if(fmt[i+1] == "d")
 						{
+							console.debug(value.substr(i,2))
 							day = Number(value.substr(i,2));
-							if(day == NaN) msgs.push("Day is not a number");
-							i++
+							if(isNaN(day)) msgs.push("Day is not a number");
+							i++;
 						}
 						else
 						{
@@ -1877,8 +1879,9 @@ EpiCollect.Field = function()
 					{
 						if( fmt[i+1] == "M" )
 						{
+							console.debug(value.substr(i,2))
 							month = Number(value.substr(i,2));
-							if(month == NaN) msgs.push("Month is not a number");
+							if(isNaN(month)) msgs.push("Month is not a number");
 							i++;
 						}
 						else
@@ -1891,8 +1894,8 @@ EpiCollect.Field = function()
 						if( fmt[i+1] == "y" && fmt[i+2] == "y" && fmt[i+3] == "y" )
 						{
 							year = Number(value.substr(i,4));
-							if(year == NaN) msgs.push("Year is not a number");
-							i+=3
+							if(isNaN(year)) msgs.push("Year is not a number");
+							i+=3;
 						}
 						else
 						{
@@ -1903,23 +1906,25 @@ EpiCollect.Field = function()
 					{
 						if(!sep) sep = fmt[i];
 					}
-					
-					if(day)
-					{
-						if(day < 1 || day > 31)	msgs.push("Day is out of range");
-						else if(month && (month == 4 || month == 6 || month == 9 || month == 11) && day > 30) msgs.push("Day is out of range");
-						else if(month && month == 2 && day > 29 && (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))) msgs.push("Day is out of range");
-						else if(month && month == 2 && day > 28) msgs.push("Day is out of range");
-					}
-					if(month)
-					{
-						if(month < 1 ||  month > 12) msgs.push("Month is out of range");
-					}
 				}
+				console.debug('Day = ' + day)
+				if(day || day === 0)
+				{
+					if(day < 1 || day > 31)	msgs.push("Day is out of range");
+					else if(month && (month == 4 || month == 6 || month == 9 || month == 11) && day > 30) msgs.push("Day is out of range");
+					else if(month && month == 2 && day > 29 && (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))) msgs.push("Day is out of range");
+					else if(month && month == 2 && day > 28) msgs.push("Day is out of range");
+				}
+				console.debug('Month = ' + month)
+				if(month || month === 0)
+				{
+					if(month < 1 ||  month > 12) msgs.push("Month is out of range");
+				}
+				
 			}
 			else if( this.time || this.setTime )
 			{
-				var fmt = this.date + this.setDate; 
+				var fmt = this.time ? this.time :  this.setTime; 
 				var sep = null;
 				
 				var hours = null;
@@ -1933,7 +1938,7 @@ EpiCollect.Field = function()
 						if( fmt[i+1] == "H" )
 						{ 
 							hours = Number(value.substr(i, 2));
-							if(hours == NaN) msgs.push("Hours are not a number");
+							if(isNaN(hours)) msgs.push("Hours are not a number");
 							if(hours < 0 || hours > 23) msgs.push("Hours out of range");
 							i++;
 							
@@ -1947,7 +1952,7 @@ EpiCollect.Field = function()
 						if( fmt[i+1] == "m" )
 						{
 							minutes == Number(value.substr(i,2));
-							if(minutes == NaN) msgs.push("Minutes are not a number");
+							if(isNaN(minutes)) msgs.push("Minutes are not a number");
 							if(minutes < 0 || minutes > 59) msgs.push("Minutes out of range");
 							i++
 						}
@@ -1957,7 +1962,7 @@ EpiCollect.Field = function()
 						if( fmt[i+1] == "s" )
 						{
 							seconds == Number(value.substr(i,2));
-							if(seconds == NaN) msgs.push("Seconds are not a number");
+							if(isNaN(seconds)) msgs.push("Seconds are not a number");
 							if(seconds < 0 || seconds > 59) msgs.push("Seconds out of range");
 							i++
 						}

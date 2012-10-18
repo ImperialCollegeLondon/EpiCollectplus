@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `entryvalue` (
   `projectName` varchar(255) NOT NULL,
   `formName` varchar(100) NOT NULL,
   `fieldName` varchar(45) NOT NULL,
-  `value` varchar(1000) DEFAULT NULL,
+  `value` varchar(1000) DEFAULT NULL COLLATE utf8_bin,
   `entry` int(11) NOT NULL,
   PRIMARY KEY (`idEntryValue`),
   KEY `value` (`value`(255)),

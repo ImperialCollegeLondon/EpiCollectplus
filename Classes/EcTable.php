@@ -565,7 +565,7 @@
 			{
 				$limit_s = '';
 			}
-			$qry = sprintf('%s %s %s %s AND ev.fieldName in (%s) %s %s %s', $qry, $select, $join, $where, $fields, $group, $order, $limit_s);
+			$qry = sprintf('%s %s %s %s AND ev.fieldName in (%s) %s %s %s ', $qry, $select, $join, $where, $fields, $group, $order, $limit_s);
 			unset($select, $join, $where, $group, $order, $limit_s);
 			
 			$res = $db->do_multi_query($qry);
@@ -578,7 +578,7 @@
 		function checkExists($keyValue)
 		{
 			global $db;
-			$sql = sprintf('SELECT entry, count(idEntryValue) AS cnt FROM entryvalue WHERE projectName = \'%s\' AND formName = \'%s\' AND fieldName= \'%s\' AND value = \'%s\'', $this->projectName, $this->name, $this->key, $keyValue);
+			$sql = sprintf('SELECT entry, count(idEntryValue) AS cnt FROM entryvalue WHERE projectName = \'%s\' AND formName = \'%s\' AND fieldName= \'%s\' AND value = \'%s\' COLLATE utf8_bin', $this->projectName, $this->name, $this->key, $keyValue);
 			
 			$res = $db->do_query($sql);
 			$count = 0;
