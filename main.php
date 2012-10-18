@@ -1323,7 +1323,7 @@ function downloadData()
 			
 			if($entry) $args[$cField] = $cVals[$c];
 				
-			$res = $survey->tables[$tbls[$t]]->ask($args);
+			$res = $survey->tables[$tbls[$t]]->ask($args,0,0,'created','asc',true,'object',false);
 
 			if($res !== true) echo $res;
 	

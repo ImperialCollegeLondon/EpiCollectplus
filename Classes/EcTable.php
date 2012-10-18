@@ -471,7 +471,7 @@
  			if($child && $includeChildCount)
  			{
  				
- 				$qry = sprintf('CREATE TEMPORARY TABLE `%s_entries` (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
+ 				$qry = sprintf('CREATE TEMPORARY TABLE `%s_c_entries` (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
  					FROM entryvalue a, entryvalue b 
  					WHERE a.projectName = \'%s\' and a.formName =\'%s\' and a.fieldName = \'%s\' and a.value = b.value and b.formName = \'%s\' 
  					and b.fieldName = \'%s\' GROUP BY a.value, b.entry ORDER BY a.value;',
@@ -487,29 +487,29 @@
  				//if($res !== true) die($res);
  				
  				if($format == 'json'){
- 					$select .= sprintf(' \', "%s_entries" : \' , IFNULL(`%s_entries`.`entries`, 0)  ,', $child->name, $child->name);
+ 					$select .= sprintf(' \', "%s_entries" : \' , IFNULL(`%s_c_entries`.`entries`, 0)  ,', $child->name, $child->name);
  				}elseif($format == 'xml'){
- 					$select .= sprintf(' \'<%s_entries>\',   IFNULL(`%s_entries`.entries, 0), \'</%s_entries>\',', $child->name, $child->name, $child->name);
+ 					$select .= sprintf(' \'<%s_entries>\',   IFNULL(`%s_c_entries`.entries, 0), \'</%s_entries>\',', $child->name, $child->name, $child->name);
  				}elseif($format == 'csv'){
- 					$select .= sprintf(',     IFNULL(`%s_entries`.entries, 0)  ', $child->name);
+ 					$select .= sprintf(',     IFNULL(`%s_c_entries`.entries, 0)  ', $child->name);
  				}elseif($format == 'tsv'){
- 					$select .=sprintf( ',     IFNULL(`%s_entries`.entries, 0)) ', $child->name);
+ 					$select .=sprintf( ',     IFNULL(`%s_c_entries`.entries, 0)) ', $child->name);
  				}elseif($format == 'kml'){
  					throw new Exception ('Format not yet implemented');
  				}elseif($format == 'tskv'){
- 					$select .= sprintf(',`%s_entries `,  IFNULL(`%s_entries`.`entries`, 0)', $child->name, $child->name);
+ 					$select .= sprintf(',`%s_entries `,  IFNULL(`%s_c_entries`.`entries`, 0)', $child->name, $child->name);
  				}elseif($format == 'object'){
- 					$select .= sprintf(', IFNULL(`%s_entries`.`entries`, 0) as `%s_entries`', $child->name, $child->name);
+ 					$select .= sprintf(', IFNULL(`%s_c_entries`.`entries`, 0) as `%s_c_entries`', $child->name, $child->name);
  				}
  				
  				if(!strstr($join, sprintf('ev%s', $this->key)))
 				{
-					$join .= sprintf(' LEFT JOIN `%s_entries` on `%s_entries`.entry = e.idEntry',  $child->name, $child->name);
+					$join .= sprintf(' LEFT JOIN `%s_c_entries` on `%s_c_entries`.entry = e.idEntry',  $child->name, $child->name);
 				}
 				
 				if(!strstr($join, sprintf('ev%s', $child->name)))
  				{
- 					$join .= sprintf(' LEFT JOIN `%s_entries` on `%s_entries`.entry = e.idEntry',  $child->name, $child->name);
+ 					$join .= sprintf(' LEFT JOIN `%s_c_entries` on `%s_c_entries`.entry = e.idEntry',  $child->name, $child->name);
  				}
  			}
  			
@@ -545,7 +545,7 @@
 			}
 			elseif($child && $sortField == $child->name . '_entries')
 			{
-				$order = sprintf(' ORDER BY `%s_entries`.entries %s', str_replace('.', '_', $child->name), $sortDir);
+				$order = sprintf(' ORDER BY `%s_c_entries`.entries %s', str_replace('.', '_', $child->name), $sortDir);
 			}
 			elseif($sortField)
 			{

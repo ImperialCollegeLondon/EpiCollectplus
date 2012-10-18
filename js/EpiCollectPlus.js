@@ -1004,6 +1004,8 @@ EpiCollect.Form = function()
 				$(ele).removeClass('ecplus-question-jumped');
 			}
 		});
+		
+		if(editMode) { $('#' + this.key).disable(); }
 	}
 	
 	this.jumpFormTo = function(idx)
