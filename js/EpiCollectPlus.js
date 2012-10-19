@@ -748,6 +748,7 @@ EpiCollect.Form = function()
 				$("form", this.formElement).append("<div class=\"ecplus-question\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
 				$("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined, cnf.debug));
 				$("#ecplus-question-" + field, this.formElement).append("<div  id=\"" + field + "-messages\" class=\"ecplus-messages\"></div>");
+				
 			}
 		}
 		
@@ -940,7 +941,7 @@ EpiCollect.Form = function()
 				}
 			});
 		});
-		
+		if(editMode) { $('#' + this.key).prop('disabled' , true); } else  { $('#' + this.key).prop('disabled' , false); }
 		this.jumpFormTo(this.formIndex);
 	};
 	
@@ -1005,7 +1006,7 @@ EpiCollect.Form = function()
 			}
 		});
 		
-		if(editMode) { $('#' + this.key).disable(); }
+		
 	}
 	
 	this.jumpFormTo = function(idx)
