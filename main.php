@@ -1986,7 +1986,9 @@ function formHandler()
 		//if we've come back up a step we need to remove the entry. We assume that the crumbs are in the correct order to
 		//draw them in the correct order
 	}
-		
+
+	$pk = null;
+	$pv = null;
 	foreach($_SESSION["formCrumbs"] as $k => $v)
 	{
 		if($prj->tables[$k]->number >= $prj->tables[$frmName]->number)
@@ -1995,7 +1997,17 @@ function formHandler()
 		}
 		else
 		{
-			$p .= "&gt; <a href=\"{$k}\">{$k} : $v </a>";
+			if($pk)
+			{
+				$p .= "&gt; <a href=\"{$k}?{$prj->tables[$pk]->key}=$pv\">{$k} : $v </a>";
+			}
+			else
+			{
+				$p .= "&gt; <a href=\"{$k}\">{$k} : $v </a>";
+			}
+			
+			$pk = $k;
+			$pv = $v;
 		}
 	}
 	
@@ -3128,7 +3140,7 @@ function projectSummary()
 
 function projectUsage()
 {
-	global $url, $auth;
+	global $url;
 
 	$prj = new EcProject();
 	$prj->name = substr($url, 0, strpos($url, "/"));
