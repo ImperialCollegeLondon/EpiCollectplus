@@ -3128,13 +3128,13 @@ function projectSummary()
 
 function projectUsage()
 {
-	global $url;
+	global $url, $auth;
 
 	$prj = new EcProject();
 	$prj->name = substr($url, 0, strpos($url, "/"));
 	$prj->fetch();
 
-	if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2) return "access denied)";
+	if(!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2) return "access denied";
 
 	$sum = $prj->getUsage();
 	header("Content-type: text/plain");
