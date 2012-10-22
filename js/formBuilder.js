@@ -560,7 +560,7 @@ function updateJumps()
 	fieldCtls.html(fieldCtls.html());
 	for(var i = opts.length; i--;)
 	{
-		fieldCtls.html("<option value=\"" + i + "\" >" + opts[i].label + "</option>" + fieldCtls.html());
+		fieldCtls.html("<option value=\"" + (i + 1) + "\" >" + opts[i].label + "</option>" + fieldCtls.html());
 	}
 	
 	$(".jumpvalues").each(function(idx, ele){
