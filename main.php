@@ -2082,11 +2082,11 @@ function entryHandler()
 			{
 				if(preg_match("/^Message\s?:/", $e->getMessage()))
 				{
-					header("HTTP/1.1 409 Conflict");
+					header("HTTP/1.1 409 Conflict", 409);
 				}
 				else
 				{
-					header("HTTP/1.1 500 Internal Server Error");
+					header("HTTP/1.1 500 Internal Server Error", 500);
 				}
 				echo $e->getMessage();
 			}

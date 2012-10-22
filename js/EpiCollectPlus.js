@@ -1859,21 +1859,21 @@ EpiCollect.Field = function()
 					}
 				}));
 			}
-			else if( this.isinteger )
+			if( this.isinteger )
 			{
 				if( !value.match(/^[0-9]+$/) )
 				{
 					msgs.push("This field must be an Integer");
 				}
 			}
-			else if( this.isdouble )
+			if( this.isdouble )
 			{
 				if(!value.match(/^[0-9]+(\.[0-9]+)?$/))
 				{
 					msgs.push("This field must be an decimal");
 				}
 			}
-			else if( this.date || this.setDate )
+			if( this.date || this.setDate )
 			{
 				// will consist of dd MM and yyyy
 				var fmt = this.date ? this.date : this.setDate; 
@@ -1947,7 +1947,7 @@ EpiCollect.Field = function()
 				}
 				
 			}
-			else if( this.time || this.setTime )
+			if( this.time || this.setTime )
 			{
 				var fmt = this.time ? this.time :  this.setTime; 
 				var sep = null;
@@ -1994,8 +1994,11 @@ EpiCollect.Field = function()
 					}
 				}
 			}
-			else if( this.regex )
+			
+			
+			if( this.regex )
 			{
+				console.debug('regex');
 				if(!value.match(new RegExp(this.regex))) msgs.push(this.regexMessage ? this.regexMessage : "The value you have entered is not in the right format.");
 			}
 			
