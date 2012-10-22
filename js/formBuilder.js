@@ -594,10 +594,10 @@ function updateJumps()
 		 
 		 for(var i = 0; i < len; i++ )
 		 {
-			$(opts[i]).toggle(show);
+			$(opts[i]).attr('disabled', !show);
 			if( opts[i].value == cField ) {
 				// hide the next + 1 element as there's no point jumping to the next question!
-				$(opts[++i]).toggle(show);
+				$(opts[++i]).attr('disabled', !show);
 				show = true;
 			}
 		 }

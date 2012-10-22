@@ -1780,6 +1780,7 @@ EpiCollect.Field = function()
 	
 	this.validate = function(value)
 	{
+		
 		console.debug('checking...' + this.id + '  = ' + value);
 		var msgs = [];
 		if(this.required && (!value || value == "")) msgs.push("This field is required");
@@ -1790,75 +1791,7 @@ EpiCollect.Field = function()
 				value = value.toUpperCase()
 				$('#' + this.id).val(value);
 			}
-			if(this.isKey && !$('#ecplus-form-' + this.form.name ).hasClass('editing'))
-			{
-				var ctx = this;
-				this.form.pendingReqs.push($.ajax({
-					url : baseUrl + '/../' + this.form.name + '.json?' + this.id + '=' + value,
-					async : false,
-					success : function(data,status,xhr)
-					{
-						if(data.length > 0)
-						{
-							msgs.push("This field must be unique, the value " + value + " had already been saved for this form.");
-						}
-					}
-				}));
-			}
-			else if(this.fkField && this.fkTable)
-			{
-				var fld = '#' + this.id + '-ac';
-				console.debug('checking...' + this.id);
-				$(fld).addClass('ecplus-checking');
-				$(fld).removeClass('ecplus-invalid');
-				
-				var _url =  baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true';
-				if(this.parentval && this.parentfld)
-				{
-					_url += 'seconda_field=' + this.parentfld + '&secondary_value=' + this.parentval;  
-				}
-				var ctx = this;
-				for(var req = this.form.pendingReqs.pop(); this.form.pendingReqs.length; req = this.form.pendingReqs.pop())
-				{
-					req.abort();
-				}
-				this.form.pendingReqs.push($.ajax({
-					url : baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true',
-					async : false,
-					success : function(data, status, xhr)
-					{
-						var res = JSON.parse(data);
-						if(res.valid)
-						{
-							$(fld)
-								.removeClass('ecplus-checking')
-								.addClass('ecplus-valid');
-							$('#' + ctx.id).val(res.key);
-
-							var cc = $(fld).attr('childcontrol');
-							if(cc)
-							{
-								console.debug(cc);
-								var jqc = $('#' + cc + '-ac');
-								var src = jqc.autocomplete('option', 'source');
-								if(src.indexOf('?') > 0) src = src.substr(0, src.indexOf('?'));
-								console.debug(src);
-								src += '?secondary_field=' + ctx.id + '&secondary_value=' + res.key;
-								var src = jqc.autocomplete('option', 'source', src);								
-							}
-							
-						}
-						else
-						{
-							$(fld)
-								.removeClass('ecplus-checking')
-								.addClass('ecplus-invalid');
-							msgs.push(res.msg)
-							$('#' + this.id).val('');
-						}
-					}
-				}));
-			}
+			
 			if( this.isinteger )
 			{
 				if( !value.match(/^[0-9]+$/) )
@@ -2042,6 +1975,76 @@ EpiCollect.Field = function()
 					}});
 				}
 				
+			}
+			
+			if(msgs.length == 0 && this.isKey && !$('#ecplus-form-' + this.form.name ).hasClass('editing'))
+			{
+				var ctx = this;
+				this.form.pendingReqs.push($.ajax({
+					url : baseUrl + '/../' + this.form.name + '.json?' + this.id + '=' + value,
+					async : false,
+					success : function(data,status,xhr)
+					{
+						if(data.length > 0)
+						{
+							msgs.push("This field must be unique, the value " + value + " had already been saved for this form.");
+						}
+					}
+				}));
+			}
+			else if(msgs.length == 0 && this.fkField && this.fkTable)
+			{
+				var fld = '#' + this.id + '-ac';
+				console.debug('checking...' + this.id);
+				$(fld).addClass('ecplus-checking');
+				$(fld).removeClass('ecplus-invalid');
+				
+				var _url =  baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true';
+				if(this.parentval && this.parentfld)
+				{
+					_url += 'seconda_field=' + this.parentfld + '&secondary_value=' + this.parentval;  
+				}
+				var ctx = this;
+				for(var req = this.form.pendingReqs.pop(); this.form.pendingReqs.length; req = this.form.pendingReqs.pop())
+				{
+					req.abort();
+				}
+				this.form.pendingReqs.push($.ajax({
+					url : baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true',
+					async : false,
+					success : function(data, status, xhr)
+					{
+						var res = JSON.parse(data);
+						if(res.valid)
+						{
+							$(fld)
+								.removeClass('ecplus-checking')
+								.addClass('ecplus-valid');
+							$('#' + ctx.id).val(res.key);
+
+							var cc = $(fld).attr('childcontrol');
+							if(cc)
+							{
+								console.debug(cc);
+								var jqc = $('#' + cc + '-ac');
+								var src = jqc.autocomplete('option', 'source');
+								if(src.indexOf('?') > 0) src = src.substr(0, src.indexOf('?'));
+								console.debug(src);
+								src += '?secondary_field=' + ctx.id + '&secondary_value=' + res.key;
+								var src = jqc.autocomplete('option', 'source', src);								
+							}
+							
+						}
+						else
+						{
+							$(fld)
+								.removeClass('ecplus-checking')
+								.addClass('ecplus-invalid');
+							msgs.push(res.msg)
+							$('#' + this.id).val('');
+						}
+					}
+				}));
 			}
 	    }
 		
