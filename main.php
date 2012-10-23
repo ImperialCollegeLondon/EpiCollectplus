@@ -2214,14 +2214,18 @@ function updateUser()
 	
 	$name = explode(" ", $auth->getUserNickname());
 	
+	$username = $auth->getUserName();
+	$is_not_local = $_SESSION['provider'] != 'LOCAL';
+	
+	if($is_not_local) flash('You cannot update user information for Open ID or LDAP users unless you do it throught your Open ID or LDAP provider','err');
+		
 	echo applyTemplate("base.html", "./updateUser.html", array(
 			"firstName" => $name[0], 
 			"lastName" => $name[1],
 			"email" => $auth->getUserEmail(),
-			"userName" => $auth->getUserName(),
-			"LOCAL" => $auth->getUserName() != ""
-		)
-	);
+			"userName" => $username,
+			"disabled" => $is_not_local ? 'disabled="disabled"' : ''
+	));
 }
 
 function saveUser()

@@ -73,8 +73,8 @@
   	
   	function getUserName()
   	{
-  		return $this->providers["LOCAL"]->getUserName($this->getEcUserId());
   		
+  		return $this->providers[$_SESSION['provider']]->getUserName($this->getEcUserId());
   	}
   
   	function requestlogin($requestedUrl, $provider = "")

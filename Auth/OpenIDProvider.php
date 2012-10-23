@@ -5,6 +5,8 @@
 	class OpenIDProvider extends AuthProvider
 	{
 	
+		public $data = array();
+		
 		public function __construct($url)
 		{
 			global $SITE_ROOT;
@@ -74,5 +76,10 @@
 		public function logout(){}
 		public function setCredentialString($str){}
 		public function getDetails(){}
+		
+		public function getUserName(){
+			return '';
+		}
+		
 	}
 ?>

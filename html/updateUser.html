@@ -1,7 +1,7 @@
 {{style}}
 {{/style}}
 {{script}}
-	<script type="text/javascript">
+	<script type="text/javascript">	
 		$(function(){
 			$("input[type=password]").change(function(evt){
 				var pwd = $("#password").val();
@@ -53,9 +53,9 @@
 	<p>Please use the form below to update your details.</p>
 	<form id="updateUsr" method="POST" >
 		<fieldSet>
-			<p><label for="firstName">First Name</label> <input id="firstName" name="firstName" type="text" value="{#firstName#}"/><br /></p>
-			<p><label for="lastName">Last Name</label> <input id="lastName" name="lastName" type="text" value="{#lastName#}" /></p>
-			<p><label for="email">Email Address</label> <input id="email" name="email" type="email" value="{#email#}" /></p>
+			<p><label for="firstName">First Name</label> <input id="firstName" name="firstName" type="text" value="{#firstName#}" {#disabled#}/><br /></p>
+			<p><label for="lastName">Last Name</label> <input id="lastName" name="lastName" type="text" value="{#lastName#}"  {#disabled#}/></p>
+			<p><label for="email">Email Address</label> <input id="email" name="email" type="email" value="{#email#}"  {#disabled#}/></p>
 		</fieldSet>
 		<fieldSet allow="LOCAL">
 			<p>
@@ -64,14 +64,14 @@
 			</p>
 			<p>
 				<label for="password">New Password</label> 
-				<input id="password" name="password" type="password" />
+				<input id="password" name="password" type="password"  {#disabled#}/>
 			</p>
 			<p>
 				<label for="confirmpassword">Confirm New Password</label> 
-				<input id="confirmpassword" name="confirmpassword" type="password" />
+				<input id="confirmpassword" name="confirmpassword" type="password"  {#disabled#}/>
 			</p>
 			<p>
-				<input type="submit" name="makeChanges" value="Make Changes" />
+				<input type="submit" name="makeChanges" value="Make Changes"  {#disabled#}/>
 			</p>
 		</fieldSet>
 	</form>
