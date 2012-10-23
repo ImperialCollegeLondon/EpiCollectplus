@@ -106,6 +106,7 @@ label
 {
 	display : inline-block;
 	font-weight: bold;
+	min-width: 15em;
 }
 
 .provider
@@ -585,6 +586,11 @@ tr.alt
 	right: 2px;
 	bottom : 2px;
 	
+}
+
+.ecplus-map-controls label
+{
+	min-width : 10em;
 }
 
 .button

@@ -1514,7 +1514,11 @@ EpiCollect.Field = function()
 		   }
 		   
 		   
-		   if(this.crumb) pre = "<p>" + this.crumb + "</p>";
+		   if(this.crumb)
+		   {
+			   var bits = this.crumb.split(',');
+			  pre = "<p>" + bits[1] + ' - <span class="ecpval-' + bits[0] + '">' +  $('#' + bits[0]).val() + "</p>";
+		   }
 		   
 		   //recursively check to see if this field is a key field from another form
 		   //also need to make sure that 
@@ -2058,6 +2062,8 @@ EpiCollect.Field = function()
 			$("#" + this.id).removeClass("ecplus-valid");
 			$("#" + this.id).addClass("ecplus-invalid");
 		}	
+		
+		if(msgs.length == 0) $('.ecpval-' + this.id).text(value); 
 		
 		return msgs.length == 0 ? true : msgs;		
 	};
