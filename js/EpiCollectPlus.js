@@ -750,10 +750,9 @@ EpiCollect.Form = function()
 			.append("<div class=\"ecplus-form-pane\"><form name=\"" + this.name + "\"></form></div>");
 		
 		if(editMode) { this.formElement.addClass('editing'); } else { this.formElement.removeClass('editing'); } 
-		
+		if(console){console.debug($(".ecplus-form-pane").width());}
 		
 		$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question", this.formElement).width() * $(".ecplus-question", this.formElement).length + 1) + "px");
-		$(".ecplus-question").width($(".ecplus-form-pane").width())
 		/*$(".ecplus-form-next a, .ecplus-form-previous a").mouseover(function(evt)
 		{
 			window.evt = evt;
@@ -798,7 +797,9 @@ EpiCollect.Form = function()
 			$("#ecplus-save-button", this.formElement).append("<a class=\"button\" href=\"javascript:project.forms['" + this.name +  "'].addEntry();\">Save Entry</a>");
 		}
 		
+		$(".ecplus-question").width($(".ecplus-form-pane").width());
 		$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question").width() * $(".ecplus-question").length + 1) + "px");
+		
 		
 		//if(popup)
 		//{
