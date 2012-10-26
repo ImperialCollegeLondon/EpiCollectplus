@@ -11,7 +11,7 @@ var URLChecker = function(){
 		
 		this.checker.addEventListener('message', function(e)
 		{
-			console.debug(e.data);
+			//console.debug(e.data);
 			var resp = JSON.parse(e.data);
 		
 			var evt = document.createEvent('Event');	

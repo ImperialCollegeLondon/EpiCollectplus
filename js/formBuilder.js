@@ -352,7 +352,7 @@ function updateSelected()
 			var suf = '(' + $('#' + _type).val() + ')';
 			var rxsuf = '\\(' + $('#' + _type).val().replace(/\//g, '\\/') + '\\)';
 			
-			console.debug (new RegExp(rxsuf +'$', 'g'));
+			//console.debug (new RegExp(rxsuf +'$', 'g'));
 			if(!currentControl.text.match(new RegExp(rxsuf +'$', 'g')))
 			{
 				currentControl.text = currentControl.text + ' ' + suf;
