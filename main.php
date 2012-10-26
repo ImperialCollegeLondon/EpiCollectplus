@@ -3031,9 +3031,15 @@ function getMedia()
 			header("Content-type: " . mimeType($u));
 			echo file_get_contents("./" . $u);
 		}
+		elseif(file_exists('./'. substr($url, strpos($url, '~'))))
+		{
+			$u = substr($url, strpos($url, '~'));
+			header("Content-type: " . mimeType($u));
+			echo file_get_contents("./" . $u);
+		}
 		else
 		{
-			//header('HTTP/1.1 404 NOT FOUND', 404);
+			header('HTTP/1.1 404 NOT FOUND', 404);
 			return;
 		}
 	}
@@ -3460,7 +3466,7 @@ $rule = false;
 /*Cookie policy handler*/
 
 if(!getValIfExists($_SESSION, 'SEEN_COOKIE_MSG')) {
-	flash(sprintf('EpiCollectPlus uses cookies for functional purposes only, if you are concerned about our use of cookies please read our <a href="%s/privacy.html">Privacy Statement</a>', $SITE_ROOT));
+	flash(sprintf('EpiCollectPlus only uses first party cookies to make the site work. We do not add or read thrid-party cookies. If you are concerned about our use of cookies please read our <a href="%s/privacy.html">Privacy Statement</a>', $SITE_ROOT));
 	$_SESSION['SEEN_COOKIE_MSG'] = true;
 }
 

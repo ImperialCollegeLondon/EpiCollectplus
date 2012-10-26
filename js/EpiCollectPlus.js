@@ -1740,6 +1740,8 @@ EpiCollect.Field = function()
 		}else if(this.type == "video" || this.type == "audio"){
 			if(value)
 			{
+				if(!value.match(new RegExp('^' + project.name + '~' + value))) value = project.name + '~' + value 
+				
 				var checkid = 'check' + (nchecks++);
 				var checkurl = (location.href.replace(project.name + '/' + formName, '') + "ec/uploads/"+value).trimChars('/') ;
 				checking[checkurl] = checkid;
