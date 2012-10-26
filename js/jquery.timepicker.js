@@ -4,7 +4,6 @@
 		{
 			var i = 0;
 			var t = val.split(':');
-			console.debug(val);
 			
 			$('.ecplus-timepicker-section input').each(function(idx, ele){
 				if(t[i]) $(ele).val(t[i++]);
@@ -34,7 +33,6 @@
 			this.div = $(divId);
 			
 			var fmt = cnf.format.split(':');
-			console.debug(this.div);
 			for(var i = 0; i < fmt.length; i++)
 			{
 				createElement(fmt[i], this.div, this);
@@ -79,7 +77,6 @@
 					var ele = $(evt.target);
 					
 					var val  = Number(ele.val());
-					console.debug(val);
 					if( isNaN(val) || val < 0 )
 					{
 						ele.val('00');
@@ -106,7 +103,6 @@
 					var ele = $(evt.target);
 					
 					var val  = Number(ele.val());
-					console.debug(val);
 					if( isNaN(val) || val < 0 )
 					{
 						ele.val('00');
@@ -134,7 +130,6 @@
 					var ele = $(evt.target);
 					
 					var val  = Number(ele.val());
-					console.debug(val);
 					if( isNaN(val) || val < 0 )
 					{
 						ele.val('00');
@@ -161,7 +156,6 @@
 					var ele = $(evt.target);
 					
 					var val  = Number(ele.val());
-					console.debug(val);
 					if( isNaN(val) || val < 0 )
 					{
 						ele.val('00');

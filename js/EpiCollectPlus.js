@@ -718,8 +718,28 @@ EpiCollect.Form = function()
 		
 		this.formElement = $(ele);
 
+		var frm = this;
+		var w = window.innerWidth ? window.innerWidth * 0.75 : 500;
+		var h = window.innerHeight ? window.innerHeight * 0.75 : 400;
+		this.formElement.dialog({
+			width: w,
+			height: h,
+			modal : true,
+			resizable : false,
+			title : (data ? "Edit " : "Add ") + this.name,
+			close : function(event, ui)
+			{
+				while(frm.pendingReqs.length > 0)
+				{
+					frm.pendingReqs.pop().abort();
+				}
+				$(".ecplus-input", this.formElement).unbind("blur");
+				$(event.target).remove();
+			}
+		});
+		
+		
 		this.formElement
-			.dialog()
 			.dialog("option", "title", "Add Location")
 			.empty()
 			.attr("title", (editMode ? "Edit " : "Add ") + this.name)
@@ -731,6 +751,9 @@ EpiCollect.Form = function()
 		
 		if(editMode) { this.formElement.addClass('editing'); } else { this.formElement.removeClass('editing'); } 
 		
+		
+		$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question", this.formElement).width() * $(".ecplus-question", this.formElement).length + 1) + "px");
+		$(".ecplus-question").width($(".ecplus-form-pane").width())
 		/*$(".ecplus-form-next a, .ecplus-form-previous a").mouseover(function(evt)
 		{
 			window.evt = evt;
@@ -777,30 +800,10 @@ EpiCollect.Form = function()
 		
 		$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question").width() * $(".ecplus-question").length + 1) + "px");
 		
-		if(popup)
-		{
-			var frm = this;
-			var w = window.innerWidth ? window.innerWidth * 0.75 : 500;
-			var h = window.innerHeight ? window.innerHeight * 0.75 : 400;
-			this.formElement.dialog({
-				width: w,
-				height: h,
-				modal : true,
-				resizable : false,
-				title : (data ? "Edit " : "Add ") + this.name,
-				close : function(event, ui)
-				{
-					while(frm.pendingReqs.length > 0)
-					{
-						frm.pendingReqs.pop().abort();
-					}
-					$(".ecplus-input", this.formElement).unbind("blur");
-					$(event.target).remove();
-				}
-			});
-			$(".ecplus-question", this.formElement).width($(".ecplus-form-pane").width())
-			$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question", this.formElement).width() * $(".ecplus-question", this.formElement).length + 1) + "px");
-		}
+		//if(popup)
+		//{
+			
+		//}
 		
 		// TODO : Previously the idea was to set the type of the field to date and the use jQuery to augment the browsers that don't yet support
 		// type=date. However as HTML 5 does nto support formats that doesn't work. That said we should look at whether the date should
@@ -828,13 +831,13 @@ EpiCollect.Form = function()
 					onClose:function(input, inst)
 					{
 						$( input ).focusin();
-						$( input ).on('blur', function(evt)
+						/*$( input ).on('blur', function(evt)
 						{
 							if(!project.forms[formName].moveNext(true))
 							{
 								$(evt.target).focus();
 							}
-						});
+						});*/
 					}
 										
 				});
@@ -914,13 +917,13 @@ EpiCollect.Form = function()
 		}
 		else
 		{
-			$(".ecplus-input", this.formElement).blur(function(evt){
+			/*$(".ecplus-input", this.formElement).blur(function(evt){
 				
 				if(!project.forms[formName].moveNext(true))
 				{
 					$(evt.target).focus();
 				}
-			});
+			});*/
 		}
 		
 	
@@ -939,13 +942,13 @@ EpiCollect.Form = function()
 				{
 					var ele = $(evt.target);
 					ele.focusin();
-					ele.on('blur', function(evt2)
+					/*ele.on('blur', function(evt2)
 					{
 						if(!project.forms[formName].moveNext(true) && $('.ecplus-question')[project.forms[formName].formIndex].id.replace('ecplus-question-','') == evt2.target.id)
 						{
 							$(evt2.target).focus();
 						}
-					});
+					})*/;
 				}
 			});
 		});
@@ -966,7 +969,7 @@ EpiCollect.Form = function()
 	
 	this.doJump = function(fieldName, startField)
 	{
-		console.debug("Jump to : " + fieldName)
+		//console.debug("Jump to : " + fieldName)
 		
 		var start = this.formIndex;
 		var done = false;
@@ -1078,13 +1081,13 @@ EpiCollect.Form = function()
 			
 			if(!preventBlur)
 			{
-				console.debug('preventing blur');
+				//console.debug('preventing blur');
 				$("#" + fldName, this.formElement)
 					.unbind("blur")
 					.blur()
-					$("#" + fldName, this.formElement).blur(function(evt){
+					/*$("#" + fldName, this.formElement).blur(function(evt){
 						project.forms[formName].moveNext(true);
-					});
+					});*/
 			}
 			
 			if(valid === true || valid.length == 0)
@@ -1572,7 +1575,7 @@ EpiCollect.Field = function()
 							   url : baseUrl + '/../' + this.fkTable + '/title?term=' + val + '&key_from=true',
 							   success : function(data, status, xhr)
 							   {
-								   console.debug(data);
+								   //console.debug(data);
 								   if(data.trimChars() != "")
 								   {
 									   $('#' + this.id + '-ac')
@@ -1670,7 +1673,7 @@ EpiCollect.Field = function()
 		   {
 			   return pre + "<input type=\"hidden\"id=\"" + this.id + "\" class=\"ecplus-input\" name=\"" + this.id + "\" value=\"" + val + "\" />";
 		   }
-	   }catch(err){console.debug(err);}
+	   }catch(err){}//console.debug(err);}
    }
 	
    this.populateControl = function(data)
@@ -1793,7 +1796,7 @@ EpiCollect.Field = function()
 	this.validate = function(value)
 	{
 		
-		console.debug('checking...' + this.id + '  = ' + value);
+		//console.debug('checking...' + this.id + '  = ' + value);
 		var msgs = [];
 		if(this.required && (!value || value == "")) msgs.push("This field is required");
 		if(value && value != "")
@@ -1835,7 +1838,7 @@ EpiCollect.Field = function()
 					{
 						if(fmt[i+1] == "d")
 						{
-							console.debug(value.substr(i,2))
+							//console.debug(value.substr(i,2))
 							day = Number(value.substr(i,2));
 							if(isNaN(day)) msgs.push("Day is not a number");
 							i++;
@@ -1849,7 +1852,7 @@ EpiCollect.Field = function()
 					{
 						if( fmt[i+1] == "M" )
 						{
-							console.debug(value.substr(i,2))
+							//console.debug(value.substr(i,2))
 							month = Number(value.substr(i,2));
 							if(isNaN(month)) msgs.push("Month is not a number");
 							i++;
@@ -1877,7 +1880,7 @@ EpiCollect.Field = function()
 						if(!sep) sep = fmt[i];
 					}
 				}
-				console.debug('Day = ' + day)
+				//console.debug('Day = ' + day)
 				if(day || day === 0)
 				{
 					if(day < 1 || day > 31)	msgs.push("Day is out of range");
@@ -1885,7 +1888,7 @@ EpiCollect.Field = function()
 					else if(month && month == 2 && day > 29 && (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))) msgs.push("Day is out of range");
 					else if(month && month == 2 && day > 28) msgs.push("Day is out of range");
 				}
-				console.debug('Month = ' + month)
+				//console.debug('Month = ' + month)
 				if(month || month === 0)
 				{
 					if(month < 1 ||  month > 12) msgs.push("Month is out of range");
@@ -1943,7 +1946,7 @@ EpiCollect.Field = function()
 			
 			if( this.regex )
 			{
-				console.debug('regex');
+				//console.debug('regex');
 				if(!value.match(new RegExp(this.regex))) msgs.push(this.regexMessage ? this.regexMessage : "The value you have entered is not in the right format.");
 			}
 			
@@ -2007,7 +2010,7 @@ EpiCollect.Field = function()
 			else if(msgs.length == 0 && this.fkField && this.fkTable)
 			{
 				var fld = '#' + this.id + '-ac';
-				console.debug('checking...' + this.id);
+				//console.debug('checking...' + this.id);
 				$(fld).addClass('ecplus-checking');
 				$(fld).removeClass('ecplus-invalid');
 				
@@ -2037,11 +2040,11 @@ EpiCollect.Field = function()
 							var cc = $(fld).attr('childcontrol');
 							if(cc)
 							{
-								console.debug(cc);
+								//console.debug(cc);
 								var jqc = $('#' + cc + '-ac');
 								var src = jqc.autocomplete('option', 'source');
 								if(src.indexOf('?') > 0) src = src.substr(0, src.indexOf('?'));
-								console.debug(src);
+								//console.debug(src);
 								src += '?secondary_field=' + ctx.id + '&secondary_value=' + res.key;
 								var src = jqc.autocomplete('option', 'source', src);								
 							}
