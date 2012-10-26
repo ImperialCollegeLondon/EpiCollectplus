@@ -3,9 +3,8 @@
 		#uploadxml
 		{
 			border: 0;
-			width: 50em;
+			width: 48em;
 			height : 4em;
-			overflow: visible;
 		}
 		
 		table
@@ -55,7 +54,7 @@
 		$('#s_managers tbody').append("<tr><td>" + curEmail + "</td></tr>");
 		$('#managers').val(curEmail);
  		
-		$('input[name=name]').change(function(evt){
+		$('input[name=name]').on('change', function(evt){
 			if($('.projectName').text() != '') return;
 			
 			$.ajax({
@@ -75,26 +74,30 @@
 		});
 		
 		$('#uploadxml').on('load', function(){
-			if($('#uploadxml')[0].contentDocument.forms[0])
+			var doc = ($('#uploadxml')[0].contentWindow.document || $('#uploadxml')[0].contentDocument);
+			var frm = doc.forms[0]; 
+
+			if(frm)
 			{
-		  		$($('#uploadxml')[0].contentDocument.forms[0].xml).change(function(){
-		  			$('#uploadxml')[0].contentDocument.forms[0].submit();
+				$(frm.xml).change(function(){
+		  			frm.submit();
 		  		});
 			}
 			$('#uploadxml').on('load', function(){
-				
-				if($('#uploadxml')[0].contentWindow.location.href == location.protocol + '//' + location.host + "{#SITE_ROOT#}/html/projectIFrame.html") return;
+				var cw_url = $('#uploadxml')[0].contentWindow.location.href;
+				var doc = ($('#uploadxml')[0].contentWindow.document || $('#uploadxml')[0].contentDocument);
+				if(cw_url == location.protocol + '//' + location.host + "{#SITE_ROOT#}/html/projectIFrame.html") return;
 					
 				$('#uploadStatus').empty();
-	  			try{
-	  				obj = JSON.parse($($('#uploadxml')[0].contentDocument.body).text());
-	  			}catch(err){
+	  			/*try{*/
+	  				obj = JSON.parse($(doc.body).text());
+	  			/*}catch(err){
 	  				obj = false;
-	  			}
+	  			}*/
 	  			
 	  			if(!obj || !obj.valid){
 	  				
-	  				if($('#uploadxml')[0].contentWindow.location.href != location.protocol + '//' + location.host + "{#SITE_ROOT#}/html/projectIFrame.html") {$('#uploadxml')[0].src = "{#SITE_ROOT#}/html/projectIFrame.html";}
+	  				if(cw_url != location.protocol + '//' + location.host + "{#SITE_ROOT#}/html/projectIFrame.html") {$('#uploadxml')[0].src = "{#SITE_ROOT#}/html/projectIFrame.html";}
 	  				$('#uploadxml').show();
 	  				//show error messages
 	  				$('#uploadStatus').addClass("err");
@@ -104,7 +107,7 @@
 	  			}
 	  			else
 	  			{
-	  				if($('#uploadxml')[0].contentWindow.location.href != location.protocol + '//' + location.host + "{#SITE_ROOT#}/html/projectIFrame.html") {$('#uploadxml')[0].src = "{#SITE_ROOT#}/html/projectIFrame.html";}
+	  				if(cw_url != location.protocol + '//' + location.host + "{#SITE_ROOT#}/html/projectIFrame.html") {$('#uploadxml')[0].src = "{#SITE_ROOT#}/html/projectIFrame.html";}
 	  				$('#uploadStatus').addClass("go");
 	  				$('#uploadStatus').removeClass("err");
 	  			
@@ -124,9 +127,9 @@
 		});
 		
 		$('#uploadBox').accordion({
-			autoHeight : false,
 			collapsible : true,
-			active: false
+			active: false,
+			heightStyle : 'content'
 		});
   	});
   	
@@ -191,7 +194,7 @@
 			  		<h3><a href="#">Upload an existing EpiCollect project definition</a></h3>
 			  		<div>
 			  			<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
-		  				<div id="uploadStatus" class="flash"></div>
+		  				<div id="uploadStatus" class="flash"></div>	
 		 				<input type="hidden" name="xml"/>
 		 			</div>
 		 			<br/>

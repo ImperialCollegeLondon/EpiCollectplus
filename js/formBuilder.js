@@ -214,7 +214,7 @@ function addFormToList(name)
  */
 function addControlToForm(id, text, type)
 {
-	if(type.trim() == "") return; 
+	if(type.trimChars() == "") return; 
 	
 	if(type[0] != ".") type = "." + type;
 	var jq = $(type, $(".first")).clone();
@@ -464,7 +464,7 @@ function updateSelected()
 		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + jval + (jump == "" ? "" : "," + jump);
 	}
 	
-	currentControl.jump = jump.trim(",");
+	currentControl.jump = jump.trimChars(",");
 	
 	jq.attr("id", currentControl.id);
 	$("p.title", jq).text(currentControl.text);

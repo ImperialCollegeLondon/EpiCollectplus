@@ -1,15 +1,17 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE html>
 <html>
 	<head>
-				
+
 		{#style#}
 		<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollectPlus.css" />
 		<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/jquery-ui-1.8.17.custom.css" />
-		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" >var SITE_ROOT = '{#SITE_ROOT#}';</script>
+		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-debug.js"></script>
 		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui.min.js"></script>
 		<script type="text/javascript" src="{#SITE_ROOT#}/js/checkurl.js"></script>
 		<script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollectPlus.js" ></script>
+		
+			
 		{#script#}
 		
 		<link rel="icon" href="favicon.ico" type="image/x-icon" /> 
@@ -21,10 +23,11 @@
 	<body>
 		<div id="pageHead"><a href="{#SITE_ROOT#}/"><img alt="EpiCollect+" src="{#SITE_ROOT#}/images/logo_new_plus_thin.png" width="242" height="50" /></a></div>
 		<div id="nav"> 
-			<!-- <a href="{#SITE_ROOT#}/index.html">Home</a> 
-			<a href="{#SITE_ROOT#}/instructions/">Instructions </a> 
-			<a href="{#SITE_ROOT#}/createProject.html">Create Project</a> 
-			<a href="{#SITE_ROOT#}/instructions/HANDSETS.html">Handsets</a> 
+			<!-- <a href="{#SITE_ROOT#}/index.html">Home</a> -->
+			<a href="http://www.epicollect.net/plus/Instructions/default.html" target="__blank">Instructions </a>
+			<a href="{#SITE_ROOT#}/createProject.html">Create Project</a>
+			<a href="{#SITE_ROOT#}/privacy.html">Privacy Policy</a>  
+			<!-- <a href="{#SITE_ROOT#}/instructions/HANDSETS.html">Handsets</a> 
 			<a href="{#SITE_ROOT#}/instructions/FAQ.html">FAQ</a>  
 			<a href="{#SITE_ROOT#}/instructions/developers.html">Developers</a>   
 			<a href="{#SITE_ROOT#}/instructions/ABOUTUS.html">About us</a>-->

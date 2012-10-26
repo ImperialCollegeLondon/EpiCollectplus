@@ -63,7 +63,9 @@ include (sprintf('%s/Classes/EcOption.php', $DIR));
 include (sprintf('%s/Classes/EcEntry.php', $DIR));
 /*
  * End of Ec Class definitions
-*/
+ */
+
+
 
 $cfg = new ConfigManager(sprintf('%sec/epicollect.ini', $DIR));
 
@@ -2273,7 +2275,7 @@ function uploadProjectXML()
 
 function createFromXml()
 {
-	global $url, $SITE_ROOT;
+	global $url, $SITE_ROOT, $server, $root;
 
 	$prj = new EcProject();
 	
@@ -3031,7 +3033,7 @@ function getMedia()
 		}
 		else
 		{
-			header('HTTP/1.1 404 NOT FOUND', 404);
+			//header('HTTP/1.1 404 NOT FOUND', 404);
 			return;
 		}
 	}
@@ -3375,6 +3377,7 @@ $pageRules = array(
 //static file handlers
 		'' => new PageRule('index.html', 'siteHome'),
 		'index.html?' => new PageRule('index.html', 'siteHome'),
+		'privacy.html' => new PageRule('privacy.html', 'defaultHandler'),
 		'[a-zA-Z0-1]+\.html' => new PageRule(null, 'defaultHandler'),
 		'images/.+' => new PageRule(),
 		'favicon\..+' => new PageRule(),
@@ -3454,7 +3457,12 @@ $i = $dat->format("su") - $d->format("su");
 
 $rule = false;
 
+/*Cookie policy handler*/
 
+if(!getValIfExists($_SESSION, 'SEEN_COOKIE_MSG')) {
+	flash(sprintf('EpiCollectPlus uses cookies for functional purposes only, if you are concerned about our use of cookies please read our <a href="%s/privacy.html">Privacy Statement</a>', $SITE_ROOT));
+	$_SESSION['SEEN_COOKIE_MSG'] = true;
+}
 
 
 if(array_key_exists($url, $pageRules))

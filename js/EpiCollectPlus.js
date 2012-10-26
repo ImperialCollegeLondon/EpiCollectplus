@@ -212,17 +212,24 @@ String.prototype.trimChars = function(chars)
 {
 	// Extends the string class to incluide the trim method.
 	str = this;
-	for(var char = 0; char < chars.length; char++)
+	if(chars)
 	{
-		if(chars[char] == this[0])
+		for(var char = 0; char < chars.length; char++)
 		{
-			str = str.substr(1);
+			if(chars[char] == this[0])
+			{
+				str = str.substr(1);
+			}
+			if(chars[char] == str[str.length -1])
+			{
+				str = str.substr(0, str.length - 1);
+			}
+				
 		}
-		if(chars[char] == str[str.length -1])
-		{
-			str = str.substr(0, str.length - 1);
-		}
-			
+	}
+	else
+	{
+		str = str.replace(/^\s+/gi, '').replace(/\s+$/gi, '')
 	}
 	return str.toString();
 };
@@ -1088,7 +1095,7 @@ EpiCollect.Form = function()
 													
 					for(var j = 0; j < jbits.length; j+=2)
 					{
-						if(jbits[j+1] == $("#" + this.fields[fldName].id, this.formElement).idx() + 1 || jbits[j+1].toLowerCase().trim() == 'all')
+						if(jbits[j+1] == $("#" + this.fields[fldName].id, this.formElement).idx() + 1 || jbits[j+1].toLowerCase().trimChars() == 'all')
 						{
 							this.doJump(jbits[j]);
 							jumped = true;
@@ -1565,7 +1572,7 @@ EpiCollect.Field = function()
 							   success : function(data, status, xhr)
 							   {
 								   console.debug(data);
-								   if(data.trim() != "")
+								   if(data.trimChars() != "")
 								   {
 									   $('#' + this.id + '-ac')
 								   			.val(data)
