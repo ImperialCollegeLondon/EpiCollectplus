@@ -522,7 +522,7 @@
  			}elseif($format == 'csv'){
  				$select .= ') as data ';
  			}elseif($format == 'tsv'){
- 				$select .= ') as data ';
+ 				$select .= ' as data ';
  			}elseif($format == 'kml'){
  				throw new Exception ('Format not yet implemented');
  			}elseif($format == 'tskv'){
@@ -565,7 +565,11 @@
 			{
 				$limit_s = '';
 			}
+			
+			
 			$qry = sprintf('%s %s %s %s AND ev.fieldName in (%s) %s %s %s ', $qry, $select, $join, $where, $fields, $group, $order, $limit_s);
+			//echo $qry;
+			
 			unset($select, $join, $where, $group, $order, $limit_s);
 			
 			$res = $db->do_multi_query($qry);
