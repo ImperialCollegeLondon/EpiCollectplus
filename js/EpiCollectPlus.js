@@ -720,7 +720,7 @@ EpiCollect.Form = function()
 
 		var frm = this;
 		var w = window.innerWidth ? window.innerWidth * 0.75 : 500;
-		var h = window.innerHeight ? window.innerHeight * 0.75 : 400;
+		var h = window.innerHeight ? window.innerHeight * (vertical ? 0.75 : 0.25) : (vertical ? 400 : 200);
 		this.formElement.dialog({
 			width: w,
 			height: h,
@@ -740,7 +740,7 @@ EpiCollect.Form = function()
 		
 		
 		this.formElement
-			.dialog("option", "title", "Add Location")
+			.dialog("option", "title", "Add " + this.name)
 			.empty()
 			.attr("title", (editMode ? "Edit " : "Add ") + this.name)
 			.addClass(vertical ? "ecplus-vertical-form" : "ecplus-form")
