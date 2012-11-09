@@ -284,9 +284,9 @@ class EcField{
 			$qry .= ($this->setTime ? "'{$this->setTime}'," : "NULL,");
 			$qry .= ($this->min ? "{$this->min}," : "NULL,");
 			$qry .= ($this->max ? "{$this->max}," : "NULL,");
-			$qry .= ($this->match ? "'{$this->match}'," : "NULL,");
+			$qry .= ($this->match ? $db->stringVal($this->match) . ',' : "NULL,");
 			$qry .= ($this->crumb ? "'{$this->crumb}'," : "NULL,");
-			$qry .= ($this->defaultValue ? "'{$this->defaultValue}'," : "NULL,");
+			$qry .= ($this->defaultValue ? $db->stringVal($this->defaultValue). "," : "NULL,");
 			$qry .= "{$this->position},";
 			$qry .= $db->stringVal(json_encode($this->otherAttributes)) . ")";
 			
