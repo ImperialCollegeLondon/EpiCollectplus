@@ -109,6 +109,11 @@ label
 	min-width: 15em;
 }
 
+.ecplus-settingspanel label
+{
+	min-width : auto;
+}
+
 .provider
 {
 	padding: 0.75em 0.25em 0.75em 0.25em;
