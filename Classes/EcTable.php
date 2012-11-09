@@ -493,7 +493,7 @@
  				}elseif($format == 'csv'){
  					$select .= sprintf(',     IFNULL(`%s_c_entries`.entries, 0)  ', $child->name);
  				}elseif($format == 'tsv'){
- 					$select .=sprintf( ',     IFNULL(`%s_c_entries`.entries, 0)) ', $child->name);
+ 					$select .=sprintf( ',     IFNULL(`%s_c_entries`.entries, 0) ', $child->name);
  				}elseif($format == 'kml'){
  					throw new Exception ('Format not yet implemented');
  				}elseif($format == 'tskv'){
@@ -522,7 +522,7 @@
  			}elseif($format == 'csv'){
  				$select .= ') as data ';
  			}elseif($format == 'tsv'){
- 				$select .= ' as data ';
+ 				$select .= ') as data ';
  			}elseif($format == 'kml'){
  				throw new Exception ('Format not yet implemented');
  			}elseif($format == 'tskv'){
