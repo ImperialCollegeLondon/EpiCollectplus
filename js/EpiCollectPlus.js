@@ -1756,11 +1756,14 @@ EpiCollect.Field = function()
 			if(value)
 			{
 				var checkid = 'check' + (nchecks++);
-				var checkurl = (location.href.replace(project.name + '/' + formName, '') + "ec/uploads/"+value).trimChars('/') ;
+				
+				var valUrl = "ec/uploads/" + project.name + "~" +value;
+				
+				var checkurl = (location.href.replace(project.name + '/' + formName, '') + valUrl).trimChars('/') ;
 				checking[checkurl] = checkid;
 				checker.startCheck(checkurl);
 				
-				return "<a id=\"" + checkid + "\" href=\"../ec/uploads/"+value+"\" target=\"__blank\"> View Media </a>";
+				return "<a id=\"" + checkid + "\" href=\"../" + valUrl + "\" target=\"__blank\"> View Media </a>";
 			}
 			else
 			{
