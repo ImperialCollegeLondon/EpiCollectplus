@@ -719,13 +719,13 @@ EpiCollect.Form = function()
 		this.formElement = $(ele);
 
 		var frm = this;
-		var w = window.innerWidth ? window.innerWidth * 0.75 : 500;
-		var h = window.innerHeight ? window.innerHeight * (vertical ? 0.75 : 0.25) : (vertical ? 400 : 200);
+		var w = window.innerWidth ? window.innerWidth * 0.45 : 300;
+		var h = window.innerHeight ? window.innerHeight * 0.65 : 400;
 		this.formElement.dialog({
 			width: w,
 			height: h,
 			modal : true,
-			resizable : false,
+			resizable : true,
 			title : (data ? "Edit " : "Add ") + this.name,
 			close : function(event, ui)
 			{
@@ -749,10 +749,13 @@ EpiCollect.Form = function()
 			.append("<div class=\"ecplus-form-previous\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].movePrevious();\">Previous</a></div>")
 			.append("<div class=\"ecplus-form-pane\"><form name=\"" + this.name + "\"></form></div>");
 		
+		
+		
 		if(editMode) { this.formElement.addClass('editing'); } else { this.formElement.removeClass('editing'); } 
-		if(console){console.debug($(".ecplus-form-pane").width());}
+		//if(console){console.debug($(".ecplus-form-pane").width());}
 		
 		$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question", this.formElement).width() * $(".ecplus-question", this.formElement).length + 1) + "px");
+		
 		/*$(".ecplus-form-next a, .ecplus-form-previous a").mouseover(function(evt)
 		{
 			window.evt = evt;
@@ -925,6 +928,13 @@ EpiCollect.Form = function()
 					$(evt.target).focus();
 				}
 			});*/
+			$('.ecplus-form').keydown(function(e) { 
+				  var keyCode = e.keyCode || e.which; 
+
+				  if (keyCode == 9) { 
+				    e.preventDefault(); 
+				  }
+			});
 		}
 		
 	
@@ -1947,7 +1957,7 @@ EpiCollect.Field = function()
 			
 			if( this.regex )
 			{
-				//console.debug('regex');
+				//console.debug(this.regex);
 				if(!value.match(new RegExp(this.regex))) msgs.push(this.regexMessage ? this.regexMessage : "The value you have entered is not in the right format.");
 			}
 			
@@ -1964,11 +1974,11 @@ EpiCollect.Field = function()
 			if( this.match )
 			{
 				//in this version the match field must be present on the page and filled in
-				info = this.match.split(",");
-				
-				matchStr = $("#" + info[1]).val().match(new RegExp(info[2]));
-				valStr = value.match(new RegExp(info[2]));
-				
+				var info = this.match.split(",");
+					
+				var matchStr = $("#" + info[1]).val().match(new RegExp(info[3]))[0];
+				var valStr = value.match(new RegExp(info[3]))[0];
+				console.debug(matchStr + ' ' + valStr + ' ' + info[3]);
 				if(valStr != matchStr) msgs.push("The value does not match the string from the parent field");
 			}
 			
