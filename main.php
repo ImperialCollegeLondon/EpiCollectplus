@@ -1827,13 +1827,24 @@ function formHandler()
 							{
 								if($i > $_off && ($i != $count_h - 1) && ($prj->tables[$frmName]->fields[$real_flds[$i]]->type == "gps" || $prj->tables[$frmName]->fields[$real_flds[$i]]->type == "location"))
 								{
-									if(is_string($xml[$real_flds[$i]])) $xml[$real_flds[$i]] = json_decode($xml[$real_flds[$i]], true);
-									fwrite($fp, implode('","', $xml[$real_flds[$i]]));
-									for($fieldsIn = count($xml[$real_flds[$i]]); $fieldsIn < 6; $fieldsIn++)
+									try{
+										if(is_string($xml[$real_flds[$i]]) && trim($xml[$real_flds[$i]]) != '' ){
+											$escval = str_replace(': N/A' ,': "N/A"', $xml[$real_flds[$i]]);
+											$x_flds = json_decode($escval, true);
+											fwrite($fp, implode('","', $x_flds));
+											$fieldsIn = count($x_flds);
+										}
+										else{$fieldsIn = 0;}
+										for($fieldsIn ; $fieldsIn < 6; $fieldsIn++)
+										{
+											fwrite($fp, '","');
+										}
+									}catch(Exception $e)
 									{
-										fwrite($fp, '","');
-									}
-										
+										print_r($escval);
+										print_r($xml);
+										throw $e;
+									}	
 								
 								}
 								else

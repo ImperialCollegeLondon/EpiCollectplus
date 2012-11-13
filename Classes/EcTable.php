@@ -623,7 +623,7 @@
 					for($j = count($json_objects); $j--;)
 					{
 						if(count($json_objects[$j]) == 0) continue;
-						$obj = json_decode($json_objects[$j][0], true);
+						$obj = json_decode(str_replace(': N/A', ': "N/A"', $json_objects[$j][0]), true);
 						$str = '';
 						
 						if($this->lastRequestFormat == 'xml')
