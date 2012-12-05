@@ -267,9 +267,9 @@
 	 		<div id="description" class="section">
 			  	<h2>Project Description and Image</h2>
 			  	<p>Enter a few lines of text to describe your project</p>
-			  	<textarea rows="10" cols="50" id="description" name="description"></textarea>
+			  	<textarea rows="10" cols="50" id="description" name="description">{#description#}</textarea>
 			  	<p>If your project has a logo or an image you can upload it here</p>
-			  	<iframe id="uploadimage" src="uploadMedia"></iframe>
+			  	<iframe id="uploadimage" src="uploadMedia?fn={#image#}"></iframe>
 		  		<div id="uploadStatusImage" class="flash"></div>
 		 		<input type="hidden" name="projectImage"/>
 		 		<a class="panelSwitcher" href="javascript:save()">Save Changes</a>

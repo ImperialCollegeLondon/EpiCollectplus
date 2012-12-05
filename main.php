@@ -8,7 +8,7 @@ $dfmat = '%s.u';
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.0b";
+$CODE_VERSION = "1.1a";
 
 session_start();
 
@@ -2891,7 +2891,10 @@ function updateProject()
 				$curators = '""';
 			}
 
-			echo applyTemplate("./base.html", "./updateProject.html", array("projectName" => $prj->name, "managers" => $managers, "curators" => $curators, "public" => $prj->isPublic, "listed" => $prj->isListed ));
+			$img = $prj->image;
+			$img = substr($img, strpos($img, '~') + 1);
+			
+			echo applyTemplate("./base.html", "./updateProject.html", array("projectName" => $prj->name, "description" => $prj->description, "image" => $img, "managers" => $managers, "curators" => $curators, "public" => $prj->isPublic, "listed" => $prj->isListed ));
 			return;
 		}
 	}

@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS `project` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL COMMENT 'The unique name of the project used to identify it in URLs',
   `description` text,
-  `image` varchar(45) DEFAULT NULL,
+  `image` varchar(255) DEFAULT NULL,
   `enterprise` int(11) DEFAULT NULL,
   `isPublic` tinyint(1) NOT NULL DEFAULT '1',
   `isListed` tinyint(1) NOT NULL DEFAULT '1',

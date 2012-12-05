@@ -341,7 +341,7 @@ function updateSelected()
 	
 	if(_type == 'fk')
 	{
-		currentControl.id = project.forms[$('#parent').val()].key;
+	//	currentControl.id = project.forms[$('#parent').val()].key;
 	}
 	else
 	{
@@ -371,10 +371,10 @@ function updateSelected()
 		currentControl.type = "input";
 		if(_type == "fk")
 		{
-			var f = $("#parent").val();
+			/*var f = currentControl.
 			var frm = project.forms[f]
 			currentControl.id = frm.key;
-			currentControl.text = frm.fields[frm.key].text;
+			currentControl.text = frm.fields[frm.key].text;*/
 		}
 	}
 	else{ currentControl.type = _type; }
@@ -665,7 +665,6 @@ function genID()
 
 function setSelected(jqEle)
 {
-	try{
 		if(window["currentControl"])
 		{
 			if(!updateSelected()) return;
@@ -848,7 +847,6 @@ function setSelected(jqEle)
 		{
 			$(".removeControl").show();
 		}
-	}catch(err){/*alert(err)*/;}
 }
 
 function removeForm(name)
