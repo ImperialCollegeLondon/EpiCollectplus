@@ -195,7 +195,7 @@ function assocToDelimStr($arr, $delim)
 function getTimestamp($fmt = false)
 {
 	$date = new DateTime("now", new DateTimeZone("UTC"));
-	if( !$fmt ) return $date->getTimestamp();
+	if( !$fmt ) return $date->getTimestamp() * 1000;
 	else return $date->format($fmt);
 }
 
@@ -1807,7 +1807,7 @@ function formHandler()
 					}
 					
 					fwrite($fp, sprintf("\"%s\"\n", implode('","', $headers)));
-					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object");
+					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object", true);
 					if($res !== true) die($res);
 					if($res !== true) return;
 					

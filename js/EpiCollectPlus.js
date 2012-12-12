@@ -1195,10 +1195,10 @@ EpiCollect.Form = function()
 				index: project.forms[formName].formIndex
 			});
 		}
-		else
+		/*else
 		{
 			this.formElement.dialog("close");
-		}
+		}*/
 	}
 	
 	this.deleteEntry = function(key)
@@ -1295,7 +1295,8 @@ EpiCollect.Form = function()
 	this.getSavedEntry = function()
 	{
 		var ent = localStorage[project.name + "_" + this.name];
-		if(typeof ent == "string") ent = JSON.parse(ent);
+		if(typeof ent == "string" && ent != "undefined") ent = JSON.parse(ent);
+		else ent = {};
 		return ent;
 	}
 	
@@ -1306,6 +1307,7 @@ EpiCollect.Form = function()
 		entryQueue[this.name].push(this.getValues());
 		
 		var ent = project.forms[formName].getSavedEntry();
+		
 		var flds = project.forms[formName].fields;
 		
 		for( f in flds )
@@ -1318,14 +1320,15 @@ EpiCollect.Form = function()
 				{
 					ent[f] = 1;
 				}
-			}
-			localStorage[project.name + "_" + formName] = JSON.stringify(ent);
+			}	
 		}
+		console.debug(JSON.stringify(ent));
+		localStorage[project.name + "_" + formName] = JSON.stringify(ent);
 	}
 		
 	this.editEntry = function()
 	{
-		if( this.branchOf )
+		if( this.branchOf == formName )
 		{
 			this.saveBranch();
 			this.closeForm();

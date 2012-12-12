@@ -468,9 +468,8 @@
 			
 			$child = $this->survey->getNextTable($this->name, true);
 			
- 			if($child && $includeChildCount)
+ 			if(!!$child && $includeChildCount)
  			{
- 				
  				$qry = sprintf('CREATE TEMPORARY TABLE `%s_c_entries` (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
  					FROM entryvalue a, entryvalue b 
  					WHERE a.projectName = \'%s\' and a.formName =\'%s\' and a.fieldName = \'%s\' and a.value = b.value and b.formName = \'%s\' 
@@ -491,15 +490,15 @@
  				}elseif($format == 'xml'){
  					$select .= sprintf(' \'<%s_entries>\',   IFNULL(`%s_c_entries`.entries, 0), \'</%s_entries>\',', $child->name, $child->name, $child->name);
  				}elseif($format == 'csv'){
- 					$select .= sprintf(',     IFNULL(`%s_c_entries`.entries, 0)  ', $child->name);
+ 					$select .= sprintf(', IFNULL(`%s_c_entries`.entries, 0)  ', $child->name);
  				}elseif($format == 'tsv'){
- 					$select .=sprintf( ',     IFNULL(`%s_c_entries`.entries, 0) ', $child->name);
+ 					$select .=sprintf( ', IFNULL(`%s_c_entries`.entries, 0) ', $child->name);
  				}elseif($format == 'kml'){
  					throw new Exception ('Format not yet implemented');
  				}elseif($format == 'tskv'){
  					$select .= sprintf(',`%s_entries `,  IFNULL(`%s_c_entries`.`entries`, 0)', $child->name, $child->name);
  				}elseif($format == 'object'){
- 					$select .= sprintf(', IFNULL(`%s_c_entries`.`entries`, 0) as `%s_c_entries`', $child->name, $child->name);
+ 					$select .= sprintf(', IFNULL(`%s_c_entries`.`entries`, 0) as `%s_entries`', $child->name, $child->name);
  				}
  				
  				if(!strstr($join, sprintf('ev%s', $this->key)))
@@ -569,7 +568,7 @@
 			
 			$qry = sprintf('%s %s %s %s AND ev.fieldName in (%s) %s %s %s ', $qry, $select, $join, $where, $fields, $group, $order, $limit_s);
 			//echo $qry;
-			
+			//return;
 			unset($select, $join, $where, $group, $order, $limit_s);
 			
 			$res = $db->do_multi_query($qry);
