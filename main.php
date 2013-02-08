@@ -8,7 +8,7 @@ $dfmat = '%s.u';
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.1a";
+$CODE_VERSION = "1.2";
 if(!isset($PHP_UNIT)) {$PHP_UNIT = false;}
 if(!$PHP_UNIT){ session_start(); }
 
@@ -1702,7 +1702,7 @@ function formHandler()
 				header('Cache-Control: no-cache, must-revalidate');
 				header('Content-Type: application/json');
 				
-				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "json");
+				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object");
 				if($res !== true) die($res);
 						
 				$i = 0;			
@@ -1811,8 +1811,15 @@ function formHandler()
 						elseif($fld->type == "gps" || $fld->type == "location")
 						{
 							$name = $fld->name;
-							//$headers = str_replace(",$name", ",{$name}_lattitude,{$name}_longitude,{$name}_altitude,{$name}_accuracy,{$name}_provider", $headers);
-							array_splice($headers, $i + $_off, 1, array("{$name}_lat","{$name}_lon","{$name}_alt","{$name}_acc","{$name}_provider", "{$name}_bearing"));
+							
+							//take the GPS fields table, apply each one as a suffix to the field name and then splice 
+							
+							$gps_flds = array_values(EcTable::$GPS_FIELDS);
+							foreach($gps_flds	 as &$val)
+							{
+								$val = sprintf('%s%s', $name, $val);
+							}
+							array_splice($headers, $i + $_off, 1, $gps_flds);
 							$i = $i + 5;
 						}
 					}
@@ -1820,17 +1827,18 @@ function formHandler()
 					fwrite($fp, sprintf("\"%s\"\n", implode('","', $headers)));
 					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object", true);
 					if($res !== true) die($res);
-					if($res !== true) return;
 					
 					$count_h = count($real_flds);
 					
 					while($xml = $prj->tables[$frmName]->recieve(1, "object"))
 					{
+						$xml = $xml[0];
 //						fwrite($fp, sprintf('"%s"
 //', $xml));	
 						///print_r($xml); 
 						for( $i = 0; $i < $count_h; $i++ )
 						{
+							
 							if( $i > 0 ) fwrite($fp, ',');
 							fwrite($fp, '"');
 							
@@ -1839,21 +1847,37 @@ function formHandler()
 								if($i > $_off && ($i != $count_h - 1) && ($prj->tables[$frmName]->fields[$real_flds[$i]]->type == "gps" || $prj->tables[$frmName]->fields[$real_flds[$i]]->type == "location"))
 								{
 									try{
-										if(is_string($xml[$real_flds[$i]]) && trim($xml[$real_flds[$i]]) != '' ){
+										
+										$arr = $xml[$real_flds[$i]];
+										if(is_string($arr) && trim($xml[$real_flds[$i]]) != '' ){
 											$escval = str_replace(': N/A' ,': "N/A"', $xml[$real_flds[$i]]);
-											$x_flds = json_decode($escval, true);
-											fwrite($fp, implode('","', $x_flds));
-											$fieldsIn = count($x_flds);
+											$arr = json_decode($escval, true);	
 										}
-										else{$fieldsIn = 0;}
-										for($fieldsIn ; $fieldsIn < 6; $fieldsIn++)
+										
+										if(is_array($arr))
 										{
-											fwrite($fp, '","');
+											$x = 0;
+											foreach(array_keys(EcTable::$GPS_FIELDS) as $k)
+											{
+												if($x > 0) fwrite($fp, '","');
+												
+												if(array_key_exists($k, $arr))
+												{
+													fwrite($fp, $arr[$k]);
+												}
+												
+												$x++;
+											}
+										}
+										else
+										{
+											for($fieldsIn = 0; $fieldsIn < 6; $fieldsIn++)
+											{
+												fwrite($fp, '","');
+											}
 										}
 									}catch(Exception $e)
 									{
-										print_r($escval);
-										print_r($xml);
 										throw $e;
 									}	
 								
@@ -1878,28 +1902,122 @@ function formHandler()
 			
 			case "tsv":
 				header("Cache-Control: no-cache, must-revalidate");
-				header("Content-Type: text/tsv");
-				$headers =  "entry\tDeviceID\tcreated\tedited\tuploaded\t" .implode("\t", array_keys($prj->tables[$frmName]->fields)); 
+				//
+				if( !file_exists('ec/uploads')) mkdir('ec/uploads');
+				$filename = sprintf('ec/uploads/%s_%s_%s%s.tsv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
 				
-				foreach($prj->tables[$frmName]->fields as $name => $fld)
+				if(!file_exists($filename))
 				{
-					if(!$fld->active)
+					//ob_implicit_flush(false);
+					$fp = fopen($filename, 'w+');
+					//$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
+					//$arr = $arr[$frmName];
+					//echo assocToDelimStr($arr, ",");
+					$headers = array_merge(array('DeviceID','created','lastEdited','uploaded'), array_keys($prj->tables[$frmName]->fields));
+					$_off = 4;
+										
+					$num_h = count($headers) - $_off;
+					
+					$nxt = $prj->getNextTable($frmName, true);
+					if($nxt) array_push($headers, sprintf('%s_entries', $nxt->name));
+					
+					$real_flds = $headers;
+					for( $i = 0; $i < $num_h; $i++ )
 					{
-						$headers = str_replace("\t$name", "", $headers);
+						$fld = $prj->tables[$frmName]->fields[$headers[$i + $_off]];
+						if(!$fld->active)
+						{
+							array_splice($headers, $i + $_off, 1);
+						}
+						elseif($fld->type == "gps" || $fld->type == "location")
+						{
+							$name = $fld->name;
+							
+							//take the GPS fields table, apply each one as a suffix to the field name and then splice 
+							
+							$gps_flds = array_values(EcTable::$GPS_FIELDS);
+							foreach($gps_flds	 as &$val)
+							{
+								$val = sprintf('%s_%s', $name, $val);
+							}
+							array_splice($headers, $i + $_off, 1, $gps_flds);
+							$i = $i + 5;
+						}
 					}
-					elseif($fld->type == "gps" || $fld->type == "location")
+					
+					fwrite($fp, sprintf("\"%s\"\n", implode("\"\t\"", $headers)));
+					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object", true);
+					if($res !== true) die($res);
+					
+					$count_h = count($real_flds);
+					
+					while($xml = $prj->tables[$frmName]->recieve(1, "object"))
 					{
-						$headers = str_replace("\t$name", "\t{$name}_lattitude\t{$name}_longitude\t{$name}_altitude\t{$name}_accuracy\t{$name}_provider\t{$name}_bearing", $headers);
+						$xml = $xml[0];
+//						fwrite($fp, sprintf('"%s"
+//', $xml));	
+						///print_r($xml); 
+						for( $i = 0; $i < $count_h; $i++ )
+						{
+							
+							if( $i > 0 ) fwrite($fp, ',');
+							fwrite($fp, '"');
+							
+							if (array_key_exists($real_flds[$i], $xml))
+							{
+								if($i > $_off && ($i != $count_h - 1) && ($prj->tables[$frmName]->fields[$real_flds[$i]]->type == "gps" || $prj->tables[$frmName]->fields[$real_flds[$i]]->type == "location"))
+								{
+									try{
+										
+										$arr = $xml[$real_flds[$i]];
+										if(is_string($arr) && trim($xml[$real_flds[$i]]) != '' ){
+											$escval = str_replace(': N/A' ,': "N/A"', $xml[$real_flds[$i]]);
+											$arr = json_decode($escval, true);	
+										}
+										
+										if(is_array($arr))
+										{
+											$x = 0;
+											foreach(array_keys(EcTable::$GPS_FIELDS) as $k)
+											{
+												if($x > 0) fwrite($fp, "\"\t\"");
+												
+												if(array_key_exists($k, $arr))
+												{
+													fwrite($fp, $arr[$k]);
+												}
+												
+												$x++;
+											}
+										}
+										else
+										{
+											for($fieldsIn = 0; $fieldsIn < 6; $fieldsIn++)
+											{
+												fwrite($fp, "\"t\"");
+											}
+										}
+									}catch(Exception $e)
+									{
+										throw $e;
+									}	
+								
+								}
+								else
+								{
+									fwrite($fp, $xml[$real_flds[$i]]);
+								}
+							}
+							fwrite($fp, '"');
+						}
+						
+						fwrite($fp, "\r\n");
 					}
-				}	
-				echo "$headers\r\n";	
-				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "tsv");
-				if($res !== true) die($res);
-				while($xml = $prj->tables[$frmName]->recieve(1, "tsv"))
-				{
-					echo "$xml\n";
 				}
-				return;
+			
+				global $SITE_ROOT;
+				header("Content-Type: text/tsv");
+				header(sprintf('location: http://%s%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT, $filename));
 			case "js" :
 				global $SITE_ROOT;
 					

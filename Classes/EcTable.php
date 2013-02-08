@@ -18,6 +18,17 @@
 		
 		static $STATIC_FIELDS = array('created', 'lastEdited', 'uploaded', 'DeviceId', 'id'); //list of fields that are relevant to all entries, and so are in the entry table
 		
+		/**
+		 * An associative array where the keys are the properties in the JSON object and the values are the column head suffixes
+		 * 
+		 * @var array
+		 */
+		static $GPS_FIELDS = array("latitude" => "_lat","longitude" => "_lon", "altitude" => "_alt","accuracy" => "_acc","provider" => "_provider","bearing" => "_bearing");
+		
+		/**
+		 * 
+		 * @param string $s
+		 */
 		public function __construct($s = null)
 		{
 			$this->survey = $s;
@@ -564,7 +575,7 @@
 					{
 						if($this->fields[$kv[0]]->valueIsObject())
 						{
-							$arr[$kv[0]] = json_decode($kv[1]);
+							$arr[$kv[0]] = json_decode($kv[1], true);
 						}
 						else 
 						{

@@ -644,7 +644,11 @@
 							}
 						}
 						
-						html += "<td>" + entries[i][nextFormName + "_entries"]  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "&prevForm=" + formName + "\">View entries</a> | <a href=\"javascript:project.forms[project.getNextForm(formName).name].displayForm({ vertical : false, data : " + JSON.stringify(par_obj).replace(/"/g, '\'') + " });\">Add " + project.getNextForm(formName).name  + "</a></td>";
+						var ents = entries[i][nextFormName + "_entries"];
+						
+						if(!ents || ents == 'null') ents = 0;
+						
+						html += "<td>" + ents  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "&prevForm=" + formName + "\">View entries</a> | <a href=\"javascript:project.forms[project.getNextForm(formName).name].displayForm({ vertical : false, data : " + JSON.stringify(par_obj).replace(/"/g, '\'') + " });\">Add " + project.getNextForm(formName).name  + "</a></td>";
 					}
 					html += "</tr>";
 				}
