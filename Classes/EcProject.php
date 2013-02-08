@@ -727,11 +727,11 @@ class EcProject{
 				return $res;
 		}
 		
-		public static function getUserProjects($uid, $fmt = 'json')
+		public static function getPublicProjects()
 		{
 			global $db;
-			
-			$qry = sprintf('SELECT p.name as name, p.ttl as ttl, p.ttl24 as ttl24 FROM (SELECT id,name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName group by project.name) p join userprojectpermission upp on p.id = upp.project WHERE upp.user = %s order by p.name asc', $uid);
+				
+			$qry = 'SELECT p.name as name, p.ttl as ttl, p.ttl24 as ttl24 FROM (SELECT id,name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName WHERE project.isListed = 1 group by project.name) p order by p.name asc';
 			$res = $db->do_query($qry);
 			$projects = array();
 			if($res === true)
@@ -740,6 +740,32 @@ class EcProject{
 				{
 					//if($json != '[') $json .= ',';
 					//$json .= sprintf('{ "name" : "%s", "total" : %s, "last24" : %s }', $arr['name'], $arr['ttl'], $arr['ttl24']);
+					$arr['listed'] = 'public';
+					array_push($projects, $arr);
+				}
+			}
+			else
+			{
+				die($res);
+			}
+			//			$json .= ']';
+			return $projects;
+		}
+		
+		public static function getUserProjects($uid, $fmt = 'json')
+		{
+			global $db;
+			
+			$qry = sprintf('SELECT p.name as name, p.ttl as ttl, p.ttl24 as ttl24, p.isListed as listed FROM (SELECT id,name, count(entry.idEntry) as ttl, x.ttl as ttl24, isListed FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName group by project.name) p join userprojectpermission upp on p.id = upp.project WHERE upp.user = %s order by p.name asc', $uid);
+			$res = $db->do_query($qry);
+			$projects = array();
+			if($res === true)
+			{
+				while($arr = $db->get_row_array())
+				{
+					//if($json != '[') $json .= ',';
+					//$json .= sprintf('{ "name" : "%s", "total" : %s, "last24" : %s }', $arr['name'], $arr['ttl'], $arr['ttl24']);
+					$arr['listed'] = ( $arr['listed'] === '1' ? 'public' : 'private' );
 					array_push($projects, $arr);
 				}
 			}

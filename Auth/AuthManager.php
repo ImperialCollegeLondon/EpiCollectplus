@@ -49,7 +49,6 @@
 	  		}
 	  		catch(Exception $err)
 	  		{
-	  			echo '===' . $err;
 	  			$err = null;
 	  			$this->openIdEnabled = false;
 	  			
@@ -339,8 +338,9 @@
 		  		{
 		  			array_push($men, $arr);
 		  		}
+		  		$db->free_result();
   			}
-  			$db->free_result();
+  			//
 	  		return $men;
   		}
 	  	catch(ErrorException $err)

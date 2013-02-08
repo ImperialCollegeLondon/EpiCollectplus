@@ -30,7 +30,7 @@
 				$this->username = $cfg->settings["database"]["user"];
 				$this->password = $cfg->settings["database"]["password"];
 			}
-			$this->server = $cfg->settings["database"]["server"];
+			$this->server = $cfg->settings["database"	]["server"];
 			$this->schema = $cfg->settings["database"]["database"];;
 			$this->port = $cfg->settings["database"]["port"];
 			
@@ -121,7 +121,7 @@
 		
 		public function escapeArg($arg)
 		{
-			return $this->con->real_escape_string($arg);
+			return $this->con->escape_string($arg);
 		}
 		
 		public function do_query($qry)

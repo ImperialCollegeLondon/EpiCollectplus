@@ -1,6 +1,6 @@
 <?php
 
-if (isset($_REQUEST['_SESSION'])) die('Bad client request');
+if (isset($_REQUEST['_SESSION'])) throw new Exception('Bad client request');
 
 date_default_timezone_set('UTC');
 $dat = new DateTime('now');
@@ -9,8 +9,8 @@ $dfmat = '%s.u';
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
 $CODE_VERSION = "1.1a";
-
-session_start();
+if(!isset($PHP_UNIT)) {$PHP_UNIT = false;}
+if(!$PHP_UNIT){ session_start(); }
 
 function getValIfExists($array, $key)
 {
@@ -25,6 +25,11 @@ function getValIfExists($array, $key)
 }
 
 $DIR = str_replace('main.php', '', $_SERVER['SCRIPT_FILENAME']);
+
+if($PHP_UNIT)
+{
+	$DIR = getcwd();
+}
 
 if(strpos($_SERVER['SCRIPT_NAME'], 'main.php'))
 {
@@ -52,6 +57,7 @@ include (sprintf('%s/Classes/PageSettings.php', $DIR));
 include (sprintf('%s/Classes/configManager.php', $DIR));
 include (sprintf('%s/Classes/Logger.php', $DIR));
 
+
 /*
  * Ec Class declatratioions
  */
@@ -64,10 +70,8 @@ include (sprintf('%s/Classes/EcEntry.php', $DIR));
 /*
  * End of Ec Class definitions
  */
-
-
-
-$cfg = new ConfigManager(sprintf('%sec/epicollect.ini', $DIR));
+global $cfg;
+$cfg = new ConfigManager(sprintf('%s/ec/epicollect.ini', ltrim($DIR, '/')));
 
 function genStr()
 {
@@ -102,18 +106,21 @@ function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 	throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
 
+
 set_error_handler('handleError', E_ALL);
 
 $DEFAULT_OUT = $cfg->settings['misc']['default_out'];
 $log = new Logger('Ec2');
+global $db;
 $db = false;
-
+global $auth;
 $auth = new AuthManager();
-try{
-	$db = @new dbConnection();
-}catch(Exception $err){
+
+//try{
+	$db = new dbConnection();
+//}catch(Exception $err){
 	
-}
+//}
 /* class and function definitions */
 
 function escapeTSV($string)
@@ -910,8 +917,8 @@ function getPointMarker()
 function siteHome()
 {
 	header("Cache-Control: no-cache, must-revalidate");
-	
 	global $SITE_ROOT, $db, $log,$auth;
+	
 	$vals = array();
 	$server = trim($_SERVER["HTTP_HOST"], "/");
 	$root = trim($SITE_ROOT, "/");
@@ -1697,14 +1704,18 @@ function formHandler()
 				
 				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "json");
 				if($res !== true) die($res);
-				echo '[';		
+						
 				$i = 0;			
-				while($str = preg_replace("/[\r\n]+/", '\n', $prj->tables[$frmName]->recieve(1)))
+				
+				$recordSet = array();
+				
+				while($rec = $prj->tables[$frmName]->recieve(1))
 				{
-					echo ($i > 0 ? sprintf(',%s', $str) : $str);
-					$i++;
+					$recordSet = array_merge($recordSet, $rec); 
 				}
-				echo ']';
+				
+				echo json_encode($recordSet);
+				
 				return;
 				
 			case "xml":
@@ -3152,6 +3163,25 @@ function getXML()
 	}
 }
 
+function projectList()
+{
+	/**
+	 * Produce a list of all the projects on this server that are
+	 * 	- publically listed
+	 *  - if a user is logged in, owned, curated or managed by the user
+	 */
+	global $auth;
+	
+	$prjs = EcProject::getPublicProjects();
+	$usr_prjs = array();
+	if($auth->isLoggedIn())
+	{
+		$usr_prjs = EcProject::getUserProjects($auth->getEcUserId());
+	}
+	
+	echo json_encode(array_merge($prjs, $usr_prjs));
+}
+
 function projectSummary()
 {
 	global $url;
@@ -3382,7 +3412,6 @@ function userHandler()
 * as log files which may contain restricted data)
 */
 
-
 try{
 	$hasManagers = $db->connected && count($auth->getServerManagers()) > 0;
 }catch (Exception $err)
@@ -3435,7 +3464,6 @@ $pageRules = array(
 		'enableUser' => new PageRule(null, 'enableUser',true),
 		'resetPassword' => new PageRule(null, 'resetPassword',true),
 		
-		
 //generic, dynamic handlers
 		'getControls' =>  new PageRule(null, 'getControlTypes'),
 		'uploadFile.php' => new PageRule(null, 'uploadHandlerFromExt'),
@@ -3444,10 +3472,12 @@ $pageRules = array(
 	
 		'uploadTest.html' => new PageRule(null, 'defaultHandler', true),
 		'test' => new PageRule(null, 'siteTest', false),
+		'tests.*' => new PageRule(),
 		'createDB' => new PageRule(null, 'setupDB',$hasManagers),
 		'writeSettings' => new PageRule(null, 'writeSettings', $hasManagers),
 		
 //to API
+		'projects' => new PageRule(null, 'projectList'),
 		'[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|/)?' =>new PageRule(null, 'projectHome'),
 		'[a-zA-Z0-9_-]+/upload' =>new PageRule(null, 'uploadData'),
 		'[a-zA-Z0-9_-]+/download' =>new PageRule(null, 'downloadData'),
