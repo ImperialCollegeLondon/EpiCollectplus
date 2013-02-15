@@ -20,6 +20,9 @@
 		{
 			global $cfg;
 			
+			ini_set('mysql.connect_timeout', 300);
+			ini_set('default_socket_timeout', 300);
+			
 			if($un)
 			{
 				$this->username = $un;
@@ -132,6 +135,7 @@
 				if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
 				$this->resSet = $this->con->query($qry);
 				$this->numRows = $this->con->affected_rows;
+				
 				if($this->resSet)
 				{
 					$this->lastQuery = $qry;

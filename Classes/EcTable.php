@@ -380,10 +380,9 @@
 		 * 
 		 */
 		public function ask($args = false, $offset = 0, $limit = 0, $sortField = 'created', $sortDir = 'asc', $exact = false, $format = 'object', $includeChildCount = true)
-		{	
-			
+		{
 			global $db;
-						
+			
 			if(!$sortField) $sortField = 'created';
 			if(!$sortDir) $sortDir = 'asc';
 			$qry = '';
@@ -396,154 +395,215 @@
 			 * puth the values into the appropriate format.
 			 * 
 			 * The format of the request therefore needs to be stored by ask() so that recieve() know's what it's outputting.
-			 * 
-			 * 24-01-2013 : Simplification : 
-			 * 	- Temp Tables to handle 
-			 * 		- 1. counts for child tables and branch forms
-			 * 		- 3. Join to fields for sort and filter
-			 * 	- Make the ask more MVC - like, so it doesn't worry about the "View" format.
-			 * TODO: Caching/dropping of tables for server-side persistance.
 			 */
+			$this->lastRequestFormat = $format;
 			
-		
-			// Base Temp Table... should persist...
+			if($format == 'object')
+			{
+				$select = 'SELECT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded, GROUP_CONCAT( CONCAT_WS(\'::\', ev.fieldName, ev.value) ORDER BY ev.field SEPARATOR \'~~\') as data ';
+			}elseif($format == 'json'){
+				$select = 'SELECT CONCAT (\'{\"id\" : \', e.idEntry, \', \"DeviceID\": \"\', e.DeviceID, \'\",\"created\" : \', e.created, \' , \"lastEdited\":\"\', IFNULL(e.lastEdited, \'\'),\'\" , \"uploaded\":\"\', e.uploaded, \'\",\' , GROUP_CONCAT( CONCAT(\'\"\', ev.fieldName, \'\" : \"\', IFNULL(ev.value, \'\'), \'\"\') ORDER BY ev.field  SEPARATOR \',\'),  ';
+			}elseif($format == 'xml'){
+				$select = 'SELECT CONCAT (\'<entry><id>\', e.idEntry, \'</id><DeviceID>\', e.DeviceID, \'</DeviceID><created>\', e.created, \'</created><lastEdited>\', IFNULL(e.lastEdited, \'\'),\'</lastEdited><uploaded>\', e.uploaded, \'</uploaded>\' , GROUP_CONCAT( CONCAT(\'<\', ev.fieldName, \'>\', REPLACE(REPLACE(ev.value, \'\<\', \'&lt;\'), \'\>\', \'&gt;\'), \'</\', ev.fieldName, \'>\') ORDER BY ev.field  SEPARATOR \'\'),';
+			}elseif($format == 'csv'){
+				$select = 'SELECT CONCAT_WS (\'","\', e.idEntry, e.DeviceID, e.created, IFNULL(e.lastEdited, \'\'),e.uploaded, GROUP_CONCAT(IFNULL(ev.value,\'\') ORDER BY ev.field  SEPARATOR \'","\') ';
+			}elseif($format == 'tsv'){
+				$select = 'SELECT CONCAT_WS (\'\t\', e.idEntry, e.DeviceID, e.created, IFNULL(e.lastEdited, \'\'),e.uploaded, GROUP_CONCAT(IFNULL(ev.value,\'\') ORDER BY ev.field  SEPARATOR \'\t\')';
+			}elseif($format == 'kml'){
+				throw new Exception ('Format not yet implemented');
+			}elseif($format == 'tskv'){
+				$select = 'SELECT CONCAT_WS (\'\t\',\'id\', e.idEntry, \'DeviceID\', e.DeviceID, \'created\', e.created, \'lastEdited\',IFNULL(e.lastEdited, \'\'),\'uploaded\',e.uploaded, GROUP_CONCAT(CONCAT_WS(\'\t\',ev.fieldName, ev.value) ORDER BY ev.field SEPARATOR \'\t\') ';
+			}else{
+				throw new Exception ('Format not specified');
+			}
 			
-			//$qry1 = sprintf('DROP TEMPORARY TABLE IF EXISTS %s ', $this->name); 
-			$qry2 = sprintf('CREATE TEMPORARY TABLE IF NOT EXISTS `%s` SELECT e.idEntry as id, e.DeviceID, e.created, e.lastEdited, e.uploaded, GROUP_CONCAT( CONCAT_WS(\'::\',ev.fieldName, IFNULL(ev.value, \' \')) ORDER BY ev.field SEPARATOR \'~~\') as data, kv.value as keyvalue' . 
-				' FROM entry e JOIN entryvalue ev ON e.idEntry = ev.entry JOIN entryvalue kv on e.idEntry = kv.entry and kv.fieldName = \'%s\'' . 
-				' WHERE e.projectName = \'%s\' AND e.formName = \'%s\'' . 
-				' GROUP BY e.idEntry, e.DeviceID, e.created, e.lastEdited, e.uploaded, kv.value ', $this->name, $this->key, $this->projectName, $this->name);
-			//if(getValIfExists($_REQUEST, 'test') === 'true' ) echo $qry2;
-			$res = $db->do_query($qry2);
-			if($res !== true) return $res;
+			$group = ' GROUP BY e.idEntry, e.DeviceID, e.created, e.lastEdited, e.uploaded ';
+			$join = sprintf('FROM entryvalue ev JOIN entry e ON e.idEntry = ev.entry');
+			if(count($this->branchfields))
+			{
+				$where = sprintf(' WHERE ev.fieldName NOT IN (\'%s\') and e.projectName = \'%s\' AND e.formName = \'%s\' ', implode('\',\'', $this->branchfields), $this->survey->name, $this->name);
+			}
+			else
+			{
+				$where = sprintf(' WHERE e.projectName = \'%s\' AND e.formName = \'%s\' ', $this->survey->name, $this->name);
+			}
 			
-			//$branch_qrys = array();
-			$branch_joins = '';			
-			for($i = count($this->branchfields); $i-- && $includeChildCount;)
-			{	
-				$bqry = sprintf('CREATE TEMPORARY TABLE IF NOT EXISTS `br_%s_count` SELECT value, count(1) as `%s_entries` FROM entryValue WHERE projectName = \'%s\' And formName = \'%s\' and fieldName = \'%s\' GROUP BY value, formName, fieldName', $this->branches[$i], $this->branches[$i], $this->survey->name, $this->branches[$i], $this->key);
-				//if(getValIfExists($_REQUEST, 'test') === 'true' ) echo $bqry;
-				$res = $db->do_query($bqry);
-				if($res !== true) return $res;
+			if($args)
+			{
+				foreach($args as $k => $v)
+				{
+					$s_k = str_replace('.', '_', $k);
+					
+					if( $v == '' ) continue;
+					if( array_key_exists($k, $this->fields) && $this->fields[$k]->type != "" )
+					{
+						$join .= sprintf(' LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
+						if( $exact === true )
+						{
+							$where .= sprintf(' AND `ev%s`.value = \'%s\'', $s_k, $v);
+						}
+						else
+						{
+							$where .= sprintf(' AND `ev%s`.value Like \'%s\'', $s_k, $v);
+						}
+					}
+				}
+			}
+			
+			if(!strstr($join, sprintf('ev%s', $this->key)))
+			{
+				$k = $this->key;
+				$s_k = str_replace('.', '_', $k);
+					
+				$join = sprintf('%s LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $join, $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
 				
-				//array_push($branch_qrys, sprintf('CREATE TEMPORARY TABLE IF NOT EXISTS `%s_count` SELECT value, formName, fieldName, count(1) FROM entryValue WHERE projectName = \'%s\' And formName = \'%s\' and fieldName = \'%s\'', $this->branches[$i], $this->survey->name, $this->branches[$i], $this->key));
-				$branch_joins = sprintf('%s LEFT JOIN `br_%s_count` `br_%s` on master.keyvalue = `br_%s`.value', $branch_joins, $this->branches[$i], $this->branches[$i], $this->branches[$i], $this->branches[$i]);
+			}
+			
+			for($i = count($this->branchfields); $i-- && $includeChildCount;)
+			{
+				$bf =  str_replace('.', '_', $this->branchfields[$i]);
+				
+				if($format == 'json'){
+					$select .= sprintf(' \', "%s" : \' , COUNT(distinct `ev%s_entries`.entry) ,', $bf, $this->branches[$i]);
+				}elseif($format == 'xml'){
+					$select .= sprintf(' \'<%s>\', COUNT(distinct `ev%s_entries`.entry), \'</%s>\',', $bf, $this->branches[$i], $bf);
+				}elseif($format == 'csv'){
+					$select .= sprintf(', COUNT(distinct `ev%s_entries`.entry) ', $this->branches[$i]);
+				}elseif($format == 'tsv'){
+					$select .= sprintf(', COUNT(distinct `ev%s_entries`.entry)  ', $this->branches[$i]);
+				}elseif($format == 'kml'){
+					throw new Exception ('Format not yet implemented');
+				}elseif($format == 'tskv'){
+					$select .= sprintf(',%s , COUNT(distinct `ev%s_entries`.entry)', $bf, $this->branches[$i]);
+				}elseif($format != 'object'){
+					$select .= sprintf(', COUNT(distinct `ev%s_entries`.entry) as %s_entries', $this->branches[$i], $this->branches[$i]);
+				}
+				
+				if(!strstr($join, sprintf('ev%s', $this->key)))
+				{
+					$join .= sprintf(' LEFT JOIN entryvalue `ev%s` on `ev%s`.entry = e.idEntry and `ev%s`.fieldName = \'%s\'', $this->key,$this->key,$this->key,$this->key);
+				}
+				
+				$join .= sprintf(' LEFT JOIN entryValue `ev%s_entries`  ON `ev%s`.value = `ev%s_entries`.value  AND `ev%s_entries`.projectName = \'%s\' AND `ev%s_entries`.formName = \'%s\' AND `ev%s_entries`.fieldName = \'%s\'',
+						$this->branches[$i],
+						$this->key, 
+						$this->branches[$i],
+						$this->branches[$i],
+						$this->survey->name,
+						$this->branches[$i], 
+						$this->branches[$i], 
+						$this->branches[$i], 
+						$this->key);
 			}
 			
 			$child = $this->survey->getNextTable($this->name, true);
- 			$childQry = '';
-			if(!!$child && $includeChildCount)
-			{
-				$childQry = sprintf('CREATE TEMPORARY TABLE IF NOT EXISTS `%s_count` SELECT value, count(1) as `%s_entries` FROM entryValue WHERE projectName = \'%s\' And formName = \'%s\' and fieldName = \'%s\' GROUP BY value, formName, fieldName', $child->name, $child->name, $this->survey->name, $child->name, $this->key);
-				//if(getValIfExists($_REQUEST, 'test') === 'true' ) echo $childQry;
-				$res = $db->do_query($childQry);
-				if($res !== true) return $res;
-			}
 			
-			$data_query = sprintf('SELECT * FROM `%s` master ' , $this->name ). $branch_joins . ($childQry == '' ? '' :  sprintf(' LEFT JOIN `%s_count` ch on master.keyvalue = ch.value', $child->name));
-			
-			$filter_query = '';
-			$static_search_string = '';
-			
-			//Start Filter code
-			if(is_array($args) && count ($args) > 0)
-			{
-				$search_string = '';
-				
-				foreach($args as $k => $v)
+ 			if(!!$child && $includeChildCount)
+ 			{
+ 				$qry = sprintf('CREATE TEMPORARY TABLE `%s_c_entries` (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
+ 					FROM entryvalue a, entryvalue b 
+ 					WHERE a.projectName = \'%s\' and a.formName =\'%s\' and a.fieldName = \'%s\' and a.value = b.value and b.formName = \'%s\' 
+ 					and b.fieldName = \'%s\' GROUP BY a.value, b.entry ORDER BY a.value;',
+ 					$child->name,
+ 					$this->projectName,
+ 					$child->name,
+ 					$this->key,
+ 					$this->name,
+ 					$this->key
+ 				);
+ 				
+ 				//$res = $db->do_query($qry);
+ 				//if($res !== true) die($res);
+ 				
+ 				if($format == 'json'){
+ 					$select .= sprintf(' \', "%s_entries" : \' , IFNULL(`%s_c_entries`.`entries`, 0)  ,', $child->name, $child->name);
+ 				}elseif($format == 'xml'){
+ 					$select .= sprintf(' \'<%s_entries>\',   IFNULL(`%s_c_entries`.entries, 0), \'</%s_entries>\',', $child->name, $child->name, $child->name);
+ 				}elseif($format == 'csv'){
+ 					$select .= sprintf(', IFNULL(`%s_c_entries`.entries, 0)  ', $child->name);
+ 				}elseif($format == 'tsv'){
+ 					$select .=sprintf( ', IFNULL(`%s_c_entries`.entries, 0) ', $child->name);
+ 				}elseif($format == 'kml'){
+ 					throw new Exception ('Format not yet implemented');
+ 				}elseif($format == 'tskv'){
+ 					$select .= sprintf(',`%s_entries `,  IFNULL(`%s_c_entries`.`entries`, 0)', $child->name, $child->name);
+ 				}elseif($format == 'object'){
+ 					$select .= sprintf(', IFNULL(`%s_c_entries`.`entries`, 0) as `%s_entries`', $child->name, $child->name);
+ 				}
+ 				
+ 				if(!strstr($join, sprintf('ev%s', $this->key)))
 				{
-					if(array_key_exists($k, $this->fields))
-					{
-						$search_string = sprintf('%s OR (fieldName = \'%s\' AND  value = \'%s\')', $search_string, $k, $db->escapeArg($v));
-					}
-					else if(array_search($k, EcTable::$STATIC_FIELDS) !== false)
-					{
-						$static_search_string = sprintf('%s AND \'%s\' = \'%s\'', $static_search_string, $k, $db->escapeArg($v));
-					}
-					
+					$join .= sprintf(' LEFT JOIN `%s_c_entries` on `%s_c_entries`.entry = e.idEntry',  $child->name, $child->name);
 				}
 				
-				$search_string = substr($search_string, min(4, strlen($search_string)));
-				if($search_string != '')
-				{
-					$filter_query = sprintf('SELECT entry FROM (SELECT entry, COUNT(value) AS n_ents FROM entryvalue WHERE %s GROUP BY entry) a WHERE a.n_ents = %s', $search_string, count($args));
-				}				
-			}
-			//end filter code
-			
-			// SELECT @curRank := @curRank + 1 AS rank from (SELECT @curRank := 0) r
-			
-			$sort_join = '';
-			$sort_clause = '';
-			
-			$br_ch = str_replace('_entries', '', $sortField);
-			
-			if(array_search($sortField, EcTable::$STATIC_FIELDS) !== false)
-			{
-				$sort_clause = sprintf(' Order by master.`%s` %s', $sortField, $sortDir);	
-			}
-			elseif(array_key_exists($sortField, $this->fields))
-			{
-				if($this->fields[$sortField]->isInt)
-				{
-					$sort_join = sprintf('JOIN (SELECT entry, CONVERT(value, SIGNED INTEGER) as value, @curRank := @curRank + 1 AS rank from EntryValue ev, (SELECT @curRank := 0) r WHERE ev.projectName = \'%s\' AND ev.formName = \'%s\' AND ev.fieldName = \'%s\' ORDER BY ev.value) srt ON srt.entry = master.id', $this->projectName, $this->name, $sortField);
-					$sort_clause = sprintf(' ORDER BY srt.rank %s', $sortDir); 
-				}
-				else
-				{
-					$sort_join = sprintf(' JOIN (SELECT entry, value, @curRank := @curRank + 1 AS rank from EntryValue ev, (SELECT @curRank := 0) r WHERE ev.projectName = \'%s\' AND ev.formName = \'%s\' AND ev.fieldName = \'%s\' ORDER BY ev.value) srt ON srt.entry = master.id', $this->projectName, $this->name, $sortField);
-					$sort_clause = sprintf(' ORDER BY srt.rank %s', $sortDir); 
-				}
-			}
-			elseif($child && $br_ch == $child->name)
-			{
-				$sort_clause = sprintf(' ORDER BY ch.`%s_entries` %s', $br_ch, $sortDir);	
-			}
-			elseif(array_search($br_ch, $this->branches))
-			{
-				$sort_clause = sprintf(' ORDER BY `br_%s`.`%s_entries` %s', $br_ch, $br_ch, $sortDir);
-			}
+				if(!strstr($join, sprintf('ev%s', $child->name)))
+ 				{
+ 					$join .= sprintf(' LEFT JOIN `%s_c_entries` on `%s_c_entries`.entry = e.idEntry',  $child->name, $child->name);
+ 				}
+ 			}
+ 			
+ 			
+ 			
+ 			if($format == 'json'){
+ 				$select .= ' \'}\') as `data` ';
+ 			}elseif($format == 'xml'){
+ 				$select .= ' \'</entry>\') as `data` ';
+ 			}elseif($format == 'csv'){
+ 				$select .= ') as data ';
+ 			}elseif($format == 'tsv'){
+ 				$select .= ') as data ';
+ 			}elseif($format == 'kml'){
+ 				throw new Exception ('Format not yet implemented');
+ 			}elseif($format == 'tskv'){
+ 				$select .= ') as data ';
+ 			}elseif($format == 'object'){
+ 				//throw new Exception ("Format not specified");
+ 			}
 
-			if($filter_query != '')
+ 			$sortIsField = array_key_exists($sortField, $this->fields);
+ 			
+ 			if(!strstr($join, sprintf('ev%s', $sortField)) && $sortIsField)
+ 			{
+ 				$s_sortField = str_replace('.', '_', $sortField);
+ 				$join .= sprintf(' LEFT JOIN entryvalue `ev%s` on `ev%s`.entry = e.idEntry and `ev%s`.fieldName = \'%s\'', $s_sortField, $s_sortField, $s_sortField, $sortField);
+ 			}
+			
+			if($sortIsField)
 			{
-				if($static_search_string != '')
-				{
-					$qry = sprintf('%s %s %s WHERE master.id in (%s) AND %s %s',  $data_query, $filter_query, $sort_join, $static_search_string, $sort_clause);		
-				}
-				else
-				{
-					$qry = sprintf('%s %s WHERE master.id in (%s) %s' , $data_query, $sort_join, $filter_query, $sort_clause);
-				}
-			} 
+				$order = sprintf(' ORDER BY `ev%s`.value %s', str_replace('.', '_', $sortField), $sortDir);
+			}
+			elseif($child && $sortField == $child->name . '_entries')
+			{
+				$order = sprintf(' ORDER BY `%s_c_entries`.entries %s', str_replace('.', '_', $child->name), $sortDir);
+			}
+			elseif($sortField)
+			{
+				$order = sprintf(' ORDER BY e.%s %s', $sortField, $sortDir);
+			}
+			unset($sortIsField);
+			
+			if($limit && $offset)
+			{
+				$limit_s = sprintf(' LIMIT %u, %u', $offset, $limit);
+			}
+			elseif ($limit)
+			{
+				$limit_s = sprintf(' LIMIT %s', $limit);	
+			}
 			else 
-			{	
-				if($static_search_string != '')
-				{
-					$qry = sprintf('%s %s WHERE %s %s', $data_query, $sort_join, substr($static_search_string, 5), $sort_clause);
-				}
-				else
-				{
-					$qry = sprintf('%s %s %s', $data_query, $sort_join, $sort_clause);
-				}
-			}
-			
-			if($limit > 0)
 			{
-				if($offset > 0)
-					{
-					$qry .= " LIMIT $offset, $limit";
-		
-				}
-				else
-					{
-					$qry .= " LIMIT $limit";
-				}
+				$limit_s = '';
 			}
 			
-			//if(getValIfExists($_REQUEST, 'test') === 'true' ) echo $qry;
+			
+			$qry = sprintf('%s %s %s %s AND ev.fieldName in (%s) %s %s %s ', $qry, $select, $join, $where, $fields, $group, $order, $limit_s);
+			//echo $qry;
+			//return;
+			unset($select, $join, $where, $group, $order, $limit_s);
 			
 			$res = $db->do_multi_query($qry);
 			if($res !== true) return $res;
+			
 			return $db->getLastResultSet();
 				
 		}
