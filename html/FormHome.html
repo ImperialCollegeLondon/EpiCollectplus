@@ -580,6 +580,7 @@
 			
 			function getMapData()
 			{
+				$('a[href=#mapTab]').addClass('ec-loading')
 				var urlStr = url + "/" + formName + ".json?mode=list&sort=" +  project.forms[formName].titleField;
 				if(filterField && filterValue)
 				{
@@ -806,6 +807,7 @@
 				$("#timeFrom").text(new Date(mincreated).format(dateFormat));
 				$("#timeTo").text(new Date(maxcreated).format(dateFormat));
 				
+				$('a[href=#mapTab]').removeClass('ec-loading')				
 			}			
 			
 			function showBubbleFor(mkrIdx)

@@ -934,3 +934,9 @@ tr.alt
 {
 	margin-bottom : 1.5em;
 }
+
+.ec-loading
+{
+	margin-right: 99px;
+	background : url('images/loading.gif') top right;
+}
