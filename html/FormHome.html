@@ -619,8 +619,10 @@
 					value : false,	
 					message : "Getting total entries"
 				});
+				$('#progressbar').show();
 				$.getJSON(url + "/" + formName + "/__stats"  , mapTotalCallback);
 				google.maps.event.trigger(map, 'resize');
+				mapData = [];
 			}
 			
 			function mapTotalCallback(data, status, xhr)
@@ -639,9 +641,11 @@
 					if(!markers[mkr]) continue;
 					
 					markers[mkr].setMap(null);
-					markers.splice(mkr, 1);	
-					mapData.splice(mkr, 1);
+					
 				}
+				
+				markers = [];
+				mapData = [];
 				
 				getMapData(mapChunkSize, 0);
 			}
@@ -760,7 +764,7 @@
 			
 			function mapDataCallback(data, status, xhr)
 			{
-				mapData = data;
+				mapData = mapData.concat(data)
 				
 				var mincreated = new Date().getTime();
 				var maxcreated = 0;
@@ -813,69 +817,6 @@
 					addToSidebar(i, ttl);
 				}
 				
-				colourMarkersBy($('#mapColourField').val());
-
-				map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
-				
-				if(!markerClusterer)
-				{
-					markerClusterer = new MarkerClusterer(map, markers,
-					{
-						maxZoom : 12,
-						gridSize : 40,
-						styles : [
-							{
-								url : "{#SITE_ROOT#}/markers/cluster",
-								height: 50,
-						        width: 50,
-						        anchor: [24, 24],
-						        textColor: 'transparent',
-						        textSize: 14
-							},
-							{
-								url : "{#SITE_ROOT#}/markers/cluster",
-								height: 50,
-						        width: 50,
-						        anchor: [24, 24],
-						        textColor: 'transparent',
-						        textSize: 14
-							},
-							{
-								url : "{#SITE_ROOT#}/markers/cluster",
-								height: 50,
-						        width: 50,
-						        anchor: [24, 24],
-						        textColor: 'transparent',
-						        textSize: 14
-							},
-							{
-								url : "{#SITE_ROOT#}/markers/cluster",
-								height: 50,
-						        width: 50,
-						        anchor: [24, 24],
-						        textColor: 'transparent',
-						        textSize: 14
-							}
-						]
-					});
-				}
-				else
-				{
-					markerClusterer.addMarkers(markers);	
-				}
-
-				
-				var tconst = new Date().getTime() / 1000;
-				
-				if(mincreated < tconst) mincreated = mincreated * 1000;
-				if(maxcreated < tconst) maxcreated = maxcreated * 1000;
-				
-				$("#slider-range").slider("option", "min", mincreated);
-				$("#slider-range").slider("option", "max", maxcreated);
-				
-				$("#timeFrom").text(new Date(mincreated).format(dateFormat));
-				$("#timeTo").text(new Date(maxcreated).format(dateFormat));
-				
 				//update progress bar
 				setProgress(markers.length);
 				
@@ -885,8 +826,69 @@
 				}
 				else
 				{
-					$('[href=#mapTab]').removeClass('ec-loading');	
+					var tconst = new Date().getTime() / 1000;
 					
+					if(mincreated < tconst) mincreated = mincreated * 1000;
+					if(maxcreated < tconst) maxcreated = maxcreated * 1000;
+					
+					$("#slider-range").slider("option", "min", mincreated);
+					$("#slider-range").slider("option", "max", maxcreated);
+					
+					$("#timeFrom").text(new Date(mincreated).format(dateFormat));
+					$("#timeTo").text(new Date(maxcreated).format(dateFormat));
+					
+					colourMarkersBy($('#mapColourField').val());
+
+					map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+					
+					if(!markerClusterer)
+					{
+						markerClusterer = new MarkerClusterer(map, markers,
+						{
+							maxZoom : 12,
+							gridSize : 40,
+							styles : [
+								{
+									url : "{#SITE_ROOT#}/markers/cluster",
+									height: 50,
+							        width: 50,
+							        anchor: [24, 24],
+							        textColor: 'transparent',
+							        textSize: 14
+								},
+								{
+									url : "{#SITE_ROOT#}/markers/cluster",
+									height: 50,
+							        width: 50,
+							        anchor: [24, 24],
+							        textColor: 'transparent',
+							        textSize: 14
+								},
+								{
+									url : "{#SITE_ROOT#}/markers/cluster",
+									height: 50,
+							        width: 50,
+							        anchor: [24, 24],
+							        textColor: 'transparent',
+							        textSize: 14
+								},
+								{
+									url : "{#SITE_ROOT#}/markers/cluster",
+									height: 50,
+							        width: 50,
+							        anchor: [24, 24],
+							        textColor: 'transparent',
+							        textSize: 14
+								}
+							]
+						});
+					}
+					else
+					{
+						markerClusterer.addMarkers(markers);	
+					}
+					
+					$('[href=#mapTab]').removeClass('ec-loading');	
 				}
 				
 			}			
@@ -931,12 +933,14 @@
 			function getContentFor(mkrIdx)
 			{
 				var rec = mapData[mkrIdx];
+				if(!rec) return '<i>No data</i>';
+				
 				var html = '<table class="ibubble">';
 				var fields = project.forms[formName].fields;
 				
 				for( fld in fields )
 				{
-					if( fields[fld].type != '' || fld == 'created' ) 
+					if( (fields[fld].type != '' || fld == 'created') && rec[fld] ) 
 					{
 						html += '<tr><th>' + fields[fld].text + '</th> <td> ' + fields[fld].formatValue(rec[fld]) + '</td></tr>';
 					}
