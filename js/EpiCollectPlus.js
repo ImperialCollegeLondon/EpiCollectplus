@@ -291,11 +291,11 @@ EpiCollect.loadProjectCallback = function(xhr)
 	project = new EpiCollect.Project();
 	project.parse(xhr);
 	if(EpiCollect.onload) EpiCollect.onload(project);
-}
+};
 
 function createHandler(obj, func)
 {
-	return (function(e, f){obj[func](e, f);})
+	return (function(e, f){obj[func](e, f);});
 }
 
 EpiCollect.Project = function()
@@ -324,7 +324,7 @@ EpiCollect.Project = function()
 			}
 		}
 		return tbl;
-	}
+	};
 	
 	this.getPrevForm = function(tblName)
 	{
@@ -340,7 +340,7 @@ EpiCollect.Project = function()
 			}
 		}
 		return tbl;
-	}
+	};
 	
 	this.validateFormName = function(name)
 	{
@@ -352,7 +352,7 @@ EpiCollect.Project = function()
 			if (name == kw[i]) return false;
 		}
 		return !!name.match(/^[a-z0-9_\-]+$/gi);
-	}
+	};
 	
 	this.validateFieldName = function(form, name)
 	{
@@ -365,7 +365,7 @@ EpiCollect.Project = function()
 		}
 		if(name == form) return false;
 		return !!name.match(/^[a-z0-9_\-]+$/gi);
-	}
+	};
 	
     this.parse = function(xml)
     {
@@ -415,7 +415,7 @@ EpiCollect.Project = function()
 				this.forms[branches[i]].branchOf = tbl;
 			}
 		}
-	}
+	};
 		
 	this.draw = function(div)
 	{
@@ -423,7 +423,7 @@ EpiCollect.Project = function()
 		{
 			$(div).append("<p>" + tbl + "</p>");
 		}
-	}
+	};
 	
 	this.toXML = function()
 	{
@@ -434,8 +434,8 @@ EpiCollect.Project = function()
 		}
 		xml = xml + "</ecml>";
 		return xml;
-	}
-}
+	};
+};
 
 EpiCollect.Form = function()
 {

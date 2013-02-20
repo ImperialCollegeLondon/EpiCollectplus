@@ -684,6 +684,13 @@ tr.alt
 	float: left;
 }
 
+.ui-tabs .ui-tabs-nav li a.ec-loading
+{
+	padding-right : 30px;
+	background : url('../images/loading-sm.gif') top right no-repeat;
+	
+}
+
 .ecplus-settingspanel
 {
 	border-radius : 0.25em;
@@ -935,8 +942,4 @@ tr.alt
 	margin-bottom : 1.5em;
 }
 
-.ec-loading
-{
-	margin-right: 99px;
-	background : url('images/loading.gif') top right;
-}
+

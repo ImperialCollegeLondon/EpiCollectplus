@@ -473,6 +473,25 @@ function uploadHandlerFromExt()
 	fclose($flog);
 }
 
+function projectList()
+{
+	/**
+	 * Produce a list of all the projects on this server that are
+	 * 	- publically listed
+	 *  - if a user is logged in, owned, curated or managed by the user
+	 */
+	global $auth;
+
+	$prjs = EcProject::getPublicProjects();
+	$usr_prjs = array();
+	if($auth->isLoggedIn())
+	{
+		$usr_prjs = EcProject::getUserProjects($auth->getEcUserId());
+	}
+
+	echo json_encode(array_merge($prjs, $usr_prjs));
+}
+
 
 function projectHome()
 {
@@ -1182,7 +1201,7 @@ function downloadData()
 	global  $url, $SITE_ROOT;
 	header("Cache-Control: no-cache,  must-revalidate");
 
-	$flog = fopen('ec/uploads/fileUploadLog.log', 'a');
+	//$flog = fopen('ec/uploads/fileUploadLog.log', 'a+');
 	$survey = new EcProject();
 	$survey->name = preg_replace("/\/download\.?(xml|json)?$/", "", $url);
 
@@ -1494,19 +1513,18 @@ function downloadData()
 						}
 					}
 				}
-			
+
 				if($ent && !array_key_exists($ent[$survey->tables[$tbls[$t]]->key], $nxtCVals))
 				{	
 					$nxtCVals[$ent[$survey->tables[$tbls[$t]]->key]] = true;
 				}
 			}
 		}
-		
 		if($dataType == "data" && $xml)
 		{
 			fwrite($fxml,  "</table>");
 		}
-		//print_r($nxtCVals);
+
 		if($entry)
 		{
 			$cField = $survey->tables[$tbls[$t]]->key;
@@ -1540,12 +1558,11 @@ function downloadData()
 			return;
 		}
 			
-		if(!$err==true) {
+		if(!$err == true) {
 			echo "fail expecting $files_added files";
 			return;
 		}
-		//echo $zfn;
-		//echo $zrl;
+
 		header("Location: $zrl");
 		return;
 	}
@@ -1573,7 +1590,6 @@ function formHandler()
 		return;
 	}
 	
-	
 	$permissionLevel = 0;
 	$loggedIn = $auth->isLoggedIn();
 	
@@ -1589,8 +1605,6 @@ function formHandler()
 		echo applyTemplate("./base.html", "./error.html", array("errorType" => "403 ", "error" => "You do not have permission to view this project"));
 		return;
 	}
-
-
 
 	$extStart = strpos($url, ".");
 	$frmName = rtrim(substr($url, $pNameEnd + 1, ($extStart > 0 ?  $extStart : strlen($url)) - $pNameEnd - 1), "/");
@@ -1615,7 +1629,6 @@ function formHandler()
 			if($_f['tmp_name'] == '')
 			{
 				flash('The file is too big to upload', 'err');
-				
 			}
 			else
 			{
@@ -3278,25 +3291,6 @@ function getXML()
 		echo $prj->toXML();
 			
 	}
-}
-
-function projectList()
-{
-	/**
-	 * Produce a list of all the projects on this server that are
-	 * 	- publically listed
-	 *  - if a user is logged in, owned, curated or managed by the user
-	 */
-	global $auth;
-	
-	$prjs = EcProject::getPublicProjects();
-	$usr_prjs = array();
-	if($auth->isLoggedIn())
-	{
-		$usr_prjs = EcProject::getUserProjects($auth->getEcUserId());
-	}
-	
-	echo json_encode(array_merge($prjs, $usr_prjs));
 }
 
 function projectSummary()

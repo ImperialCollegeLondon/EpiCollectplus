@@ -67,6 +67,14 @@
 			width : 30%;
 		}
 		
+		.progress-label {
+		    float: left;
+		    margin-left: 40%;
+		    margin-top: 5px;
+		    font-weight: bold;
+		    text-shadow: 1px 1px 0 #fff;
+		  }
+		
 		#mapTab
 		{
 			position : relative;
@@ -75,16 +83,20 @@
 		#map
 		{
 			position : relative;
-			margin-left : 15em;
+			margin : 1em 15em 1em 15em; 
 			height : 30em;
-			margin-right : 15em;
+		}
+		
+		#map-container
+		{
+			position : relative;
 		}
 		
 		#bottombar
 		{
 			margin : 1em 14em 1em -1.5em;
 			position : relative;
-			height : 10em;
+			height : 100%;
 			padding: .5em .5em .5em .5em;
 		}
 		
@@ -108,12 +120,12 @@
 		#sidebar 
 		{
 			border: 1px solid #CCCCCC;
-			bottom : 13.25em;
+			bottom : 12em;
 			overflow : auto;
 			left : 0;
 			position : absolute;
-			top : 1em;
-			width : 15em;
+			top : 0em;
+			width : 14em;
 		}
 		
 		@media all and (max-width: 1024px){
@@ -148,8 +160,8 @@
 			right : 0;
 			overflow : auto;
 			position : absolute;
-			top : 1em;
-			width : 15em;
+			top : 0em;
+			width : 14em;
 			border-left: 2px solid rgba(0,0,0,0.4);
 		}
 		
@@ -235,6 +247,9 @@
 			
 			var hiddenColumns = { created : false, uploaded : true, lastEdited : true, DeviceID : true};
 			
+			var totalents = 0;
+			var mapChunkSize = 100;
+			
 			var colours = [
 				"rgba(255,0,0,1)",
 				"rgba(0,128,0,1)",
@@ -272,14 +287,13 @@
 				});
 				
 				$("#tabs").tabs({
-					show : function(event, tab)
+					activate : function(event, ui)
 					{
-						if(tab.panel.id == "mapTab")
+						if(ui.newPanel.attr('id') == "mapTab")
 						{
-							 cen = map.getCenter();
-							 google.maps.event.trigger(map, 'resize');
-							 map.setCenter(cen);
-							 getMapData();
+							cen = map.getCenter();
+							map.setCenter(cen);
+							startMapLoad();
 						}
 					}
 				});
@@ -331,6 +345,27 @@
 				});
 			});
 	
+			function setProgressMessage(msg)
+			{
+				$('.progress-label').text(msg);	
+			}
+			
+			
+			function setProgress(n)
+			{
+				if(n < totalents)
+				{
+					setProgressMessage("loading... " + n + "/" + totalents);
+				}
+				else
+				{
+					setProgressMessage("Loaded");
+					setTimeout(function(){$('#progressbar').hide();}, 2000);
+				}
+				$('#progressbar').progressbar("option", "max", totalents);	
+				$('#progressbar').progressbar("value", n);
+				
+			}
 			
 			function toggleMenu(selector)
 			{
@@ -578,16 +613,52 @@
 				$('#start').text(offset);
 			}
 			
-			function getMapData()
+			function startMapLoad()
 			{
-				$('a[href=#mapTab]').addClass('ec-loading')
-				var urlStr = url + "/" + formName + ".json?mode=list&sort=" +  project.forms[formName].titleField;
+				$('#progressbar').progressbar({
+					value : false,	
+					message : "Getting total entries"
+				});
+				$.getJSON(url + "/" + formName + "/__stats"  , mapTotalCallback);
+				google.maps.event.trigger(map, 'resize');
+			}
+			
+			function mapTotalCallback(data, status, xhr)
+			{
+				var stats = data;
+				totalents = stats.ttl;
+				$('[href=#mapTab]').addClass('ec-loading');
+				//Init progress bar
+				
+				setProgress(0);
+				
+				if(markerClusterer) markerClusterer.removeMarkers(markerClusterer.markers_);
+				
+				$('#sidebar').empty();
+				for(var mkr = markers.length; mkr--;){
+					if(!markers[mkr]) continue;
+					
+					markers[mkr].setMap(null);
+					markers.splice(mkr, 1);	
+					mapData.splice(mkr, 1);
+				}
+				
+				getMapData(mapChunkSize, 0);
+			}
+			
+			function getMapData(chunkSize, offset)
+			{
+							
+				var urlStr = url + "/" + formName + ".json?mode=list&sort=" +  project.forms[formName].titleField + "&limit=" + chunkSize + "&start=" + offset;
+				
+
 				if(filterField && filterValue)
 				{
 					urlStr += "&" + filterField + "=" + filterValue;
 					statUrl += "&" + filterField + "=" + filterValue; 
 				}
 				$.getJSON(urlStr , mapDataCallback);
+				
 			}
 			
 			function doFilter(field, value)
@@ -689,17 +760,6 @@
 			
 			function mapDataCallback(data, status, xhr)
 			{
-				if(markerClusterer) markerClusterer.removeMarkers(markerClusterer.markers_);
-			
-				$('#sidebar').empty();
-				for(var mkr = markers.length; mkr--;){
-					if(!markers[mkr]) continue;
-					
-					markers[mkr].setMap(null);
-					markers.splice(mkr, 1);	
-					mapData.splice(mkr, 1);
-				}
-				
 				mapData = data;
 				
 				var mincreated = new Date().getTime();
@@ -737,11 +797,11 @@
 							showBubbleFor(getMarkerAt(evt.latLng).index);
 						});
 					
-						markers[i] = mkr;
+						markers.push(mkr);
 					}
 					else
 					{
-						markers[i] = null;
+						markers.push(null);
 					}
 					
 					mincreated = Math.min(mincreated, Number(data[i]["created"]));
@@ -805,13 +865,30 @@
 				}
 
 				
+				var tconst = new Date().getTime() / 1000;
+				
+				if(mincreated < tconst) mincreated = mincreated * 1000;
+				if(maxcreated < tconst) maxcreated = maxcreated * 1000;
+				
 				$("#slider-range").slider("option", "min", mincreated);
 				$("#slider-range").slider("option", "max", maxcreated);
 				
 				$("#timeFrom").text(new Date(mincreated).format(dateFormat));
 				$("#timeTo").text(new Date(maxcreated).format(dateFormat));
 				
-				$('a[href=#mapTab]').removeClass('ec-loading')				
+				//update progress bar
+				setProgress(markers.length);
+				
+				if(markers.length < totalents && markers.length % mapChunkSize == 0)
+				{
+					getMapData(mapChunkSize, markers.length);					
+				}
+				else
+				{
+					$('[href=#mapTab]').removeClass('ec-loading');	
+					
+				}
+				
 			}			
 			
 			function showBubbleFor(mkrIdx)
@@ -1261,37 +1338,39 @@
 			{#csvform#}
 		</div>
 		<div id="mapTab">
-			<div id="sidebar">
-				
-			</div>
-			<div id="map"></div>
-			<div id="graphbar">
-				<div id="graphOne" class="graphPanel"></div>
-				<div id="graphTwo" class="graphPanel"></div>
-				<div id="graphThree" class="graphPanel"></div>
-			</div>
-			<div id="bottombar">
-				<div id="timeFilter" class ="filterControl">
-					<h4>Filter By Time</h4>
-					<div id="slider-range" ></div>
-					<p><b>From :</b><span id="timeFrom"></span></p>
-					<p><b>To :</b><span id="timeTo"></span></p>
-					<span class="clearFilter"><a href="javascript:clearMapFilter();">Clear Filter</a></span>
+			<div id="progressbar"><div class="progress-label">Getting Total no of Entries...</div></div>
+			<div id="map-container">
+				<div id="sidebar">
+					
 				</div>
-				<div id="fieldFilter" class ="filterControl">
-					<h4>Filter By Field</h4>
-					<p><b>Field </b><select id="mapFilterField" class="fieldList"></select></p>
-					<p><b>Value </b><input id="mapFilterValue"></input></p>
-					<p><a href="javascript:doMapFieldFilter()">Apply Filter</a></p>
-					<span class="clearFilter"><a href="javascript:clearMapFilter();">Clear Filter</a></span>
+				<div id="map"></div>
+				<div id="graphbar">
+					<div id="graphOne" class="graphPanel"></div>
+					<div id="graphTwo" class="graphPanel"></div>
+					<div id="graphThree" class="graphPanel"></div>
 				</div>
-				<div id="fieldColour" class ="colourControl">
-					<h4>Colour By Field</h4>
-					<p><b>Field </b><select id="mapColourField" class="colourFieldList"></select></p>
-					<p><a href="javascript:colourMarkersBy($('#mapColourField').val())">Apply Colouring</a></p>
+				<div id="bottombar">
+					<div id="timeFilter" class ="filterControl">
+						<h4>Filter By Time</h4>
+						<div id="slider-range" ></div>
+						<p><b>From :</b><span id="timeFrom"></span></p>
+						<p><b>To :</b><span id="timeTo"></span></p>
+						<span class="clearFilter"><a href="javascript:clearMapFilter();">Clear Filter</a></span>
+					</div>
+					<div id="fieldFilter" class ="filterControl">
+						<h4>Filter By Field</h4>
+						<p><b>Field </b><select id="mapFilterField" class="fieldList"></select></p>
+						<p><b>Value </b><input id="mapFilterValue"></input></p>
+						<p><a href="javascript:doMapFieldFilter()">Apply Filter</a></p>
+						<span class="clearFilter"><a href="javascript:clearMapFilter();">Clear Filter</a></span>
+					</div>
+					<div id="fieldColour" class ="colourControl">
+						<h4>Colour By Field</h4>
+						<p><b>Field </b><select id="mapColourField" class="colourFieldList"></select></p>
+						<p><a href="javascript:colourMarkersBy($('#mapColourField').val())">Apply Colouring</a></p>
+					</div>
 				</div>
 			</div>
 		</div>
-		
 	</div>
 {{/main}}
