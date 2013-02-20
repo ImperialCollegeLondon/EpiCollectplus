@@ -1351,14 +1351,14 @@ function downloadData()
 							if($fld == "childEntries") continue;
 							if(array_key_exists($fld, $survey->tables[$tbls[$t]]->fields) && preg_match("/^(gps|location)$/i", $survey->tables[$tbls[$t]]->fields[$fld]->type))
 							{
-								$gpsObj = json_decode($ent[$fld]);
+								$gpsObj = $ent[$fld];
 								try{
-									fwrite($fxml,"\t\t\t<{$fld}_lat>{$gpsObj->latitude}</{$fld}_lat>\n");
-									fwrite($fxml,"\t\t\t<{$fld}_lon>{$gpsObj->longitude}</{$fld}_lon>\n");
-									fwrite($fxml,"\t\t\t<{$fld}_acc>{$gpsObj->accuracy}</{$fld}_acc>\n");
-									fwrite($fxml,"\t\t\t<{$fld}_provider>{$gpsObj->provider}</{$fld}_provider>\n");
-									fwrite($fxml,"\t\t\t<{$fld}_alt>{$gpsObj->altitude}</{$fld}_alt>\n");
-									fwrite($fxml,"\t\t\t<{$fld}_bearing>{$gpsObj->bearing}</{$fld}_bearing>\n");
+									fwrite($fxml,"\t\t\t<{$fld}_lat>{$gpsObj['latitude']}</{$fld}_lat>\n");
+									fwrite($fxml,"\t\t\t<{$fld}_lon>{$gpsObj['longitude']}</{$fld}_lon>\n");
+									fwrite($fxml,"\t\t\t<{$fld}_acc>{$gpsObj['accuracy']}</{$fld}_acc>\n");
+									if (array_key_exists('provider', $gpsObj)) fwrite($fxml,"\t\t\t<{$fld}_provider>{$gpsObj['provider']}</{$fld}_provider>\n");
+									if (array_key_exists('altitude', $gpsObj)) fwrite($fxml,"\t\t\t<{$fld}_alt>{$gpsObj['altitude']}</{$fld}_alt>\n");
+									if (array_key_exists('bearing', $gpsObj)) fwrite($fxml,"\t\t\t<{$fld}_bearing>{$gpsObj['bearing']}</{$fld}_bearing>\n");
 								}
 								catch(ErrorException $e)
 								{
@@ -1386,13 +1386,13 @@ function downloadData()
 						{
 							if(array_key_exists($fld, $survey->tables[$tbls[$t]]->fields) && preg_match("/^(gps|location)$/i", $survey->tables[$tbls[$t]]->fields[$fld]->type) && $ent[$fld] != "")
 							{
-								$gpsObj = json_decode($ent[$fld]);
-								fwrite($tsv,"{$fld}_lat{$delim}{$gpsObj->latitude}{$delim}");
-								fwrite($tsv,"{$fld}_lon{$delim}{$gpsObj->longitude}{$delim}");
-								fwrite($tsv,"{$fld}_acc{$delim}{$gpsObj->accuracy}{$delim}");
-								fwrite($tsv,"{$fld}_provider{$delim}{$gpsObj->provider}{$delim}");
-								fwrite($tsv,"{$fld}_alt{$delim}{$gpsObj->altitude}{$delim}");
-								if(property_exists($gpsObj, 'bearing')) fwrite($tsv,"{$fld}_bearing{$delim}{$gpsObj->bearing}{$delim}");
+								$gpsObj = $ent[$fld];
+								fwrite($tsv,"{$fld}_lat{$delim}{$gpsObj['latitude']}{$delim}");
+								fwrite($tsv,"{$fld}_lon{$delim}{$gpsObj['longitude']}{$delim}");
+								fwrite($tsv,"{$fld}_acc{$delim}{$gpsObj['accuracy']}{$delim}");
+								fwrite($tsv,"{$fld}_provider{$delim}{$gpsObj['provider']}{$delim}");
+								fwrite($tsv,"{$fld}_alt{$delim}{$gpsObj['altitude']}{$delim}");
+								if(array_key_exists('bearing', $gpsObj)) fwrite($tsv,"{$fld}_bearing{$delim}{$gpsObj['bearing']}{$delim}");
 								
 							}
 							else
