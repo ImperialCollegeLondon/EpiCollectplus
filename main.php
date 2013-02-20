@@ -1338,7 +1338,7 @@ function downloadData()
 	
 			while ($ent = $survey->tables[$tbls[$t]]->recieve(1))
 			{
-				//$ent = $ent[0];
+				$ent = $ent[0];
 				
 				if($dataType == "data")
 				{
@@ -1494,7 +1494,6 @@ function downloadData()
 						}
 					}
 				}
-				
 			
 				if($ent && !array_key_exists($ent[$survey->tables[$tbls[$t]]->key], $nxtCVals))
 				{	
