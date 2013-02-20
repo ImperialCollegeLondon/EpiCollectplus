@@ -1784,6 +1784,11 @@ EpiCollect.Field = function()
 		}
 		else if(this.id == 'created')
 		{
+			value = Number(value);
+			while((Math.log(value) / Math.log(10)) < 12)
+			{
+				value = value * 10;
+			}
 			return new Date(value).toLocaleString();
 		}
 		else if(this.type == 'branch')

@@ -1,6 +1,6 @@
 <?php
 
-if (isset($_REQUEST['_SESSION'])) die('Bad client request');
+if (isset($_REQUEST['_SESSION'])) throw new Exception('Bad client request');
 
 date_default_timezone_set('UTC');
 $dat = new DateTime('now');
@@ -8,9 +8,9 @@ $dfmat = '%s.u';
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.1a";
-
-session_start();
+$CODE_VERSION = "1.2";
+if(!isset($PHP_UNIT)) {$PHP_UNIT = false;}
+if(!$PHP_UNIT){ session_start(); }
 
 function getValIfExists($array, $key)
 {
@@ -25,6 +25,11 @@ function getValIfExists($array, $key)
 }
 
 $DIR = str_replace('main.php', '', $_SERVER['SCRIPT_FILENAME']);
+
+if($PHP_UNIT)
+{
+	$DIR = getcwd();
+}
 
 if(strpos($_SERVER['SCRIPT_NAME'], 'main.php'))
 {
@@ -52,6 +57,7 @@ include (sprintf('%s/Classes/PageSettings.php', $DIR));
 include (sprintf('%s/Classes/configManager.php', $DIR));
 include (sprintf('%s/Classes/Logger.php', $DIR));
 
+
 /*
  * Ec Class declatratioions
  */
@@ -64,10 +70,8 @@ include (sprintf('%s/Classes/EcEntry.php', $DIR));
 /*
  * End of Ec Class definitions
  */
-
-
-
-$cfg = new ConfigManager(sprintf('%sec/epicollect.ini', $DIR));
+global $cfg;
+$cfg = new ConfigManager(sprintf('%s/ec/epicollect.ini', ltrim($DIR, '/')));
 
 function genStr()
 {
@@ -102,18 +106,21 @@ function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 	throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
 
+
 set_error_handler('handleError', E_ALL);
 
 $DEFAULT_OUT = $cfg->settings['misc']['default_out'];
 $log = new Logger('Ec2');
+global $db;
 $db = false;
-
+global $auth;
 $auth = new AuthManager();
-try{
-	$db = @new dbConnection();
-}catch(Exception $err){
+
+//try{
+	$db = new dbConnection();
+//}catch(Exception $err){
 	
-}
+//}
 /* class and function definitions */
 
 function escapeTSV($string)
@@ -910,8 +917,8 @@ function getPointMarker()
 function siteHome()
 {
 	header("Cache-Control: no-cache, must-revalidate");
-	
 	global $SITE_ROOT, $db, $log,$auth;
+	
 	$vals = array();
 	$server = trim($_SERVER["HTTP_HOST"], "/");
 	$root = trim($SITE_ROOT, "/");
@@ -1331,7 +1338,7 @@ function downloadData()
 	
 			while ($ent = $survey->tables[$tbls[$t]]->recieve(1))
 			{
-				//$ent = $ent[0];
+				$ent = $ent[0];
 				
 				if($dataType == "data")
 				{
@@ -1487,7 +1494,6 @@ function downloadData()
 						}
 					}
 				}
-				
 			
 				if($ent && !array_key_exists($ent[$survey->tables[$tbls[$t]]->key], $nxtCVals))
 				{	
@@ -1695,16 +1701,20 @@ function formHandler()
 				header('Cache-Control: no-cache, must-revalidate');
 				header('Content-Type: application/json');
 				
-				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "json");
+				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object");
 				if($res !== true) die($res);
-				echo '[';		
+						
 				$i = 0;			
-				while($str = preg_replace("/[\r\n]+/", '\n', $prj->tables[$frmName]->recieve(1)))
+				
+				$recordSet = array();
+				
+				while($rec = $prj->tables[$frmName]->recieve(1))
 				{
-					echo ($i > 0 ? sprintf(',%s', $str) : $str);
-					$i++;
+					$recordSet = array_merge($recordSet, $rec); 
 				}
-				echo ']';
+				
+				echo json_encode($recordSet);
+				
 				return;
 				
 			case "xml":
@@ -1800,8 +1810,15 @@ function formHandler()
 						elseif($fld->type == "gps" || $fld->type == "location")
 						{
 							$name = $fld->name;
-							//$headers = str_replace(",$name", ",{$name}_lattitude,{$name}_longitude,{$name}_altitude,{$name}_accuracy,{$name}_provider", $headers);
-							array_splice($headers, $i + $_off, 1, array("{$name}_lat","{$name}_lon","{$name}_alt","{$name}_acc","{$name}_provider", "{$name}_bearing"));
+							
+							//take the GPS fields table, apply each one as a suffix to the field name and then splice 
+							
+							$gps_flds = array_values(EcTable::$GPS_FIELDS);
+							foreach($gps_flds	 as &$val)
+							{
+								$val = sprintf('%s%s', $name, $val);
+							}
+							array_splice($headers, $i + $_off, 1, $gps_flds);
 							$i = $i + 5;
 						}
 					}
@@ -1809,17 +1826,18 @@ function formHandler()
 					fwrite($fp, sprintf("\"%s\"\n", implode('","', $headers)));
 					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object", true);
 					if($res !== true) die($res);
-					if($res !== true) return;
 					
 					$count_h = count($real_flds);
 					
 					while($xml = $prj->tables[$frmName]->recieve(1, "object"))
 					{
+						$xml = $xml[0];
 //						fwrite($fp, sprintf('"%s"
 //', $xml));	
 						///print_r($xml); 
 						for( $i = 0; $i < $count_h; $i++ )
 						{
+							
 							if( $i > 0 ) fwrite($fp, ',');
 							fwrite($fp, '"');
 							
@@ -1828,21 +1846,37 @@ function formHandler()
 								if($i > $_off && ($i != $count_h - 1) && ($prj->tables[$frmName]->fields[$real_flds[$i]]->type == "gps" || $prj->tables[$frmName]->fields[$real_flds[$i]]->type == "location"))
 								{
 									try{
-										if(is_string($xml[$real_flds[$i]]) && trim($xml[$real_flds[$i]]) != '' ){
+										
+										$arr = $xml[$real_flds[$i]];
+										if(is_string($arr) && trim($xml[$real_flds[$i]]) != '' ){
 											$escval = str_replace(': N/A' ,': "N/A"', $xml[$real_flds[$i]]);
-											$x_flds = json_decode($escval, true);
-											fwrite($fp, implode('","', $x_flds));
-											$fieldsIn = count($x_flds);
+											$arr = json_decode($escval, true);	
 										}
-										else{$fieldsIn = 0;}
-										for($fieldsIn ; $fieldsIn < 6; $fieldsIn++)
+										
+										if(is_array($arr))
 										{
-											fwrite($fp, '","');
+											$x = 0;
+											foreach(array_keys(EcTable::$GPS_FIELDS) as $k)
+											{
+												if($x > 0) fwrite($fp, '","');
+												
+												if(array_key_exists($k, $arr))
+												{
+													fwrite($fp, $arr[$k]);
+												}
+												
+												$x++;
+											}
+										}
+										else
+										{
+											for($fieldsIn = 0; $fieldsIn < 6; $fieldsIn++)
+											{
+												fwrite($fp, '","');
+											}
 										}
 									}catch(Exception $e)
 									{
-										print_r($escval);
-										print_r($xml);
 										throw $e;
 									}	
 								
@@ -1867,28 +1901,122 @@ function formHandler()
 			
 			case "tsv":
 				header("Cache-Control: no-cache, must-revalidate");
-				header("Content-Type: text/tsv");
-				$headers =  "entry\tDeviceID\tcreated\tedited\tuploaded\t" .implode("\t", array_keys($prj->tables[$frmName]->fields)); 
+				//
+				if( !file_exists('ec/uploads')) mkdir('ec/uploads');
+				$filename = sprintf('ec/uploads/%s_%s_%s%s.tsv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
 				
-				foreach($prj->tables[$frmName]->fields as $name => $fld)
+				if(!file_exists($filename))
 				{
-					if(!$fld->active)
+					//ob_implicit_flush(false);
+					$fp = fopen($filename, 'w+');
+					//$arr = $prj->tables[$frmName]->get(false, $offset, $limit);
+					//$arr = $arr[$frmName];
+					//echo assocToDelimStr($arr, ",");
+					$headers = array_merge(array('DeviceID','created','lastEdited','uploaded'), array_keys($prj->tables[$frmName]->fields));
+					$_off = 4;
+										
+					$num_h = count($headers) - $_off;
+					
+					$nxt = $prj->getNextTable($frmName, true);
+					if($nxt) array_push($headers, sprintf('%s_entries', $nxt->name));
+					
+					$real_flds = $headers;
+					for( $i = 0; $i < $num_h; $i++ )
 					{
-						$headers = str_replace("\t$name", "", $headers);
+						$fld = $prj->tables[$frmName]->fields[$headers[$i + $_off]];
+						if(!$fld->active)
+						{
+							array_splice($headers, $i + $_off, 1);
+						}
+						elseif($fld->type == "gps" || $fld->type == "location")
+						{
+							$name = $fld->name;
+							
+							//take the GPS fields table, apply each one as a suffix to the field name and then splice 
+							
+							$gps_flds = array_values(EcTable::$GPS_FIELDS);
+							foreach($gps_flds	 as &$val)
+							{
+								$val = sprintf('%s_%s', $name, $val);
+							}
+							array_splice($headers, $i + $_off, 1, $gps_flds);
+							$i = $i + 5;
+						}
 					}
-					elseif($fld->type == "gps" || $fld->type == "location")
+					
+					fwrite($fp, sprintf("\"%s\"\n", implode("\"\t\"", $headers)));
+					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object", true);
+					if($res !== true) die($res);
+					
+					$count_h = count($real_flds);
+					
+					while($xml = $prj->tables[$frmName]->recieve(1, "object"))
 					{
-						$headers = str_replace("\t$name", "\t{$name}_lattitude\t{$name}_longitude\t{$name}_altitude\t{$name}_accuracy\t{$name}_provider\t{$name}_bearing", $headers);
+						$xml = $xml[0];
+//						fwrite($fp, sprintf('"%s"
+//', $xml));	
+						///print_r($xml); 
+						for( $i = 0; $i < $count_h; $i++ )
+						{
+							
+							if( $i > 0 ) fwrite($fp, ',');
+							fwrite($fp, '"');
+							
+							if (array_key_exists($real_flds[$i], $xml))
+							{
+								if($i > $_off && ($i != $count_h - 1) && ($prj->tables[$frmName]->fields[$real_flds[$i]]->type == "gps" || $prj->tables[$frmName]->fields[$real_flds[$i]]->type == "location"))
+								{
+									try{
+										
+										$arr = $xml[$real_flds[$i]];
+										if(is_string($arr) && trim($xml[$real_flds[$i]]) != '' ){
+											$escval = str_replace(': N/A' ,': "N/A"', $xml[$real_flds[$i]]);
+											$arr = json_decode($escval, true);	
+										}
+										
+										if(is_array($arr))
+										{
+											$x = 0;
+											foreach(array_keys(EcTable::$GPS_FIELDS) as $k)
+											{
+												if($x > 0) fwrite($fp, "\"\t\"");
+												
+												if(array_key_exists($k, $arr))
+												{
+													fwrite($fp, $arr[$k]);
+												}
+												
+												$x++;
+											}
+										}
+										else
+										{
+											for($fieldsIn = 0; $fieldsIn < 6; $fieldsIn++)
+											{
+												fwrite($fp, "\"t\"");
+											}
+										}
+									}catch(Exception $e)
+									{
+										throw $e;
+									}	
+								
+								}
+								else
+								{
+									fwrite($fp, $xml[$real_flds[$i]]);
+								}
+							}
+							fwrite($fp, '"');
+						}
+						
+						fwrite($fp, "\r\n");
 					}
-				}	
-				echo "$headers\r\n";	
-				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "tsv");
-				if($res !== true) die($res);
-				while($xml = $prj->tables[$frmName]->recieve(1, "tsv"))
-				{
-					echo "$xml\n";
 				}
-				return;
+			
+				global $SITE_ROOT;
+				header("Content-Type: text/tsv");
+				header(sprintf('location: http://%s%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT, $filename));
 			case "js" :
 				global $SITE_ROOT;
 					
@@ -2584,7 +2712,7 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
 							array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid jump statement the field {$jBits[$i]} that is the target when the value is {$jBits[$i+1]} does not exist in this form");
 						}
 						//check that the jump value exists in the form
-						if( $fld->type == "select1" || $fld->type == "radio" || $fld->type == "select")
+						if( $fld->type == "select1" || $fld->type == "radio")
 						{
 							$tval = preg_replace('/^!/', '',$jBits[$i + 1]);
 							if(!($jBits[$i + 1] == "all" ||  (preg_match('/^[0-9]+$/',$tval) && (intval($tval) <= count($fld->options)) && intval($tval) > 0)))
@@ -3152,6 +3280,25 @@ function getXML()
 	}
 }
 
+function projectList()
+{
+	/**
+	 * Produce a list of all the projects on this server that are
+	 * 	- publically listed
+	 *  - if a user is logged in, owned, curated or managed by the user
+	 */
+	global $auth;
+	
+	$prjs = EcProject::getPublicProjects();
+	$usr_prjs = array();
+	if($auth->isLoggedIn())
+	{
+		$usr_prjs = EcProject::getUserProjects($auth->getEcUserId());
+	}
+	
+	echo json_encode(array_merge($prjs, $usr_prjs));
+}
+
 function projectSummary()
 {
 	global $url;
@@ -3382,7 +3529,6 @@ function userHandler()
 * as log files which may contain restricted data)
 */
 
-
 try{
 	$hasManagers = $db->connected && count($auth->getServerManagers()) > 0;
 }catch (Exception $err)
@@ -3435,7 +3581,6 @@ $pageRules = array(
 		'enableUser' => new PageRule(null, 'enableUser',true),
 		'resetPassword' => new PageRule(null, 'resetPassword',true),
 		
-		
 //generic, dynamic handlers
 		'getControls' =>  new PageRule(null, 'getControlTypes'),
 		'uploadFile.php' => new PageRule(null, 'uploadHandlerFromExt'),
@@ -3444,10 +3589,12 @@ $pageRules = array(
 	
 		'uploadTest.html' => new PageRule(null, 'defaultHandler', true),
 		'test' => new PageRule(null, 'siteTest', false),
+		'tests.*' => new PageRule(),
 		'createDB' => new PageRule(null, 'setupDB',$hasManagers),
 		'writeSettings' => new PageRule(null, 'writeSettings', $hasManagers),
 		
 //to API
+		'projects' => new PageRule(null, 'projectList'),
 		'[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|/)?' =>new PageRule(null, 'projectHome'),
 		'[a-zA-Z0-9_-]+/upload' =>new PageRule(null, 'uploadData'),
 		'[a-zA-Z0-9_-]+/download' =>new PageRule(null, 'downloadData'),

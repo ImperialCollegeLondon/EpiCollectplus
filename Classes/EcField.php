@@ -546,5 +546,17 @@ class EcField{
 				}
 			}
 		}
+
+		public function valueIsObject()
+		{
+			$object_fields = array('gps', 'location');//fields encoded as objects
+			return array_search($this->type, $object_fields) !== false;
+		}
+		
+		public function valueIsFile()
+		{
+			$object_fields = array('photo', 'audio', 'video');//fields that represent files
+			return array_search($this->type, $object_fields) !== false;
+		}
 	}
 ?>

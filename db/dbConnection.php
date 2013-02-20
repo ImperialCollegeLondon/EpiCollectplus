@@ -20,6 +20,9 @@
 		{
 			global $cfg;
 			
+			ini_set('mysql.connect_timeout', 300);
+			ini_set('default_socket_timeout', 300);
+			
 			if($un)
 			{
 				$this->username = $un;
@@ -30,7 +33,7 @@
 				$this->username = $cfg->settings["database"]["user"];
 				$this->password = $cfg->settings["database"]["password"];
 			}
-			$this->server = $cfg->settings["database"]["server"];
+			$this->server = $cfg->settings["database"	]["server"];
 			$this->schema = $cfg->settings["database"]["database"];;
 			$this->port = $cfg->settings["database"]["port"];
 			
@@ -121,7 +124,7 @@
 		
 		public function escapeArg($arg)
 		{
-			return $this->con->real_escape_string($arg);
+			return $this->con->escape_string($arg);
 		}
 		
 		public function do_query($qry)
@@ -132,6 +135,7 @@
 				if($this->resSet && !is_bool($this->resSet)) mysqli_free_result($this->resSet);
 				$this->resSet = $this->con->query($qry);
 				$this->numRows = $this->con->affected_rows;
+				
 				if($this->resSet)
 				{
 					$this->lastQuery = $qry;

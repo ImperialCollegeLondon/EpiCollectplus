@@ -49,7 +49,6 @@
 	  		}
 	  		catch(Exception $err)
 	  		{
-	  			echo '===' . $err;
 	  			$err = null;
 	  			$this->openIdEnabled = false;
 	  			
@@ -174,7 +173,9 @@
   		{
   			
   			$uid = false;
-  			$sql = "SELECT idUsers, active FROM user where details = '" . $this->providers[$provider]->getCredentialString() . "'";
+  			$sql = "SELECT idUsers, active FROM user where details = '" . $this->providers[$provider]->getCredentialString()  . "'";
+  			
+  			//print $this->providers[$provider]->getCredentialString();
   			
   			if($provider != "LOCAL")
   			{
@@ -183,10 +184,12 @@
 	  			$this->email = $this->providers[$provider]->email;
 	  			$this->language = $this->providers[$provider]->language;
   			}
+  			
   			$res = $db->do_query($sql);
   			if($res !== true) die($res . "\n" . $sql);
   			while($arr = $db->get_row_array())
   			{
+  		
   				if($arr["active"])
   				{ 
   					$uid = $arr["idUsers"];
@@ -226,9 +229,9 @@
   			}  			
   			else
   			{
-  				$_SESSION["tries"]++;
+  				if($_SESSION["tries"] < 6) $_SESSION["tries"]++;
   			}
-  			sleep($_SESSION["tries"] * $_SESSION["tries"]);
+  			//sleep($_SESSION["tries"] * $_SESSION["tries"]);
   			global $SITE_ROOT;
   			header("location: http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/login.php");
   		}
@@ -339,8 +342,9 @@
 		  		{
 		  			array_push($men, $arr);
 		  		}
+		  		$db->free_result();
   			}
-  			$db->free_result();
+  			//
 	  		return $men;
   		}
 	  	catch(ErrorException $err)
