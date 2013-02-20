@@ -619,7 +619,7 @@
 			return $count;			
 		}
 		
-		public function recieve($n = 1)
+		public function recieve($n = 1, $full_urls = false)
 		{
 			global $db, $SITE_ROOT;
 			$ret = array();
@@ -637,7 +637,7 @@
 						{
 							$arr[$kv[0]] = json_decode($kv[1], true);
 						}
-						else if($this->fields[$kv[0]]->valueIsFile())
+						else if($full_urls && $this->fields[$kv[0]]->valueIsFile())
 						{
 							$arr[$kv[0]] = sprintf('http://%s/%s%s/%s/__getImage?img=%s', $_SERVER['HTTP_HOST'], trim($SITE_ROOT, '/') . '/', $this->name, $this->projectName, $kv[1]);
 						}

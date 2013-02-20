@@ -214,13 +214,14 @@ function regexEscape($s)
 
 function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 {
-	global $db, $SITE_ROOT, $DIR, $auth, $CODE_VERSION;
+	global $db, $SITE_ROOT, $DIR, $auth, $CODE_VERSION, $cfg;
 
 	$template = file_get_contents(sprintf('%shtml/%s', $DIR, trim( $baseUri,'.')));
 	$templateVars['SITE_ROOT'] = ltrim($SITE_ROOT, '\\');
 	$templateVars['uid'] = md5($_SERVER['HTTP_HOST']);
 	$templateVars['codeVersion'] = $CODE_VERSION;
 	$templateVars['protocol'] = (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] == 'on' ? 'https' : 'http');
+	$templateVars['GA_ACCOUNT'] = $cfg->settings['misc']['ga_account'];
 	// Is there a user logged in?
 
 	$flashes = '';
@@ -1721,7 +1722,7 @@ function formHandler()
 				
 				$recordSet = array();
 				
-				while($rec = $prj->tables[$frmName]->recieve(1))
+				while($rec = $prj->tables[$frmName]->recieve(1, true))
 				{
 					$recordSet = array_merge($recordSet, $rec); 
 				}
@@ -1738,7 +1739,7 @@ function formHandler()
 					echo "<entries>";
 					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "xml");
 					if($res !== true) die($res);
-					while($ent = $prj->tables[$frmName]->recieve(1))
+					while($ent = $prj->tables[$frmName]->recieve(1, true))
 					{
 						echo $ent;
 					}
@@ -1759,7 +1760,7 @@ function formHandler()
 					
 				$arr = $prj->tables[$frmName]->ask(false, $offset, $limit);
 					
-				while($ent = $prj->tables[$frmName]->recieve(1))
+				while($ent = $prj->tables[$frmName]->recieve(1, true))
 				{
 					echo "<Placemark>";
 					$desc = "";
@@ -1842,7 +1843,7 @@ function formHandler()
 					
 					$count_h = count($real_flds);
 					
-					while($xml = $prj->tables[$frmName]->recieve(1, "object"))
+					while($xml = $prj->tables[$frmName]->recieve(1, true))
 					{
 						$xml = $xml[0];
 //						fwrite($fp, sprintf('"%s"
@@ -1963,7 +1964,7 @@ function formHandler()
 					
 					$count_h = count($real_flds);
 					
-					while($xml = $prj->tables[$frmName]->recieve(1, "object"))
+					while($xml = $prj->tables[$frmName]->recieve(1, true))
 					{
 						$xml = $xml[0];
 //						fwrite($fp, sprintf('"%s"
