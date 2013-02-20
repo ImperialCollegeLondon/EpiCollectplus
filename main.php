@@ -94,7 +94,11 @@ if(!array_key_exists('salt',$cfg->settings['security']) || $cfg->settings['secur
 	$cfg->writeConfig();
 }
 
-
+function makeUrl($fn)
+{
+	global $SITE_ROOT;
+	return sprintf('http://%s/%s/ec/uploads/%s', $_SERVER['HTTP_HOST'], trim($SITE_ROOT, '/'), $fn);
+}
 
 function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 {

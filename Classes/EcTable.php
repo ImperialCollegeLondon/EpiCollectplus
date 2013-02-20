@@ -637,10 +637,14 @@
 						{
 							$arr[$kv[0]] = json_decode($kv[1], true);
 						}
-						else if($full_urls && $this->fields[$kv[0]]->valueIsFile())
+						elseif($full_urls && $this->fields[$kv[0]]->type == "photo" && $kv[1] != '')
 						{
 							$arr[$kv[0]] = sprintf('http://%s/%s%s/%s/__getImage?img=%s', $_SERVER['HTTP_HOST'], trim($SITE_ROOT, '/') . '/', $this->name, $this->projectName, $kv[1]);
 						}
+						elseif ($full_urls && $this->fields[$kv[0]]->valueIsFile() && $kv[1] != '')
+						{
+							$arr[$kv[0]] = makeUrl($kv[1]);
+						} 
 						else
 						{
 							$arr[$kv[0]] = $kv[1];
