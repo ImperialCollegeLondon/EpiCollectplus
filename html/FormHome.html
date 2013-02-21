@@ -51,6 +51,8 @@
 			font-style : italic; 
 		}
 		
+		
+		
 		#timeText
 		{
 			width : 30em;
@@ -83,8 +85,10 @@
 		#map
 		{
 			position : relative;
-			margin : 1em 15em 1em 15em; 
+			margin : 1em 16em 1em 15em; 
 			height : 30em;
+			border: 1px solid #CCCCCC;
+			left:0;
 		}
 		
 		#map-container
@@ -94,7 +98,7 @@
 		
 		#bottombar
 		{
-			margin : 1em 14em 1em -1.5em;
+			margin : 1em -6em 1em -0.5em;
 			position : relative;
 			height : 100%;
 			padding: .5em .5em .5em .5em;
@@ -102,19 +106,21 @@
 		
 		#bottombar div.filterControl, #bottombar div.colourControl
 		{
-			height: 100%;
+			height: 8em;
 			width: 30%;
 			display : inline-block;
 			border : 1px solid #CCCCCC;
-			padding: 0.5em;
+			padding: 0.5em 0.5em 2em 0.5em;
 			position : relative;
 			vertical-align : top;
+			margin : 1px;
 		}
 				
 		#bottombar div.filterControl.active
 		{
 			display : inline-block;
-			border : 1px solid #CCCCFF;
+			border : 2px solid #0000FF;
+			margin : 0px;
 		}
 		
 		#sidebar 
@@ -154,25 +160,54 @@
 			width: 6em;
 		}
 		
-		#graphbar 
+		#graphOne 
 		{
-			bottom : 0em;
-			right : 0;
-			overflow : auto;
+			overflow : hidden;
+			border: 1px solid rgba(0,0,0,0.4);
+			margin : 1px 1px 1px 33em;
+			height : 30em;
+			background : rgba(255,255,255,1);
 			position : absolute;
+			width: 75%;
 			top : 0em;
-			width : 14em;
-			border-left: 2px solid rgba(0,0,0,0.4);
+			right : 0;
 		}
 		
-		.graphPanel
+		#graphOne.minimised, #map.minimised
+		{
+			width : 15em;
+			height : 15em;
+		}
+		
+		#graphOne.minimised.hover
+		{
+			border: 2px solid #0000FF;
+			cursor: pointer;
+			margin : 0px;
+		}
+		
+		.minmax
+		{
+			position: absolute;
+			bottom: 0px;
+			left: 0px;
+			z-index: 100;
+			padding : 2px;
+		}
+		
+		.hover .minmax
+		{
+			background-color: #0000FF;
+		}
+		
+		/*.graphPanel
 		{
 			border: 1px solid #CCCCCC;
 			position : relative;
 			height : 32%;
 			margin-bottom: 1px;	
 			overflow: hidden;	
-		}
+		}*/
 		
 		.button:active
 		{
@@ -190,6 +225,11 @@
 			position:absolute;
 			bottom:0;
 			right: 0;
+			color : #FFFFFF;
+			background : #0000FF;
+			padding : 0.5em 0.5em 0.5em 0.5em;
+			border-top-left-radius : 0.5em;
+			font-weight: bold;
 		}
 		
 		table.ibubble th
@@ -250,6 +290,8 @@
 			var totalents = 0;
 			var mapChunkSize = 100;
 			
+			var mapHeight = 0;
+			
 			var colours = [
 				"rgba(255,0,0,1)",
 				"rgba(0,128,0,1)",
@@ -282,8 +324,8 @@
 				
 				$(".graphPanel").graphPanel(
 				{
-					form : "<fieldSet><label for=\"field\">Field Name</label><select name=\"field\" class=\"colourFieldList\"></select><h4>Chart Type</h4><p><input type=\"radio\" name=\"chartType\" value=\"pie\" /> <label>Pie</label></p>" 
-					+"<p><input type=\"radio\" name=\"chartType\" value=\"bar\" checked=\"checked\" /> <label>Bar</label></p> </fieldSet>",
+					form : "<fieldSet><label for=\"field\">Field Name</label><select name=\"field\" class=\"colourFieldList\"></select><h4>Chart Type</h4><p><input type=\"radio\" name=\"chartType\" value=\"pie\" checked=\"checked\" /> <label>Pie</label></p>" 
+					+"<p><input type=\"radio\" name=\"chartType\" value=\"bar\" /> <label>Bar</label></p> </fieldSet>",
 				});
 				
 				$("#tabs").tabs({
@@ -331,7 +373,8 @@
 				};
 				
 				$(window).resize(function(){
-					$('#map').height($(window).height() - 450);
+					mapHeight = $(window).height() - 470;
+					$('#map').height(mapHeight);
 					$('#graphbar').height($(window).height() - 350);
 				});
 				$(window).resize();
@@ -394,7 +437,7 @@
 				map = new _maps.Map(doc.getElementById(div), {
 					center : new _maps.LatLng(0,0),
 					mapTypeId:_maps.MapTypeId.ROADMAP,
-					zoom : 2,
+					zoom : 1,
 					panControl: true,
 					rotateControl: true,
 					zoomControl: true
@@ -471,7 +514,6 @@
 					$(".ecplus-data th").removeClass("desc");
 					$(".ecplus-data th").removeClass("asc");
 		
-					if( window['console'] ) console.debug(sortCol + " " + sortDir);
 					window.evt = evt;
 					if(newSortCol == sortCol && sortDir == "asc")
 					{
@@ -546,13 +588,20 @@
 					values: [0,  t],
 					slide: function (event, ui)
 					{
-						filterMap(function(data){ return data["created"] >= ui.values[0] && data["created"] <= ui.values[1]; })
+						filterMap(function(data){ return data["created"] >= ui.values[0] / 1000 && data["created"] <= ui.values[1] / 1000; })
 						$("#timeFrom").text(new Date(ui.values[0]).format(dateFormat));
 						$("#timeTo").text(new Date(ui.values[1]).format(dateFormat));
 						
 						$(".filterControl").removeClass("active");
 						$("#timeFilter").addClass("active");
 					}
+				});
+				
+				$('.minmax').mouseenter(function(){
+					$(this).parent().addClass('hover')
+				});
+				$('.minmax').mouseleave(function(){
+					$(this).parent().removeClass('hover')
 				});
 			};	
 			
@@ -845,7 +894,7 @@
 					{
 						markerClusterer = new MarkerClusterer(map, markers,
 						{
-							maxZoom : 12,
+							maxZoom : 21,
 							gridSize : 40,
 							styles : [
 								{
@@ -887,6 +936,56 @@
 					{
 						markerClusterer.addMarkers(markers);	
 					}
+					
+					$('#map-container').height(mapHeight);
+					mapWidth = $('#map').width();
+					$('#map').css('position', '');
+					
+					$('.minmax', $('#graphOne')).bind('click', function(){
+						var div = $('.ecplus-pane', $(this).parent());
+						var par = $(this).parent(); 
+						var img = this;
+						
+						
+						
+						if (par.hasClass('minimised'))
+						{
+							//par.switchClass('minimised', '',1000,'swing',function(){
+								
+							$('#legend').hide();
+							par.animate({height : mapHeight, width : mapWidth },1000,'swing',function(){
+								par.removeClass('minimised');
+							
+								drawGraph(div, div.attr('graph-field'), div.attr('graph-type'));
+								$(img).attr('src', $(img).attr('src').replace('5_resize_fu', '4_resize_sma'));
+								
+							});
+//							$('#map').switchClass('', 'minimised', 900, 'swing');
+							$('#map').animate({height : 210, width : 210 }, 900, 'swing', function(){
+								google.maps.event.trigger(map, 'resize');
+								map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+							});
+						}
+						else
+						{
+							$('#legend').show();
+						
+							//par.switchClass('', 'minimised',1000,'swing',function(){
+							par.animate({height : 210, width : 210 },1000,'swing',function(){
+								par.addClass('minimised');	
+								
+								drawGraph(div, div.attr('graph-field'), div.attr('graph-type'));
+								$(img).attr('src', $(img).attr('src').replace('4_resize_sma','5_resize_fu'));
+							});
+							//$('#map').switchClass('minimised', '',900,'swing');
+							$('#map').animate({height : mapHeight, width : mapWidth }, 900, 'swing', function(){
+								google.maps.event.trigger(map, 'resize');
+								map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+							});
+						}
+					});
+					
+					drawGraph($('#graphOne .ecplus-pane'), $('#mapColourField').val(), 'pie')
 					
 					$('[href=#mapTab]').removeClass('ec-loading');	
 				}
@@ -1055,10 +1154,11 @@
 				if(!map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].length)
 				{
 					legend = document.createElement('div');
+					legend.id = "legend";
 					legend.style.backgroundColor = '#EEEEEE';
 					legend.style.padding = '5px 5px 5px 5px';
 					legend.style.border = '1px solid #000000';
-					legend.style.maxHeight = '70%';
+					legend.style.maxHeight = '30%';
 					legend.style.overflow = 'auto';
 					var inner = document.createTextNode('Hello World');
 					legend.appendChild(inner);
@@ -1148,25 +1248,26 @@
 				});
 				
 				jq.bind('plothover', function(event, pos, obj)
-						{
-							console.debug(JSON.stringify(pos));
-							if(!obj)
-							{
-								$('#tooltip').hide();
-							}
-							else
-							{
-								$('#tooltip').text(obj.series.data[0].join(','));
-								$('#tooltip').css('top', (pos.pageY - $('#tooltip').height() - 25)+ 'px');
-								$('#tooltip').css('left', (pos.pageX - $('#tooltip').width() - 25)+ 'px');
-								$('#tooltip').show();
-							}
-							
-						});
+				{
+					
+					if(!obj)
+					{
+						$('#tooltip').hide();
+					}
+					else
+					{
+						$('#tooltip').text(obj.series.data[0].join(','));
+						$('#tooltip').css('top', (pos.pageY - $('#tooltip').height() - 25)+ 'px');
+						$('#tooltip').css('left', (pos.pageX - $('#tooltip').width() - 25)+ 'px');
+						$('#tooltip').show();
+					}
+					
+				});
 			}
 			
 			function drawPie(jq, data, field)
 			{
+				
 				var len = data.length;
 				var d = data;
 				
@@ -1176,14 +1277,14 @@
 				{
 					for(var i in d)
 					{
-						s[idx++] = { label : i, data : d[i], color : window.colourGrps[i]};
+						s[idx++] = { label : i.replace(/<\/?\w>/gi, ''), data : d[i], color : window.colourGrps[i]};
 					}
 				}
 				else
 				{
 					for(var i in d)
 					{
-						s[idx++] = { label : i, data : d[i]};
+						s[idx++] = { label : i.replace(/<\/?.*>/gi, '')	, data : d[i]};
 					}
 				}
 				
@@ -1192,9 +1293,9 @@
 						pie: {
 							show : true,
 							label : {
-								show:false
+								show: !jq.parent().hasClass('minimised')
 							},
-							radius : 1
+							radius : 0.8
 						}
 					},
 					legend : {
@@ -1205,9 +1306,10 @@
 			            clickable: true
 			        }
 				});
+				
 				jq.bind('plothover', function(event, pos, obj)
 				{
-					console.debug(JSON.stringify(pos));
+					
 					if(!obj)
 					{
 						$('#tooltip').hide();
@@ -1222,12 +1324,18 @@
 					}
 					
 				});
+				
+				
 			}
 			
 			function drawGraph(div, field, type)
 			{
 				
 				var jq = $(div);
+				
+				jq.attr('graph-field', field);
+				jq.attr('graph-type', type);
+				
 				
 				var d = mapData;
 				var len = d.length;
@@ -1336,7 +1444,7 @@
 					</a>
 				</span>
 				<span class="right">
-					Show <input type="number" maxlengh="3" id="num_entries" /> entries per page <a href="javascript:saveNumEntires();">Save as my default</a> 
+					Show <input type="number" maxlength="3" id="num_entries" /> entries per page <a href="javascript:saveNumEntires();">Save as my default</a> 
 				</span>
 			</p>
 			{#csvform#}
@@ -1344,37 +1452,40 @@
 		<div id="mapTab">
 			<div id="progressbar"><div class="progress-label">Getting Total no of Entries...</div></div>
 			<div id="map-container">
+				<div id="graphOne" class="graphPanel minimised"></div>
 				<div id="sidebar">
 					
 				</div>
 				<div id="map"></div>
-				<div id="graphbar">
-					<div id="graphOne" class="graphPanel"></div>
-					<div id="graphTwo" class="graphPanel"></div>
-					<div id="graphThree" class="graphPanel"></div>
+				<!--  <div id="graphbar"> -->
+				
+					<!-- <div id="graphTwo" class="graphPanel"></div>
+					<div id="graphThree" class="graphPanel"></div>-->
+				<!--</div>-->
+				
+			</div>
+			<div id="bottombar">
+				<div id="timeFilter" class ="filterControl">
+					<h4>Filter By Time</h4>
+					<div id="slider-range" ></div>
+					<p><b>From :</b><span id="timeFrom"></span></p>
+					<p><b>To :</b><span id="timeTo"></span></p>
+					<a  class="clearFilter" href="javascript:clearMapFilter();">Clear Filter</a>
 				</div>
-				<div id="bottombar">
-					<div id="timeFilter" class ="filterControl">
-						<h4>Filter By Time</h4>
-						<div id="slider-range" ></div>
-						<p><b>From :</b><span id="timeFrom"></span></p>
-						<p><b>To :</b><span id="timeTo"></span></p>
-						<span class="clearFilter"><a href="javascript:clearMapFilter();">Clear Filter</a></span>
-					</div>
-					<div id="fieldFilter" class ="filterControl">
-						<h4>Filter By Field</h4>
-						<p><b>Field </b><select id="mapFilterField" class="fieldList"></select></p>
-						<p><b>Value </b><input id="mapFilterValue"></input></p>
-						<p><a href="javascript:doMapFieldFilter()">Apply Filter</a></p>
-						<span class="clearFilter"><a href="javascript:clearMapFilter();">Clear Filter</a></span>
-					</div>
-					<div id="fieldColour" class ="colourControl">
-						<h4>Colour By Field</h4>
-						<p><b>Field </b><select id="mapColourField" class="colourFieldList"></select></p>
-						<p><a href="javascript:colourMarkersBy($('#mapColourField').val())">Apply Colouring</a></p>
-					</div>
+				<div id="fieldFilter" class ="filterControl">
+					<h4>Filter By Field</h4>
+					<p><b>Field </b><select id="mapFilterField" class="fieldList"></select></p>
+					<p><b>Value </b><input id="mapFilterValue"></input></p>
+					<p><a href="javascript:doMapFieldFilter()">Apply Filter</a></p>
+					<a class="clearFilter" href="javascript:clearMapFilter();">Clear Filter</a>
+				</div>
+				<div id="fieldColour" class ="colourControl">
+					<h4>Colour By Field</h4>
+					<p><b>Field </b><select id="mapColourField" class="colourFieldList"></select></p>
+					<p><a href="javascript:colourMarkersBy($('#mapColourField').val())">Apply Colouring</a></p>
 				</div>
 			</div>
-		</div>
+		</div>		
 	</div>
+
 {{/main}}

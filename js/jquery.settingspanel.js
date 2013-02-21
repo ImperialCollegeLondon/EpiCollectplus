@@ -34,9 +34,9 @@
 	  {
 		  this[0].expanded = false;
 		  
-		  this.append("<div class=\"ecplus-pane\"> </div><div class=\"ecplus-settingspanel\">&nbsp;</div>");
-		  this.css("position", "relative");
-		  $(".ecplus-settingspanel", this).append("<div class=\"ecplus-expansionbar\">&lt;&lt;</div>")
+		  this.append("<div class=\"ecplus-pane\"> </div><div class=\"ecplus-settingspanel\">&nbsp;</div><img class=\"minmax\" src=\"\../images/glyphicons/glyphicons_215_resize_full.png\" />");
+		  //this.css("position", "relative");
+		  $(".ecplus-settingspanel", this).append("<div class=\"ecplus-expansionbar\">&lt;&lt;</div>");
 		  $(".ecplus-settingspanel", this).height(this.height);
 		  $(".ecplus-settingspanel .ecplus-expansionbar", this).click(function(evt){$(evt.target.parentNode.parentNode).graphPanel("toggle");});
 		  
