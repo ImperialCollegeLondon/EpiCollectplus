@@ -146,12 +146,12 @@ class EcProject{
 						break;
 					case "allowDownloadEdits":
 						try{
-								$this->allowDownloadEdits = parseBool((string)$val);
-								$adeIsSet = true;
+							$this->allowDownloadEdits = parseBool((string)$val);
+							$adeIsSet = true;
 						}
 						catch(Exception $e)
 						{
-								throw new InvalidArgumentException("allowDownloadEdits must be true or false");		
+							throw new InvalidArgumentException("allowDownloadEdits must be true or false");		
 						}
 						break;
 					case "versionNumber":

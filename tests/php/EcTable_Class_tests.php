@@ -37,6 +37,50 @@ class EcProjectTest	 extends PHPUnit_Framework_TestCase
 		global $db;
 	}
 	
+	public function test_fetch()
+	{
+	
+		for($p = 0; $p < count($this->projects); $p++)
+		{
+			$prj = new EcProject();
+			$prj->name = $this->projects[$p]['name'];
+			$prj->fetch();
+			
+			$tbls = array_keys($prj->tables);
+			for( $t = 0; $t < count($tbls); $t++ )
+			{
+				$tbl = $tbls[$t];
+			
+				$flds = array_keys($prj->tables[$tbl]->fields);
+				
+				$zerocount = 0;
+				
+				for( $f = 0; $f < count($flds); $f++ )
+				{
+					if($prj->tables[$tbl]->fields[$flds[$f]]->position === 0)
+					{
+						$zerocount++;
+						$this->assertLessThanOrEqual($zerocount, 1);
+					}
+					else
+					{
+						if(is_int($prj->tables[$tbl]->fields[$flds[$f]]->position))
+						{
+							$this->assertGreaterThan($prj->tables[$tbl]->fields[$flds[$f]]->position, 0);
+						}
+						else
+						{
+							$this->assertRegExp('/^\d+$/', $prj->tables[$tbl]->fields[$flds[$f]]->position);
+						}
+					}
+				}
+			}
+			
+			
+		}
+		
+	}
+	
 	public function test_ask()
 	{
 		
