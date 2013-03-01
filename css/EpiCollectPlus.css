@@ -55,8 +55,6 @@ form p, .ecplus-form-element p, .filterControl p
 	margin : 0.5em 0 0.5em 0;	
 }
 
-
-
 .ecplus-data th
 {
 	color: #EEEEEE;
@@ -693,21 +691,28 @@ tr.alt
 
 .ecplus-settingspanel
 {
-	border-radius : 0.25em;
-	border: 0.25em solid #CCCCFF;
 	background-color : #CCCCFF;
-	
 	position: absolute;
-	
-	top: 0.125em;
-	left: 95%;
-	
-	height : 95%;
+	top : 0px;
+	padding: 0.5em 0.25em;
 	width: 100%;
+	
 }
 
 .ecplus-settingspanel label {
 	width : auto;
+}
+
+.ecplus-settingspanel form, .ecplus-settingspanel fieldset div
+{
+	display : inline-block;
+}
+
+.ecplus-settingspanel fieldset label, .ecplus-settingspanel fieldset select, .ecplus-settingspanel fieldset h4
+{
+	display : inline-block;
+	vertical-align : middle;
+	margin : 0.5em;
 }
 
 .ecplus-settingspanel .ecplus-expansionbar
@@ -725,8 +730,20 @@ tr.alt
 
 .ecplus-pane
 {
-	width: 95%;
-	height : 100%;
+	position: absolute;
+	top: 4em;
+	bottom:0em;
+	left: 0em;
+	right : 0em;
+}
+
+.minimised .ecplus-pane
+{
+	position: absolute;
+	top: 0em;
+	bottom:0em;
+	left: 0em;
+	right : 0em;
 }
 
 .ecplus-text-element

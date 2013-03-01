@@ -32,6 +32,11 @@ $(function()
 				"top" : $("#toolbox-inner").height() + 10 + "px",
 				"right" : "25px"
 			}); 
+			$("#source").css({
+				"position":"fixed",
+				"top" : $("#toolbox-inner").height() + 10 + "px",
+				"left" : "25px"
+			}); 
 		}
 		else
 		{
@@ -39,6 +44,11 @@ $(function()
 				"position":"absolute",
 				"top" : "0px",
 				"right" : "0px"
+			}); 
+			$("#source").css({
+				"position":"absolute",
+				"top" : "0px",
+				"left" : "0px"
 			}); 
 		}	
 	});
@@ -195,7 +205,6 @@ function newForm(message, name)
 		}
 		
 		switchToForm(name);
-		
 	}});
 	
 }
@@ -881,7 +890,7 @@ function removeForm(name)
 
 function removeSelected()
 {
-	var jq = $("#destination .selected")
+	var jq = $("#destination .selected");
 	
 	if(currentControl.isKey) currentForm.key = null;
 	
@@ -988,12 +997,46 @@ function switchToForm(name)
 	if(!project.forms[name]) project.forms[name] = new EpiCollect.Form();
 	currentForm = project.forms[name];
 	formName = name;
+	
+	if(!currentForm.key)
+	{
+		askForKey();
+	}
+	
 	drawFormControls(currentForm);
+}
+
+function askForKey()
+{
+	var default_name = currentForm.name + "_key";
+	
+	EpiCollect.prompt({
+		title : "Add a key field",
+		content : "Every EpiCollect Form must have a unique key so it can identify each entry. Do you have a question that is unique to each entry?",
+		form: "<form><div id=\"key_radios\" class=\"toggle\"> <label for=\"key_yes\">Yes, I do have a unique key for this form<br/>&nbsp;</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/>"+
+			"<label for=\"key_no\">No, I do not have a unique key for this form, <br />please generate a key for me.</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" /></div>"+
+			"<div id=\"key_details\" style=\"display:none;\"><label for=\"key_type\">My key field is a </label><select id=\"key_type\" ><option value=\"text\">Text Field</option><option value=\"numeric\">Integer Field</option><option value=\"barcode\">Barcode Field</option></select><br /><label for=\"key_name\">Name for the key field</label><input id=\"key_name\" /><br />"+
+			"<label for=\"key_label\">Label for the key field</label><input id=\"key_label\" /></div></form>",
+		buttons : {
+			"OK" : function(){
+				var vals = $('form', this);
+				$(this).dialog("close");
+				
+				addControlToForm((vals.key == "yes" ? vals.key_name : default_name), (vals.key == "yes" ? vals.key_label : 'Unique ID'), (vals.key == "yes" ? vals.key_type : 'text'));
+				
+			}
+		}
+	});
+	$('#key_radios input[type=radio]').on('change', function(){
+		$('#key_details').toggle({
+			showOrHide : this.id == "key_yes",
+			duration : 200
+		});
+	});
 }
 
 function saveProject()
 {
-	
 	
 	if(!updateSelected()) return;
 	if(!updateForm()) return;

@@ -35,6 +35,7 @@ class EcProjectTest	 extends PHPUnit_Framework_TestCase
 	protected function tearDown()
 	{
 		global $db;
+		
 	}
 	
 	public function test_fetch()
@@ -144,11 +145,16 @@ class EcProjectTest	 extends PHPUnit_Framework_TestCase
 				$req = $prj->tables[$tbls[$i]]->ask();
 				$this->assertTrue($req);
 				
-				while($obj = $prj->tables[$tbls[$i]]->recieve())
+				try{
+					while($obj = $prj->tables[$tbls[$i]]->recieve())
+					{
+						array_push($res, $obj[0]);
+					}
+				}catch(Exception $e)
 				{
-					array_push($res, $obj[0]);
+					print $e->getTraceAsString();
+					throw $e;
 				}
-				
 				
 				for($d = 0; $d < count($res); $d++)
 				{

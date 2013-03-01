@@ -500,7 +500,7 @@
 			
  			if(!!$child && $includeChildCount)
  			{
- 				$qry = sprintf('CREATE TEMPORARY TABLE `%s_c_entries` (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
+ 				$qry = sprintf('CREATE TEMPORARY TABLE IF NOT EXISTS `%s_c_entries` (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
  					FROM entryvalue a, entryvalue b 
  					WHERE a.projectName = \'%s\' and a.formName =\'%s\' and a.fieldName = \'%s\' and a.value = b.value and b.formName = \'%s\' 
  					and b.fieldName = \'%s\' GROUP BY a.value, b.entry ORDER BY a.value;',

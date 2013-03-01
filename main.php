@@ -8,7 +8,7 @@ $dfmat = '%s.u';
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.2";
+$CODE_VERSION = "1.3";
 if(!isset($PHP_UNIT)) {$PHP_UNIT = false;}
 if(!$PHP_UNIT){ session_start(); }
 

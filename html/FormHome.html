@@ -51,8 +51,6 @@
 			font-style : italic; 
 		}
 		
-		
-		
 		#timeText
 		{
 			width : 30em;
@@ -66,7 +64,12 @@
 			border-radius: 0.25em;
 			cursor: pointer;
 			font-weight : bold;	
-			width : 30%;
+		}
+		
+		.toggle label
+		{
+			margin : 0;
+			padding: 0;
 		}
 		
 		.progress-label {
@@ -177,6 +180,11 @@
 		{
 			width : 15em;
 			height : 15em;
+		}
+		
+		#graphOne.minimised .ecplus-settingspanel
+		{
+			display : none;
 		}
 		
 		#graphOne.minimised.hover
@@ -324,9 +332,11 @@
 				
 				$(".graphPanel").graphPanel(
 				{
-					form : "<fieldSet><label for=\"field\">Field Name</label><select name=\"field\" class=\"colourFieldList\"></select><h4>Chart Type</h4><p><input type=\"radio\" name=\"chartType\" value=\"pie\" checked=\"checked\" /> <label>Pie</label></p>" 
-					+"<p><input type=\"radio\" name=\"chartType\" value=\"bar\" /> <label>Bar</label></p> </fieldSet>",
+					form : "<fieldSet><label for=\"field\">Field Name</label><select name=\"field\" class=\"colourFieldList\"></select><h4>Chart Type</h4><div class=\"toggle\">" 
+					+"<label for=\"piech\">Pie</label><input id=\"piech\" type=\"radio\" name=\"chartType\" value=\"pie\" checked=\"checked\" /><label for=\"barch\">Bar</label><input type=\"radio\" id=\"barch\" name=\"chartType\" value=\"bar\" /></div> </fieldSet>",
 				});
+				
+				
 				
 				$("#tabs").tabs({
 					activate : function(event, ui)
@@ -374,8 +384,17 @@
 				
 				$(window).resize(function(){
 					mapHeight = $(window).height() - 470;
-					$('#map').height(mapHeight);
-					$('#graphbar').height($(window).height() - 350);
+					if($('#graphOne').hasClass('minimised'))
+					{
+						$('#map').height(mapHeight);
+						//$('#map').width($('#graphOne').offset().left - $('#map').offset().left - 14)
+					}
+					else
+					{
+						$('#graphOne').height(mapHeight);
+						$('#graphOne').width($('#graphOne').offset().left - $('#map').offset().left - 14)
+					}
+					$('#map-container').height(mapHeight);
 				});
 				$(window).resize();
 				$('#graphbar').resizable({

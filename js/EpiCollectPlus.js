@@ -41,6 +41,7 @@ EpiCollect.dialog = function(conf)
 	diajq.html(conf.content);
 	if(conf.title) diajq.attr('title', conf.title);
 	else diajq.attr('title', 'EpiCollect+ Message');
+	
 	if(!conf.buttons)
 	{
 		diajq.dialog({
@@ -55,7 +56,11 @@ EpiCollect.dialog = function(conf)
 	}
 	else
 	{
-		
+		diajq.dialog({
+			modal : true,
+			buttons: conf.buttons,	
+			resizable : false
+		});
 	}
 };
 
@@ -70,7 +75,14 @@ EpiCollect.prompt = function(conf)
 	diajq.hide();
 	diajq.html(conf.content);
 	
-	diajq.append('<br /><br /><input type="text" style="width: 80%" name="ecplus-dialog-input" />');
+	if(!conf.form)
+	{
+		diajq.append('<br /><br /><input type="text" style="width: 80%" name="ecplus-dialog-input" />');
+	}
+	else
+	{
+		diajq.append(conf.form);
+	}
 	
 	if(conf.title) diajq.attr('title', conf.title);
 	else diajq.attr('title', 'EpiCollect+ Prompt');
@@ -81,21 +93,30 @@ EpiCollect.prompt = function(conf)
 			modal : true,
 			buttons: {
 				'OK' : function(){
-					conf.callback($( 'input', this ).val());
+					var val = $( 'input', this ).val();
 					$( this ).dialog('close');
+					conf.callback(val);
 				},
 				'Cancel' : function(){
 					$( this ).dialog('close');
 				}
 			},
-			resizable : false
+			resizable : false,
+			width : 'auto'
 		});
 	}
 	else
 	{
-		
+		diajq.dialog({
+			modal : true,
+			buttons: conf.buttons,	
+			resizable : false,
+			width : 'auto'
+		});
 	}
-}
+	
+	$('.toggle').buttonset();
+};
 
 EpiCollect.LoadingOverlay = function()
 {
