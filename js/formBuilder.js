@@ -224,9 +224,16 @@ function addFormToList(name)
 function addControlToForm(id, text, type)
 {
 	if(type.trimChars() == "") return; 
+
+	if(!type.match(/\.?ecplus-[a-z]+-element/))
+	{
+		type = '.ecplus-' + type + '-element';
+	}
 	
 	if(type[0] != ".") type = "." + type;
 	var jq = $(type, $(".first")).clone();
+	
+	
 	$("p.title", jq).text(text);
 	jq.attr("id", id);
 	
@@ -396,12 +403,32 @@ function updateSelected()
 	currentControl.title = !!$("#title").attr("checked");
 	if($("#key").attr("checked") == "checked")
 	{
-		currentControl.isKey = true;
-		currentForm.key = currentControl.id;
+		if(currentForm.key != currentControl.id && currentForm.key != "")
+		{
+			if(confirm("You have chose to make " + currentControl.id + " the key for this form, but " + currentForm.key + " is already marked as the key. do you want to change the form's key field to be " + currentControl.id))
+			{
+				currentControl.isKey = true;
+				currentForm.fields[currentForm.key].isKey = false;
+				currentForm.key = currentControl.id;			
+			}
+			else
+			{
+				$("#key").attr("checked", "");
+			}
+		}
 	}
 	else
 	{
-		currentControl.isKey = false;
+
+		if( currentForm.key == currentControl.id )
+		{
+			EpiCollect.dialog("This is currently the form's key field, please set another field as the key");
+			$("#key").attr("checked", "checked");
+		}
+		else
+		{
+			currentControl.isKey = false;
+		}
 	}
 	
 	//console.debug()
@@ -422,7 +449,8 @@ function updateSelected()
 		if($("#date").val() == "")
 		{
 			EpiCollect.dialog({ content : "You must select a date format." });
-			throw "You must select a date format.";
+			//throw "You must select a date format.";
+			return false;
 		}
 		currentControl[(notset ? "date": "setDate")] = $("#date").val();
 	}
@@ -431,7 +459,7 @@ function updateSelected()
 		if($("#time").val() == "")
 		{
 			EpiCollect.dialog({ content : "You must select a time format." });
-			throw "You must select a time format.";
+			return false; //throw "You must select a time format.";
 		}
 		currentControl[(notset ? "time": "setTime")] = $("#time").val();
 	}
@@ -529,7 +557,7 @@ function updateForm()
 	if(!currentForm.key)
 	{
 		EpiCollect.dialog({ content : "The form " + currentForm.name + " needs a key defined." });
-		throw "The form " + currentForm.name + " needs a key defined.";
+		//throw "The form " + currentForm.name + " needs a key defined.";
 		return false;
 	}
 	
@@ -837,6 +865,7 @@ function setSelected(jqEle)
 		else
 		{
 			throw "div is not a form Element!";
+			
 		}
 		
 		if(currentControl){ $(".last").show();}
@@ -892,7 +921,10 @@ function removeSelected()
 {
 	var jq = $("#destination .selected");
 	
-	if(currentControl.isKey) currentForm.key = null;
+	if(currentControl.isKey){
+		currentForm.key = null;
+		askForKey(true);
+	}
 	
 	delete currentForm.fields[jq.attr("id")];
 	jq.remove();
@@ -1006,24 +1038,47 @@ function switchToForm(name)
 	drawFormControls(currentForm);
 }
 
-function askForKey()
+function askForKey(keyDeleted)
 {
 	var default_name = currentForm.name + "_key";
+	var frm = currentForm;
 	
 	EpiCollect.prompt({
 		title : "Add a key field",
-		content : "Every EpiCollect Form must have a unique key so it can identify each entry. Do you have a question that is unique to each entry?",
+		content : (!keyDeleted ? "Every EpiCollect Form must have a unique key so it can identify each entry. Do you have a question that is unique to each entry?" : "You have deleted the key for this form, please choose a new key field to generate. " ),
 		form: "<form><div id=\"key_radios\" class=\"toggle\"> <label for=\"key_yes\">Yes, I do have a unique key for this form<br/>&nbsp;</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/>"+
 			"<label for=\"key_no\">No, I do not have a unique key for this form, <br />please generate a key for me.</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" /></div>"+
-			"<div id=\"key_details\" style=\"display:none;\"><label for=\"key_type\">My key field is a </label><select id=\"key_type\" ><option value=\"text\">Text Field</option><option value=\"numeric\">Integer Field</option><option value=\"barcode\">Barcode Field</option></select><br /><label for=\"key_name\">Name for the key field</label><input id=\"key_name\" /><br />"+
-			"<label for=\"key_label\">Label for the key field</label><input id=\"key_label\" /></div></form>",
+			"<div id=\"key_details\" style=\"display:none;\"><label for=\"key_type\">My key field is a </label><select id=\"key_type\" name=\"key_type\"><option value=\"text\">Text Field</option><option value=\"numeric\">Integer Field</option><option value=\"barcode\">Barcode Field</option></select><br /><label for=\"key_name\">Name for the key field</label><input id=\"key_name\" name=\"key_name\" /><br />"+
+			"<label for=\"key_label\">Label for the key field</label><input id=\"key_label\" name=\"key_label\" /></div></form>",
 		buttons : {
 			"OK" : function(){
-				var vals = $('form', this);
+				var raw_vals = $('form', this).serializeArray();
+				var vals = {};
+				
+				for(var v = 0; v < raw_vals.length; v++)
+				{
+					vals[raw_vals[v].name] = raw_vals[v].value;
+				}
+				
+				
 				$(this).dialog("close");
 				
-				addControlToForm((vals.key == "yes" ? vals.key_name : default_name), (vals.key == "yes" ? vals.key_label : 'Unique ID'), (vals.key == "yes" ? vals.key_type : 'text'));
+				var key_id = (vals.key == "yes" ? vals.key_name : default_name);
 				
+				frm.fields[key_id] = new EpiCollect.Field();
+				frm.fields[key_id].id = key_id;
+				frm.fields[key_id].text = (vals.key == "yes" ? vals.key_label : 'Unique ID');
+				frm.fields[key_id].isKey = true;
+				frm.fields[key_id].title = false;
+				frm.fields[key_id].type = vals.key_type == 'barcode' ? 'barcode' : 'input';
+				frm.fields[key_id].form = frm;
+				frm.fields[key_id].isInt = (vals.key_type == 'numeric');
+				frm.fields[key_id].genkey = (vals.key == "no");
+				console.debug(vals);
+				frm.key = key_id;		
+				addControlToForm(key_id, (vals.key == "yes" ? vals.key_label : 'Unique ID'), (vals.key == "yes" ? vals.key_type : 'text'));
+				//setSelected($('#' + key_id));
+				$('#key').attr('checked', 'checked');
 			}
 		}
 	});

@@ -145,7 +145,7 @@ EpiCollect.LoadingOverlay = function()
 	{
 		message = msg;
 		//$('#ecplus_loader p').text(message);
-	}
+	};
 	
 	this.start = function()
 	{
@@ -157,7 +157,7 @@ EpiCollect.LoadingOverlay = function()
 			ctx = $("#ecplus_loader")[0].getContext('2d');
 			drawer = setInterval(this.draw, 10);
 		}catch(err){}
-	}
+	};
 	
 	this.draw = function()
 	{
@@ -179,31 +179,31 @@ EpiCollect.LoadingOverlay = function()
 		ctx.arc(0, 0, tts, 0, Math.PI * 0.5);
 		ctx.stroke();
 		
-		ctx.beginPath()
+		ctx.beginPath();
 		ctx.arc(0, 0, tts, Math.PI, Math.PI * 1.5);
 		ctx.stroke();
 		
-		ctx.beginPath()
+		ctx.beginPath();
 		ctx.strokeStyle = "rgba(255,255,255,1)";
 		ctx.lineWidth = 10;
 		ctx.arc(0, -10, tts, 0, Math.PI * 0.5);
 		ctx.stroke();
 		
-		ctx.beginPath()
+		ctx.beginPath();
 		ctx.lineWidth = 10;
 		ctx.arc(0, 10, tts, Math.PI, Math.PI * 1.5);
 		ctx.stroke();
 		
 		ctx.restore();
-	}
+	};
 	
 	this.stop = function()
 	{
 		clearInterval(drawer);
 		$("#ecplus_loader_bg").hide();
 	}
-	
-}
+	;
+};
 
 String.prototype.pluralize = function(str)	
 {

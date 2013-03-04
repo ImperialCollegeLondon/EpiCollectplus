@@ -87,7 +87,7 @@ if($cfg->settings['security']['use_ldap'] && !function_exists('ldap_connect'))
 }
 
 
-if(!array_key_exists('salt',$cfg->settings['security']) || $cfg->settings['security']['salt'] == '')
+if(!array_key_exists('salt',$cfg->settings['security']) || trim($cfg->settings['security']['salt']) == '')
 {
 	$str = genStr();
 	$cfg->settings['security']['salt'] = $str;
