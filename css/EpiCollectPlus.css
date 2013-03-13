@@ -76,6 +76,18 @@ tr
 	
 }
 
+.editing .title
+{
+    padding-left: 30px;
+    height: 30px;
+    background: url('../images/glyphicons/glyphicons_030_pencil.png')  no-repeat left center;
+}
+
+.unsaved
+{
+    background: url('../images/glyphicons/glyphicons_030_pencil.png')  no-repeat right bottom;
+}
+
 .ecplus-data td
 {
 	overflow : hidden;
@@ -439,6 +451,7 @@ tr.alt
 	margin : 0 21em 0 21em;
 	height : 68em;
 	background-color : #EEFFEE;
+        
 }
 
 .ecplus-columns .last
@@ -516,7 +529,7 @@ tr.alt
 
 .second div.ecplus-form-element.selected
 {
-	background-color : #EEEEFF;
+	
 }
 
 .ecplus-form-element
@@ -594,6 +607,19 @@ tr.alt
 .ecplus-map-controls label
 {
 	min-width : 10em;
+}
+
+#destination 
+{
+    position: relative;
+}
+
+.editmarker
+{
+    position : absolute;
+    top: 0px;
+    right: 0px;
+    width: 100%;
 }
 
 .button
@@ -868,6 +894,11 @@ tr.alt
 	background : url("../images/branch.png") 2px 1.75em no-repeat;		
 }
 
+#ec_dialog p
+{
+    margin-bottom: 0.5em;
+}
+
 #loginStatus{
 	float:right;
 	margin-top: -2px;
@@ -919,7 +950,7 @@ tr.alt
 	width: 90%;
 	padding : 0.5em;
 	background-color : #FFFFFF;
-	z-index : 100;
+	z-index : 2;
 }
 
 #ecplus_loader_bg

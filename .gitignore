@@ -37,3 +37,6 @@ Thumbs.db
 .project
 index-blah.html
 instructions*
+/nbproject/private/
+/nbproject/
+/ec/uploads/

@@ -227,7 +227,7 @@
 	{
 		if( confirm("If you delete this project the project definition and all data will be removed from the server. Are you sure you want to do this?") )
 		{
-			$('#s_delete a').replaceWith('<p><img src="../images/loading-sm.gif" alt="deleting..." />Deleteing Project ' + projectName + '</p>');
+			$('#s_delete a').replaceWith('<p><img src="../images/loading-sm.gif" alt="deleting..." />Deleting Project ' + projectName + '</p>');
 			var url = location.href.replace('/manage', '');
 			$.ajax(url, {
 				type : 'DELETE',

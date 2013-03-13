@@ -5,6 +5,8 @@ var project;
 var checker = new URLChecker();
 var checking = {};
 var nchecks = 0;
+var formName = '';
+
 
 checker.oncheck = function(evt)
 {
@@ -14,7 +16,7 @@ checker.oncheck = function(evt)
 	{
 		jq.replaceWith('<i>File not uploaded</i>');
 	}
-}
+};
 
 var baseUrl = (location.href.indexOf("?") > 0 ? location.href.substr(0, location.href.indexOf("?")) :location.href );
 baseUrl = baseUrl.indexOf('#') > 0 ? baseUrl.substr(0, baseUrl.indexOf('#')) : baseUrl;
@@ -27,12 +29,13 @@ EpiCollect.KEYWORDS = [
 
 /**
  * Function to produce a dialog box.
+ * 
+ * @argument {object} conf {message, buttons, title}
  */
-
 EpiCollect.dialog = function(conf)
 {
 	var diajq = $('#ec_dialog');
-	if(diajq.length == 0)
+	if(diajq.length === 0)
 	{
 		$(document.body).append('<div id="ec_dialog"></div>');
 		diajq = $('#ec_dialog');
@@ -67,7 +70,7 @@ EpiCollect.dialog = function(conf)
 EpiCollect.prompt = function(conf)
 {
 	var diajq = $('#ec_dialog');
-	if(diajq.length == 0)
+	if(diajq.length === 0)
 	{
 		$(document.body).append('<div id="ec_dialog"></div>');
 		diajq = $('#ec_dialog');
@@ -77,7 +80,7 @@ EpiCollect.prompt = function(conf)
 	
 	if(!conf.form)
 	{
-		diajq.append('<br /><br /><input type="text" style="width: 80%" name="ecplus-dialog-input" />');
+		diajq.append('<br /><input type="text" style="width: 80%" name="ecplus-dialog-input" />');
 	}
 	else
 	{
@@ -207,7 +210,7 @@ EpiCollect.LoadingOverlay = function()
 
 String.prototype.pluralize = function(str)	
 {
-	if(str[str.length-1] != "s")
+	if(str[str.length-1] !== "s")
 	{
 		str += "s";
 	}
@@ -216,14 +219,14 @@ String.prototype.pluralize = function(str)
 
 String.prototype.padLeft = function(length, char)	
 {
-	str = this
+	var str = this;
 	while(str.length < length) { str = char + str; }
 	return str;
 };
 
 String.prototype.padRight = function(length, char)	
 {
-	str = this
+	var str = this;
 	while(str.length < length) { str = str + char; }
 	return str;
 };
@@ -232,16 +235,16 @@ String.prototype.padRight = function(length, char)
 String.prototype.trimChars = function(chars)
 {
 	// Extends the string class to incluide the trim method.
-	str = this;
+	var str = this;
 	if(chars)
 	{
 		for(var char = 0; char < chars.length; char++)
 		{
-			if(chars[char] == this[0])
+			if(chars[char] === this[0])
 			{
 				str = str.substr(1);
 			}
-			if(chars[char] == str[str.length -1])
+			if(chars[char] === str[str.length -1])
 			{
 				str = str.substr(0, str.length - 1);
 			}
@@ -250,7 +253,7 @@ String.prototype.trimChars = function(chars)
 	}
 	else
 	{
-		str = str.replace(/^\s+/gi, '').replace(/\s+$/gi, '')
+		str = str.replace(/^\s+/gi, '').replace(/\s+$/gi, '');
 	}
 	return str.toString();
 };
@@ -267,7 +270,7 @@ Date.prototype.format = function(fmt)
 		.replace("hh", (this.getHours() % 12).toString().padLeft(2, "0"))
 		.replace("mm", this.getMinutes().toString().padLeft(2, "0"))
 		.replace("ss", this.getSeconds().toString().padLeft(2, "0"));
-}
+};
 
 
 if(!Object.keys)
@@ -277,13 +280,13 @@ if(!Object.keys)
 		var arr = [];
 		for(key in obj)
 		{
-			if(key != 'keys')
+			if(key !== 'keys')
 			{
 				arr.push(key);
 			}
 		}
 		return arr;
-	}
+	};
 	
 }
 
@@ -305,7 +308,7 @@ EpiCollect.loadProject = function(turl, callback)
 	{
 		throw "Project must be loaded from an XML file";
 	}
-}
+};
 
 EpiCollect.loadProjectCallback = function(xhr)
 {
@@ -338,7 +341,7 @@ EpiCollect.Project = function()
 		
 		for(var t in this.forms)
 		{
-			if(this.forms[t].num == n)
+			if(this.forms[t].num === n)
 			{
 				tbl = this.forms[t];
 				break;
@@ -349,12 +352,13 @@ EpiCollect.Project = function()
 	
 	this.getPrevForm = function(tblName)
 	{
+            //if(!this.forms[tblName]) return null
 		var n = Number(this.forms[tblName].num) - 1;
 		var tbl = false;
 		
 		for(var t in this.forms)
 		{
-			if(this.forms[t].num == n)
+			if(this.forms[t].num === n)
 			{
 				tbl = this.forms[t];
 				break;
@@ -365,27 +369,38 @@ EpiCollect.Project = function()
 	
 	this.validateFormName = function(name)
 	{
-		if(this.forms[name]) return false;
+		if(this.forms[name]) return "There is already a form called " + name + " in this project" ;
 		var kw = EpiCollect.KEYWORDS;
 		
 		for(var i = kw.length; kw--;)
 		{
-			if (name == kw[i]) return false;
+                    if (name === kw[i])
+                    {
+                        return name + " cannot be user as a form name, other words that cannot be used are : " + EpiCollect.KEYWORDS.join(', ');
+                    }
 		}
-		return !!name.match(/^[a-z0-9_\-]+$/gi);
+                    
+                if(name.match(/\s/gi)) return "The form name cannot contain spaces";
+                if(name.match(/[^A-Z0-9_-]/gi)) return "The form name can only contain letter, numbers and _ or -";
+                return true;
 	};
 	
 	this.validateFieldName = function(form, name)
 	{
-		if(this.forms[form].fields[name]) return false;
+            console.debug(form,name);
+                if(name === "") return "The field name cannot be blank";
+		if(this.forms[form].fields[name])  return "There is already a field called " + name + " in this form" ;
 		var kw = EpiCollect.KEYWORDS;
 		
 		for(var i = kw.length; kw--;)
 		{
-			if (name == kw[i]) return false;
+			if (name === kw[i]) return name + " cannot be user as a field name, other words that cannot be used are : " + EpiCollect.KEYWORDS.join(', ');
 		}
-		if(name == form) return false;
-		return !!name.match(/^[a-z0-9_\-]+$/gi);
+                if(name === form) return "The field name cannot be the same as the form name";
+		if(name.match(/\s/gi)) return "The form name cannot contain spaces";
+                if(name.match(/[^A-Z0-9_-]/gi)) return "The form name can only contain letter, numbers and _ or -";
+                
+		return true;
 	};
 	
     this.parse = function(xml)
@@ -397,7 +412,7 @@ EpiCollect.Project = function()
         this.id = sub.getAttribute('id');
         this.name = sub.getAttribute('projectName');
 		
-        this.allowEdits = sub.getAttribute('allowDownloadEdits') == 'true';
+        this.allowEdits = sub.getAttribute('allowDownloadEdits') === 'true';
         this.version = sub.getAttribute('versionNumber');
 		
 		var localServers = mdl.getElementsByTagName('uploadToLocalServer');
@@ -413,7 +428,7 @@ EpiCollect.Project = function()
 		}
 		
         var tbls = xml.getElementsByTagName('table');
-		if (tbls.length == 0)
+		if (tbls.length === 0)
 		{
 			tbls = xml.getElementsByTagName('form');
 		}
@@ -536,7 +551,7 @@ EpiCollect.Form = function()
 		
 		for(var nd = 0; nd < xml.childNodes.length; nd++)
 		{
-			if(xml.childNodes[nd].nodeType == 1 && xml.childNodes[nd].nodeName != "table_data")
+			if(xml.childNodes[nd].nodeType === 1 && xml.childNodes[nd].nodeName !== "table_data")
 			{
 				var field = new EpiCollect.Field();
 				field.parse(xml.childNodes[nd]);
@@ -551,19 +566,19 @@ EpiCollect.Form = function()
 					field.fkTable = keys[field.id];
 				}
 				if(field.title)this.titleField = field.id;
-				if(field.type == "video" || field.type == "audio" || field.type == "photo")
+				if(field.type === "video" || field.type === "audio" || field.type === "photo")
 				{
 					this.hasMedia = true;
 				}
-				else if (field.type == "gps" || field.type == "location")
+				else if (field.type === "gps" || field.type === "location")
 				{
 					this.gpsFlds.push(field.id);
 				}
-				else if (field.type == "branch")
+				else if (field.type === "branch")
 				{
 					this.branchForms.push(field.connectedForm);
 				}
-				else if(field.type == "group")
+				else if(field.type === "group")
 				{
 					this.groupForms.push(field.connectedForm);
 				}
@@ -571,9 +586,12 @@ EpiCollect.Form = function()
 			}
 		}
 		
-		this.fields[this.key].isKey = true;
-		this.fields[this.key].required = true;
-    }
+                if(this.key && this.fields[this.key])
+                {
+                    this.fields[this.key].isKey = true;
+                    this.fields[this.key].required = true;
+                }
+    };
 		
 	this.nextMkr = function()
 	{
@@ -606,7 +624,7 @@ EpiCollect.Form = function()
 			}
 			this.drawMapLegend();
 		}catch(err){/*alert(err);*/}
-	}
+	};
 	
 	this.drawMapLegend = function()
 	{
@@ -616,7 +634,7 @@ EpiCollect.Form = function()
 			this.legend = document.createElement('div');
 			this.legend.style.backgroundColor = '#EEEEEE';
 			this.legend.style.padding = '5px 5px 5px 5px';
-			this.legend.style.border = '1px solid #000000'
+			this.legend.style.border = '1px solid #000000';
 			var inner = document.createTextNode('Hello World');
 			this.legend.appendChild(inner);
 			map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(this.legend);
@@ -643,7 +661,7 @@ EpiCollect.Form = function()
 			i++;
 		}
 		while(i < this.legend.childNodes.length) this.legend.removeChild(this.legend.childNodes[i]);
-	}
+	};
 	
 	
 	
@@ -662,7 +680,7 @@ EpiCollect.Form = function()
 			this.infoWindow.setContent(this.markerData[key].infoBubble);
 			this.infoWindow.setPosition(this.markers[key].getPosition());
 			this.infoWindow.open(map);
-			map.setCenter(this.markers[key].location)
+			map.setCenter(this.markers[key].location);
 			map.setZoom(10);
 		}
 		else
@@ -685,7 +703,7 @@ EpiCollect.Form = function()
 			});
 			this.w.show();
 		}
-	}
+	};
 	
 	this.removeAllMarkers = function()
 	{
@@ -700,9 +718,9 @@ EpiCollect.Form = function()
 	 * @author Chris I Powell
 	 * 
 	 *  JQuery function to render the EpiCollect+ form
-	 *  @param {String|HTMLElement|Null}  ele [Optional] An element or the id of an element which will contain the form, leaving out this param will generate a pop-up.
-	 *  @param {Object} data [Optional] an object containing the entry data.
-	 *  @param {Boolean} vertica [Optional] true to display the form in a line-by-line as opposed to one-at-a-time format
+	 *  
+	 *  @param {Object} cnf [Optional] an object containing the entry data.
+	 *  
 	 */
 	this.displayForm = function(cnf)//(ele, data, vertical, index, editMode )
 	{
@@ -714,7 +732,7 @@ EpiCollect.Form = function()
 		var editMode = cnf.edit;
 		var debug  = cnf.debug;
 		
-		if(index == undefined)
+		if(index === undefined)
 			this.formIndex = 0;
 		else
 			this.formIndex = index+1;
@@ -722,11 +740,11 @@ EpiCollect.Form = function()
 		if(data) data["updated"] = new Date().getTime().toString();
 		
 		var popup = false;
-		if(typeof ele == "string" && ele[0] != "#" && ele[0] != ".")
+		if(typeof ele === "string" && ele[0] !== "#" && ele[0] !== ".")
 		{
 			ele  = "#" + ele; 
 		}
-		else if(typeof ele == "object")
+		else if(typeof ele === "object")
 		{
 			ele = "#" + ele.id;
 		}	
@@ -792,7 +810,7 @@ EpiCollect.Form = function()
 		
 		for(var field in this.fields)
 		{
-			if(this.fields[field].type == "" || (this.fields[field].hidden && project.getPrevForm(this.name).key != field))
+			if(this.fields[field].type === "" || (this.fields[field].hidden && project.getPrevForm(this.name).key !== field))
 			{
 				$("form", this.formElement).append("<div class=\"ecplus-question-hidden\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
 				$("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined, cnf.debug));
@@ -887,7 +905,7 @@ EpiCollect.Form = function()
 				}
 			});
 		//}
-		if(this.gpsFlds.length > 0) $(".locationControl", this.formElement).gpsPicker()
+		if(this.gpsFlds.length > 0) $(".locationControl", this.formElement).gpsPicker();
 		$(".ecplus-radio-group, .ecplus-check-group, select", this.formElement).controlgroup();
 		$(".ecplus-media-input", this.formElement).mediainput();
 		
@@ -895,7 +913,7 @@ EpiCollect.Form = function()
 		{
 			for(var field in data)
 			{
-				if(data[field] == "NULL" || data[field] == "undefined") data[field] = "";
+				if(data[field] === "NULL" || data[field] === "undefined") data[field] = "";
 				$("#" + field, this.formElement).val(data[field]);
 			}
 		}
@@ -925,7 +943,7 @@ EpiCollect.Form = function()
 														
 						for(var j = 0; j < jbits.length; j+=2)
 						{
-							if( jbits[j+1] == $("#" + frm.fields[ctrlName].id, frm.formElement).idx() + 1 || jbits[j+1].toLowerCase() == 'all' )
+							if( jbits[j+1] === $("#" + frm.fields[ctrlName].id, frm.formElement).idx() + 1 || jbits[j+1].toLowerCase() === 'all' )
 							{
 								frm.doJump(jbits[j], ctrlName);
 								jumped = true;
@@ -952,7 +970,7 @@ EpiCollect.Form = function()
 			$('.ecplus-form').keydown(function(e) { 
 				  var keyCode = e.keyCode || e.which; 
 
-				  if (keyCode == 9) { 
+				  if (keyCode === 9) { 
 				    e.preventDefault(); 
 				  }
 			});
@@ -1023,7 +1041,7 @@ EpiCollect.Form = function()
 			if( !startField && $(ele).hasClass('ecplus-question-jumped') && idx < start ) start++;
 			
 			if( idx <= start || !_frm.fields[fld] ) return;
-			if( fld == fieldName ) done = true;
+			if( fld === fieldName ) done = true;
 			
 			if( !fieldName || done )
 			{
@@ -1050,17 +1068,17 @@ EpiCollect.Form = function()
 		});
 		
 		
-	}
+	};
 	
 	this.jumpFormTo = function(idx)
 	{
 		this.formIndex = idx;
 		$(".ecplus-form-pane").scrollLeft(idx * $(".ecplus-question").width());
-	}
+	};
 	
 	this.moveFormTo = function(idx)
 	{
-		if( $(".ecplus-form").length == 0 ) return;
+		if( $(".ecplus-form").length === 0 ) return;
 		
 		if( window["interval"] ) clearInterval(interval);
 		if( idx < 0 || idx > $(".ecplus-question").length )
@@ -1080,7 +1098,7 @@ EpiCollect.Form = function()
 				clearInterval(interval);
 			}
 			
-			if($(".ecplus-form-pane").scrollLeft() == idx * $(".ecplus-question").width())
+			if($(".ecplus-form-pane").scrollLeft() === idx * $(".ecplus-question").width())
 			{
 				clearInterval(interval);
 			}
@@ -1094,12 +1112,12 @@ EpiCollect.Form = function()
 			}
 		}, 5);
 		
-	}
+	};
 	
 	this.moveNext = function(preventBlur)
 	{
 		try{
-			if(this.formIndex == $('.ecplus-question').length - 1) return;
+			if(this.formIndex === $('.ecplus-question').length - 1) return;
 			//validate answer to previous question
 			var fldName = $('.ecplus-question')[this.formIndex].id.replace("ecplus-question-", "");
 			var val = $("#" + fldName, this.formElement).val();
@@ -1116,13 +1134,13 @@ EpiCollect.Form = function()
 				//console.debug('preventing blur');
 				$("#" + fldName, this.formElement)
 					.unbind("blur")
-					.blur()
+					.blur();
 					/*$("#" + fldName, this.formElement).blur(function(evt){
 						project.forms[formName].moveNext(true);
 					});*/
 			}
 			
-			if(valid === true || valid.length == 0)
+			if(valid === true || valid.length === 0)
 			{
 				if(this.fields[fldName].jump)
 				{
@@ -1131,7 +1149,7 @@ EpiCollect.Form = function()
 													
 					for(var j = 0; j < jbits.length; j+=2)
 					{
-						if(jbits[j+1] == $("#" + this.fields[fldName].id, this.formElement).idx() + 1 || jbits[j+1].toLowerCase().trimChars() == 'all')
+						if(jbits[j+1] === $("#" + this.fields[fldName].id, this.formElement).idx() + 1 || jbits[j+1].toLowerCase().trimChars() === 'all')
 						{
 							this.doJump(jbits[j]);
 							jumped = true;
@@ -1157,13 +1175,13 @@ EpiCollect.Form = function()
 				return  false;
 			}
 		}catch(err){/*alert(err);*/}
-	}
+	};
 	
 	this.movePrevious = function()
 	{
 		this.formIndex--;
 		this.moveFormTo(this.formIndex);
-	}
+	};
 		
 	this.getValues = function()
 	{
@@ -1180,7 +1198,7 @@ EpiCollect.Form = function()
 			}
 		}
 		return vals;
-	}
+	};
 	
 	this.openBranch = function(branchName, rec)
 	{
@@ -1199,7 +1217,7 @@ EpiCollect.Form = function()
 			$("#" + this.key, project.forms[branchName].formElement).append('<option value="' + rec[this.key] + '" SELECTED>' + rec[this.key] + '</option>'  );
 			$("#ecplus-question-" + this.key, project.forms[branchName].formElement).removeClass("ecplus-question").addClass("ecplus-question-hidden");
 		}
-	}
+	};
 	
 	this.closeForm = function()
 	{
@@ -1209,7 +1227,7 @@ EpiCollect.Form = function()
 		}
 		$(".ecplus-input", this.formElement).unbind("blur");
 		this.formElement.dialog("close");
-		if(this.branchOf == formName)
+		if(this.branchOf === formName)
 		{
 			project.forms[formName].displayForm({ 
 				data : project.forms[formName].getSavedEntry(),
@@ -1220,7 +1238,7 @@ EpiCollect.Form = function()
 		{
 			this.formElement.dialog("close");
 		}*/
-	}
+	};
 	
 	this.deleteEntry = function(key)
 	{
@@ -1234,14 +1252,14 @@ EpiCollect.Form = function()
 				},
 				error : function(xhr, err, statusText)
 				{
-					if(statusText.toUpperCase() == "CONFLICT")
+					if(statusText.toUpperCase() === "CONFLICT")
 					{
 						EpiCollect.dialog({ content: 'cannot delete a record with child records.' });
 					}
 				}
 			});
 		}
-	}
+	};
 	
 	this.addEntry = function()
 	{
@@ -1305,21 +1323,21 @@ EpiCollect.Form = function()
 				EpiCollect.dialog({content : "Add request failed"});
 			}	
 		});
-	}
+	};
 	
 	this.saveEntry = function()
 	{
 		if(!localStorage) localStorage = {};
 		localStorage[project.name + "_" + this.name] = JSON.stringify(this.getValues());
-	}
+	};
 	
 	this.getSavedEntry = function()
 	{
 		var ent = localStorage[project.name + "_" + this.name];
-		if(typeof ent == "string" && ent != "undefined") ent = JSON.parse(ent);
+		if(typeof ent === "string" && ent !== "undefined") ent = JSON.parse(ent);
 		else ent = {};
 		return ent;
-	}
+	};
 	
 	this.saveBranch = function()
 	{
@@ -1333,7 +1351,7 @@ EpiCollect.Form = function()
 		
 		for( f in flds )
 		{
-			if( flds[f].connectedForm == this.name ) {
+			if( flds[f].connectedForm === this.name ) {
 				if(ent[f]){
 					ent[f]++;
 				}
@@ -1345,11 +1363,11 @@ EpiCollect.Form = function()
 		}
 		console.debug(JSON.stringify(ent));
 		localStorage[project.name + "_" + formName] = JSON.stringify(ent);
-	}
+	};
 		
 	this.editEntry = function()
 	{
-		if( this.branchOf == formName )
+		if( this.branchOf === formName )
 		{
 			this.saveBranch();
 			this.closeForm();
@@ -1382,7 +1400,7 @@ EpiCollect.Form = function()
 				EpiCollect.dialog({content : "Edit request failed" });
 			}
 		});
-	}
+	};
 	
 	this.toXML = function()
 	{
@@ -1392,7 +1410,7 @@ EpiCollect.Form = function()
 		}
 		xml = xml + "</form>";
 		return xml;
-	}
+	};
 	
 	this.validateFieldName = function(name, oldname)
 	{
@@ -1402,7 +1420,7 @@ EpiCollect.Form = function()
 			return false;
 		}
 		
-		if(this.fields[name] && name != oldname)
+		if(this.fields[name] && name !== oldname)
 		{
 			EpiCollect.dialog({content : "Field names must be unique" });
 			return false;
@@ -1410,8 +1428,8 @@ EpiCollect.Form = function()
 		
 		
 		return true;
-	}
-}
+	};
+};
 
 EpiCollect.Field = function()
 {
@@ -1421,63 +1439,63 @@ EpiCollect.Field = function()
     this.required = undefined;
     this.type = '';
     this.isinteger = false;
-	this.isdouble = false;
+    this.isdouble = false;
     this.options = [];
     this.local = false;
     this.title = false;
     this.isKey = false;
-	this.regex = null;
-	this.verify = false;
-	this.genkey = false;
-	this.display = true;
-	this.edit = true;
-	
-	this.date = null;
-	this.time = null;
-	this.setDate = null;
-	this.setTime = null;
-	
-	this.min = null;
-	this.max = null;
-	this.defaultValue = null;
-	
-	this.match = false;
-	this.crumb = false;
-	
-	this.hidden = false;
-	this.search = false;
-	
-	/**
-	 * form - the form that this field is part of
-	 */
-	this.form = false;
-	/**
-	 * connectedForm - the branch or group form that this field represents
-	 */
-	this.connectedForm = false;
-	
-	this.fkTable = false;
-	this.fkField = false;
-	
-	this.jump = false;
+    this.regex = null;
+    this.verify = false;
+    this.genkey = false;
+    this.display = true;
+    this.edit = true;
+
+    this.date = null;
+    this.time = null;
+    this.setDate = null;
+    this.setTime = null;
+
+    this.min = null;
+    this.max = null;
+    this.defaultValue = null;
+
+    this.match = false;
+    this.crumb = false;
+
+    this.hidden = false;
+    this.search = false;
+
+    /**
+     * form - the form that this field is part of
+     */
+    this.form = false;
+    /**
+     * connectedForm - the branch or group form that this field represents
+     */
+    this.connectedForm = false;
+
+    this.fkTable = false;
+    this.fkField = false;
+
+    this.jump = false;
 
     this.parse = function(xml)
     {
 		this.type = xml.tagName;
-		if(this.type == "gps") this.type = "location";
+		if(this.type === "gps") this.type = "location";
 		this.id = xml.getAttribute('name');
 		if(!this.id) this.id = xml.getAttribute('ref');
 		this.title = Boolean(xml.getAttribute('title'));
-		this.required = xml.getAttribute('required') == "true";
-		this.isinteger = xml.getAttribute('integer') == "true";
-		this.isdouble = xml.getAttribute('decimal') == "true";
-		this.local = xml.getAttribute("local") == "true";
+		this.required = xml.getAttribute('required') === "true";
+		this.isinteger = xml.getAttribute('integer') === "true";
+		this.isdouble = xml.getAttribute('decimal') === "true";
+		this.local = xml.getAttribute("local") === "true";
 		this.regex = xml.getAttribute('regex');
-		this.verify = xml.getAttribute('verify')=="true";
-		this.genkey = xml.getAttribute('genkey') == "true";
-		this.hidden = xml.getAttribute('display') == "false";
-		this.search = xml.getAttribute('search') == "true";
-		this.uppercase = xml.getAttribute('uppercase') == "true";
+		this.verify = xml.getAttribute('verify')==="true";
+		this.genkey = xml.getAttribute('genkey') === "true";
+		this.hidden = xml.getAttribute('display') === "false";
+		this.search = xml.getAttribute('search') === "true";
+		this.uppercase = xml.getAttribute('uppercase') === "true";
 		
 		this.date = xml.getAttribute('date');
 		this.time = xml.getAttribute('time');
@@ -1494,11 +1512,11 @@ EpiCollect.Field = function()
 		this.match = xml.getAttribute('match');
 		this.crumb = xml.getAttribute('crumb');
 		
-		if(this.type == "branch")
+		if(this.type === "branch")
 		{
 			this.connectedForm = xml.getAttribute("branch_form");
 		}
-		else if(this.type == "group")
+		else if(this.type === "group")
 		{
 			this.connectedForm = xml.getAttribute("group_form");
 		}
@@ -1506,7 +1524,7 @@ EpiCollect.Field = function()
 		{
 			for(t in this.form.forms)
 			{
-				if(survey.forms[t].key == this.id)
+				if(survey.forms[t].key === this.id)
 				{
 					//FUTURE-PROOF : if we want to allow the foreign key field to have a differnt name to the primary key field
 					this.fkParentTbl = survey.getPrevForm(survey.forms[t].name).name;
@@ -1530,7 +1548,7 @@ EpiCollect.Field = function()
 		}
 		
 		if(this.title) this.required = true;
-    }
+    };
 
     
    this.getInput = function(val, debug)
@@ -1538,14 +1556,14 @@ EpiCollect.Field = function()
 	   try{
 		   pre = "";
 		   
-		   if(!val || (typeof val == 'string' && val.match(/null|undefined/i)))
+		   if(!val || (typeof val === 'string' && val.match(/null|undefined/i)))
 		   {
 			   //console.debug(this.id);
-			   if(this.id == "created" || this.id == "uploaded")
+			   if(this.id === "created" || this.id === "uploaded")
 			   {
 				   val = new Date().getTime().toString();
 			   }
-			   else if(this.id == "DeviceID")
+			   else if(this.id === "DeviceID")
 			   {
 				   val = "web";
 			   }
@@ -1572,8 +1590,8 @@ EpiCollect.Field = function()
 		   var fkfld;
 		   for(var frm = this.form; frm; frm = project.getPrevForm(frm.name))
 		   {
-			   if(frm.name == this.form.name) continue;
-			   if(this.id == frm.key)
+			   if(frm.name === this.form.name) continue;
+			   if(this.id === frm.key)
 			   {
 				   if(debug)
 				   {
@@ -1605,13 +1623,13 @@ EpiCollect.Field = function()
 					   
 					   if(val)
 					   {
-						   ctrl.replace('ecplus-ac"', 'ecplus-ac loading"')
+						   ctrl.replace('ecplus-ac"', 'ecplus-ac loading"');
 						   this.form.pendingReqs.push($.ajax({
 							   url : baseUrl + '/../' + this.fkTable + '/title?term=' + val + '&key_from=true',
 							   success : function(data, status, xhr)
 							   {
 								   //console.debug(data);
-								   if(data.trimChars() != "")
+								   if(data.trimChars() !== "")
 								   {
 									   $('#' + this.id + '-ac')
 								   			.val(data)
@@ -1634,22 +1652,22 @@ EpiCollect.Field = function()
 			   }
 		   }
 			   
-		   if(this.type == "branch")
+		   if(this.type === "branch")
 		   {
 			   return pre + "<div id=\"" + this.id + "\" class=\"ecplus-input\"><a href=\"javascript:project.forms['"+ this.form.name+"'].openBranch('" + this.connectedForm + "')\">Add Branch</a><p>This entry currently has <span>" +(val ? val : 0) +"</span> branch entries</p></div>";
 		   }
-		   else if(this.type == "select1")
+		   else if(this.type === "select1")
 		   {
 			   ret =  "<select name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input\" ><option value=\"\">Select an Option...</option> ";
 			   for(var i = 0; i < this.options.length; i++)
 			   {
 				   
-				   ret += "<option value=\"" + this.options[i].value + "\" " + (this.options[i].value == val || this.options[i].label == val ? "SELECTED" : "")  + ">" + this.options[i].label + "</option>";
+				   ret += "<option value=\"" + this.options[i].value + "\" " + (this.options[i].value === val || this.options[i].label === val ? "SELECTED" : "")  + ">" + this.options[i].label + "</option>";
 			   }
 			   ret +="</select>";
 			   return pre +  ret;
 		   }
-		   else if(this.type == "select")
+		   else if(this.type === "select")
 		   {
 			   ret =  "<p id=\"" + this.id + "\"  class=\"ecplus-check-group ecplus-input\">";
 			   for(var i = 0; i < this.options.length; i++)
@@ -1660,13 +1678,13 @@ EpiCollect.Field = function()
 			   }
 			   return pre + "</p>" + ret;
 		   }
-		   else if(this.type == "radio")
+		   else if(this.type === "radio")
 		   {
 			   ret =  "<p id=\"" + this.id + "\" class=\"ecplus-radio-group ecplus-input\">";
 			   for(var i = 0; i < this.options.length; i++)
 			   {
 				   //console.debug();
-				   if((this.options[i].value == val) || (this.options[i].label == val))
+				   if((this.options[i].value === val) || (this.options[i].label === val))
 				   {
 					   ret += "<input type=\"radio\" name=\"" + this.id + "\" value=\"" + this.options[i].value + "\" checked=\"checked\" labelText=\"" + this.options[i].label + "\" /><label>" + this.options[i].label + "</label><br />";
 				   }
@@ -1677,7 +1695,7 @@ EpiCollect.Field = function()
 			   }
 			   return pre + "</p>" + ret;
 		   }
-		   else if(this.type == "textarea")
+		   else if(this.type === "textarea")
 		   {
 			   return pre + "<textarea name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input\">" + val + "</textarea>";
 		   }
@@ -1690,17 +1708,17 @@ EpiCollect.Field = function()
 		   {
 			   return pre + "<input type=\"text\" name=\"" + this.id + "\"  value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input ecplus-timepicker\" />";
 		   }
-		   else if(this.type == "input" || this.type == "barcode")
+		   else if(this.type === "input" || this.type === "barcode")
 		   {
 
-			   var valstring = val && val != 'NULL' ? "value=\"" + val + "\"" : "";		   
+			   var valstring = val && val !== 'NULL' ? "value=\"" + val + "\"" : "";		   
 			   return pre + "<input type=\"text\" name=\"" + this.id + "\" " + valstring + " id=\"" + this.id + "\" class=\"ecplus-input\" />";
 		   }
-		   else if(this.type == "video" || this.type == "audio" || this.type == "photo")
+		   else if(this.type === "video" || this.type === "audio" || this.type === "photo")
 		   {
 			   return pre + "<iframe id=\"" + this.id + "_iframe\" src=\"" + this.form.name + "/uploadMedia\" class=\"ecplus-input ecplus-media-input\" ></iframe><input type=\"hidden\" id=\"" + this.id + "\" name=\"" + this.id + "\" value=\"" + val + "\" />";
 		   }
-		   if(this.type == "location")
+		   if(this.type === "location")
 		   {
 			   return pre + "<div id=\"" + this.id+ "\" class=\"locationControl ecplus-input\" ></div>";
 		   }
@@ -1709,7 +1727,7 @@ EpiCollect.Field = function()
 			   return pre + "<input type=\"hidden\"id=\"" + this.id + "\" class=\"ecplus-input\" name=\"" + this.id + "\" value=\"" + val + "\" />";
 		   }
 	   }catch(err){}//console.debug(err);}
-   }
+   };
 	
    this.populateControl = function(data)
    {
@@ -1717,30 +1735,29 @@ EpiCollect.Field = function()
 	   {
 		   $('#' + this.id +'').append("<option value=\"" + data[i][this.id] +  "\" "   + " >" +  data[i][this.id] + "</option>");
 	   }
-	   
-   }
+   };
    
 	this.formatValue = function(value, data)
 	{
-		if( !value || (typeof value == "string" && (value == "undefined" || value.match(/null/i))) )
+		if( !value || (typeof value === "string" && (value === "undefined" || value.match(/null/i))) )
 		{
 			return '';
 		}
-		if( this.type == "select1" || this.type == "radio" )
+		if( this.type === "select1" || this.type === "radio" )
 		{
 			
 			var opts = this.options;
 			var l = opts.length;
 			for( var i =0; i < l; i++ )
 			{
-				if( opts[i].value == value || opts[i].label == value )
+				if( opts[i].value === value || opts[i].label === value )
 				{
 					return opts[i].label;
 				}
 			}
 			return '<i color="FF0000">' + value + '</i>';
 		}
-		else if( this.type == "select" )
+		else if( this.type === "select" )
 		{
 			var sels = value.split(',');
 			var opts = this.options;
@@ -1752,9 +1769,9 @@ EpiCollect.Field = function()
 				var l_s = sels.length;
 				for( var j = 0; j < l_s; j++ )
 				{
-					if( opts[i].value == sels[j] || opts[i].label == sels[j] )
+					if( opts[i].value === sels[j] || opts[i].label === sels[j] )
 					{
-						ret = ret + (ret != '' ? ', ' : '') + opts[i].label;
+						ret = ret + (ret !== '' ? ', ' : '') + opts[i].label;
 						sels.splice(j, 1);
 						break;
 					}
@@ -1762,13 +1779,13 @@ EpiCollect.Field = function()
 			}
 			if(sels.length > 0)
 			{
-				if(ret != '') ret = ret + ', ';
+				if(ret !== '') ret = ret + ', ';
 				ret = ret + sels.join(',');
 			}
 			return ret;
 		}
-		else if(this.type == "photo"){
-			if(value && !value.match(/^null$/i) && value != "-1")
+		else if(this.type === "photo"){
+			if(value && !value.match(/^null$/i) && value !== "-1")
 			{
 				if(value.match(/^http:\/\//))
 				{
@@ -1784,14 +1801,14 @@ EpiCollect.Field = function()
 			{
 				return "<i>No Image</i>";
 			}
-		}else if(this.type == "video" || this.type == "audio"){
+		}else if(this.type === "video" || this.type === "audio"){
 			if(value)
 			{
 				var checkid = 'check' + (nchecks++);
 				
 				var valUrl = "ec/uploads/" + project.name + "~" +value;
 				
-				var checkurl = (location.href.replace(project.name + '/' + formName, '') + valUrl).trimChars('/') ;
+				var checkurl = (location.href.replace(project.name + '/' + formName, '') + valUrl).trimChars('/');
 				checking[checkurl] = checkid;
 				checker.startCheck(checkurl);
 				
@@ -1801,7 +1818,7 @@ EpiCollect.Field = function()
 			{
 				return "<i>No Media</i>";
 			}
-		}else if(this.type == "location" || this.type == "gps"){
+		}else if(this.type === "location" || this.type === "gps"){
 			if(value)
 			{
 				return value.latitude + ", " + value.longitude + ' <a href="javascript:showGPS(' + JSON.stringify(value).replace(/"/g, '\'').replace(/[\n\r]/g, '') + ')">Show Details</a>' ;
@@ -1811,7 +1828,7 @@ EpiCollect.Field = function()
 				return "No Value";
 			}
 		}
-		else if(this.id == 'created')
+		else if(this.id === 'created')
 		{
 			value = Number(value);
 			while((Math.log(value) / Math.log(10)) < 12)
@@ -1820,7 +1837,7 @@ EpiCollect.Field = function()
 			}
 			return new Date(value).toLocaleString();
 		}
-		else if(this.type == 'branch')
+		else if(this.type === 'branch')
 		{
 			if(!value)
 			{
@@ -1833,7 +1850,7 @@ EpiCollect.Field = function()
 		}
 		else
 		{ 
-			if(!value || (typeof value == "string" && (value == "undefined" || value.match(/\s?null\s?/i))))
+			if(!value || (typeof value === "string" && (value === "undefined" || value.match(/\s?null\s?/i))))
 			{
 				return '';
 			}
@@ -1842,19 +1859,19 @@ EpiCollect.Field = function()
 				return value;
 			}
 		}
-	}
+	};
 	
 	this.validate = function(value)
 	{
 		
 		//console.debug('checking...' + this.id + '  = ' + value);
 		var msgs = [];
-		if(this.required && (!value || value == "")) msgs.push("This field is required");
-		if(value && value != "")
+		if(this.required && (!value || value === "")) msgs.push("This field is required");
+		if(value && value !== "")
 	    {
 			if( this.uppercase )
 			{
-				value = value.toUpperCase()
+				value = value.toUpperCase();
 				$('#' + this.id).val(value);
 			}
 			
@@ -1879,15 +1896,15 @@ EpiCollect.Field = function()
 				var sep = null;
 				
 				var day = null;
-				var month = null
+				var month = null;
 				var year = null;
 				
 				
 				for( var i = 0; i < fmt.length; i++ )
 				{
-					if(fmt[i] == "d")
+					if(fmt[i] === "d")
 					{
-						if(fmt[i+1] == "d")
+						if(fmt[i+1] === "d")
 						{
 							//console.debug(value.substr(i,2))
 							day = Number(value.substr(i,2));
@@ -1899,9 +1916,9 @@ EpiCollect.Field = function()
 							throw "Invalid date format";
 						}
 					}
-					else if( fmt[i] == "M" )
+					else if( fmt[i] === "M" )
 					{
-						if( fmt[i+1] == "M" )
+						if( fmt[i+1] === "M" )
 						{
 							//console.debug(value.substr(i,2))
 							month = Number(value.substr(i,2));
@@ -1913,9 +1930,9 @@ EpiCollect.Field = function()
 							throw "Invalid date format";
 						}
 					}
-					else if( fmt[i] == "y" )
+					else if( fmt[i] === "y" )
 					{
-						if( fmt[i+1] == "y" && fmt[i+2] == "y" && fmt[i+3] == "y" )
+						if( fmt[i+1] === "y" && fmt[i+2] === "y" && fmt[i+3] === "y" )
 						{
 							year = Number(value.substr(i,4));
 							if(isNaN(year)) msgs.push("Year is not a number");
@@ -1935,9 +1952,9 @@ EpiCollect.Field = function()
 				if(day || day === 0)
 				{
 					if(day < 1 || day > 31)	msgs.push("Day is out of range");
-					else if(month && (month == 4 || month == 6 || month == 9 || month == 11) && day > 30) msgs.push("Day is out of range");
-					else if(month && month == 2 && day > 29 && (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))) msgs.push("Day is out of range");
-					else if(month && month == 2 && day > 28) msgs.push("Day is out of range");
+					else if(month && (month === 4 || month === 6 || month === 9 || month === 11) && day > 30) msgs.push("Day is out of range");
+					else if(month && month === 2 && day > 29 && (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0))) msgs.push("Day is out of range");
+					else if(month && month === 2 && day > 28) msgs.push("Day is out of range");
 				}
 				//console.debug('Month = ' + month)
 				if(month || month === 0)
@@ -1952,14 +1969,14 @@ EpiCollect.Field = function()
 				var sep = null;
 				
 				var hours = null;
-				var minutes = null
+				var minutes = null;
 				var seconds = null;
 				
 				for( var i = 0; i < fmt.length; i ++ )
 				{
-					if( fmt[i] == "H" )
+					if( fmt[i] === "H" )
 					{
-						if( fmt[i+1] == "H" )
+						if( fmt[i+1] === "H" )
 						{ 
 							hours = Number(value.substr(i, 2));
 							if(isNaN(hours)) msgs.push("Hours are not a number");
@@ -1971,24 +1988,24 @@ EpiCollect.Field = function()
 							throw "Time Format is invalid";
 							
 					}
-					else if( fmt[i] == "m" ) 
+					else if( fmt[i] === "m" ) 
 					{
-						if( fmt[i+1] == "m" )
+						if( fmt[i+1] === "m" )
 						{
-							minutes == Number(value.substr(i,2));
+							minutes === Number(value.substr(i,2));
 							if(isNaN(minutes)) msgs.push("Minutes are not a number");
 							if(minutes < 0 || minutes > 59) msgs.push("Minutes out of range");
-							i++
+							i++;
 						}
 					}
-					else if( fmt[i] == "s" )
+					else if( fmt[i] === "s" )
 					{
-						if( fmt[i+1] == "s" )
+						if( fmt[i+1] === "s" )
 						{
-							seconds == Number(value.substr(i,2));
+							seconds === Number(value.substr(i,2));
 							if(isNaN(seconds)) msgs.push("Seconds are not a number");
 							if(seconds < 0 || seconds > 59) msgs.push("Seconds out of range");
-							i++
+							i++;
 						}
 					}
 				}
@@ -2019,7 +2036,7 @@ EpiCollect.Field = function()
 				var matchStr = $("#" + info[1]).val().match(new RegExp(info[3]))[0];
 				var valStr = value.match(new RegExp(info[3]))[0];
 				console.debug(matchStr + ' ' + valStr + ' ' + info[3]);
-				if(valStr != matchStr) msgs.push("The value does not match the string from the parent field");
+				if(valStr !== matchStr) msgs.push("The value does not match the string from the parent field");
 			}
 			
 			if( this.verify )
@@ -2029,9 +2046,9 @@ EpiCollect.Field = function()
 					$("#" + this.id).hide();
 					var ct = this;
 					EpiCollect.prompt({ content : "Please re-enter the value for " + this.text + " to confirm the value", callback : function(new_value){
-						if( newvalue != value )
+						if( newvalue !== value )
 						{
-							EpiCollect.dialog({ content : "field values must match" }) 
+							EpiCollect.dialog({ content : "field values must match" });
 							msgs.push("field values must match");
 							$("#" + ct.id).val("");
 							$("#" + ct.id).removeClass("ecplus-valid");
@@ -2043,7 +2060,7 @@ EpiCollect.Field = function()
 				
 			}
 			
-			if(msgs.length == 0 && this.isKey && !$('#ecplus-form-' + this.form.name ).hasClass('editing'))
+			if(msgs.length === 0 && this.isKey && !$('#ecplus-form-' + this.form.name ).hasClass('editing'))
 			{
 				var ctx = this;
 				this.form.pendingReqs.push($.ajax({
@@ -2058,7 +2075,7 @@ EpiCollect.Field = function()
 					}
 				}));
 			}
-			else if(msgs.length == 0 && this.fkField && this.fkTable)
+			else if(msgs.length === 0 && this.fkField && this.fkTable)
 			{
 				var fld = '#' + this.id + '-ac';
 				//console.debug('checking...' + this.id);
@@ -2106,7 +2123,7 @@ EpiCollect.Field = function()
 							$(fld)
 								.removeClass('ecplus-checking')
 								.addClass('ecplus-invalid');
-							msgs.push(res.msg)
+							msgs.push(res.msg);
 							$('#' + this.id).val('');
 						}
 					}
@@ -2114,7 +2131,7 @@ EpiCollect.Field = function()
 			}
 	    }
 		
-		if( msgs.length == 0 )
+		if( msgs.length === 0 )
 		{
 			$("#" + this.id).removeClass("ecplus-invalid");
 			$("#" + this.id).addClass("ecplus-valid");
@@ -2125,9 +2142,9 @@ EpiCollect.Field = function()
 			$("#" + this.id).addClass("ecplus-invalid");
 		}	
 		
-		if(msgs.length == 0) $('.ecpval-' + this.id).text(value); 
+		if(msgs.length === 0) $('.ecpval-' + this.id).text(value); 
 		
-		return msgs.length == 0 ? true : msgs;		
+		return msgs.length === 0 ? true : msgs;		
 	};
 	
 	this.toXML = function()
@@ -2146,10 +2163,10 @@ EpiCollect.Field = function()
 		if(this.genkey) xml = xml + " genkey=\"true\"";
 		if(!this.display || this.hidden) xml = xml + " display=\"false\"";
 		if(this.edit) xml = xml + " edit=\"true\"";
-		if(this.date && this.date != "") xml = xml + " date=\"" + this.date + "\"";
-		if(this.time && this.time != "") xml = xml + " time=\"" + this.time + "\"";
-		if(this.setDate && this.setDate != "") xml = xml + " setdate=\"" + this.setDate + "\"";
-		if(this.setTime && this.setTime != "") xml = xml + " settime=\"" + this.setTime + "\"";
+		if(this.date && this.date !== "") xml = xml + " date=\"" + this.date + "\"";
+		if(this.time && this.time !== "") xml = xml + " time=\"" + this.time + "\"";
+		if(this.setDate && this.setDate !== "") xml = xml + " setdate=\"" + this.setDate + "\"";
+		if(this.setTime && this.setTime !== "") xml = xml + " settime=\"" + this.setTime + "\"";
 		if(this.min) xml = xml + " min=\"" + this.min + "\"";
 		if(this.max) xml = xml + " max=\"" + this.max + "\"";
 		if(this.defaultValue) xml = xml + " default=\"" + this.defaultValue + "\"";
@@ -2157,9 +2174,9 @@ EpiCollect.Field = function()
 		if(this.crumb) xml = xml + " crumb=\"" + this.crumb + "\"";
 		if(this.search) xml = xml + " search=\"true\"";
 		if(this.jump) xml = xml + " jump=\"" + this.jump + "\"";
-		if(this.type == "branch") xml = xml + " branch_form=\"" + this.connectedForm +"\"";
+		if(this.type === "branch") xml = xml + " branch_form=\"" + this.connectedForm +"\"";
 		
-		xml = xml + "><label>" + this.text + "</label>"
+		xml = xml + "><label>" + this.text + "</label>";
 		
 		for(var i = 0; i < this.options.length; i++)
 		{
@@ -2169,8 +2186,6 @@ EpiCollect.Field = function()
 		
 		xml = xml + "</" + this.type + ">";
 		return xml;
-	}
+	};
 	
-}
-
-
+};

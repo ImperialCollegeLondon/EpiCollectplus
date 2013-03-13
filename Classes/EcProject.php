@@ -741,6 +741,8 @@ class EcProject{
 					//if($json != '[') $json .= ',';
 					//$json .= sprintf('{ "name" : "%s", "total" : %s, "last24" : %s }', $arr['name'], $arr['ttl'], $arr['ttl24']);
 					$arr['listed'] = 'public';
+                                        $arr['ttl'] = intval($arr['ttl']);
+                                        $arr['ttl24'] = intval($arr['ttl24']);
 					array_push($projects, $arr);
 				}
 			}
@@ -762,10 +764,15 @@ class EcProject{
 			if($res === true)
 			{
 				while($arr = $db->get_row_array())
-				{
+				{       if($arr['listed'] === '1')
+                                        {
+                                            continue;
+                                        }
 					//if($json != '[') $json .= ',';
 					//$json .= sprintf('{ "name" : "%s", "total" : %s, "last24" : %s }', $arr['name'], $arr['ttl'], $arr['ttl24']);
 					$arr['listed'] = ( $arr['listed'] === '1' ? 'public' : 'private' );
+                                         $arr['ttl'] = intval($arr['ttl']);
+                                        $arr['ttl24'] = intval($arr['ttl24']);
 					array_push($projects, $arr);
 				}
 			}
