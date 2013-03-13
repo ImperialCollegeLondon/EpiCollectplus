@@ -53,7 +53,7 @@
 				$this->language = $arr["pref/language"];
 // 				$_SESSION["openid"] = $this->openid->identity;
 // 				$this->populateSesssionInfo();
-			
+                                
 // 				if(!isset($_SESSION["Email"]) || $_SESSION["Email"] == "")
 // 				{
 // 					$arr = $this->openid->getAttributes();

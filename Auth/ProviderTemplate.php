@@ -31,6 +31,12 @@
 			}
 				
 		}
+                
+                public function getEmail()
+                {
+                    return $this->email;
+                }
+                
 		abstract public function setCredentialString($str);
 		abstract public function logout();
 	}

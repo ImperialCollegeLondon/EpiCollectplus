@@ -175,7 +175,7 @@
   		{
   			
   			$uid = false;
-  			$sql = "SELECT idUsers, active FROM user where details = '" . $this->providers[$provider]->getCredentialString()  . "'";
+  			$sql = "SELECT idUsers, active FROM user where email = '" . $this->providers[$provider]->getEmail()  . "'";
   			
   			//print $this->providers[$provider]->getCredentialString();
   			
@@ -203,7 +203,7 @@
   					return;
   				}
   			}
-  			if(!$uid)
+  			if($provider != "LOCAL" && !$uid)
   			{
   				$sql = "INSERT INTO user (FirstName, LastName, Email, details, language, serverManager) VALUES ('{$this->firstName}','{$this->lastName}','{$this->email}','" . $this->providers[$provider]->getCredentialString() . "','{$this->language}', " . (count($this->getServerManagers()) == 0 ?  "1" : "0") . ")";
   				$res = $db->do_query($sql);
@@ -397,23 +397,23 @@
 	  
 	  function getUsers($order = "FirstName", $dir = "asc")
 	  {
-	  		global $db, $log;
-	  		$query = "SELECT idUsers as userId, FirstName, LastName, Email, active FROM user ORDER BY $order $dir";
-	  		$res = $db->do_query($query);
-	  		if(!$res === true)
-	  		{
-	  			$log->write("err", $res);
-	  			return false;
-	  		}
-	  		else
-	  		{
-	  			$ret = array();
-	  			while($arr = $db->get_row_array())
-	  			{
-	  				array_push($ret, $arr);
-	  			}
-	  			return $ret;
-	  		}
+                    global $db, $log;
+                    $query = "SELECT idUsers as userId, FirstName, LastName, Email, active FROM user ORDER BY $order $dir";
+                    $res = $db->do_query($query);
+                    if(!$res === true)
+                    {
+                            $log->write("err", $res);
+                            return false;
+                    }
+                    else
+                    {
+                            $ret = array();
+                            while($arr = $db->get_row_array())
+                            {
+                                    array_push($ret, $arr);
+                            }
+                            return $ret;
+                    }
 	  }
 	  
 	  function getUserNickname()
@@ -425,7 +425,7 @@
 	  
 	  function getEcUserId()
 	  {
-	   		return $this->user;
+	   	return $this->user;
 	  }
 	  
 	  function getUserEmail()
