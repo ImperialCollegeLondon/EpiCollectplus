@@ -371,6 +371,12 @@ function defaultHandler()
 	echo applyTemplate('base.html', "./" . $url);
 }
 
+function createAccount()
+{
+    global $auth;
+    echo applyTemplate('./base.html', './loginbase.html', array( 'form' => $auth->requestSignup()));
+}
+
 /**
  * Called when the page requires a log in
  */
@@ -409,11 +415,18 @@ function loginHandler()
 function loginCallback()
 {
 	header('Cache-Control: no-cache, must-revalidate');
-
+     
 	global $auth, $cfg, $db;
+        $provider = getValIfExists($_POST, 'provider');
+        if(!$provider)
+            $provider = getValIfExists($_SESSION, 'provider');
+        else {
+            $_SESSION['provider'] = $provider;
+        }
+
 	$db = new dbConnection();
 	if(!$auth) $auth = new AuthManager();
-	$auth->callback($_SESSION['provider']);
+	$auth->callback($provider);
 }
 
 function logoutHandler()
@@ -455,6 +468,7 @@ function uploadHandlerFromExt()
 				{
 					if(preg_match( "/.(png|gif|rtf|docx?|pdf|jpg|jpeg|txt|avi|mpeg|mpg|mov|mp3|wav)$/i", $_FILES[$key]['name']))
 					{
+                                                if(!file_exists("ec/uploads/")) mkdir ("ec/uploads/");
 						move_uploaded_file($_FILES[$key]['tmp_name'], "ec/uploads/{$_FILES[$key]['name']}");
 						echo  "{\"success\" : true , \"msg\":\"ec/uploads/{$_FILES[$key]['name']}\"}";
 					}
@@ -3579,6 +3593,7 @@ $pageRules = array(
 		'disableUser' => new PageRule(null, 'disableUser',true),
 		'enableUser' => new PageRule(null, 'enableUser',true),
 		'resetPassword' => new PageRule(null, 'resetPassword',true),
+                'register' => new PageRule(null, 'createAccount', false),
 		
 //generic, dynamic handlers
 		'getControls' =>  new PageRule(null, 'getControlTypes'),

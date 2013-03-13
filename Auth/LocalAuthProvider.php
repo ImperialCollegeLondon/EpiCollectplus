@@ -95,17 +95,97 @@
 			return $creds->username;
 		}
 		
+                public function requestSignup()
+                {
+                    global $cfg;
+                    if($cfg->settings["misc"]["public_server"] === "true")
+                    {
+			
+                    return '<p>Please enter your details to register to use this server</p>
+                     <form method="POST" action="admin">
+                             <p>
+                                     <label for="fname">First Name</label>
+                                     <input type="text" name="fname" />
+                             </p>
+                             <p>
+                                     <label for="lname">Last Name</label>
+                                     <input type="text" name="lname" />
+                             </p>
+                             <p>
+                                     <label for="email">Email</label>
+                                     <input type="email" name="email" />
+                             </p>
+
+                             <p>
+                                     <label for="username">User Name</label>
+                                     <input type="text" name="username" />
+                             </p>
+
+                             <p>
+                                     <label for="password">Password</label>
+                                     <input type="password" name="password" />
+                             </p>
+                             <p>
+                                     <label for="password_check">Repeat Password</label>
+                                     <input type="password" name="password_check" />
+                             </p>
+                             <p> 
+                                     <input type="hidden" name="provider" value="LOCAL" />
+                                     <input type="submit" value="Create User"/>
+                             </p>
+                     </form>';	
+                    }
+                    else
+                    {
+                        return "<p>This server is not public</p>";
+                    }
+			
+                }
+                
+                
 		public function requestLogin($callbackUrl, $firstLogin = false)
 		{
 		
 			if($firstLogin)
 			{
-				return '<p>Please create the account for the server administrator</p>			<form method="POST" action="admin">				<p>					<label for="fname">First Name</label>					<input type="text" name="fname" />				</p>				<p>					<label for="lname">Last Name</label>					<input type="text" name="lname" />				</p>				<p>					<label for="email">Email</label>					<input type="email" name="email" />				</p>				<p>					<label for="username">User Name</label>					<input type="text" name="username" />				</p>				<p>					<label for="password">Password</label>					<input type="password" name="password" />				</p>				<p>					<label for="password_check">Repeat Password</label>					<input type="password" name="password_check" />				</p>				<p>					<input type="submit" value="Create User"/>				</p>			</form>';	
+				return '<p>Please create the account for the server administrator</p>
+			<form method="POST" action="admin">
+				<p>
+					<label for="fname">First Name</label>
+					<input type="text" name="fname" />
+				</p>
+				<p>
+					<label for="lname">Last Name</label>
+					<input type="text" name="lname" />
+				</p>
+				<p>
+					<label for="email">Email</label>
+					<input type="email" name="email" />
+				</p>
+
+				<p>
+					<label for="username">User Name</label>
+					<input type="text" name="username" />
+				</p>
+
+				<p>
+					<label for="password">Password</label>
+					<input type="password" name="password" />
+				</p>
+				<p>
+					<label for="password_check">Repeat Password</label>
+					<input type="password" name="password_check" />
+				</p>
+				<p> 
+                                        <input type="hidden" name="provider" value="LOCAL" />
+					<input type="submit" value="Create User"/>
+				</p>
+			</form>';	
 			}
 			else
 			{
 				global $SITE_ROOT;
-				return '<p>Please use the form below to log into EpiCollect+</p><form action="'.$SITE_ROOT.'/loginCallback" method="POST"><p><label for="uname">User name</label><input type="text" name="uname" /></p><p><label for="pwd">Password</label><input type="password" name="pwd" /></p><p><input type="Submit" name="Login" value="Login" /><input type="hidden" name="callback" value="'.$SITE_ROOT . "/" . $callbackUrl.'"</p></form>';
+				return '<p>Please use the form below to log into EpiCollect+</p><form action="'.$SITE_ROOT.'/loginCallback" method="POST"><p><label for="uname">User name</label><input type="text" name="uname" /></p><p><label for="pwd">Password</label><input type="password" name="pwd" /></p><p><input type="Submit" name="Login" value="Login" /><input type="hidden" name="provider" value="LOCAL" /><input type="hidden" name="callback" value="'.$SITE_ROOT . "/" . $callbackUrl.'"</p></form>';
 			}
 		}
 		
@@ -115,8 +195,8 @@
 			{
 				global $db;
 				$this->db = $db;
-			}
-			
+                        }
+                        
 			global $cfg;
 			//don't use MD5!
 			$salt = $cfg->settings["security"]["salt"];		
