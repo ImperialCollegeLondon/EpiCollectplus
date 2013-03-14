@@ -333,15 +333,15 @@
 				$(".graphPanel").graphPanel(
 				{
 					form : "<fieldSet><label for=\"field\">Field Name</label><select name=\"field\" class=\"colourFieldList\"></select><h4>Chart Type</h4><div class=\"toggle\">" 
-					+"<label for=\"piech\">Pie</label><input id=\"piech\" type=\"radio\" name=\"chartType\" value=\"pie\" checked=\"checked\" /><label for=\"barch\">Bar</label><input type=\"radio\" id=\"barch\" name=\"chartType\" value=\"bar\" /></div> </fieldSet>",
+					+"<label for=\"piech\">Pie</label><input id=\"piech\" type=\"radio\" name=\"chartType\" value=\"pie\" checked=\"checked\" /><label for=\"barch\">Bar</label><input type=\"radio\" id=\"barch\" name=\"chartType\" value=\"bar\" /></div> </fieldSet>"
 				});
 				
 				
 				
 				$("#tabs").tabs({
-					activate : function(event, ui)
+					activate : function(evt, ui)
 					{
-						if(ui.newPanel.attr('id') == "mapTab")
+						if(ui.newPanel.attr('id') === "mapTab")
 						{
 							cen = map.getCenter();
 							map.setCenter(cen);
@@ -392,7 +392,7 @@
 					else
 					{
 						$('#graphOne').height(mapHeight);
-						$('#graphOne').width($('#graphOne').offset().left - $('#map').offset().left - 14)
+						$('#graphOne').width($('#graphOne').offset().left - $('#map').offset().left - 14);
 					}
 					$('#map-container').height(mapHeight);
 				});
@@ -433,13 +433,13 @@
 			{
 				
 				var jq = $(selector + " .ecplus-dropdown-menu");
-				var visible = jq.css("display") != "none";
+				var visible = jq.css("display") !== "none";
 				
 				if(visible) jq.hide();
 				else
 				{
 					$(document.body).click(function(evt){
-						if($(evt.target).attr("type") != "checkbox" && $(evt.target)[0].tagName != "LABEL")
+						if($(evt.target).attr("type") !== "checkbox" && $(evt.target)[0].tagName !== "LABEL")
 							$(selector + " .ecplus-dropdown-menu").hide();
 					});
 					
@@ -467,7 +467,7 @@
 				project = prj;		
 				
 				var hasMap = (project.forms[formName].gpsFlds.length > 0);
-				if(hasMap) geoField = project.forms[formName].gpsFlds[0]
+				if(hasMap) geoField = project.forms[formName].gpsFlds[0];
 				
 				for(nextForm = project.getNextForm(formName); nextForm; nextForm = project.getNextForm(nextForm.name))
 				{
@@ -481,7 +481,7 @@
 				if(hasMap && (!window["google"] || !google.maps))
 				{
 					hasMap = false;
-					$('#main h1:first').after('<p class="err">Google maps is not currently available so the mapping interface has been disabled.</p>')
+					$('#main h1:first').after('<p class="err">Google maps is not currently available so the mapping interface has been disabled.</p>');
 				}
 				
 				if(hasMap)
@@ -502,7 +502,7 @@
 					var text = fld.text;
 					if(text.length > 40) text = text.substr(0,37) + "..."; 
 					
-					if(hiddenColumns[f] == undefined) {hiddenColumns[f] = false;}
+					if(hiddenColumns[f] === undefined) {hiddenColumns[f] = false;}
 					
 				
 					$(".ecplus-data tr").append("<th class=\"" + f + "\" >" + text + "</th>");	
@@ -511,7 +511,7 @@
 				
 				if(nextFormName)
 				{
-					if(hiddenColumns[nextFormName] == undefined) hiddenColumns[nextFormName] = false;
+					if(hiddenColumns[nextFormName] === undefined) hiddenColumns[nextFormName] = false;
 					
 					$(".ecplus-data tr").append("<th class=\"" + nextFormName + "_entries\">" + nextFormName + " Entries</th>");
 				}
@@ -519,13 +519,13 @@
 				$(".ecplus-data th").resizable({
 					handles : "e",
 					alsoResize : ".ecplus-data",
-					resize	: function(event, ele)
+					resize	: function(ele)
 					{
 						$("td." + ele.element[0].className.substring(0, ele.element[0].className.indexOf(" "))).css({ "max-width" : (ele.element.width()-5) + "px"});
 					}
 				});
 				
-				$(".ecplus-data th").append("<img src=\"../images/uparrow.png\" class=\"asc\" width=\"12\" /><img src=\"../images/downarrow.png\" class=\"desc\" width=\"12\" />")
+				$(".ecplus-data th").append("<img src=\"../images/uparrow.png\" class=\"asc\" width=\"12\" /><img src=\"../images/downarrow.png\" class=\"desc\" width=\"12\" />");
 				$(".ecplus-data th").click(function(evt){
 					var newSortCol = evt.target.className;
 					newSortCol = newSortCol.substr(0, newSortCol.indexOf(' '));
@@ -534,7 +534,7 @@
 					$(".ecplus-data th").removeClass("asc");
 		
 					window.evt = evt;
-					if(newSortCol == sortCol && sortDir == "asc")
+					if(newSortCol === sortCol && sortDir === "asc")
 					{
 						$(evt.target).addClass("desc");
 						sortDir = "desc";
@@ -557,12 +557,12 @@
 					
 					$('#showHideFields .ecplus-dropdown-menu').append("<input type=\"checkbox\" name=\"fldShowHide\" value=\"" + fld + "\" " + (hiddenColumns[fld] ? "" : "checked=\"checked\"") + " /><label for=\"fldShowHide\">" + text +  "</label><br />");
 					
-					if(field.type != "location" && field.type != "gps" && field.type != "branch"
-							&& field.type != "video" && field.type != "audio" && field.type != "photo" && field.type != "")
+					if(field.type !== "location" && field.type !== "gps" && field.type !== "branch"
+							&& field.type !== "video" && field.type !== "audio" && field.type !== "photo" && field.type !== "")
 					{
-						$('.fieldList').append("<option value=\"" + fld + "\">" + text +  "</option>")
-						if(field.type == "select" || field.type == "radio" ||field.type == "select1" 
-								|| fld == project.getPrevForm(formName).key || fld == "DeviceID")
+						$('.fieldList').append("<option value=\"" + fld + "\">" + text +  "</option>");
+						if(field.type === "select" || field.type === "radio" ||field.type === "select1" 
+								|| fld === project.getPrevForm(formName).key || fld === "DeviceID")
 						{
 							if(!defaultColourField) defaultColourField = fld;	
 							$('.colourFieldList').append("<option value=\"" + fld + "\">" + text +  "</option>");
@@ -597,9 +597,9 @@
 					$('#mapFilterValue').autocomplete("option", "source" , baseUrl+ "/" + $('#mapFilterField').val());
 				});
 				
-				$('#filter_value').bind('autocompletechange', function(){doFilter($('#filter_fields').val(), $('#filter_value').val())});
+				$('#filter_value').bind('autocompletechange', function(){doFilter($('#filter_fields').val(), $('#filter_value').val());});
 				
-				var t = new Date().getTime()
+				var t = new Date().getTime();
 				$( "#slider-range" ).slider({
 					range: true,
 					min : 0,
@@ -607,7 +607,7 @@
 					values: [0,  t],
 					slide: function (event, ui)
 					{
-						filterMap(function(data){ return data["created"] >= ui.values[0] / 1000 && data["created"] <= ui.values[1] / 1000; })
+						filterMap(function(data){ return data["created"] >= ui.values[0] / 1000 && data["created"] <= ui.values[1] / 1000; });
 						$("#timeFrom").text(new Date(ui.values[0]).format(dateFormat));
 						$("#timeTo").text(new Date(ui.values[1]).format(dateFormat));
 						
@@ -617,10 +617,10 @@
 				});
 				
 				$('.minmax').mouseenter(function(){
-					$(this).parent().addClass('hover')
+					$(this).parent().addClass('hover');
 				});
 				$('.minmax').mouseleave(function(){
-					$(this).parent().removeClass('hover')
+					$(this).parent().removeClass('hover');
 				});
 			};	
 			
@@ -634,11 +634,11 @@
 			{
 				
 				var total = Number($("#total").text());
-				if(total == 0 )return;
+				if(total === 0 )return;
 				var rem = total % numEnts;
-				if(rem == 0) rem = numEnts;
+				if(rem === 0) rem = numEnts;
 				pageNo = (total - rem) / numEnts;
-				getData()
+				getData();
 			}
 			
 			function turnPage()
@@ -662,7 +662,7 @@
 			function getData()
 			{
 				loader.start();
-				offset = pageNo * numEnts
+				offset = pageNo * numEnts;
 				
 				var urlStr = url + "/" + formName + ".json?mode=list&start=" + offset + "&limit=" + numEnts + "&sort=" + sortCol + "&dir=" +sortDir + (location.search  ? "&" + location.search.substr(1) : "");
 				var statUrl = url + "/" + formName + "/__stats?" + location.search.substr(1);
@@ -746,7 +746,7 @@
 			{
 				$(".ecplus-data tbody").empty();
 				
-				if(entries.length == 0)
+				if(entries.length === 0)
 				{
 					if(pageNo > 0) pageNo--;
 					loader.stop();
@@ -764,7 +764,7 @@
 				var html = "";
 				for(var i = 0; i < entries.length; i++)
 				{
-					html += "<tr class=\"" + (i % 2 == 1 ? " alt": "") + "\">";
+					html += "<tr class=\"" + (i % 2 === 1 ? " alt": "") + "\">";
 					for(f in project.forms[formName].fields)
 					{	
 						var fld = project.forms[formName].fields[f];
@@ -773,7 +773,7 @@
 						
 					
 						html += fld.formatValue(entries[i][f], entries[i]);
-						html += "</td>"					
+						html += "</td>";				
 					}
 					if(nextFormName)
 					{
@@ -790,7 +790,7 @@
 						
 						var ents = entries[i][nextFormName + "_entries"];
 						
-						if(!ents || ents == 'null') ents = 0;
+						if(!ents || ents === 'null') ents = 0;
 						
 						html += "<td>" + ents  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "&prevForm=" + formName + "\">View entries</a> | <a href=\"javascript:project.forms[project.getNextForm(formName).name].displayForm({ vertical : false, data : " + JSON.stringify(par_obj).replace(/"/g, '\'') + " });\">Add " + project.getNextForm(formName).name  + "</a></td>";
 					}
@@ -832,7 +832,7 @@
 			
 			function mapDataCallback(data, status, xhr)
 			{
-				mapData = mapData.concat(data)
+				mapData = mapData.concat(data);
 				
 				var mincreated = new Date().getTime();
 				var maxcreated = 0;
@@ -845,12 +845,12 @@
 				var minlat = 180;
 				var maxlat = -180;
 				var minlon = 180;
-				var maxlon = -180
+				var maxlon = -180;
 				
 				for(var i = 0; i < data.length; i++)
 				{
 					if(!data[i][geoField]) continue;
-					if(!data[i][geoField].accuracy) data[i][geoField].accuracy = (data[i][geoField].latitude != 0 && data[i][geoField].longitude !=0) ? 100 : -1;
+					if(!data[i][geoField].accuracy) data[i][geoField].accuracy = (data[i][geoField].latitude !== 0 && data[i][geoField].longitude !==0) ? 100 : -1;
 					if(data[i][geoField].latitude >= -90 && data[i][geoField].latitude <= 90 && data[i][geoField].longitude >= -180 && data[i][geoField].longitude <= 180 && data[i][geoField].accuracy > 0)
 					{
 						var mkr = new google.maps.Marker({
@@ -880,7 +880,7 @@
 					maxcreated = Math.max(maxcreated, Number(data[i]["created"]));
 					
 					var ttl = data[i][project.forms[formName].titleField];
-					if(!ttl || ttl.trimChars(' ') == '') ttl = '<i>' + data[i]['created'] + '</i>';
+					if(!ttl || ttl.trimChars(' ') === '') ttl = '<i>' + data[i]['created'] + '</i>';
 					
 					addToSidebar(i, ttl);
 				}
@@ -888,7 +888,7 @@
 				//update progress bar
 				setProgress(markers.length);
 				
-				if(markers.length < totalents && markers.length % mapChunkSize == 0)
+				if(markers.length < totalents && markers.length % mapChunkSize === 0)
 				{
 					getMapData(mapChunkSize, markers.length);					
 				}
@@ -1004,7 +1004,7 @@
 						}
 					});
 					
-					drawGraph($('#graphOne .ecplus-pane'), $('#mapColourField').val(), 'pie')
+					drawGraph($('#graphOne .ecplus-pane'), $('#mapColourField').val(), 'pie');
 					
 					$('[href=#mapTab]').removeClass('ec-loading');	
 				}
@@ -1025,11 +1025,11 @@
 			
 			function getMarkerAt(latlng)
 			{
-				var mkrs = markers	
+				var mkrs = markers;	
 				
 				for(mkr in mkrs)
 				{
-					if(mkrs[mkr] && mkrs[mkr].getPosition() == latlng) return mkrs[mkr];
+					if(mkrs[mkr] && mkrs[mkr].getPosition() === latlng) return mkrs[mkr];
 				}
 			}
 			
@@ -1058,12 +1058,12 @@
 				
 				for( fld in fields )
 				{
-					if( (fields[fld].type != '' || fld == 'created') && rec[fld] ) 
+					if( (fields[fld].type !== '' || fld === 'created') && rec[fld] ) 
 					{
 						html += '<tr><th>' + fields[fld].text + '</th> <td> ' + fields[fld].formatValue(rec[fld]) + '</td></tr>';
 					}
 				}
-				html += '</table>'
+				html += '</table>';
 				return html;
 			}
 			
@@ -1090,7 +1090,7 @@
 				$('.graphPanel').each(function(idx,ele){
 					if($('.flot-base', ele).length)
 					{
-						$('a', ele).click()
+						$('a', ele).click();
 					}
 				});
 			}
@@ -1098,7 +1098,7 @@
 			function clearMapFilter()
 			{
 				var mkrs= markers;
-				var len = markers.length
+				var len = markers.length;
 				
 				for(var i = len; i--;)
 				{
@@ -1118,7 +1118,7 @@
 				$('.graphPanel').each(function(idx,ele){
 					if($('.flot-base', ele).length)
 					{
-						$('a', ele).click()
+						$('a', ele).click();
 					}
 				});
 			}
@@ -1129,7 +1129,7 @@
 					var field = $("#mapFilterField").val();
 					var val = $("#mapFilterValue").val();
 					
-					return data[field] == val;
+					return data[field] === val;
 				});
 				
 				$(".filterControl").removeClass("active");
@@ -1156,7 +1156,7 @@
 					{
 						colourGrps[d[fld]] = colours[colourIdx++ % colours.length];
 					}
-					mkr.setIcon("http://" + location.host +  "/{#SITE_ROOT#}/markers/point?colour=" + colourGrps[d[fld]])
+					mkr.setIcon("http://" + location.host +  "/{#SITE_ROOT#}/markers/point?colour=" + colourGrps[d[fld]]);
 					mkr.colour = colourGrps[d[fld]];
 				}
 				
@@ -1214,7 +1214,7 @@
 				
 				var idx = 0;
 				var ser = [];
-				if(field == window.colourField)
+				if(field === window.colourField)
 				{
 					for(var i in d)
 					{
@@ -1292,7 +1292,7 @@
 				
 				var s = [];
 				var idx = 0;
-				if(field == window.colourField)
+				if(field === window.colourField)
 				{
 					for(var i in d)
 					{
@@ -1370,9 +1370,8 @@
 					}
 				}
 				
-				var dat = [];
 				jq.unbind();
-				if(type == "pie")
+				if(type === "pie")
 				{
 					drawPie(jq, agg, field);
 				}

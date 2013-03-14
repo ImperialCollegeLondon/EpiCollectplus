@@ -4,13 +4,14 @@ if (isset($_REQUEST['_SESSION'])) throw new Exception('Bad client request');
 
 date_default_timezone_set('UTC');
 $dat = new DateTime('now');
-$dfmat = '%s.u';
+//$dfmat = '%s.u';
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
 $CODE_VERSION = "1.3";
-if(!isset($PHP_UNIT)) {$PHP_UNIT = false;}
-if(!$PHP_UNIT){ session_start(); }
+
+if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
+if( !$PHP_UNIT ){ @session_start(); }
 
 function getValIfExists($array, $key)
 {
