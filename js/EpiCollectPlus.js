@@ -272,6 +272,19 @@ Date.prototype.format = function(fmt)
 		.replace("ss", this.getSeconds().toString().padLeft(2, "0"));
 };
 
+EpiCollect.parseDate = function(dateString)
+{
+    var date_time = dateString.split(' ');
+    var date = date_time[0].split('-');
+    var time = date_time[1].split(':');
+    
+    return new Date(date[0], date[1], date[2], time[0], time[1], time[2]);
+}
+
+EpiCollect.server_format = function(d)
+{
+    return d.format('yyyy-MM-dd HH:mm:ss');
+}
 
 if(!Object.keys)
 {
@@ -1616,9 +1629,6 @@ EpiCollect.Field = function()
 					   var cname = this.id;
 					   var key = frm.key;
 					   var title = frm.titleField;
-					   
-				
-					    
 					   var ctrl = '<input name="' + cname + '-ac" id="' + cname +  '-ac" class="ecplus-input ecplus-ac" pfield="' + key + '" pform="' + frm.name + '" ' + (fkfld ? ' childcontrol="' + fkfld + '"' : '') + ' /><input type="hidden" name="' + cname + '" id="' + cname +  '" value="' + val + '" class="ecplus-input-hidden" />';
 					   
 					   if(val)
@@ -1828,7 +1838,7 @@ EpiCollect.Field = function()
 				return "No Value";
 			}
 		}
-		else if(this.id === 'created')
+		else if(this.id === 'created' && value.match(/^\d+$/))
 		{
 			value = Number(value);
 			while((Math.log(value) / Math.log(10)) < 12)

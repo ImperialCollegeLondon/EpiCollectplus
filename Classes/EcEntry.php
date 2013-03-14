@@ -39,7 +39,7 @@
 				$this->projectName = $arr['projectName'];
 				$this->formName = $arr['formName'];
 				$this->deviceId = $arr['DeviceId'];
-				$this->created = $arr['created'];
+				$this->created = EcTable::formatCreated($arr['created']);
 				$this->uploaded = $arr['uploaded'];
 				$this->user = $arr['user'];
 			}
@@ -65,6 +65,11 @@
 				$dt = new DateTime();
 				$this->created = $dt->getTimestamp();
 			}
+                        elseif(!is_numeric($this->created))
+                        {
+                            $this->created = EcTable::unformatCreated($this->created);
+                        }
+                        
 			
 			
 			
@@ -207,7 +212,7 @@
 				for( $i = 0; $i < $len; ++$i)
 				{
 					if( !$entries[$i]->created || $entries[$i]->created == "NULL") { $entries[$i]->created = getTimestamp(); }
-					
+                                        else if(!is_numeric($entries[$i]->created )) {$entries[$i]->created = EcTable::unformatCreated($entries[$i]->created);}
 					
 					if($prj->tables[$entries[$i]->formName]->checkExists($entries[$i]->values[$keyfield]))
 					{

@@ -49,7 +49,6 @@ include (sprintf('%s/db/dbConnection.php', $DIR));
 
 $url = (array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : $_SERVER["HTTP_X_ORIGINAL_URL"]); //strip off site root and GET query
 if($SITE_ROOT != '') $url = str_replace($SITE_ROOT, '', $url);
-
 if(strpos($url, '?')) $url = substr($url, 0, strpos($url, '?'));
 $url = trim($url, '/');
 $url = urldecode($url);
@@ -76,9 +75,13 @@ $cfg = new ConfigManager(sprintf('%s/ec/epicollect.ini', ltrim($DIR, '/')));
 
 function genStr()
 {
-	$str = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	$str = str_shuffle($str);
-	$str = substr($str, -22);
+	$source_str = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	$rand_str = str_shuffle($source_str);
+	$str = substr($rand_str, -22);
+
+        unset($source_str, $rand_str);
+        
+        return $str;
 }
 
 if($cfg->settings['security']['use_ldap'] && !function_exists('ldap_connect'))
@@ -100,6 +103,7 @@ function makeUrl($fn)
 	global $SITE_ROOT;
 	return sprintf('http://%s/%s/ec/uploads/%s', $_SERVER['HTTP_HOST'], trim($SITE_ROOT, '/'), $fn);
 }
+
 
 function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 {
@@ -330,6 +334,58 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 
 	$template = preg_replace('/\{#[a-z0-9_]+#\}/i', '', $template);
 	return $template;
+}
+
+function formDataLastUpdated()
+{
+    global $url,  $log, $auth;
+
+	$http_accept = getValIfExists($_SERVER, 'HTTP_ACCEPT');
+	$format = ($http_accept ? substr($http_accept, strpos($http_accept, '/') + 1) : '');
+	$ext = substr($url, strrpos($url, ".") + 1);
+	$format = $ext != "" ? $ext : $format;
+
+	$prj = new EcProject();
+	$pNameEnd = strpos($url, "/");
+
+	$prj->name = substr($url, 0, $pNameEnd);
+	$prj->fetch();
+	
+	if(!$prj->id)
+	{
+		echo applyTemplate("./base.html", "./error.html", array("errorType" => "404 ", "error" => "The project {$prj->name} does not exist on this server"));
+		return;
+	}
+	
+	$permissionLevel = 0;
+	$loggedIn = $auth->isLoggedIn();
+	
+	if($loggedIn) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
+
+	if(!$prj->isPublic && !$loggedIn)
+	{
+		loginHandler($url);
+		return;
+	}
+	else if(!$prj->isPublic &&  $permissionLevel < 2)
+	{
+		echo applyTemplate("./base.html", "./error.html", array("errorType" => "403 ", "error" => "You do not have permission to view this project"));
+		return;
+	}
+
+	$extStart = strpos($url, ".");
+	$frmName = substr($url, $pNameEnd + 1, strrpos($url, '/', 1) - strlen($url));
+
+        
+        
+	if(!array_key_exists($frmName, $prj->tables))
+	{
+		echo applyTemplate("./base.html", "./error.html", array("errorType" => "404 ", "error" => "The project {$prj->name} does not contain the form $frmName"));
+		return;
+	}
+        
+        echo json_encode($prj->tables[$frmName]->getLastActivity());
+        return;
 }
 
 function mimeType($f)
@@ -3344,7 +3400,7 @@ function projectSummary()
 
 function projectUsage()
 {
-	global $url;
+	global $url, $auth;
 
 	$prj = new EcProject();
 	$prj->name = substr($url, 0, strpos($url, "/"));
@@ -3393,7 +3449,7 @@ function packFiles($files)
 
 	$str = "";
 
-	foreach($files as $k=>$f)
+	foreach($files as $k => $f)
 	{
 		$str .= file_get_contents($f);
 		$str .= "\r\n";
@@ -3404,7 +3460,7 @@ function packFiles($files)
 
 function listUsers()
 {
-	global $auth;
+	global $auth, $url;
 	
 	if($auth->isLoggedIn())
 	{
@@ -3516,7 +3572,7 @@ function resetPassword()
 
 function userHandler()
 {
-	global $url, $SITE_ROOT;
+	global $url;
 
 	//if(!(strstr($_SERVER["HTTP_REFERER"], "/createProject.html"))) return;
 
@@ -3529,7 +3585,8 @@ function userHandler()
 	$res = $db->do_query($sql);
 	if($res === true)
 	{
-		if($arr = $db->get_row_array())
+                $arr = $db->get_row_array();
+		if($arr)
 		{
 			if(array_key_exists("details", $arr))
 			{
@@ -3638,6 +3695,7 @@ $pageRules = array(
 		'[a-zA-Z0-9_-]+/manage' =>new PageRule(null, 'updateProject', true),
 		'[a-zA-Z0-9_-]+/updateStructure' =>new PageRule(null, 'updateXML', true),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__stats' =>new PageRule(null, 'tableStats'),
+                '[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__activity' =>new PageRule(null, 'formDataLastUpdated'),
 		'[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__getImage' =>new PageRule(null, 'getImage'),

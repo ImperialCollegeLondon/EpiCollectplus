@@ -297,8 +297,11 @@
 			
 			var totalents = 0;
 			var mapChunkSize = 100;
-			
+			var map_lastupdated = new Date(0);
+                        var mapBounds = null;
+                        
 			var mapHeight = 0;
+                        var mapchecker = null;
 			
 			var colours = [
 				"rgba(255,0,0,1)",
@@ -343,9 +346,10 @@
 					{
 						if(ui.newPanel.attr('id') === "mapTab")
 						{
-							cen = map.getCenter();
-							map.setCenter(cen);
-							startMapLoad();
+                                                        google.maps.event.trigger(map, 'resize');
+                                                        if(mapBounds) map.fitBounds(mapBounds);
+                                                        drawGraph($('#graphOne .ecplus-pane'), $('#mapColourField').val(), 'pie');
+                                                        
 						}
 					}
 				});
@@ -405,6 +409,7 @@
 						$('#map, #bottombar').css('margin-right', ui.helper.width() + 'px');
 					}
 				});
+                                if(google.maps) startMapLoad();
 			});
 	
 			function setProgressMessage(msg)
@@ -689,7 +694,7 @@
 				});
 				$('#progressbar').show();
 				$.getJSON(url + "/" + formName + "/__stats"  , mapTotalCallback);
-				google.maps.event.trigger(map, 'resize');
+				
 				mapData = [];
 			}
 			
@@ -829,6 +834,8 @@
 				$("#total").text(stats["ttl"]);
 
 			}
+                        
+                        
 			
 			function mapDataCallback(data, status, xhr)
 			{
@@ -882,6 +889,15 @@
 					var ttl = data[i][project.forms[formName].titleField];
 					if(!ttl || ttl.trimChars(' ') === '') ttl = '<i>' + data[i]['created'] + '</i>';
 					
+                                        
+                                        var uploaded = EpiCollect.parseDate(data[i]["uploaded"]);
+                                        if(map_lastupdated < uploaded) map_lastupdated = uploaded;
+                                        
+                                        if(data[i]["lastEdited"]){
+                                            var updated = EpiCollect.parseDate(data[i]["lastEdited"]);
+                                            if(map_lastupdated < updated) map_lastupdated = updated;
+                                        }
+                                        
 					addToSidebar(i, ttl);
 				}
 				
@@ -960,6 +976,8 @@
 					mapWidth = $('#map').width();
 					$('#map').css('position', '');
 					
+                                        window.mapBounds = new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon));
+                                        
 					$('.minmax', $('#graphOne')).bind('click', function(){
 						var div = $('.ecplus-pane', $(this).parent());
 						var par = $(this).parent(); 
@@ -1004,9 +1022,10 @@
 						}
 					});
 					
-					drawGraph($('#graphOne .ecplus-pane'), $('#mapColourField').val(), 'pie');
+					
 					
 					$('[href=#mapTab]').removeClass('ec-loading');	
+                                        mapchecker = setInterval(function(){window.checkForMapUpdates()}, 6000)
 				}
 				
 			}			
@@ -1078,7 +1097,7 @@
 				for( var i = len; i--; )
 				{
 					var d = data[i];
-					
+					//TODO: Parrallelise
 					var vis = filterFunction(data[i]);
 					if( mkrs[i] ) mkrs[i].setVisible(vis);
 					
@@ -1382,7 +1401,28 @@
 				
 				
 			}
-			
+			                                                
+                        function checkForMapUpdates()
+                        {
+                            $.ajax(location.pathname + '/__activity', {success : function(xhr){
+                                    var act = xhr;
+
+                                    if(act['edited'] > map_lastupdated || act['uploaded'] > map_lastupdated )
+                                    {
+                                            var urlStr = url + "/" + formName + ".json?gt::modified=" + EpiCollect.server_format(map_lastupdated) + "sort=" +  project.forms[formName].titleField + "&limit=" + chunkSize + "&start=" + offset;
+
+                                            if(filterField && filterValue)
+                                            {
+                                                    urlStr += "&" + filterField + "=" + filterValue;
+                                                    statUrl += "&" + filterField + "=" + filterValue; 
+                                            }
+                                            $.getJSON(urlStr , mapDataCallback);
+                                         
+                                    }
+                                }
+                            });
+                        }
+                        
 			function saveNumEntires()
 			{
 				if(localStorage) localStorage.setItem('num_entries', $('#num_entries').val());
