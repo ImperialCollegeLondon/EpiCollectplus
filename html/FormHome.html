@@ -1486,7 +1486,7 @@
 			<p class="ecplus-toolbar">
 				{#curationbuttons#}
 				<span class="ecplus-toolbar-divider">&nbsp;</span> 
-				Filter List By <select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> 
+                                <label>Filter List By</label for="filter_fields"><select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> 
                                 <span id="filterControls" class="button-set">
                                         <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value').val());">
                                             <img class="toolbar-icon" src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Filter" alt="Filter">
@@ -1503,7 +1503,7 @@
                                 </span>
 			</p>
 			
-			<p class="ecplus-table-footer">
+			<div class="ecplus-table-footer">
 				<span class="left">
                                     <span id="forwardButtons" class="button-set">
 					<a href="javascript:firstPage();" title="Go to first page">
@@ -1530,7 +1530,7 @@
 				<span class="right">
 					Show <input type="number" maxlength="3" id="num_entries" /> entries per page <a class="btn" href="javascript:saveNumEntires();">Save as my default</a> 
 				</span>
-			</p>
+			</div>
 			{#csvform#}
 		</div>
 		<div id="mapTab">

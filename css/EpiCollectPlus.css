@@ -363,6 +363,12 @@ tr.alt
 	display : none;
 }
 
+.ecplus-table-footer
+{
+    margin-top: 0.5em;
+    margin-bottom: 1.5em;
+}
+
 .ecplus-table-footer a
 {
 	display: inline-block;
@@ -372,12 +378,12 @@ tr.alt
 
 .ecplus-table-footer span:first-child
 {
-	margin-left : 0.5em;
+	/*margin-left : 0.5em;*/
 }
 
 .ecplus-table-footer span:last-child
 {
-	margin-right : 0.5em;
+	/*margin-right : 0.5em;*/
 }
 
 /* general */
@@ -393,6 +399,13 @@ tr.alt
 	width: 0.75em;
 	border-right : 2px solid #CCCCCC;
 	margin-right : 0.75em;
+}
+
+.ecplus-toolbar label
+{
+    min-width: 0;
+    margin-left : 1em;
+    margin-right : 0.5em;
 }
 
 .ecplus-form .ecplus-question fieldset label
