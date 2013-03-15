@@ -17,8 +17,20 @@
 		public $branchfields = array();
 		
 		static $STATIC_FIELDS = array('created', 'lastEdited', 'uploaded', 'DeviceId', 'id'); //list of fields that are relevant to all entries, and so are in the entry table
-		
-		/**
+		static $DECODE_OP_SQL = array(
+                     'eq' => '=', 
+                     'lt' => '<', 
+                     'gt' => '>',
+                     'lte' => '<=',
+                     'gte' => '>=',
+                     'not' => '<>',
+                     'like' => 'LIKE'/*,
+                     'in',
+                     'notin'*/
+                );
+
+
+                /**
 		 * An associative array where the keys are the properties in the JSON object and the values are the column head suffixes
 		 * 
 		 * @var array
@@ -43,6 +55,19 @@
 			return false;
 		}
 		
+                public static function formatCreated($val)
+                {
+                     $created = new DateTime();
+                     $created->setTimestamp(intval($val));
+                     return $created->format('Y-m-d H:i:s');
+                }
+                
+                public static function unformatCreated($val)
+                {
+                     $created = DateTime::createFromFormat('Y-m-d H:i:s', $val);
+                     return $created->getTimestamp();
+                }
+                
 		public function fromArray($arr)
 		{
 			foreach(array_keys($arr) as $key)
@@ -140,7 +165,7 @@
 				
 			}
 			
-			$qry = "SELECT f.idField as idField, f.key, f.name, f.label, ft.name as type, f.required, f.jump, f.isinteger as isInt, f.isDouble, f.title, f.regex, f.doubleEntry, f.search, f.group_form, f.branch_form, f.display, f.genkey, f.date, f.time, f.setDate, f.setTime, f.min, f.max, f.crumb, f.`match`, f.active, f.defaultValue, f.otherFieldProperties, f.upperCase FROM field f LEFT JOIN fieldtype ft on ft.idFieldType = f.type WHERE ";
+			$qry = "SELECT f.idField as idField, f.key, f.name, f.label, ft.name as type, f.required, f.jump, f.isinteger as isInt, f.isDouble, f.title, f.regex, f.doubleEntry, f.search, f.group_form, f.branch_form, f.display, f.genkey, f.date, f.time, f.setDate, f.setTime, f.min, f.max, f.crumb, f.`match`, f.active, f.defaultValue, f.otherFieldProperties, f.upperCase, f.position FROM field f LEFT JOIN fieldtype ft on ft.idFieldType = f.type WHERE ";
 			if(is_numeric($this->id))
 			{
 				$qry = "$qry f.form = {$this->id} ORDER BY f.position";
@@ -430,24 +455,60 @@
 			
 			if($args)
 			{
-				foreach($args as $k => $v)
+				foreach($args as $k_sep => $v)
 				{
-					$s_k = str_replace('.', '_', $k);
-					
-					if( $v == '' ) continue;
-					if( array_key_exists($k, $this->fields) && $this->fields[$k]->type != "" )
-					{
-						$join .= sprintf(' LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
-						if( $exact === true )
-						{
-							$where .= sprintf(' AND `ev%s`.value = \'%s\'', $s_k, $v);
-						}
-						else
-						{
-							$where .= sprintf(' AND `ev%s`.value Like \'%s\'', $s_k, $v);
-						}
-					}
+                                    $op = 'eq';
+                                        /*
+                                         * Search Operators (op::fieldname)
+                                         * 
+                                         * eq
+                                         * lt - less than
+                                         * gt - greather than
+                                         * lte - less than or equal to
+                                         * gte - greater than or equal to
+                                         * not - not
+                                         * like - like
+                                         * in
+                                         * notin
+                                         */
+                                        
+                                    $seppos = strpos($k_sep, '::');
+                                    
+                                    //if the separator is in there then remove the seperator to get the key
+                                    $k = $k_sep;
+                                    
+                                    if($seppos !== false){
+                                        $k = substr($k_sep, $seppos >= 0 ? $seppos + 2 : 0);
+                                        $op = substr($k_sep, 0, $seppos);
+                                    }
+                                    
+                                    $s_k = str_replace('.', '_', $k);
+                                        
+                                    if( $v == '' ) continue;
+                                    if( array_key_exists($k, $this->fields) && $this->fields[$k]->type != "" )
+                                    {
+                                        
+                                            $join .= sprintf(' LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
+                                            if( $exact === true )
+                                            {
+                                                    
+                                                    $where .= sprintf(' AND `ev%s`.value ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\'', $s_k, $v);
+                                            }
+                                            else
+                                            {
+                                                    $where .= sprintf(' AND `ev%s`.value Like \'%s\'', $s_k, $v);
+                                            }
+                                    }
+                                    elseif(array_search($k, EcTable::$STATIC_FIELDS) !== false)
+                                    {
+                                        $where .= sprintf(' AND `e`.%s ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\'', $s_k, $v);
+                                    }
+                                    elseif($k == 'modified')
+                                    {
+                                         $where .= sprintf(' AND (`e`.uploaded ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\' OR `e`.lastEdited ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\')', $v, $v);
+                                    }
 				}
+                                
 			}
 			
 			if(!strstr($join, sprintf('ev%s', $this->key)))
@@ -500,7 +561,7 @@
 			
  			if(!!$child && $includeChildCount)
  			{
- 				$qry = sprintf('CREATE TEMPORARY TABLE `%s_c_entries` (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
+ 				$qry = sprintf('CREATE TEMPORARY TABLE IF NOT EXISTS `%s_c_entries` (entries int NOT NULL, value varchar(1000) NULL, entry int NOT NULL, PRIMARY KEY (entry)) select count(1) as entries, a.value , b.entry 
  					FROM entryvalue a, entryvalue b 
  					WHERE a.projectName = \'%s\' and a.formName =\'%s\' and a.fieldName = \'%s\' and a.value = b.value and b.formName = \'%s\' 
  					and b.fieldName = \'%s\' GROUP BY a.value, b.entry ORDER BY a.value;',
@@ -619,14 +680,15 @@
 			return $count;			
 		}
 		
-		public function recieve($n = 1)
+		public function recieve($n = 1, $full_urls = false)
 		{
-			global $db;
+			global $db, $SITE_ROOT;
 			$ret = array();
 			
 			for($i = -1; ($n > ++$i) && ($arr = $db->get_row_array()) ; )
 			{
 				$vals = explode('~~', $arr['data']);
+                               // $arr['created'] = EcTable::formatCreated($arr['created']);
 				unset($arr['data']);
 				for($j = count($vals); $j--;)
 				{
@@ -637,9 +699,17 @@
 						{
 							$arr[$kv[0]] = json_decode($kv[1], true);
 						}
-						else 
+						elseif($full_urls && $this->fields[$kv[0]]->type == "photo" && $kv[1] != '')
 						{
-							$arr[$kv[0]] = $kv[1];
+							$arr[$kv[0]] = sprintf('http://%s/%s%s/%s/__getImage?img=%s', $_SERVER['HTTP_HOST'], trim($SITE_ROOT, '/') . '/', $this->name, $this->projectName, $kv[1]);
+						}
+						elseif ($full_urls && $this->fields[$kv[0]]->valueIsFile() && $kv[1] != '')
+						{
+							$arr[$kv[0]] = makeUrl($kv[1]);
+						}
+                                                else
+						{
+                                                    $arr[$kv[0]] = $kv[1];
 						}
 					}
 				} 
@@ -730,6 +800,32 @@
 
 			return $arr;
 		}
+                
+                function getLastActivity()
+                {
+                    global $db;
+                    
+                    $sql = "SELECT max(created) as lastCreated, max(uploaded) as uploaded, max(lastEdited) as lastEdited from  entry where projectName = '{$this->projectName}' and formName = '{$this->name}' Group By projectName, formName";
+                    
+                    $res = $db->do_query($sql);
+                    if($res !== true) throw new Exception($res);
+                    
+                    $dict = array();
+                    
+                    for($arr = $db->get_row_array(); $arr; $arr = $db->get_row_array())
+                    {
+                        //converted values to dates
+                        $created = new DateTime();
+                        $created->setTimestamp(intval($arr['lastCreated']));
+                        
+                        $dict['created'] = $created->format('Y-m-d H:i:s');
+                        $dict['edited'] = $arr['lastEdited'];
+                        $dict['uploaded'] = $arr['uploaded'];
+                        
+                        
+                    }
+                    return $dict;
+                }
 		
 		function getUsage($res = "day", $from = NULL, $to = NULL)
 		{
@@ -828,19 +924,16 @@
 					}
 				}
 
-				$vlen = count($vals);
-				$hlan = count($headers);
-
 				$ttl = count($fields);
 				
 				for($f = 0; $f < $ttl; ++$f)
 				{
 					if( $this->fields[$fields[$f]]->type == 'location' || $this->fields[$fields[$f]]->type == 'gps' )
 					{
-						$lat = sprintf('%s_lat', $fields[$f]);
-						$lon = sprintf('%s_lon', $fields[$f]);
-						$alt = sprintf('%s_alt', $fields[$f]);
-						$acc = sprintf('%s_acc', $fields[$f]);
+						$lat = sprintf('%s_lattitude', $fields[$f]);
+						$lon = sprintf('%s_longitude', $fields[$f]);
+						$alt = sprintf('%s_alttitude', $fields[$f]);
+						$acc = sprintf('%s_accuarcy', $fields[$f]);
 						$src = sprintf('%s_provider', $fields[$f]);
 						$bearing = sprintf('%s_bearing', $fields[$f]);
 						

@@ -64,9 +64,27 @@
 			border-radius: 0.25em;
 			cursor: pointer;
 			font-weight : bold;	
-			width : 30%;
 		}
 		
+		.toggle label
+		{
+			margin : 0;
+			padding: 0;
+		}
+		
+		.progress-label {
+		    float: left;
+		    margin-left: 40%;
+		    margin-top: 5px;
+		    font-weight: bold;
+		    text-shadow: 1px 1px 0 #fff;
+		}
+		
+                .toolbar-icon, .button-set img
+                {
+                    height : 14px;
+                }
+                
 		#mapTab
 		{
 			position : relative;
@@ -75,45 +93,53 @@
 		#map
 		{
 			position : relative;
-			margin-left : 15em;
+			margin : 1em 16em 1em 15em; 
 			height : 30em;
-			margin-right : 15em;
+			border: 1px solid #CCCCCC;
+			left:0;
+		}
+		
+		#map-container
+		{
+			position : relative;
 		}
 		
 		#bottombar
 		{
-			margin : 1em 14em 1em -1.5em;
+			margin : 1em -6em 1em -0.5em;
 			position : relative;
-			height : 10em;
+			height : 100%;
 			padding: .5em .5em .5em .5em;
 		}
 		
 		#bottombar div.filterControl, #bottombar div.colourControl
 		{
-			height: 100%;
+			height: 8em;
 			width: 30%;
 			display : inline-block;
 			border : 1px solid #CCCCCC;
-			padding: 0.5em;
+			padding: 0.5em 0.5em 2em 0.5em;
 			position : relative;
 			vertical-align : top;
+			margin : 1px;
 		}
 				
 		#bottombar div.filterControl.active
 		{
 			display : inline-block;
-			border : 1px solid #CCCCFF;
+			border : 2px solid #0000FF;
+			margin : 0px;
 		}
 		
 		#sidebar 
 		{
 			border: 1px solid #CCCCCC;
-			bottom : 13.25em;
+			bottom : 12em;
 			overflow : auto;
 			left : 0;
 			position : absolute;
-			top : 1em;
-			width : 15em;
+			top : 0em;
+			width : 14em;
 		}
 		
 		@media all and (max-width: 1024px){
@@ -142,25 +168,59 @@
 			width: 6em;
 		}
 		
-		#graphbar 
+		#graphOne 
 		{
-			bottom : 0em;
-			right : 0;
-			overflow : auto;
+			overflow : hidden;
+			border: 1px solid #CCCCCC;
+			margin : 1px 1px 1px 33em;
+			height : 30em;
+			background : rgba(255,255,255,1);
 			position : absolute;
-			top : 1em;
-			width : 15em;
-			border-left: 2px solid rgba(0,0,0,0.4);
+			width: 75%;
+			top : 0em;
+			right : 0;
 		}
 		
-		.graphPanel
+		#graphOne.minimised, #map.minimised
+		{
+			width : 15em;
+			height : 15em;
+		}
+		
+		#graphOne.minimised .ecplus-settingspanel
+		{
+			display : none;
+		}
+		
+		#graphOne.minimised.hover
+		{
+			border: 2px solid #0000FF;
+			cursor: pointer;
+			margin : 0px;
+		}
+		
+		.minmax
+		{
+			position: absolute;
+			bottom: 0px;
+			left: 0px;
+			z-index: 100;
+			padding : 2px;
+		}
+		
+		.hover .minmax
+		{
+			background-color: #0000FF;
+		}
+		
+		/*.graphPanel
 		{
 			border: 1px solid #CCCCCC;
 			position : relative;
 			height : 32%;
 			margin-bottom: 1px;	
 			overflow: hidden;	
-		}
+		}*/
 		
 		.button:active
 		{
@@ -178,6 +238,11 @@
 			position:absolute;
 			bottom:0;
 			right: 0;
+			color : #FFFFFF;
+			background : #0000FF;
+			padding : 0.5em 0.5em 0.5em 0.5em;
+			border-top-left-radius : 0.5em;
+			font-weight: bold;
 		}
 		
 		table.ibubble th
@@ -235,6 +300,14 @@
 			
 			var hiddenColumns = { created : false, uploaded : true, lastEdited : true, DeviceID : true};
 			
+			var totalents = 0;
+			var mapChunkSize = 100;
+			var map_lastupdated = new Date(0);
+                        var mapBounds = null;
+                        
+			var mapHeight = 0;
+                        var mapchecker = null;
+			
 			var colours = [
 				"rgba(255,0,0,1)",
 				"rgba(0,128,0,1)",
@@ -267,19 +340,21 @@
 				
 				$(".graphPanel").graphPanel(
 				{
-					form : "<fieldSet><label for=\"field\">Field Name</label><select name=\"field\" class=\"colourFieldList\"></select><h4>Chart Type</h4><p><input type=\"radio\" name=\"chartType\" value=\"pie\" /> <label>Pie</label></p>" 
-					+"<p><input type=\"radio\" name=\"chartType\" value=\"bar\" checked=\"checked\" /> <label>Bar</label></p> </fieldSet>",
+					form : "<fieldSet><label for=\"field\">Field Name</label><select name=\"field\" class=\"colourFieldList\"></select><h4>Chart Type</h4><div class=\"toggle\">" 
+					+"<label for=\"piech\">Pie</label><input id=\"piech\" type=\"radio\" name=\"chartType\" value=\"pie\" checked=\"checked\" /><label for=\"barch\">Bar</label><input type=\"radio\" id=\"barch\" name=\"chartType\" value=\"bar\" /></div> </fieldSet>"
 				});
 				
+				
+				
 				$("#tabs").tabs({
-					show : function(event, tab)
+					activate : function(evt, ui)
 					{
-						if(tab.panel.id == "mapTab")
+						if(ui.newPanel.attr('id') === "mapTab")
 						{
-							 cen = map.getCenter();
-							 google.maps.event.trigger(map, 'resize');
-							 map.setCenter(cen);
-							 getMapData();
+                                                        google.maps.event.trigger(map, 'resize');
+                                                        if(mapBounds) map.fitBounds(mapBounds);
+                                                        drawGraph($('#graphOne .ecplus-pane'), $('#mapColourField').val(), 'pie');
+                                                        
 						}
 					}
 				});
@@ -317,8 +392,18 @@
 				};
 				
 				$(window).resize(function(){
-					$('#map').height($(window).height() - 450);
-					$('#graphbar').height($(window).height() - 350);
+					mapHeight = $(window).height() - 470;
+					if($('#graphOne').hasClass('minimised'))
+					{
+						$('#map').height(mapHeight);
+						//$('#map').width($('#graphOne').offset().left - $('#map').offset().left - 14)
+					}
+					else
+					{
+						$('#graphOne').height(mapHeight);
+						$('#graphOne').width($('#graphOne').offset().left - $('#map').offset().left - 14);
+					}
+					$('#map-container').height(mapHeight);
 				});
 				$(window).resize();
 				$('#graphbar').resizable({
@@ -329,20 +414,42 @@
 						$('#map, #bottombar').css('margin-right', ui.helper.width() + 'px');
 					}
 				});
+                                if(google.maps) startMapLoad();
 			});
 	
+			function setProgressMessage(msg)
+			{
+				$('.progress-label').text(msg);	
+			}
+			
+			
+			function setProgress(n)
+			{
+				if(n < totalents)
+				{
+					setProgressMessage("loading... " + n + "/" + totalents);
+				}
+				else
+				{
+					setProgressMessage("Loaded");
+					setTimeout(function(){$('#progressbar').hide();}, 2000);
+				}
+				$('#progressbar').progressbar("option", "max", totalents);	
+				$('#progressbar').progressbar("value", n);
+				
+			}
 			
 			function toggleMenu(selector)
 			{
 				
 				var jq = $(selector + " .ecplus-dropdown-menu");
-				var visible = jq.css("display") != "none";
+				var visible = jq.css("display") !== "none";
 				
 				if(visible) jq.hide();
 				else
 				{
 					$(document.body).click(function(evt){
-						if($(evt.target).attr("type") != "checkbox" && $(evt.target)[0].tagName != "LABEL")
+						if($(evt.target).attr("type") !== "checkbox" && $(evt.target)[0].tagName !== "LABEL")
 							$(selector + " .ecplus-dropdown-menu").hide();
 					});
 					
@@ -359,7 +466,7 @@
 				map = new _maps.Map(doc.getElementById(div), {
 					center : new _maps.LatLng(0,0),
 					mapTypeId:_maps.MapTypeId.ROADMAP,
-					zoom : 2,
+					zoom : 1,
 					panControl: true,
 					rotateControl: true,
 					zoomControl: true
@@ -370,7 +477,7 @@
 				project = prj;		
 				
 				var hasMap = (project.forms[formName].gpsFlds.length > 0);
-				if(hasMap) geoField = project.forms[formName].gpsFlds[0]
+				if(hasMap) geoField = project.forms[formName].gpsFlds[0];
 				
 				for(nextForm = project.getNextForm(formName); nextForm; nextForm = project.getNextForm(nextForm.name))
 				{
@@ -384,7 +491,7 @@
 				if(hasMap && (!window["google"] || !google.maps))
 				{
 					hasMap = false;
-					$('#main h1:first').after('<p class="err">Google maps is not currently available so the mapping interface has been disabled.</p>')
+					$('#main h1:first').after('<p class="err">Google maps is not currently available so the mapping interface has been disabled.</p>');
 				}
 				
 				if(hasMap)
@@ -405,7 +512,7 @@
 					var text = fld.text;
 					if(text.length > 40) text = text.substr(0,37) + "..."; 
 					
-					if(hiddenColumns[f] == undefined) {hiddenColumns[f] = false;}
+					if(hiddenColumns[f] === undefined) {hiddenColumns[f] = false;}
 					
 				
 					$(".ecplus-data tr").append("<th class=\"" + f + "\" >" + text + "</th>");	
@@ -414,7 +521,7 @@
 				
 				if(nextFormName)
 				{
-					if(hiddenColumns[nextFormName] == undefined) hiddenColumns[nextFormName] = false;
+					if(hiddenColumns[nextFormName] === undefined) hiddenColumns[nextFormName] = false;
 					
 					$(".ecplus-data tr").append("<th class=\"" + nextFormName + "_entries\">" + nextFormName + " Entries</th>");
 				}
@@ -422,13 +529,13 @@
 				$(".ecplus-data th").resizable({
 					handles : "e",
 					alsoResize : ".ecplus-data",
-					resize	: function(event, ele)
+					resize	: function(ele)
 					{
 						$("td." + ele.element[0].className.substring(0, ele.element[0].className.indexOf(" "))).css({ "max-width" : (ele.element.width()-5) + "px"});
 					}
 				});
 				
-				$(".ecplus-data th").append("<img src=\"../images/uparrow.png\" class=\"asc\" width=\"12\" /><img src=\"../images/downarrow.png\" class=\"desc\" width=\"12\" />")
+				$(".ecplus-data th").append("<img src=\"../images/uparrow.png\" class=\"asc\" width=\"12\" /><img src=\"../images/downarrow.png\" class=\"desc\" width=\"12\" />");
 				$(".ecplus-data th").click(function(evt){
 					var newSortCol = evt.target.className;
 					newSortCol = newSortCol.substr(0, newSortCol.indexOf(' '));
@@ -436,9 +543,8 @@
 					$(".ecplus-data th").removeClass("desc");
 					$(".ecplus-data th").removeClass("asc");
 		
-					if( window['console'] ) console.debug(sortCol + " " + sortDir);
 					window.evt = evt;
-					if(newSortCol == sortCol && sortDir == "asc")
+					if(newSortCol === sortCol && sortDir === "asc")
 					{
 						$(evt.target).addClass("desc");
 						sortDir = "desc";
@@ -459,14 +565,14 @@
 					var text = field.text;
 					if(text.length > 25) text = text.substr(0,22) + "...";
 					
-					$('#showHideFields .ecplus-dropdown-menu').append("<input type=\"checkbox\" name=\"fldShowHide\" value=\"" + fld + "\" " + (hiddenColumns[fld] ? "" : "checked=\"checked\"") + " /><label for=\"fldShowHide\">" + text +  "</label><br />");
+					$('#showHideFields .ecplus-dropdown-menu').append("<input class=\"showHideToggle\" type=\"checkbox\" id=\""+ fld +"ShowHide\" value=\"" + fld + "\" " + (hiddenColumns[fld] ? "" : "checked=\"checked\"") + " /><label for=\"" + fld + "ShowHide\">" + text +  "</label><br />");
 					
-					if(field.type != "location" && field.type != "gps" && field.type != "branch"
-							&& field.type != "video" && field.type != "audio" && field.type != "photo" && field.type != "")
+					if(field.type !== "location" && field.type !== "gps" && field.type !== "branch"
+							&& field.type !== "video" && field.type !== "audio" && field.type !== "photo" && field.type !== "")
 					{
-						$('.fieldList').append("<option value=\"" + fld + "\">" + text +  "</option>")
-						if(field.type == "select" || field.type == "radio" ||field.type == "select1" 
-								|| fld == project.getPrevForm(formName).key || fld == "DeviceID")
+						$('.fieldList').append("<option value=\"" + fld + "\">" + text +  "</option>");
+						if(field.type === "select" || field.type === "radio" ||field.type === "select1" 
+								|| fld === project.getPrevForm(formName).key || fld === "DeviceID")
 						{
 							if(!defaultColourField) defaultColourField = fld;	
 							$('.colourFieldList').append("<option value=\"" + fld + "\">" + text +  "</option>");
@@ -474,8 +580,18 @@
 					}
 				}
 				
+                                
+                                
 				getData();
 				
+                                $('.showHideToggle').button();
+                                $('.button-set').buttonset();
+                                $('.btn').button();
+                                $('#showHideFields a').button({
+                                    icons: {
+                                      secondary: "ui-icon-triangle-1-s"
+                                    }
+                                });
 				$('#showHideFields input').change(function(evt){
 					var ctrl = $(evt.target).val();
 					hiddenColumns[ctrl] = !evt.target.checked;
@@ -501,9 +617,9 @@
 					$('#mapFilterValue').autocomplete("option", "source" , baseUrl+ "/" + $('#mapFilterField').val());
 				});
 				
-				$('#filter_value').bind('autocompletechange', function(){doFilter($('#filter_fields').val(), $('#filter_value').val())});
+				$('#filter_value').bind('autocompletechange', function(){doFilter($('#filter_fields').val(), $('#filter_value').val());});
 				
-				var t = new Date().getTime()
+				var t = new Date().getTime();
 				$( "#slider-range" ).slider({
 					range: true,
 					min : 0,
@@ -511,13 +627,20 @@
 					values: [0,  t],
 					slide: function (event, ui)
 					{
-						filterMap(function(data){ return data["created"] >= ui.values[0] && data["created"] <= ui.values[1]; })
+						filterMap(function(data){ return data["created"] >= ui.values[0] / 1000 && data["created"] <= ui.values[1] / 1000; });
 						$("#timeFrom").text(new Date(ui.values[0]).format(dateFormat));
 						$("#timeTo").text(new Date(ui.values[1]).format(dateFormat));
 						
 						$(".filterControl").removeClass("active");
 						$("#timeFilter").addClass("active");
 					}
+				});
+				
+				$('.minmax').mouseenter(function(){
+					$(this).parent().addClass('hover');
+				});
+				$('.minmax').mouseleave(function(){
+					$(this).parent().removeClass('hover');
 				});
 			};	
 			
@@ -531,11 +654,11 @@
 			{
 				
 				var total = Number($("#total").text());
-				if(total == 0 )return;
+				if(total === 0 )return;
 				var rem = total % numEnts;
-				if(rem == 0) rem = numEnts;
+				if(rem === 0) rem = numEnts;
 				pageNo = (total - rem) / numEnts;
-				getData()
+				getData();
 			}
 			
 			function turnPage()
@@ -559,7 +682,7 @@
 			function getData()
 			{
 				loader.start();
-				offset = pageNo * numEnts
+				offset = pageNo * numEnts;
 				
 				var urlStr = url + "/" + formName + ".json?mode=list&start=" + offset + "&limit=" + numEnts + "&sort=" + sortCol + "&dir=" +sortDir + (location.search  ? "&" + location.search.substr(1) : "");
 				var statUrl = url + "/" + formName + "/__stats?" + location.search.substr(1);
@@ -578,15 +701,56 @@
 				$('#start').text(offset);
 			}
 			
-			function getMapData()
+			function startMapLoad()
 			{
-				var urlStr = url + "/" + formName + ".json?mode=list&sort=" +  project.forms[formName].titleField;
+				$('#progressbar').progressbar({
+					value : false,	
+					message : "Getting total entries"
+				});
+				$('#progressbar').show();
+				$.getJSON(url + "/" + formName + "/__stats"  , mapTotalCallback);
+				
+				mapData = [];
+			}
+			
+			function mapTotalCallback(data, status, xhr)
+			{
+				var stats = data;
+				totalents = stats.ttl;
+				$('[href=#mapTab]').addClass('ec-loading');
+				//Init progress bar
+				
+				setProgress(0);
+				
+				if(markerClusterer) markerClusterer.removeMarkers(markerClusterer.markers_);
+				
+				$('#sidebar').empty();
+				for(var mkr = markers.length; mkr--;){
+					if(!markers[mkr]) continue;
+					
+					markers[mkr].setMap(null);
+					
+				}
+				
+				markers = [];
+				mapData = [];
+				
+				getMapData(mapChunkSize, 0);
+			}
+			
+			function getMapData(chunkSize, offset)
+			{
+							
+				var urlStr = url + "/" + formName + ".json?mode=list&sort=" +  project.forms[formName].titleField + "&limit=" + chunkSize + "&start=" + offset;
+				
+
 				if(filterField && filterValue)
 				{
 					urlStr += "&" + filterField + "=" + filterValue;
 					statUrl += "&" + filterField + "=" + filterValue; 
 				}
 				$.getJSON(urlStr , mapDataCallback);
+				
 			}
 			
 			function doFilter(field, value)
@@ -602,7 +766,7 @@
 			{
 				$(".ecplus-data tbody").empty();
 				
-				if(entries.length == 0)
+				if(entries.length === 0)
 				{
 					if(pageNo > 0) pageNo--;
 					loader.stop();
@@ -620,7 +784,7 @@
 				var html = "";
 				for(var i = 0; i < entries.length; i++)
 				{
-					html += "<tr class=\"" + (i % 2 == 1 ? " alt": "") + "\">";
+					html += "<tr class=\"" + (i % 2 === 1 ? " alt": "") + "\">";
 					for(f in project.forms[formName].fields)
 					{	
 						var fld = project.forms[formName].fields[f];
@@ -629,7 +793,7 @@
 						
 					
 						html += fld.formatValue(entries[i][f], entries[i]);
-						html += "</td>"					
+						html += "</td>";				
 					}
 					if(nextFormName)
 					{
@@ -646,7 +810,7 @@
 						
 						var ents = entries[i][nextFormName + "_entries"];
 						
-						if(!ents || ents == 'null') ents = 0;
+						if(!ents || ents === 'null') ents = 0;
 						
 						html += "<td>" + ents  + " <a href=\"" + nextFormName + "?" + keyfield + "=" + entries[i][keyfield] + "&prevForm=" + formName + "\">View entries</a> | <a href=\"javascript:project.forms[project.getNextForm(formName).name].displayForm({ vertical : false, data : " + JSON.stringify(par_obj).replace(/"/g, '\'') + " });\">Add " + project.getNextForm(formName).name  + "</a></td>";
 					}
@@ -685,21 +849,12 @@
 				$("#total").text(stats["ttl"]);
 
 			}
+                        
+                        
 			
 			function mapDataCallback(data, status, xhr)
 			{
-				if(markerClusterer) markerClusterer.removeMarkers(markerClusterer.markers_);
-			
-				$('#sidebar').empty();
-				for(var mkr = markers.length; mkr--;){
-					if(!markers[mkr]) continue;
-					
-					markers[mkr].setMap(null);
-					markers.splice(mkr, 1);	
-					mapData.splice(mkr, 1);
-				}
-				
-				mapData = data;
+				mapData = mapData.concat(data);
 				
 				var mincreated = new Date().getTime();
 				var maxcreated = 0;
@@ -712,12 +867,12 @@
 				var minlat = 180;
 				var maxlat = -180;
 				var minlon = 180;
-				var maxlon = -180
+				var maxlon = -180;
 				
 				for(var i = 0; i < data.length; i++)
 				{
 					if(!data[i][geoField]) continue;
-					if(!data[i][geoField].accuracy) data[i][geoField].accuracy = (data[i][geoField].latitude != 0 && data[i][geoField].longitude !=0) ? 100 : -1;
+					if(!data[i][geoField].accuracy) data[i][geoField].accuracy = (data[i][geoField].latitude !== 0 && data[i][geoField].longitude !==0) ? 100 : -1;
 					if(data[i][geoField].latitude >= -90 && data[i][geoField].latitude <= 90 && data[i][geoField].longitude >= -180 && data[i][geoField].longitude <= 180 && data[i][geoField].accuracy > 0)
 					{
 						var mkr = new google.maps.Marker({
@@ -736,79 +891,157 @@
 							showBubbleFor(getMarkerAt(evt.latLng).index);
 						});
 					
-						markers[i] = mkr;
+						markers.push(mkr);
 					}
 					else
 					{
-						markers[i] = null;
+						markers.push(null);
 					}
 					
 					mincreated = Math.min(mincreated, Number(data[i]["created"]));
 					maxcreated = Math.max(maxcreated, Number(data[i]["created"]));
 					
 					var ttl = data[i][project.forms[formName].titleField];
-					if(!ttl || ttl.trimChars(' ') == '') ttl = '<i>' + data[i]['created'] + '</i>';
+					if(!ttl || ttl.trimChars(' ') === '') ttl = '<i>' + data[i]['created'] + '</i>';
 					
+                                        
+                                        var uploaded = EpiCollect.parseDate(data[i]["uploaded"]);
+                                        if(map_lastupdated < uploaded) map_lastupdated = uploaded;
+                                        
+                                        if(data[i]["lastEdited"]){
+                                            var updated = EpiCollect.parseDate(data[i]["lastEdited"]);
+                                            if(map_lastupdated < updated) map_lastupdated = updated;
+                                        }
+                                        
 					addToSidebar(i, ttl);
 				}
 				
-				colourMarkersBy($('#mapColourField').val());
-
-				map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+				//update progress bar
+				setProgress(markers.length);
 				
-				if(!markerClusterer)
+				if(markers.length < totalents && markers.length % mapChunkSize === 0)
 				{
-					markerClusterer = new MarkerClusterer(map, markers,
-					{
-						maxZoom : 12,
-						gridSize : 40,
-						styles : [
-							{
-								url : "{#SITE_ROOT#}/markers/cluster",
-								height: 50,
-						        width: 50,
-						        anchor: [24, 24],
-						        textColor: 'transparent',
-						        textSize: 14
-							},
-							{
-								url : "{#SITE_ROOT#}/markers/cluster",
-								height: 50,
-						        width: 50,
-						        anchor: [24, 24],
-						        textColor: 'transparent',
-						        textSize: 14
-							},
-							{
-								url : "{#SITE_ROOT#}/markers/cluster",
-								height: 50,
-						        width: 50,
-						        anchor: [24, 24],
-						        textColor: 'transparent',
-						        textSize: 14
-							},
-							{
-								url : "{#SITE_ROOT#}/markers/cluster",
-								height: 50,
-						        width: 50,
-						        anchor: [24, 24],
-						        textColor: 'transparent',
-						        textSize: 14
-							}
-						]
-					});
+					getMapData(mapChunkSize, markers.length);					
 				}
 				else
 				{
-					markerClusterer.addMarkers(markers);	
-				}
+					var tconst = new Date().getTime() / 1000;
+					
+					if(mincreated < tconst) mincreated = mincreated * 1000;
+					if(maxcreated < tconst) maxcreated = maxcreated * 1000;
+					
+					$("#slider-range").slider("option", "min", mincreated);
+					$("#slider-range").slider("option", "max", maxcreated);
+					
+					$("#timeFrom").text(new Date(mincreated).format(dateFormat));
+					$("#timeTo").text(new Date(maxcreated).format(dateFormat));
+					
+					colourMarkersBy($('#mapColourField').val());
 
-				
-				$("#slider-range").slider("option", "min", mincreated);
-				$("#slider-range").slider("option", "max", maxcreated);
-				
-				$("#timeFrom").text(new Date(mincreated).format(dateFormat));
-				$("#timeTo").text(new Date(maxcreated).format(dateFormat));
+					map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+					
+					if(!markerClusterer)
+					{
+						markerClusterer = new MarkerClusterer(map, markers,
+						{
+							maxZoom : 21,
+							gridSize : 40,
+							styles : [
+								{
+									url : "{#SITE_ROOT#}/markers/cluster",
+									height: 50,
+							        width: 50,
+							        anchor: [24, 24],
+							        textColor: 'transparent',
+							        textSize: 14
+								},
+								{
+									url : "{#SITE_ROOT#}/markers/cluster",
+									height: 50,
+							        width: 50,
+							        anchor: [24, 24],
+							        textColor: 'transparent',
+							        textSize: 14
+								},
+								{
+									url : "{#SITE_ROOT#}/markers/cluster",
+									height: 50,
+							        width: 50,
+							        anchor: [24, 24],
+							        textColor: 'transparent',
+							        textSize: 14
+								},
+								{
+									url : "{#SITE_ROOT#}/markers/cluster",
+									height: 50,
+							        width: 50,
+							        anchor: [24, 24],
+							        textColor: 'transparent',
+							        textSize: 14
+								}
+							]
+						});
+					}
+					else
+					{
+						markerClusterer.addMarkers(markers);	
+					}
+					
+					$('#map-container').height(mapHeight);
+					mapWidth = $('#map').width();
+					$('#map').css('position', '');
+					
+                                        window.mapBounds = new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon));
+                                        
+					$('.minmax', $('#graphOne')).bind('click', function(){
+						var div = $('.ecplus-pane', $(this).parent());
+						var par = $(this).parent(); 
+						var img = this;
+						
+						
+						
+						if (par.hasClass('minimised'))
+						{
+							//par.switchClass('minimised', '',1000,'swing',function(){
+								
+							$('#legend').hide();
+							par.animate({height : mapHeight, width : mapWidth },1000,'swing',function(){
+								par.removeClass('minimised');
+							
+								drawGraph(div, div.attr('graph-field'), div.attr('graph-type'));
+								$(img).attr('src', $(img).attr('src').replace('5_resize_fu', '4_resize_sma'));
+								
+							});
+//							$('#map').switchClass('', 'minimised', 900, 'swing');
+							$('#map').animate({height : 210, width : 210 }, 900, 'swing', function(){
+								google.maps.event.trigger(map, 'resize');
+								map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+							});
+						}
+						else
+						{
+							$('#legend').show();
+						
+							//par.switchClass('', 'minimised',1000,'swing',function(){
+							par.animate({height : 210, width : 210 },1000,'swing',function(){
+								par.addClass('minimised');	
+								
+								drawGraph(div, div.attr('graph-field'), div.attr('graph-type'));
+								$(img).attr('src', $(img).attr('src').replace('4_resize_sma','5_resize_fu'));
+							});
+							//$('#map').switchClass('minimised', '',900,'swing');
+							$('#map').animate({height : mapHeight, width : mapWidth }, 900, 'swing', function(){
+								google.maps.event.trigger(map, 'resize');
+								map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+							});
+						}
+					});
+					
+					
+					
+					$('[href=#mapTab]').removeClass('ec-loading');	
+                                        mapchecker = setInterval(function(){checkForMapUpdates()}, 6000)
+				}
 				
 			}			
 			
@@ -826,11 +1059,11 @@
 			
 			function getMarkerAt(latlng)
 			{
-				var mkrs = markers	
+				var mkrs = markers;	
 				
 				for(mkr in mkrs)
 				{
-					if(mkrs[mkr] && mkrs[mkr].getPosition() == latlng) return mkrs[mkr];
+					if(mkrs[mkr] && mkrs[mkr].getPosition() === latlng) return mkrs[mkr];
 				}
 			}
 			
@@ -852,17 +1085,19 @@
 			function getContentFor(mkrIdx)
 			{
 				var rec = mapData[mkrIdx];
+				if(!rec) return '<i>No data</i>';
+				
 				var html = '<table class="ibubble">';
 				var fields = project.forms[formName].fields;
 				
 				for( fld in fields )
 				{
-					if( fields[fld].type != '' || fld == 'created' ) 
+					if( (fields[fld].type !== '' || fld === 'created') && rec[fld] ) 
 					{
 						html += '<tr><th>' + fields[fld].text + '</th> <td> ' + fields[fld].formatValue(rec[fld]) + '</td></tr>';
 					}
 				}
-				html += '</table>'
+				html += '</table>';
 				return html;
 			}
 			
@@ -877,7 +1112,7 @@
 				for( var i = len; i--; )
 				{
 					var d = data[i];
-					
+					//TODO: Parrallelise
 					var vis = filterFunction(data[i]);
 					if( mkrs[i] ) mkrs[i].setVisible(vis);
 					
@@ -889,7 +1124,7 @@
 				$('.graphPanel').each(function(idx,ele){
 					if($('.flot-base', ele).length)
 					{
-						$('a', ele).click()
+						$('a', ele).click();
 					}
 				});
 			}
@@ -897,7 +1132,7 @@
 			function clearMapFilter()
 			{
 				var mkrs= markers;
-				var len = markers.length
+				var len = markers.length;
 				
 				for(var i = len; i--;)
 				{
@@ -917,7 +1152,7 @@
 				$('.graphPanel').each(function(idx,ele){
 					if($('.flot-base', ele).length)
 					{
-						$('a', ele).click()
+						$('a', ele).click();
 					}
 				});
 			}
@@ -928,7 +1163,7 @@
 					var field = $("#mapFilterField").val();
 					var val = $("#mapFilterValue").val();
 					
-					return data[field] == val;
+					return data[field] === val;
 				});
 				
 				$(".filterControl").removeClass("active");
@@ -955,7 +1190,7 @@
 					{
 						colourGrps[d[fld]] = colours[colourIdx++ % colours.length];
 					}
-					mkr.setIcon("http://" + location.host +  "/{#SITE_ROOT#}/markers/point?colour=" + colourGrps[d[fld]])
+					mkr.setIcon("http://" + location.host +  "/{#SITE_ROOT#}/markers/point?colour=" + colourGrps[d[fld]]);
 					mkr.colour = colourGrps[d[fld]];
 				}
 				
@@ -972,10 +1207,11 @@
 				if(!map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].length)
 				{
 					legend = document.createElement('div');
+					legend.id = "legend";
 					legend.style.backgroundColor = '#EEEEEE';
 					legend.style.padding = '5px 5px 5px 5px';
 					legend.style.border = '1px solid #000000';
-					legend.style.maxHeight = '70%';
+					legend.style.maxHeight = '30%';
 					legend.style.overflow = 'auto';
 					var inner = document.createTextNode('Hello World');
 					legend.appendChild(inner);
@@ -1012,7 +1248,7 @@
 				
 				var idx = 0;
 				var ser = [];
-				if(field == window.colourField)
+				if(field === window.colourField)
 				{
 					for(var i in d)
 					{
@@ -1065,42 +1301,43 @@
 				});
 				
 				jq.bind('plothover', function(event, pos, obj)
-						{
-							console.debug(JSON.stringify(pos));
-							if(!obj)
-							{
-								$('#tooltip').hide();
-							}
-							else
-							{
-								$('#tooltip').text(obj.series.data[0].join(','));
-								$('#tooltip').css('top', (pos.pageY - $('#tooltip').height() - 25)+ 'px');
-								$('#tooltip').css('left', (pos.pageX - $('#tooltip').width() - 25)+ 'px');
-								$('#tooltip').show();
-							}
-							
-						});
+				{
+					
+					if(!obj)
+					{
+						$('#tooltip').hide();
+					}
+					else
+					{
+						$('#tooltip').text(obj.series.data[0].join(','));
+						$('#tooltip').css('top', (pos.pageY - $('#tooltip').height() - 25)+ 'px');
+						$('#tooltip').css('left', (pos.pageX - $('#tooltip').width() - 25)+ 'px');
+						$('#tooltip').show();
+					}
+					
+				});
 			}
 			
 			function drawPie(jq, data, field)
 			{
+				
 				var len = data.length;
 				var d = data;
 				
 				var s = [];
 				var idx = 0;
-				if(field == window.colourField)
+				if(field === window.colourField)
 				{
 					for(var i in d)
 					{
-						s[idx++] = { label : i, data : d[i], color : window.colourGrps[i]};
+						s[idx++] = { label : i.replace(/<\/?\w>/gi, ''), data : d[i], color : window.colourGrps[i]};
 					}
 				}
 				else
 				{
 					for(var i in d)
 					{
-						s[idx++] = { label : i, data : d[i]};
+						s[idx++] = { label : i.replace(/<\/?.*>/gi, '')	, data : d[i]};
 					}
 				}
 				
@@ -1109,9 +1346,9 @@
 						pie: {
 							show : true,
 							label : {
-								show:false
+								show: !jq.parent().hasClass('minimised')
 							},
-							radius : 1
+							radius : 0.8
 						}
 					},
 					legend : {
@@ -1122,9 +1359,10 @@
 			            clickable: true
 			        }
 				});
+				
 				jq.bind('plothover', function(event, pos, obj)
 				{
-					console.debug(JSON.stringify(pos));
+					
 					if(!obj)
 					{
 						$('#tooltip').hide();
@@ -1139,12 +1377,18 @@
 					}
 					
 				});
+				
+				
 			}
 			
 			function drawGraph(div, field, type)
 			{
 				
 				var jq = $(div);
+				
+				jq.attr('graph-field', field);
+				jq.attr('graph-type', type);
+				
 				
 				var d = mapData;
 				var len = d.length;
@@ -1160,9 +1404,8 @@
 					}
 				}
 				
-				var dat = [];
 				jq.unbind();
-				if(type == "pie")
+				if(type === "pie")
 				{
 					drawPie(jq, agg, field);
 				}
@@ -1173,7 +1416,28 @@
 				
 				
 			}
-			
+			                                                
+                        function checkForMapUpdates()
+                        {
+                            $.ajax(location.pathname + '/__activity', {success : function(xhr){
+                                    var act = JSON.parse(xhr);
+                                    console.debug(act );
+                                    if(EpiCollect.parseDate(act['edited']) > map_lastupdated || EpiCollect.parseDate(act['uploaded']) > map_lastupdated )
+                                    {
+                                            var urlStr = url + "/" + formName + ".json?gt::modified=" + EpiCollect.server_format(map_lastupdated) + "sort=" +  project.forms[formName].titleField + "&limit=" +mapChunkSize + "&start=" + offset;
+
+                                            if(filterField && filterValue)
+                                            {
+                                                    urlStr += "&" + filterField + "=" + filterValue;
+                                                    statUrl += "&" + filterField + "=" + filterValue; 
+                                            }
+                                            $.getJSON(urlStr , mapDataCallback);
+                                         
+                                    }
+                                }
+                            });
+                        }
+                        
 			function saveNumEntires()
 			{
 				if(localStorage) localStorage.setItem('num_entries', $('#num_entries').val());
@@ -1222,51 +1486,67 @@
 			<p class="ecplus-toolbar">
 				{#curationbuttons#}
 				<span class="ecplus-toolbar-divider">&nbsp;</span> 
-				Filter List By <select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value').val());"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Filter" alt="Filter"></a>
-				<a href="javascript:doFilter('','');"><!--  <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Clear Filter" alt="Clear Filter">-->Clear Filter</a>
+                                <label>Filter List By</label for="filter_fields"><select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> 
+                                <span id="filterControls" class="button-set">
+                                        <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value').val());">
+                                            <img class="toolbar-icon" src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Filter" alt="Filter">
+                                        </a>
+                                        <a href="javascript:doFilter('','');">Clear Filter</a>
+                                </span><!--  <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Clear Filter" alt="Clear Filter">-->
 				<span class="ecplus-toolbar-divider">&nbsp;</span>
 				<span id ="showHideFields" class="ecplus-dropdown"></span> 
 				<span class="ecplus-toolbar-divider">&nbsp;</span> 
-				<a href="./{#formName#}.csv"><img src="{#SITE_ROOT#}/images/downloadcsv.png" title="Dowload Data as CSV" alt="Download CSV"></a>
-				<a href="./{#formName#}.tsv"><img src="{#SITE_ROOT#}/images/downloadtab.png" title="Dowload Data as TSV" alt="Download TSV"></a>
-				<a href="./{#formName#}.xml?mode=list" target="__blank"><img src="{#SITE_ROOT#}/images/downloadxml.png" title="Dowload Data as XML" alt="Download XML"></a>
+                                <span id="download-buttons" class="button-set">
+                                    <a href="./{#formName#}.csv" title="Download data as CSV"><img class="toolbar-icon" src="{#SITE_ROOT#}/images/downloadcsv.png" title="Dowload Data as CSV" alt="Download CSV"></a>
+                                    <a href="./{#formName#}.tsv" title="Download data as TSV"><img class="toolbar-icon" src="{#SITE_ROOT#}/images/downloadtab.png" title="Dowload Data as TSV" alt="Download TSV"></a>
+                                    <a href="./{#formName#}.xml?mode=list" title="Download data as XML" target="__blank"><img class="toolbar-icon" src="{#SITE_ROOT#}/images/downloadxml.png" title="Dowload Data as XML" alt="Download XML"></a>
+                                </span>
 			</p>
 			
-			<p class="ecplus-table-footer">
+			<div class="ecplus-table-footer">
 				<span class="left">
+                                    <span id="forwardButtons" class="button-set">
 					<a href="javascript:firstPage();" title="Go to first page">
 						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_170_step_backward.png" alt="first"/>
 					</a> 
 					<a href="javascript:turnBackPage();" title="Go to previous page">
 						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_350_playback.png" alt="previous"/>
 					</a>
+                                    </span>
 					<span id="start"></span> to <span id="end"></span> of <span id="total"></span>
-					<a href="javascript:getData();"  title="Refresh entries">
-						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_081_refresh.png" alt="next"/>
-					</a>
-				
-					<a href="javascript:turnPage();"  title="Go to next page">
-						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/>
-					</a>
-					<a href="javascript:lastPage();"   title="Go to final page">
-						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/>
-					</a>
+                                        <span id="backwardButtons" class="button-set">
+                                            <a href="javascript:getData();"  title="Refresh entries">
+                                                    <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_081_refresh.png" alt="next"/>
+                                            </a>
+
+                                            <a href="javascript:turnPage();"  title="Go to next page">
+                                                    <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/>
+                                            </a>
+                                            <a href="javascript:lastPage();"   title="Go to final page">
+                                                    <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/>
+                                            </a>
+                                    </span>
 				</span>
 				<span class="right">
-					Show <input type="number" maxlengh="3" id="num_entries" /> entries per page <a href="javascript:saveNumEntires();">Save as my default</a> 
+					Show <input type="number" maxlength="3" id="num_entries" /> entries per page <a class="btn" href="javascript:saveNumEntires();">Save as my default</a> 
 				</span>
-			</p>
+			</div>
 			{#csvform#}
 		</div>
 		<div id="mapTab">
-			<div id="sidebar">
+			<div id="progressbar"><div class="progress-label">Getting Total no of Entries...</div></div>
+			<div id="map-container">
+				<div id="graphOne" class="graphPanel minimised"></div>
+				<div id="sidebar">
+					
+				</div>
+				<div id="map"></div>
+				<!--  <div id="graphbar"> -->
 				
-			</div>
-			<div id="map"></div>
-			<div id="graphbar">
-				<div id="graphOne" class="graphPanel"></div>
-				<div id="graphTwo" class="graphPanel"></div>
-				<div id="graphThree" class="graphPanel"></div>
+					<!-- <div id="graphTwo" class="graphPanel"></div>
+					<div id="graphThree" class="graphPanel"></div>-->
+				<!--</div>-->
+				
 			</div>
 			<div id="bottombar">
 				<div id="timeFilter" class ="filterControl">
@@ -1274,14 +1554,14 @@
 					<div id="slider-range" ></div>
 					<p><b>From :</b><span id="timeFrom"></span></p>
 					<p><b>To :</b><span id="timeTo"></span></p>
-					<span class="clearFilter"><a href="javascript:clearMapFilter();">Clear Filter</a></span>
+					<a  class="clearFilter" href="javascript:clearMapFilter();">Clear Filter</a>
 				</div>
 				<div id="fieldFilter" class ="filterControl">
 					<h4>Filter By Field</h4>
 					<p><b>Field </b><select id="mapFilterField" class="fieldList"></select></p>
 					<p><b>Value </b><input id="mapFilterValue"></input></p>
 					<p><a href="javascript:doMapFieldFilter()">Apply Filter</a></p>
-					<span class="clearFilter"><a href="javascript:clearMapFilter();">Clear Filter</a></span>
+					<a class="clearFilter" href="javascript:clearMapFilter();">Clear Filter</a>
 				</div>
 				<div id="fieldColour" class ="colourControl">
 					<h4>Colour By Field</h4>
@@ -1289,7 +1569,7 @@
 					<p><a href="javascript:colourMarkersBy($('#mapColourField').val())">Apply Colouring</a></p>
 				</div>
 			</div>
-		</div>
-		
+		</div>		
 	</div>
+
 {{/main}}

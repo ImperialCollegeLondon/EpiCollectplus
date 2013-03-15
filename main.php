@@ -4,13 +4,14 @@ if (isset($_REQUEST['_SESSION'])) throw new Exception('Bad client request');
 
 date_default_timezone_set('UTC');
 $dat = new DateTime('now');
-$dfmat = '%s.u';
+//$dfmat = '%s.u';
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.2";
-if(!isset($PHP_UNIT)) {$PHP_UNIT = false;}
-if(!$PHP_UNIT){ session_start(); }
+$CODE_VERSION = "1.3";
+
+if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
+if( !$PHP_UNIT ){ @session_start(); }
 
 function getValIfExists($array, $key)
 {
@@ -48,7 +49,6 @@ include (sprintf('%s/db/dbConnection.php', $DIR));
 
 $url = (array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : $_SERVER["HTTP_X_ORIGINAL_URL"]); //strip off site root and GET query
 if($SITE_ROOT != '') $url = str_replace($SITE_ROOT, '', $url);
-
 if(strpos($url, '?')) $url = substr($url, 0, strpos($url, '?'));
 $url = trim($url, '/');
 $url = urldecode($url);
@@ -75,9 +75,13 @@ $cfg = new ConfigManager(sprintf('%s/ec/epicollect.ini', ltrim($DIR, '/')));
 
 function genStr()
 {
-	$str = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	$str = str_shuffle($str);
-	$str = substr($str, -22);
+	$source_str = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	$rand_str = str_shuffle($source_str);
+	$str = substr($rand_str, -22);
+
+        unset($source_str, $rand_str);
+        
+        return $str;
 }
 
 if($cfg->settings['security']['use_ldap'] && !function_exists('ldap_connect'))
@@ -87,13 +91,18 @@ if($cfg->settings['security']['use_ldap'] && !function_exists('ldap_connect'))
 }
 
 
-if(!array_key_exists('salt',$cfg->settings['security']) || $cfg->settings['security']['salt'] == '')
+if(!array_key_exists('salt',$cfg->settings['security']) || trim($cfg->settings['security']['salt']) == '')
 {
 	$str = genStr();
 	$cfg->settings['security']['salt'] = $str;
 	$cfg->writeConfig();
 }
 
+function makeUrl($fn)
+{
+	global $SITE_ROOT;
+	return sprintf('http://%s/%s/ec/uploads/%s', $_SERVER['HTTP_HOST'], trim($SITE_ROOT, '/'), $fn);
+}
 
 
 function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
@@ -214,13 +223,14 @@ function regexEscape($s)
 
 function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 {
-	global $db, $SITE_ROOT, $DIR, $auth, $CODE_VERSION;
+	global $db, $SITE_ROOT, $DIR, $auth, $CODE_VERSION, $cfg;
 
 	$template = file_get_contents(sprintf('%shtml/%s', $DIR, trim( $baseUri,'.')));
 	$templateVars['SITE_ROOT'] = ltrim($SITE_ROOT, '\\');
 	$templateVars['uid'] = md5($_SERVER['HTTP_HOST']);
 	$templateVars['codeVersion'] = $CODE_VERSION;
 	$templateVars['protocol'] = (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] == 'on' ? 'https' : 'http');
+	$templateVars['GA_ACCOUNT'] = $cfg->settings['misc']['ga_account'];
 	// Is there a user logged in?
 
 	$flashes = '';
@@ -326,6 +336,58 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 	return $template;
 }
 
+function formDataLastUpdated()
+{
+    global $url,  $log, $auth;
+
+	$http_accept = getValIfExists($_SERVER, 'HTTP_ACCEPT');
+	$format = ($http_accept ? substr($http_accept, strpos($http_accept, '/') + 1) : '');
+	$ext = substr($url, strrpos($url, ".") + 1);
+	$format = $ext != "" ? $ext : $format;
+
+	$prj = new EcProject();
+	$pNameEnd = strpos($url, "/");
+
+	$prj->name = substr($url, 0, $pNameEnd);
+	$prj->fetch();
+	
+	if(!$prj->id)
+	{
+		echo applyTemplate("./base.html", "./error.html", array("errorType" => "404 ", "error" => "The project {$prj->name} does not exist on this server"));
+		return;
+	}
+	
+	$permissionLevel = 0;
+	$loggedIn = $auth->isLoggedIn();
+	
+	if($loggedIn) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
+
+	if(!$prj->isPublic && !$loggedIn)
+	{
+		loginHandler($url);
+		return;
+	}
+	else if(!$prj->isPublic &&  $permissionLevel < 2)
+	{
+		echo applyTemplate("./base.html", "./error.html", array("errorType" => "403 ", "error" => "You do not have permission to view this project"));
+		return;
+	}
+
+	$extStart = strpos($url, ".");
+	$frmName = substr($url, $pNameEnd + 1, strrpos($url, '/', 1) - strlen($url));
+
+        
+        
+	if(!array_key_exists($frmName, $prj->tables))
+	{
+		echo applyTemplate("./base.html", "./error.html", array("errorType" => "404 ", "error" => "The project {$prj->name} does not contain the form $frmName"));
+		return;
+	}
+        
+        echo json_encode($prj->tables[$frmName]->getLastActivity());
+        return;
+}
+
 function mimeType($f)
 {
 	$mimeTypes = array(
@@ -366,6 +428,29 @@ function defaultHandler()
 	echo applyTemplate('base.html', "./" . $url);
 }
 
+function createAccount()
+{
+    if($_SERVER['REQUEST_METHOD'] == 'POST')
+    {
+        global $cfg;
+        if($cfg->settings['misc']['public_server'] === "true")
+        {
+            createUser();
+            flash("Account created, please log in.");
+            header(sprintf('location: http://%s/%s/login.php', $server, $root));
+        }
+        else
+        {
+            flash("This server is not public", "err");
+            header(sprintf('location: http://%s/%s/', $server, $root));
+        }   
+    } else {
+        global $auth;
+        echo applyTemplate('./base.html', './loginbase.html', array( 'form' => $auth->requestSignup()));
+    }
+    
+}
+
 /**
  * Called when the page requires a log in
  */
@@ -404,11 +489,18 @@ function loginHandler()
 function loginCallback()
 {
 	header('Cache-Control: no-cache, must-revalidate');
-
+     
 	global $auth, $cfg, $db;
+        $provider = getValIfExists($_POST, 'provider');
+        if(!$provider)
+            $provider = getValIfExists($_SESSION, 'provider');
+        else {
+            $_SESSION['provider'] = $provider;
+        }
+
 	$db = new dbConnection();
 	if(!$auth) $auth = new AuthManager();
-	$auth->callback($_SESSION['provider']);
+	$auth->callback($provider);
 }
 
 function logoutHandler()
@@ -450,6 +542,7 @@ function uploadHandlerFromExt()
 				{
 					if(preg_match( "/.(png|gif|rtf|docx?|pdf|jpg|jpeg|txt|avi|mpeg|mpg|mov|mp3|wav)$/i", $_FILES[$key]['name']))
 					{
+                                                if(!file_exists("ec/uploads/")) mkdir ("ec/uploads/");
 						move_uploaded_file($_FILES[$key]['tmp_name'], "ec/uploads/{$_FILES[$key]['name']}");
 						echo  "{\"success\" : true , \"msg\":\"ec/uploads/{$_FILES[$key]['name']}\"}";
 					}
@@ -471,6 +564,25 @@ function uploadHandlerFromExt()
 		echo "Incorrect method";
 	}
 	fclose($flog);
+}
+
+function projectList()
+{
+	/**
+	 * Produce a list of all the projects on this server that are
+	 * 	- publically listed
+	 *  - if a user is logged in, owned, curated or managed by the user
+	 */
+	global $auth;
+
+	$prjs = EcProject::getPublicProjects();
+	$usr_prjs = array();
+	if($auth->isLoggedIn())
+	{
+		$usr_prjs = EcProject::getUserProjects($auth->getEcUserId());
+	}
+
+	echo json_encode(array_merge($prjs, $usr_prjs));
 }
 
 
@@ -622,7 +734,7 @@ function projectHome()
 					
 					if( $role == 3 )
 					{
-						$adminMenu = "<a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Edit Forms</a>";
+						$adminMenu = "<span class=\"button-set\"><a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Edit Forms</a></span>";
 					}
 					
 					$vals =  array(
@@ -942,7 +1054,7 @@ function siteHome()
 		header("location: $rurl");
 		return;
 	}
-	$vals["projects"] = "<p style=\"margin-top:1.2em;\"> <a href=\"createProject.html	\" class=\"button\">Create a New Project</a></p><div class=\"ecplus-projectlist\"><h1>Most popular projects on this server</h1>" ;
+	$vals["projects"] = "<div class=\"ecplus-projectlist\"><h1>Most popular projects on this server</h1>" ;
 
 	$i = 0;
 
@@ -1182,7 +1294,7 @@ function downloadData()
 	global  $url, $SITE_ROOT;
 	header("Cache-Control: no-cache,  must-revalidate");
 
-	$flog = fopen('ec/uploads/fileUploadLog.log', 'a');
+	//$flog = fopen('ec/uploads/fileUploadLog.log', 'a+');
 	$survey = new EcProject();
 	$survey->name = preg_replace("/\/download\.?(xml|json)?$/", "", $url);
 
@@ -1494,19 +1606,18 @@ function downloadData()
 						}
 					}
 				}
-			
+
 				if($ent && !array_key_exists($ent[$survey->tables[$tbls[$t]]->key], $nxtCVals))
 				{	
 					$nxtCVals[$ent[$survey->tables[$tbls[$t]]->key]] = true;
 				}
 			}
 		}
-		
 		if($dataType == "data" && $xml)
 		{
 			fwrite($fxml,  "</table>");
 		}
-		//print_r($nxtCVals);
+
 		if($entry)
 		{
 			$cField = $survey->tables[$tbls[$t]]->key;
@@ -1540,12 +1651,11 @@ function downloadData()
 			return;
 		}
 			
-		if(!$err==true) {
+		if(!$err == true) {
 			echo "fail expecting $files_added files";
 			return;
 		}
-		//echo $zfn;
-		//echo $zrl;
+
 		header("Location: $zrl");
 		return;
 	}
@@ -1573,7 +1683,6 @@ function formHandler()
 		return;
 	}
 	
-	
 	$permissionLevel = 0;
 	$loggedIn = $auth->isLoggedIn();
 	
@@ -1589,8 +1698,6 @@ function formHandler()
 		echo applyTemplate("./base.html", "./error.html", array("errorType" => "403 ", "error" => "You do not have permission to view this project"));
 		return;
 	}
-
-
 
 	$extStart = strpos($url, ".");
 	$frmName = rtrim(substr($url, $pNameEnd + 1, ($extStart > 0 ?  $extStart : strlen($url)) - $pNameEnd - 1), "/");
@@ -1615,7 +1722,6 @@ function formHandler()
 			if($_f['tmp_name'] == '')
 			{
 				flash('The file is too big to upload', 'err');
-				
 			}
 			else
 			{
@@ -1708,7 +1814,7 @@ function formHandler()
 				
 				$recordSet = array();
 				
-				while($rec = $prj->tables[$frmName]->recieve(1))
+				while($rec = $prj->tables[$frmName]->recieve(1, true))
 				{
 					$recordSet = array_merge($recordSet, $rec); 
 				}
@@ -1725,7 +1831,7 @@ function formHandler()
 					echo "<entries>";
 					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "xml");
 					if($res !== true) die($res);
-					while($ent = $prj->tables[$frmName]->recieve(1))
+					while($ent = $prj->tables[$frmName]->recieve(1, true))
 					{
 						echo $ent;
 					}
@@ -1746,7 +1852,7 @@ function formHandler()
 					
 				$arr = $prj->tables[$frmName]->ask(false, $offset, $limit);
 					
-				while($ent = $prj->tables[$frmName]->recieve(1))
+				while($ent = $prj->tables[$frmName]->recieve(1, true))
 				{
 					echo "<Placemark>";
 					$desc = "";
@@ -1829,7 +1935,7 @@ function formHandler()
 					
 					$count_h = count($real_flds);
 					
-					while($xml = $prj->tables[$frmName]->recieve(1, "object"))
+					while($xml = $prj->tables[$frmName]->recieve(1, true))
 					{
 						$xml = $xml[0];
 //						fwrite($fp, sprintf('"%s"
@@ -1950,7 +2056,7 @@ function formHandler()
 					
 					$count_h = count($real_flds);
 					
-					while($xml = $prj->tables[$frmName]->recieve(1, "object"))
+					while($xml = $prj->tables[$frmName]->recieve(1, true))
 					{
 						$xml = $xml[0];
 //						fwrite($fp, sprintf('"%s"
@@ -2162,9 +2268,9 @@ function formHandler()
 			"formName" => $frmName, 
 			"curate" =>  $permissionLevel > 1 ? "true" : "false", 
 			"mapScript" => $mapScript,
-			"curationbuttons" => $permissionLevel > 1 ? sprintf('<a href="javascript:project.forms[formName].displayForm({ vertical : false });"><img src="%s/images/glyphicons/glyphicons_248_asterisk.png" title="New Entry" alt="New Entry"></a>
+			"curationbuttons" => $permissionLevel > 1 ? sprintf('<span class="button-set"><a href="javascript:project.forms[formName].displayForm({ vertical : false });"><img src="%s/images/glyphicons/glyphicons_248_asterisk.png" title="New Entry" alt="New Entry"></a>
 				<a href="javascript:editSelected();"><img src="%s/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
-				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()][project.forms[formName].key]);"><img src="%s/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a>',
+				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()][project.forms[formName].key]);"><img src="%s/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a></span>',
 				$SITE_ROOT, $SITE_ROOT, $SITE_ROOT): '',
 			"csvform" => $permissionLevel > 1 ?$csvform = '<div id="csvform">
 				<h3><a href="#">Upload data from a CSV file</a></h3>
@@ -3280,25 +3386,6 @@ function getXML()
 	}
 }
 
-function projectList()
-{
-	/**
-	 * Produce a list of all the projects on this server that are
-	 * 	- publically listed
-	 *  - if a user is logged in, owned, curated or managed by the user
-	 */
-	global $auth;
-	
-	$prjs = EcProject::getPublicProjects();
-	$usr_prjs = array();
-	if($auth->isLoggedIn())
-	{
-		$usr_prjs = EcProject::getUserProjects($auth->getEcUserId());
-	}
-	
-	echo json_encode(array_merge($prjs, $usr_prjs));
-}
-
 function projectSummary()
 {
 	global $url;
@@ -3313,7 +3400,7 @@ function projectSummary()
 
 function projectUsage()
 {
-	global $url;
+	global $url, $auth;
 
 	$prj = new EcProject();
 	$prj->name = substr($url, 0, strpos($url, "/"));
@@ -3362,7 +3449,7 @@ function packFiles($files)
 
 	$str = "";
 
-	foreach($files as $k=>$f)
+	foreach($files as $k => $f)
 	{
 		$str .= file_get_contents($f);
 		$str .= "\r\n";
@@ -3373,7 +3460,7 @@ function packFiles($files)
 
 function listUsers()
 {
-	global $auth;
+	global $auth, $url;
 	
 	if($auth->isLoggedIn())
 	{
@@ -3485,7 +3572,7 @@ function resetPassword()
 
 function userHandler()
 {
-	global $url, $SITE_ROOT;
+	global $url;
 
 	//if(!(strstr($_SERVER["HTTP_REFERER"], "/createProject.html"))) return;
 
@@ -3498,7 +3585,8 @@ function userHandler()
 	$res = $db->do_query($sql);
 	if($res === true)
 	{
-		if($arr = $db->get_row_array())
+                $arr = $db->get_row_array();
+		if($arr)
 		{
 			if(array_key_exists("details", $arr))
 			{
@@ -3580,6 +3668,7 @@ $pageRules = array(
 		'disableUser' => new PageRule(null, 'disableUser',true),
 		'enableUser' => new PageRule(null, 'enableUser',true),
 		'resetPassword' => new PageRule(null, 'resetPassword',true),
+                'register' => new PageRule(null, 'createAccount', false),
 		
 //generic, dynamic handlers
 		'getControls' =>  new PageRule(null, 'getControlTypes'),
@@ -3606,6 +3695,7 @@ $pageRules = array(
 		'[a-zA-Z0-9_-]+/manage' =>new PageRule(null, 'updateProject', true),
 		'[a-zA-Z0-9_-]+/updateStructure' =>new PageRule(null, 'updateXML', true),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__stats' =>new PageRule(null, 'tableStats'),
+                '[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__activity' =>new PageRule(null, 'formDataLastUpdated'),
 		'[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__getImage' =>new PageRule(null, 'getImage'),

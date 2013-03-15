@@ -75,6 +75,10 @@
   		
   		return $this->providers[$_SESSION['provider']]->getUserName($this->getEcUserId());
   	}
+        
+        public function requestSignup(){
+            return $this->providers['LOCAL']->requestSignup();
+        }
   
   	function requestlogin($requestedUrl, $provider = "")
   	{
@@ -85,7 +89,7 @@
   		$_SESSION["url"] = "http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}/" . trim($requestedUrl, '/');
   		
   		
-  		if(($provider != "" && array_key_exists($provider, $this->providers)) || count($this->providers) == 1)
+  		if(($provider != "" && $provider != "LOCAL" && array_key_exists($provider, $this->providers)) || count($this->providers) == 1)
   		{
   			if($provider == '' && count($this->providers) == 1)
   			{
@@ -101,8 +105,8 @@
   			$server = trim($_SERVER["HTTP_HOST"], "/");
   			$root = trim($SITE_ROOT, "/");
   			$frm =  "<p>Please Choose a Method to login</p>";
-  			if($this->localEnabled)$frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=LOCAL\"><img src=\"http://$server/$root/images/projectPlaceholder.png\" alt=\"\" height=\"24\"/> EpiCollect Account</a>";
-  			if($this->openIdEnabled) $frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=OPENID\">Google/Gmail account (OpenID)</a>";
+  			if($this->localEnabled)$frm .= "<div class=\"provider epicollect\"><h3>EpiCollect Account</h3>" .  $this->providers["LOCAL"]->requestLogin("http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}/" . trim($requestedUrl, '/'), !$hasManagers) . "</div>";
+  			if($this->openIdEnabled) $frm .= "<div class=\"provider google\"><h3>Google/Gmail</h3><a class=\"btn\" href=\"http://$server/$root/$url?provider=OPENID\">Google/Gmail account (OpenID)</a></div>";
 			if($this->ldapEnabled && array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "")
 			{
 					$frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=LDAP\">Windows Account ({$cfg->settings["security"]["ldap_domain"]})</a>";
@@ -154,9 +158,7 @@
   	function callback($provider = "")
   	{
   		global  $cfg, $db, $SITE_ROOT, $url;
-  		
-  		
-  		
+                
   		if( $this->isLoggedIn() ) 
   		{
   			header("location: http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/{$_SESSION["url"]}"); return;
@@ -164,16 +166,16 @@
   		
   		if(!array_key_exists($provider, $this->providers)) {
   			header("location: http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/");
-  			//echo "provider error";
+
   		}
   		  		
   		$res = $this->providers[$provider]->callback();
-  		//echo "***$res***";
+
   		if($res === true)
   		{
   			
   			$uid = false;
-  			$sql = "SELECT idUsers, active FROM user where details = '" . $this->providers[$provider]->getCredentialString()  . "'";
+  			$sql = "SELECT idUsers, active FROM user where email = '" . $this->providers[$provider]->getEmail()  . "'";
   			
   			//print $this->providers[$provider]->getCredentialString();
   			
@@ -201,7 +203,7 @@
   					return;
   				}
   			}
-  			if(!$uid)
+  			if($provider != "LOCAL" && !$uid)
   			{
   				$sql = "INSERT INTO user (FirstName, LastName, Email, details, language, serverManager) VALUES ('{$this->firstName}','{$this->lastName}','{$this->email}','" . $this->providers[$provider]->getCredentialString() . "','{$this->language}', " . (count($this->getServerManagers()) == 0 ?  "1" : "0") . ")";
   				$res = $db->do_query($sql);
@@ -395,23 +397,23 @@
 	  
 	  function getUsers($order = "FirstName", $dir = "asc")
 	  {
-	  		global $db, $log;
-	  		$query = "SELECT idUsers as userId, FirstName, LastName, Email, active FROM user ORDER BY $order $dir";
-	  		$res = $db->do_query($query);
-	  		if(!$res === true)
-	  		{
-	  			$log->write("err", $res);
-	  			return false;
-	  		}
-	  		else
-	  		{
-	  			$ret = array();
-	  			while($arr = $db->get_row_array())
-	  			{
-	  				array_push($ret, $arr);
-	  			}
-	  			return $ret;
-	  		}
+                    global $db, $log;
+                    $query = "SELECT idUsers as userId, FirstName, LastName, Email, active FROM user ORDER BY $order $dir";
+                    $res = $db->do_query($query);
+                    if(!$res === true)
+                    {
+                            $log->write("err", $res);
+                            return false;
+                    }
+                    else
+                    {
+                            $ret = array();
+                            while($arr = $db->get_row_array())
+                            {
+                                    array_push($ret, $arr);
+                            }
+                            return $ret;
+                    }
 	  }
 	  
 	  function getUserNickname()
@@ -423,7 +425,7 @@
 	  
 	  function getEcUserId()
 	  {
-	   		return $this->user;
+	   	return $this->user;
 	  }
 	  
 	  function getUserEmail()
