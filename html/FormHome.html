@@ -78,8 +78,13 @@
 		    margin-top: 5px;
 		    font-weight: bold;
 		    text-shadow: 1px 1px 0 #fff;
-		  }
+		}
 		
+                .toolbar-icon, .button-set img
+                {
+                    height : 14px;
+                }
+                
 		#mapTab
 		{
 			position : relative;
@@ -560,7 +565,7 @@
 					var text = field.text;
 					if(text.length > 25) text = text.substr(0,22) + "...";
 					
-					$('#showHideFields .ecplus-dropdown-menu').append("<input type=\"checkbox\" name=\"fldShowHide\" value=\"" + fld + "\" " + (hiddenColumns[fld] ? "" : "checked=\"checked\"") + " /><label for=\"fldShowHide\">" + text +  "</label><br />");
+					$('#showHideFields .ecplus-dropdown-menu').append("<input class=\"showHideToggle\" type=\"checkbox\" id=\""+ fld +"ShowHide\" value=\"" + fld + "\" " + (hiddenColumns[fld] ? "" : "checked=\"checked\"") + " /><label for=\"" + fld + "ShowHide\">" + text +  "</label><br />");
 					
 					if(field.type !== "location" && field.type !== "gps" && field.type !== "branch"
 							&& field.type !== "video" && field.type !== "audio" && field.type !== "photo" && field.type !== "")
@@ -575,8 +580,18 @@
 					}
 				}
 				
+                                
+                                
 				getData();
 				
+                                $('.showHideToggle').button();
+                                $('.button-set').buttonset();
+                                $('.btn').button();
+                                $('#showHideFields a').button({
+                                    icons: {
+                                      secondary: "ui-icon-triangle-1-s"
+                                    }
+                                });
 				$('#showHideFields input').change(function(evt){
 					var ctrl = $(evt.target).val();
 					hiddenColumns[ctrl] = !evt.target.checked;
@@ -1025,7 +1040,7 @@
 					
 					
 					$('[href=#mapTab]').removeClass('ec-loading');	
-                                        mapchecker = setInterval(function(){window.checkForMapUpdates()}, 6000)
+                                        mapchecker = setInterval(function(){checkForMapUpdates()}, 6000)
 				}
 				
 			}			
@@ -1405,11 +1420,11 @@
                         function checkForMapUpdates()
                         {
                             $.ajax(location.pathname + '/__activity', {success : function(xhr){
-                                    var act = xhr;
-
-                                    if(act['edited'] > map_lastupdated || act['uploaded'] > map_lastupdated )
+                                    var act = JSON.parse(xhr);
+                                    console.debug(act );
+                                    if(EpiCollect.parseDate(act['edited']) > map_lastupdated || EpiCollect.parseDate(act['uploaded']) > map_lastupdated )
                                     {
-                                            var urlStr = url + "/" + formName + ".json?gt::modified=" + EpiCollect.server_format(map_lastupdated) + "sort=" +  project.forms[formName].titleField + "&limit=" + chunkSize + "&start=" + offset;
+                                            var urlStr = url + "/" + formName + ".json?gt::modified=" + EpiCollect.server_format(map_lastupdated) + "sort=" +  project.forms[formName].titleField + "&limit=" +mapChunkSize + "&start=" + offset;
 
                                             if(filterField && filterValue)
                                             {
@@ -1471,38 +1486,49 @@
 			<p class="ecplus-toolbar">
 				{#curationbuttons#}
 				<span class="ecplus-toolbar-divider">&nbsp;</span> 
-				Filter List By <select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value').val());"><img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Filter" alt="Filter"></a>
-				<a href="javascript:doFilter('','');"><!--  <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Clear Filter" alt="Clear Filter">-->Clear Filter</a>
+				Filter List By <select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> 
+                                <span id="filterControls" class="button-set">
+                                        <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value').val());">
+                                            <img class="toolbar-icon" src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Filter" alt="Filter">
+                                        </a>
+                                        <a href="javascript:doFilter('','');">Clear Filter</a>
+                                </span><!--  <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Clear Filter" alt="Clear Filter">-->
 				<span class="ecplus-toolbar-divider">&nbsp;</span>
 				<span id ="showHideFields" class="ecplus-dropdown"></span> 
 				<span class="ecplus-toolbar-divider">&nbsp;</span> 
-				<a href="./{#formName#}.csv"><img src="{#SITE_ROOT#}/images/downloadcsv.png" title="Dowload Data as CSV" alt="Download CSV"></a>
-				<a href="./{#formName#}.tsv"><img src="{#SITE_ROOT#}/images/downloadtab.png" title="Dowload Data as TSV" alt="Download TSV"></a>
-				<a href="./{#formName#}.xml?mode=list" target="__blank"><img src="{#SITE_ROOT#}/images/downloadxml.png" title="Dowload Data as XML" alt="Download XML"></a>
+                                <span id="download-buttons" class="button-set">
+                                    <a href="./{#formName#}.csv" title="Download data as CSV"><img class="toolbar-icon" src="{#SITE_ROOT#}/images/downloadcsv.png" title="Dowload Data as CSV" alt="Download CSV"></a>
+                                    <a href="./{#formName#}.tsv" title="Download data as TSV"><img class="toolbar-icon" src="{#SITE_ROOT#}/images/downloadtab.png" title="Dowload Data as TSV" alt="Download TSV"></a>
+                                    <a href="./{#formName#}.xml?mode=list" title="Download data as XML" target="__blank"><img class="toolbar-icon" src="{#SITE_ROOT#}/images/downloadxml.png" title="Dowload Data as XML" alt="Download XML"></a>
+                                </span>
 			</p>
 			
 			<p class="ecplus-table-footer">
 				<span class="left">
+                                    <span id="forwardButtons" class="button-set">
 					<a href="javascript:firstPage();" title="Go to first page">
 						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_170_step_backward.png" alt="first"/>
 					</a> 
 					<a href="javascript:turnBackPage();" title="Go to previous page">
 						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_350_playback.png" alt="previous"/>
 					</a>
+                                    </span>
 					<span id="start"></span> to <span id="end"></span> of <span id="total"></span>
-					<a href="javascript:getData();"  title="Refresh entries">
-						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_081_refresh.png" alt="next"/>
-					</a>
-				
-					<a href="javascript:turnPage();"  title="Go to next page">
-						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/>
-					</a>
-					<a href="javascript:lastPage();"   title="Go to final page">
-						<img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/>
-					</a>
+                                        <span id="backwardButtons" class="button-set">
+                                            <a href="javascript:getData();"  title="Refresh entries">
+                                                    <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_081_refresh.png" alt="next"/>
+                                            </a>
+
+                                            <a href="javascript:turnPage();"  title="Go to next page">
+                                                    <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/>
+                                            </a>
+                                            <a href="javascript:lastPage();"   title="Go to final page">
+                                                    <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/>
+                                            </a>
+                                    </span>
 				</span>
 				<span class="right">
-					Show <input type="number" maxlength="3" id="num_entries" /> entries per page <a href="javascript:saveNumEntires();">Save as my default</a> 
+					Show <input type="number" maxlength="3" id="num_entries" /> entries per page <a class="btn" href="javascript:saveNumEntires();">Save as my default</a> 
 				</span>
 			</p>
 			{#csvform#}

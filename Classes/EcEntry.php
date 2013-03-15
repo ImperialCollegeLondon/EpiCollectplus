@@ -73,7 +73,7 @@
 			
 			
 			
-			$this->uploaded = getTimestamp('Y-m-d h:i:s');
+			$this->uploaded = getTimestamp('Y-m-d H:i:s');
 			
 			
 			if(!$this->deviceId)

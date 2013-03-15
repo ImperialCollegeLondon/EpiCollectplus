@@ -475,9 +475,12 @@
                                     $seppos = strpos($k_sep, '::');
                                     
                                     //if the separator is in there then remove the seperator to get the key
-                                    $k = substr($k_sep, $seppos >= 0 ? $seppos + 2 : 0);
+                                    $k = $k_sep;
                                     
-                                    if($seppos !== false) $op = substr($k_sep, 0, $seppos);
+                                    if($seppos !== false){
+                                        $k = substr($k_sep, $seppos >= 0 ? $seppos + 2 : 0);
+                                        $op = substr($k_sep, 0, $seppos);
+                                    }
                                     
                                     $s_k = str_replace('.', '_', $k);
                                         
@@ -502,8 +505,7 @@
                                     }
                                     elseif($k == 'modified')
                                     {
-                                        printf(' AND (`e`.uploaded ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\' OR `e`.lastEdited ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\')', $v, $v);
-                                         $where .= sprintf(' AND (`e`.uploaded ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\' OR `e`.lastEdited ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\')', $s_k, $v);
+                                         $where .= sprintf(' AND (`e`.uploaded ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\' OR `e`.lastEdited ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\')', $v, $v);
                                     }
 				}
                                 

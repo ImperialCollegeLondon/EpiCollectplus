@@ -734,7 +734,7 @@ function projectHome()
 					
 					if( $role == 3 )
 					{
-						$adminMenu = "<a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Edit Forms</a>";
+						$adminMenu = "<span class=\"button-set\"><a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Edit Forms</a></span>";
 					}
 					
 					$vals =  array(
@@ -2268,9 +2268,9 @@ function formHandler()
 			"formName" => $frmName, 
 			"curate" =>  $permissionLevel > 1 ? "true" : "false", 
 			"mapScript" => $mapScript,
-			"curationbuttons" => $permissionLevel > 1 ? sprintf('<a href="javascript:project.forms[formName].displayForm({ vertical : false });"><img src="%s/images/glyphicons/glyphicons_248_asterisk.png" title="New Entry" alt="New Entry"></a>
+			"curationbuttons" => $permissionLevel > 1 ? sprintf('<span class="button-set"><a href="javascript:project.forms[formName].displayForm({ vertical : false });"><img src="%s/images/glyphicons/glyphicons_248_asterisk.png" title="New Entry" alt="New Entry"></a>
 				<a href="javascript:editSelected();"><img src="%s/images/glyphicons/glyphicons_030_pencil.png" title="Edit Entry" alt="Edit Entry"></a>
-				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()][project.forms[formName].key]);"><img src="%s/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a>',
+				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()][project.forms[formName].key]);"><img src="%s/images/glyphicons/glyphicons_016_bin.png" title="Delete Entry" alt="Delete Entry"></a></span>',
 				$SITE_ROOT, $SITE_ROOT, $SITE_ROOT): '',
 			"csvform" => $permissionLevel > 1 ?$csvform = '<div id="csvform">
 				<h3><a href="#">Upload data from a CSV file</a></h3>

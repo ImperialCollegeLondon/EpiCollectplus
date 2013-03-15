@@ -265,6 +265,7 @@ Date.prototype.format = function(fmt)
 	
 	return fmt.replace("dd", this.getDate())
 		.replace("MM" , months[this.getMonth()])
+                .replace("Mth" , this.getMonth())
 		.replace("yyyy", this.getFullYear())
 		.replace("HH", this.getHours().toString().padLeft(2, "0"))
 		.replace("hh", (this.getHours() % 12).toString().padLeft(2, "0"))
@@ -274,17 +275,18 @@ Date.prototype.format = function(fmt)
 
 EpiCollect.parseDate = function(dateString)
 {
+    if(!dateString) return null;
     var date_time = dateString.split(' ');
     var date = date_time[0].split('-');
     var time = date_time[1].split(':');
     
     return new Date(date[0], date[1], date[2], time[0], time[1], time[2]);
-}
+};
 
 EpiCollect.server_format = function(d)
 {
-    return d.format('yyyy-MM-dd HH:mm:ss');
-}
+    return d.format('yyyy-Mth-dd HH:mm:ss');
+};
 
 if(!Object.keys)
 {
