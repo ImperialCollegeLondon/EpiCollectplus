@@ -1054,7 +1054,7 @@ function siteHome()
 		header("location: $rurl");
 		return;
 	}
-	$vals["projects"] = "<p style=\"margin-top:1.2em;\"> <a href=\"createProject.html	\" class=\"button\">Create a New Project</a></p><div class=\"ecplus-projectlist\"><h1>Most popular projects on this server</h1>" ;
+	$vals["projects"] = "<div class=\"ecplus-projectlist\"><h1>Most popular projects on this server</h1>" ;
 
 	$i = 0;
 

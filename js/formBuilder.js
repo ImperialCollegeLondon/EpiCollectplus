@@ -28,23 +28,24 @@ $(function()
 		}
 		if($(document.body).scrollTop() > details_top) 
 		{  
+                        var dest = $('#destination');
 			$("#details").css({
 				"position":"fixed",
 				"top" : $("#toolbox-inner").height() + 10 + "px",
-				"right" : "25px"
+				"left" : (dest.offset().left + dest.width()+20) + "px"
 			}); 
 			$("#source").css({
 				"position":"fixed",
 				"top" : $("#toolbox-inner").height() + 10 + "px",
-				"left" : "25px"
+				"left" : "auto"
 			}); 
 		}
 		else
 		{
 			$("#details").css({
 				"position":"absolute",
-				"top" : "0px",
-				"right" : "0px"
+                                "top" : "0px",
+                                "left" : ''
 			}); 
 			$("#source").css({
 				"position":"absolute",
@@ -80,9 +81,9 @@ $(function()
 			}
 			else
 			{
-				//setSelected($(ui.item));
 				var jq = $('#destination .end').remove();
 				$('#destination').append(jq[0]);
+                                setSelected($(ui.item));
 			}
 		}
 	});
@@ -789,7 +790,7 @@ function setSelected(jq)
                     height : jqEle.outerHeight(),
                     top : jqEle.offset().top - $('#middle').offset().top,
                     width : jqEle.width(),
-                    left : jqEle.offset().left
+                    left : jqEle.offset().left - $('#source').offset().left
                 }, {
                     duration : 100
                 });

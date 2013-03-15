@@ -7,8 +7,10 @@ img{ border:0;}
 body{
 	font-family: "Arial";
 	font-size: 14px;
-	margin : 10px 10px 10px 10px;
+	margin : 2em auto 10px auto;
 	min-width: 760px;
+        max-width: 1280px;
+        
 }
 
 h1
@@ -52,28 +54,45 @@ p
 
 form p, .ecplus-form-element p, .filterControl p
 {
-	margin : 0.5em 0 0.5em 0;	
+    margin : 0.5em 0 0.5em 0;	
 }
 
 .ecplus-data th
 {
-	color: #EEEEEE;
-	background: #444444;
-	-moz-user-select:none;
-	-webkit-user-select:none;
-	user-select:none;
-	-ms-user-select:none;
-	cursor : pointer;
+    color: #EEEEEE;
+    background: #444444;
+    -moz-user-select:none;
+    -webkit-user-select:none;
+    user-select:none;
+    -ms-user-select:none;
+    cursor : pointer;
 }
 
 .ecplus-data th:hover
 {
-	background-color:#444488;
+    background-color:#444488;
 }
 
 tr
 {
 	
+}
+
+#pageHead
+{
+    position: relative;
+    height: 64px;
+}
+
+.beta-tag
+{
+    font-size: 14pt;
+    font-weight:bold;
+    color : #a54df9;
+    position: absolute;
+    left : 10em;
+    bottom : 0;
+    z-index: 5;
 }
 
 .editing .title
@@ -926,8 +945,9 @@ tr.alt
 
 #nav
 {
-	float: right;
-	margin-top : -15px;
+    margin-left: 18em;
+    margin-top: -3em;
+    padding-bottom: 2em;
 }
 
 #nav a
