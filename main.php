@@ -3637,6 +3637,7 @@ $pageRules = array(
 		'favicon\..+' => new PageRule(),
 		'js/.+' => new PageRule(),
 		'css/.+' => new PageRule(),
+		'\.apk' => new PageRule(),
 
 		'html/projectIFrame.html' => new PageRule(),
 
