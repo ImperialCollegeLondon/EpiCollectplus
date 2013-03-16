@@ -705,7 +705,7 @@
 						}
 						elseif ($full_urls && $this->fields[$kv[0]]->valueIsFile() && $kv[1] != '')
 						{
-							$arr[$kv[0]] = makeUrl($kv[1]);
+							$arr[$kv[0]] = makeUrl($this->survey->name . '~' . $kv[1]);
 						}
                                                 else
 						{
