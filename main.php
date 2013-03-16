@@ -101,7 +101,7 @@ if(!array_key_exists('salt',$cfg->settings['security']) || trim($cfg->settings['
 function makeUrl($fn)
 {
 	global $SITE_ROOT;
-	return sprintf('http://%s/%s/ec/uploads/%s', $_SERVER['HTTP_HOST'], trim($SITE_ROOT, '/'), $fn);
+	return sprintf('http://%s%s/ec/uploads/%s', $_SERVER['HTTP_HOST'], trim($SITE_ROOT, '/'), $fn);
 }
 
 

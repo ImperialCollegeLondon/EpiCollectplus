@@ -1816,6 +1816,12 @@ EpiCollect.Field = function()
 		}else if(this.type === "video" || this.type === "audio"){
 			if(value)
 			{
+                            if(value.match(/^http:/i))
+                            {
+                                return value;
+                            }
+                            else
+                            {
 				var checkid = 'check' + (nchecks++);
 				
 				var valUrl = "ec/uploads/" + project.name + "~" +value;
@@ -1825,6 +1831,7 @@ EpiCollect.Field = function()
 				checker.startCheck(checkurl);
 				
 				return "<a id=\"" + checkid + "\" href=\"../" + valUrl + "\" target=\"__blank\"> View Media </a>";
+                            }
 			}
 			else
 			{
