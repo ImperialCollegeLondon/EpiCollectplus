@@ -1818,10 +1818,10 @@ EpiCollect.Field = function()
 			{
                             var checkid = 'check' + (nchecks++);
                             var checkurl;
-                            
+                            var valUrl;
                             if(value.match(/^http:/i))
                             {
-                                
+                                valUrl = value;
                                 checkurl = value;
                             }
                             else
