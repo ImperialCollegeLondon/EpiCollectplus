@@ -1816,22 +1816,24 @@ EpiCollect.Field = function()
 		}else if(this.type === "video" || this.type === "audio"){
 			if(value)
 			{
+                            var checkid = 'check' + (nchecks++);
+                            var checkurl;
+                            
                             if(value.match(/^http:/i))
                             {
-                                return value;
+                                
+                                checkurl = value;
                             }
                             else
                             {
-				var checkid = 'check' + (nchecks++);
-				
 				var valUrl = "ec/uploads/" + project.name + "~" +value;
-				
-				var checkurl = (location.href.replace(project.name + '/' + formName, '') + valUrl).trimChars('/');
-				checking[checkurl] = checkid;
-				checker.startCheck(checkurl);
-				
-				return "<a id=\"" + checkid + "\" href=\"../" + valUrl + "\" target=\"__blank\"> View Media </a>";
+				checkurl = (location.href.replace(project.name + '/' + formName, '') + valUrl).trimChars('/');
                             }
+                            
+                            checking[checkurl] = checkid;
+                            checker.startCheck(checkurl);
+
+                            return "<a id=\"" + checkid + "\" href=\"../" + valUrl + "\" target=\"__blank\"> View Media </a>";
 			}
 			else
 			{
