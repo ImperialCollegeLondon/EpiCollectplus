@@ -3645,7 +3645,7 @@ $pageRules = array(
 		'favicon\..+' => new PageRule(),
 		'js/.+' => new PageRule(),
 		'css/.+' => new PageRule(),
-
+                'EpiCollectplus\.apk' => new PageRule(),
 		'html/projectIFrame.html' => new PageRule(),
 
 //project handlers
