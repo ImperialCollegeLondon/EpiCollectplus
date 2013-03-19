@@ -168,7 +168,7 @@ $(function()
         $('#middle').append('<img src="../images/editmarker.png" class="editmarker">')
         $('.editmarker').hide();
         $('.last input, .last select').change(function(){ $('#destination .selected').addClass('editing'); });
-        
+        $('.last').hide();
 });
 
 function drawProject(prj)
@@ -319,9 +319,9 @@ function addOption()
 	$("#options .removeOption").unbind('click').bind('click', removeOption);
 	
 	$("#options input").unbind();
-	$("#options input").change(function(e)
+	$("#options input").change(function()
 	{
-		updateSelected();
+		updateSelected(true);
 		updateJumps();
 	});
 }
@@ -405,7 +405,7 @@ function drawFormControls(form)
 	
 }
 
-function updateSelected()
+function updateSelected(is_silent)
 {
 	var jq = $("#destination .selected");
 	var cur = currentControl;
@@ -599,15 +599,23 @@ function updateSelected()
 		
 		cfrm.fields = newFlds;
         }
-           
         
-        $('#' + cfrm.name).addClass('unsaved');
-        $('#destination .selected').removeClass('editing');
-        $('.editmarker').hide();
-        $('#details').hide();
-        currentControl = cur;
-        currentForm = cfrm;
-	return true;
+        
+        if(!is_silent)
+        {
+            $('#' + cfrm.name).addClass('unsaved');
+            $('#destination .selected').removeClass('editing');
+            $('.editmarker').hide();
+            $('#details').hide();
+           
+        }
+        else
+        {
+            updateEditMarker();
+        }
+	currentControl = cur;
+        currentForm = cfrm; 
+        return true;
 }
 
 function updateSelectedCtl(){
@@ -646,7 +654,7 @@ function updateForm()
 function updateJumps()
 {
 	try{
-	updateForm();
+	//updateForm();
 		
 	var opts = currentControl.options;
 	
@@ -766,6 +774,21 @@ function genID()
 	return name;
 }
 
+function updateEditMarker()
+{
+    var jqEle = $('#destination .selected');
+    var mkr = $('.editmarker');
+    mkr.show();
+    mkr.animate({
+        height : jqEle.outerHeight(),
+        top : jqEle.offset().top - $('#middle').offset().top,
+        width : jqEle.width(),
+        left : jqEle.offset().left - $('#source').offset().left
+    }, {
+        duration : 100
+    });
+}
+
 function setSelected(jq)
 {
         var jqEle = jq;
@@ -784,16 +807,7 @@ function setSelected(jq)
                 $("#destination .ecplus-form-element").removeClass("selected");
                 jqEle.addClass("selected");
 
-                var mkr = $('.editmarker');
-                mkr.show();
-                mkr.animate({
-                    height : jqEle.outerHeight(),
-                    top : jqEle.offset().top - $('#middle').offset().top,
-                    width : jqEle.width(),
-                    left : jqEle.offset().left - $('#source').offset().left
-                }, {
-                    duration : 100
-                });
+                updateEditMarker();
           
                     
                 $('#date').val('');
