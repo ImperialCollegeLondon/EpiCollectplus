@@ -56,7 +56,10 @@ $(function()
 	});
         
         $(window).unload(function(){
-            localStorage.setItem(project.name + '_xml', project.toXML());
+            if($('.unsaved').length > 0)
+            {
+                localStorage.setItem(project.name + '_xml', project.toXML());
+            }
         });
 	
 	$('.first').accordion({ collapsible : true });
@@ -67,6 +70,7 @@ $(function()
 	$('#destination').sortable({
 		revert : 50,
 		tolerance : 'pointer',
+                items : '> .ecplus-form-element',
 		start : function(evt, ui)
 		{
 			ui.placeholder.css("visibility", "");
@@ -90,17 +94,7 @@ $(function()
 	
 	$(".ecplus-form-element").draggable({
 		connectToSortable: "#destination",
-		 helper: function(){ 
-                    //Hack to append the element to the body (visible above others divs), 
-                    //but still bellonging to the scrollable container  
-                    $('#destination').append('<div id="clone" class="ui-state-default big">' + $(this).html() + '</div>');   
-                    $("#clone").hide();
-                    setTimeout(function(){
-                        $('#clone').appendTo('body'); 
-                        $("#clone").show();
-                    },1);
-                    return $("#clone");
-                },
+		helper: 'clone',
 		revert: "invalid",
 		revertDuration : 100,
 		appendTo : 'body',
@@ -165,7 +159,7 @@ $(function()
 	
 	$("#options .removeOption").unbind('click').bind('click', removeOption);
 	$("#jumps .remove").unbind('click').bind('click', removeOption);
-        $('#middle').append('<img src="../images/editmarker.png" class="editmarker">')
+        $('#destination').append('<img src="../images/editmarker.png" class="editmarker">')
         $('.editmarker').hide();
         $('.last input, .last select').change(function(){ $('#destination .selected').addClass('editing'); });
         $('.last').hide();
@@ -780,9 +774,9 @@ function updateEditMarker()
     mkr.show();
     mkr.animate({
         height : jqEle.outerHeight(),
-        top : jqEle.offset().top - $('#middle').offset().top,
+        top : jqEle.offset().top - $('#destination').offset().top,
         width : jqEle.width(),
-        left : jqEle.offset().left - $('#source').offset().left
+        left : jqEle.offset().left - $('#destination').offset().left
     }, {
         duration : 100
     });
