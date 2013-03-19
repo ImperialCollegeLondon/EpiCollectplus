@@ -1021,4 +1021,4 @@ tr.alt
 	margin-bottom : 1.5em;
 }
 
-
+.ui-dialog-titlebar-close{ display : none !important; }

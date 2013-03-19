@@ -181,7 +181,7 @@ function drawProject(prj)
             {
                 project = new EpiCollect.Project();
                 project.parse($.parseXML(temp_xml));
-                console.debug(project.forms)
+                
             }
         }
     
@@ -428,7 +428,6 @@ function updateSelected(is_silent)
                 var suf = '(' + $('#' + _type).val() + ')';
                 var rxsuf = '\\(' + $('#' + _type).val().replace(/\//g, '\\/') + '\\)';
 
-                //console.debug (new RegExp(rxsuf +'$', 'g'));
                 if(!cur.text.match(new RegExp(rxsuf +'$', 'g')))
                 {
                         cur.text = cur.text + ' ' + suf;
@@ -490,7 +489,7 @@ function updateSelected(is_silent)
             }
 	}
 	
-	//console.debug()
+	
 	
 	cur.regex = $("#regex").val();
 	cur.verify = !!$("#verify").attr("checked");
