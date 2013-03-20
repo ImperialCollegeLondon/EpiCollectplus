@@ -1827,14 +1827,14 @@ function formHandler()
 	else
 	{
 		ini_set('max_execution_time', 200);
-		
+		header("Cache-Control: no-cache, must-revalidate");
 		$offset = array_key_exists('start', $_GET) ? $_GET['start'] : 0;
 		$limit = array_key_exists('limit', $_GET) ? $_GET['limit'] : 0;;
 		
 		
 		switch($format){
 			case 'json':
-				header('Cache-Control: no-cache, must-revalidate');
+				
 				header('Content-Type: application/json');
 				
 				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object");
@@ -1854,7 +1854,7 @@ function formHandler()
 				return;
 				
 			case "xml":
-				header("Cache-Control: no-cache, must-revalidate");
+				
 				header("Content-Type: text/xml");
 				if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
 				{
@@ -1874,7 +1874,7 @@ function formHandler()
 					return;
 				}
 			case "kml":
-				header("Cache-Control: no-cache, must-revalidate");
+				
 				header("Content-Type: application/vnd.google-earth.kml+xml");
 				echo '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://earth.google.com/kml/2.0"><Document><name>EpiCollect</name><Folder><name>';
 				echo "{$prj->name} - {$frmName}";
@@ -1916,7 +1916,7 @@ function formHandler()
 				return;
 
 			case "csv":
-				header("Cache-Control: no-cache, must-revalidate");
+				
 				//
 				if( !file_exists('ec/uploads')) mkdir('ec/uploads');
 				$filename = sprintf('ec/uploads/%s_%s_%s%s.csv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
@@ -2036,7 +2036,7 @@ function formHandler()
 				return;
 			
 			case "tsv":
-				header("Cache-Control: no-cache, must-revalidate");
+		
 				//
 				if( !file_exists('ec/uploads')) mkdir('ec/uploads');
 				$filename = sprintf('ec/uploads/%s_%s_%s%s.tsv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
@@ -2158,7 +2158,7 @@ function formHandler()
 					
 				$files = array("./Ext/ext-base.js", "./Ext/ext-all.js", "./js/EpiCollect2.js");
 				header("Content-type: text/javascript");
-				header("Cache-Control: public; max-age=100000;");
+
 				echo packFiles($files);
 				echo "var survey;
 		var table;
@@ -2246,7 +2246,7 @@ function formHandler()
 		}
 	}
 	
-	header("Cache-Control: no-cache, must-revalidate");
+	
 	
 	global $SITE_ROOT;
 	$referer = array_key_exists("HTTP_REFERER", $_SERVER) ? $_SERVER["HTTP_REFERER"] : "";
