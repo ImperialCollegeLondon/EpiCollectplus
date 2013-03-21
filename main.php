@@ -8,7 +8,7 @@ $dat = new DateTime('now');
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.3";
+$CODE_VERSION = "1.4";
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
@@ -112,7 +112,6 @@ function makeUrl($fn)
         }
 }
 
-
 function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 {
 	// error was suppressed with the @-operator
@@ -128,10 +127,10 @@ set_error_handler('handleError', E_ALL);
 
 $DEFAULT_OUT = $cfg->settings['misc']['default_out'];
 $log = new Logger('Ec2');
-global $db;
+global $db, $auth;
 $db = false;
-global $auth;
 $auth = new AuthManager();
+
 
 //try{
 	$db = new dbConnection();
@@ -162,6 +161,20 @@ function flash($msg, $type="msg")
 	}
 	array_push($_SESSION["flashes"], $nflash);
 
+}
+
+function redirectTo($url)
+{
+    global $SITE_ROOT;
+    $server = $_SERVER['HTTP_HOST'];
+    $root = trim($SITE_ROOT, '/');
+    header(sprintf('location: http://%s%s/', $server, $root != '' ? ('/' .$root) : ''));
+}
+
+function accessDenied($location)
+{
+    flash(sprintf('You do not have access to %s', $location));
+    echo redirectTo("");
 }
 
 function setupDB()
@@ -260,11 +273,11 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 			//if so put the user's name and a logout option in the login section
 			if($auth->isServerManager())
 			{
-				$template = str_replace('{#loggedIn#}', 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ') <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
+				$template = str_replace('{#loggedIn#}', 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ')  <a href="{#SITE_ROOT#}/logout">Sign out</a>  <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>  <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
 			}
 			else
 			{
-				$template = str_replace('{#loggedIn#}', sprintf('Logged in as %s (%s) <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $auth->getUserNickname(), $auth->getUserEmail()), $template);
+				$template = str_replace('{#loggedIn#}', sprintf('Logged in as %s (%s) <a class="btn btn-mini" href="{#SITE_ROOT#}/logout">Sign out</a>  <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $auth->getUserNickname(), $auth->getUserEmail()), $template);
 			}
 			$templateVars['userEmail'] = $auth->getUserEmail();
 		}
@@ -586,11 +599,19 @@ function projectList()
 	$prjs = EcProject::getPublicProjects();
 	$usr_prjs = array();
 	if($auth->isLoggedIn())
-	{
-		$usr_prjs = EcProject::getUserProjects($auth->getEcUserId());
+	{  
+            $usr_prjs = EcProject::getUserProjects($auth->getEcUserId());
+            $up_l = count($usr_prjs);
+            for($p = 0; $p < $up_l; $p++ )
+            {
+                if($usr_prjs[$p]["listed"] === 0)
+                {
+                    array_push($prjs, $usr_prjs[$p]);
+                }
+            }
 	}
 
-	echo json_encode(array_merge($prjs, $usr_prjs));
+	echo json_encode($prjs);
 }
 
 
@@ -704,69 +725,69 @@ function projectHome()
 	elseif( $reqType == 'GET' )
 	{
 	
-		if( array_key_exists('HTTP_ACCEPT', $_SERVER)) $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "$SITE_ROOT/") + 1 );
-		$ext = substr($url, strrpos($url, '.') + 1);
-		$format = $ext != '' ? $ext : $format;
-		if( $format == 'xml' )
-		{
-				header('Cache-Control: no-cache, must-revalidate');
-				header('Content-type: text/xml; charset=utf-8;');
-				echo $prj->toXML();
-		}else {
-				header('Cache-Control: no-cache, must-revalidate');
-				header('Content-type: text/html;');
-				
-				try{
-					//$userMenu = '<h2>View Data</h2><span class="menuItem"><img src="images/map.png" alt="Map" /><br />View Map</span><span class="menuItem"><img src="images/form_view.png" alt="List" /><br />List Data</span>';
-					//$adminMenu = '<h2>Project Administration</h2><span class="menuItem"><a href="./' . $prj->name . '/formBuilder.html"><img src="'.$SITE_ROOT.'/images/form_small.png" alt="Form" /><br />Create or Edit Form(s)</a></span><span class="menuItem"><a href="editProject.html?name='.$prj->name.'"><img src="'.$SITE_ROOT.'/images/homepage_update.png" alt="Home" /><br />Update Project</a></span>';
-					$tblList = '';
-					foreach( $prj->tables as $tbl )
-					{
-						$tblList .= "<div class=\"tblDiv\"><a class=\"tblName\" href=\"{$prj->name}/{$tbl->name}\">{$tbl->name}</a><a href=\"{$prj->name}/{$tbl->name}\">View All Data</a> | <form name=\"{$tbl->name}SearchForm\" action=\"./{$prj->name}/{$tbl->name}\" method=\"GET\"> Search for {$tbl->key} <input type=\"text\" name=\"{$tbl->key}\" /> <a href=\"javascript:document.{$tbl->name}SearchForm.submit();\">Search</a></form></div>";
-					}
-	
-					$imgName = $prj->image ? $prj->image : "images/projectPlaceholder.png";
-	
-					if( file_exists($imgName) )
-					{
-						$imgSize = getimagesize($imgName);
-					}
-					else
-					{
-						$imgSize = array(0,0);
-					}
-					
-					$adminMenu = '';
-					$curpage = trim($url ,'/');
-					$curpage = sprintf('http://%s%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT, $curpage);
-					
-					if( $role == 3 )
-					{
-						$adminMenu = "<span class=\"button-set\"><a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Edit Forms</a></span>";
-					}
-					
-					$vals =  array(
-						'projectName' => $prj->name,
-						'projectDescription' => $prj->description && $prj->description != "" ? $prj->description : "Project homepage for {$prj->name}",
-						'projectImage' => str_replace($prj->name, $imgName, $curpage),
-						'imageWidth' => $imgSize[0],
-						'imageHeight' =>$imgSize[1],
-						'tables' => $tblList,
-						'adminMenu' => $adminMenu,
-						'userMenu' => ''
-					);
-					
-					
-					echo applyTemplate('base.html','projectHome.html',$vals);
-					return;
-				}
-				catch( Exception $e )
-				{
-					
-					$vals = array('error' => $e->getMessage());
-					echo applyTemplate('base.html','error.html',$vals);
-				}
-		}
+            if( array_key_exists('HTTP_ACCEPT', $_SERVER)) $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "$SITE_ROOT/") + 1 );
+            $ext = substr($url, strrpos($url, '.') + 1);
+            $format = $ext != '' ? $ext : $format;
+            if( $format == 'xml' )
+            {
+                header('Cache-Control: no-cache, must-revalidate');
+                header('Content-type: text/xml; charset=utf-8;');
+                echo $prj->toXML();
+            }else {
+            header('Cache-Control: no-cache, must-revalidate');
+            header('Content-type: text/html;');
+
+            try{
+                    //$userMenu = '<h2>View Data</h2><span class="menuItem"><img src="images/map.png" alt="Map" /><br />View Map</span><span class="menuItem"><img src="images/form_view.png" alt="List" /><br />List Data</span>';
+                    //$adminMenu = '<h2>Project Administration</h2><span class="menuItem"><a href="./' . $prj->name . '/formBuilder.html"><img src="'.$SITE_ROOT.'/images/form_small.png" alt="Form" /><br />Create or Edit Form(s)</a></span><span class="menuItem"><a href="editProject.html?name='.$prj->name.'"><img src="'.$SITE_ROOT.'/images/homepage_update.png" alt="Home" /><br />Update Project</a></span>';
+                    $tblList = '';
+                    foreach( $prj->tables as $tbl )
+                    {
+                            $tblList .= "<div class=\"tblDiv\"><a class=\"tblName\" href=\"{$prj->name}/{$tbl->name}\">{$tbl->name}</a><a href=\"{$prj->name}/{$tbl->name}\">View All Data</a> | <form name=\"{$tbl->name}SearchForm\" action=\"./{$prj->name}/{$tbl->name}\" method=\"GET\"> Search for {$tbl->key} <input type=\"text\" name=\"{$tbl->key}\" /> <a href=\"javascript:document.{$tbl->name}SearchForm.submit();\">Search</a></form></div>";
+                    }
+
+                    $imgName = $prj->image ? $prj->image : "images/projectPlaceholder.png";
+
+                    if( file_exists($imgName) )
+                    {
+                            $imgSize = getimagesize($imgName);
+                    }
+                    else
+                    {
+                            $imgSize = array(0,0);
+                    }
+
+                    $adminMenu = '';
+                    $curpage = trim($url ,'/');
+                    $curpage = sprintf('http://%s%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT, $curpage);
+
+                    if( $role == 3 )
+                    {
+                            $adminMenu = "<span class=\"button-set\"><a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Edit Forms</a></span>";
+                    }
+
+                    $vals =  array(
+                            'projectName' => $prj->name,
+                            'projectDescription' => $prj->description && $prj->description != "" ? $prj->description : "Project homepage for {$prj->name}",
+                            'projectImage' => str_replace($prj->name, $imgName, $curpage),
+                            'imageWidth' => $imgSize[0],
+                            'imageHeight' =>$imgSize[1],
+                            'tables' => $tblList,
+                            'adminMenu' => $adminMenu,
+                            'userMenu' => ''
+                    );
+
+
+                    echo applyTemplate('base.html','projectHome.html',$vals);
+                    return;
+                }
+                catch( Exception $e )
+                {
+
+                    $vals = array('error' => $e->getMessage());
+                    echo applyTemplate('base.html','error.html',$vals);
+                }
+            }
 	}
 }
 
@@ -1068,13 +1089,13 @@ function siteHome()
 
 	while($row = $db->get_row_array())
 	{
-		$vals["projects"] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$row["name"]}\">{$row["name"]}</a></div><div class=\"total\">{$row["ttl"]} entries with <b>" . ($row["ttl24"] ? $row["ttl24"] : "0") ."</b> in the last 24 hours </div>";
+		$vals["projects"] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$row["name"]}\">{$row["name"]}</a><div class=\"total\">{$row["ttl"]} entries with <b>" . ($row["ttl24"] ? $row["ttl24"] : "0") ."</b> in the last 24 hours </div></div>";
 		$i++;
 	}
 	
 	if($i == 0)
 	{
-		$vals["projects"] = "<p>No projects exist on this server, <a href=\"createProject.html	\">create a new project</a></p>";
+		$vals["projects"] = "<p>No projects exist on this server, <a href=\"createProject.html\">create a new project</a></p>";
 	}
 	else
 	{
@@ -1087,9 +1108,10 @@ function siteHome()
 		
 		$prjs = EcProject::getUserProjects($auth->getEcUserId());
 		$count = count($prjs);
+               
 		for($i = 0; $i < $count; $i++)
 		{
-			$vals['userprojects'] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$prjs[$i]["name"]}\">{$prjs[$i]["name"]}</a></div><div class=\"total\">{$prjs[$i]["ttl"]} entries with <b>" . ($prjs[$i]["ttl24"] ? $prjs[$i]["ttl24"] : "0") ."</b> in the last 24 hours </div>";
+			$vals['userprojects'] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$prjs[$i]["name"]}\">{$prjs[$i]["name"]}</a><div class=\"total\">{$prjs[$i]["ttl"]} entries with <b>" . ($prjs[$i]["ttl24"] ? $prjs[$i]["ttl24"] : "0") ."</b> in the last 24 hours </div></div>";
 		}
 		
 		$vals['userprojects'] .= '</div>';
@@ -1805,14 +1827,14 @@ function formHandler()
 	else
 	{
 		ini_set('max_execution_time', 200);
-		
+		header("Cache-Control: no-cache, must-revalidate");
 		$offset = array_key_exists('start', $_GET) ? $_GET['start'] : 0;
 		$limit = array_key_exists('limit', $_GET) ? $_GET['limit'] : 0;;
 		
 		
 		switch($format){
 			case 'json':
-				header('Cache-Control: no-cache, must-revalidate');
+				
 				header('Content-Type: application/json');
 				
 				$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object");
@@ -1832,7 +1854,7 @@ function formHandler()
 				return;
 				
 			case "xml":
-				header("Cache-Control: no-cache, must-revalidate");
+				
 				header("Content-Type: text/xml");
 				if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
 				{
@@ -1852,7 +1874,7 @@ function formHandler()
 					return;
 				}
 			case "kml":
-				header("Cache-Control: no-cache, must-revalidate");
+				
 				header("Content-Type: application/vnd.google-earth.kml+xml");
 				echo '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://earth.google.com/kml/2.0"><Document><name>EpiCollect</name><Folder><name>';
 				echo "{$prj->name} - {$frmName}";
@@ -1894,7 +1916,7 @@ function formHandler()
 				return;
 
 			case "csv":
-				header("Cache-Control: no-cache, must-revalidate");
+				
 				//
 				if( !file_exists('ec/uploads')) mkdir('ec/uploads');
 				$filename = sprintf('ec/uploads/%s_%s_%s%s.csv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
@@ -2014,7 +2036,7 @@ function formHandler()
 				return;
 			
 			case "tsv":
-				header("Cache-Control: no-cache, must-revalidate");
+		
 				//
 				if( !file_exists('ec/uploads')) mkdir('ec/uploads');
 				$filename = sprintf('ec/uploads/%s_%s_%s%s.tsv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
@@ -2136,7 +2158,7 @@ function formHandler()
 					
 				$files = array("./Ext/ext-base.js", "./Ext/ext-all.js", "./js/EpiCollect2.js");
 				header("Content-type: text/javascript");
-				header("Cache-Control: public; max-age=100000;");
+
 				echo packFiles($files);
 				echo "var survey;
 		var table;
@@ -2224,7 +2246,7 @@ function formHandler()
 		}
 	}
 	
-	header("Cache-Control: no-cache, must-revalidate");
+	
 	
 	global $SITE_ROOT;
 	$referer = array_key_exists("HTTP_REFERER", $_SERVER) ? $_SERVER["HTTP_REFERER"] : "";
@@ -3145,17 +3167,30 @@ function updateProject()
 
 function formBuilder()
 {
-	global $url;
-	$prj = str_replace("/formBuilder", "", $url);
+	global $url, $auth;
+	$prj_name = str_replace('/formBuilder', '', $url);
 	
-	echo applyTemplate("./base.html" , "./createOrEditForm.html", array("projectName" => $prj));
+        $prj = new EcProject();
+        $prj->name = $prj_name;
+        $prj->fetch();
+        
+        $uid = $auth->getEcUserId();
+        
+        if($prj->checkPermission($uid))
+        {
+            echo applyTemplate('./base.html' , './createOrEditForm.html', array('projectName' => $prj_name));
+        }
+        else
+        {
+            accessDenied(sprintf(' Project %s' , $prj_name ));
+        }
 }
 
 function getControlTypes()
 {
 	global $db;
 	//$db = new dbConnection();
-	$res = $db->do_query("SELECT * FROM FieldType");
+	$res = $db->do_query('SELECT * FROM FieldType');
 
 	if($res === true)
 	{
@@ -3645,8 +3680,7 @@ $pageRules = array(
 		'favicon\..+' => new PageRule(),
 		'js/.+' => new PageRule(),
 		'css/.+' => new PageRule(),
-		'\.apk' => new PageRule(),
-
+                'EpiCollectplus\.apk' => new PageRule(),
 		'html/projectIFrame.html' => new PageRule(),
 
 //project handlers
@@ -3654,7 +3688,6 @@ $pageRules = array(
 		'create' => new PageRule(null, 'createFromXml', true),
 		'createProject.html' => new PageRule(null, 'createProject', true),
 		'projectHome.html' => new PageRule(null, 'projectHome'),
-
 		'createOrEditForm.html' => new PageRule(null ,'formBuilder', true),
 		'uploadProject' =>new PageRule(null, 'uploadProjectXML', true),
 		'getForm' => new PageRule(null, 'getXML',	 true),
@@ -3726,7 +3759,7 @@ $rule = false;
 /*Cookie policy handler*/
 
 if(!getValIfExists($_SESSION, 'SEEN_COOKIE_MSG')) {
-	flash(sprintf('EpiCollectPlus only uses first party cookies to make the site work. We do not add or read thrid-party cookies. If you are concerned about our use of cookies please read our <a href="%s/privacy.html">Privacy Statement</a>', $SITE_ROOT));
+	flash(sprintf('EpiCollectPlus only uses first party cookies to make the site work. We do not add or read third-party cookies. If you are concerned about our use of cookies please read our <a href="%s/privacy.html">Privacy Statement</a>', $SITE_ROOT));
 	$_SESSION['SEEN_COOKIE_MSG'] = true;
 }
 

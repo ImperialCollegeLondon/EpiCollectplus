@@ -475,6 +475,7 @@ tr.alt
 {
 	left : 0;
 	background-color : #FFEEEE;
+        max-height: 85%;
 }
 
 .ecplus-columns .second
@@ -1021,4 +1022,7 @@ tr.alt
 	margin-bottom : 1.5em;
 }
 
-
+.ui-dialog-titlebar-close
+{ 
+    display : none !important; 
+}

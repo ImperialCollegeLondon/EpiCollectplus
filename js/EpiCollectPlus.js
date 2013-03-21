@@ -54,6 +54,7 @@ EpiCollect.dialog = function(conf)
 					$( this ).dialog("close");
 				}
 			},
+                        closeOnEscape: false,
 			resizable : false
 		});
 	}
@@ -62,6 +63,7 @@ EpiCollect.dialog = function(conf)
 		diajq.dialog({
 			modal : true,
 			buttons: conf.buttons,	
+                        closeOnEscape: false,
 			resizable : false
 		});
 	}
