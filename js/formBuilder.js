@@ -56,7 +56,10 @@ $(function()
 	});
         
         $(window).unload(function(){
-            localStorage.setItem(project.name + '_xml', project.toXML());
+            if($('.unsaved').length > 0)
+            {
+                localStorage.setItem(project.name + '_xml', project.toXML());
+            }
         });
 	
 	$('.first').accordion({ collapsible : true });
@@ -67,6 +70,7 @@ $(function()
 	$('#destination').sortable({
 		revert : 50,
 		tolerance : 'pointer',
+                items : '> .ecplus-form-element',
 		start : function(evt, ui)
 		{
 			ui.placeholder.css("visibility", "");
@@ -90,17 +94,7 @@ $(function()
 	
 	$(".ecplus-form-element").draggable({
 		connectToSortable: "#destination",
-		 helper: function(){ 
-                    //Hack to append the element to the body (visible above others divs), 
-                    //but still bellonging to the scrollable container  
-                    $('#destination').append('<div id="clone" class="ui-state-default big">' + $(this).html() + '</div>');   
-                    $("#clone").hide();
-                    setTimeout(function(){
-                        $('#clone').appendTo('body'); 
-                        $("#clone").show();
-                    },1);
-                    return $("#clone");
-                },
+		helper: 'clone',
 		revert: "invalid",
 		revertDuration : 100,
 		appendTo : 'body',
@@ -165,10 +159,10 @@ $(function()
 	
 	$("#options .removeOption").unbind('click').bind('click', removeOption);
 	$("#jumps .remove").unbind('click').bind('click', removeOption);
-        $('#middle').append('<img src="../images/editmarker.png" class="editmarker">')
+        $('#destination').append('<img src="../images/editmarker.png" class="editmarker">')
         $('.editmarker').hide();
         $('.last input, .last select').change(function(){ $('#destination .selected').addClass('editing'); });
-        
+        $('.last').hide();
 });
 
 function drawProject(prj)
@@ -181,7 +175,7 @@ function drawProject(prj)
             {
                 project = new EpiCollect.Project();
                 project.parse($.parseXML(temp_xml));
-                console.debug(project.forms)
+                
             }
         }
     
@@ -319,9 +313,9 @@ function addOption()
 	$("#options .removeOption").unbind('click').bind('click', removeOption);
 	
 	$("#options input").unbind();
-	$("#options input").change(function(e)
+	$("#options input").change(function()
 	{
-		updateSelected();
+		updateSelected(true);
 		updateJumps();
 	});
 }
@@ -405,7 +399,7 @@ function drawFormControls(form)
 	
 }
 
-function updateSelected()
+function updateSelected(is_silent)
 {
 	var jq = $("#destination .selected");
 	var cur = currentControl;
@@ -428,7 +422,6 @@ function updateSelected()
                 var suf = '(' + $('#' + _type).val() + ')';
                 var rxsuf = '\\(' + $('#' + _type).val().replace(/\//g, '\\/') + '\\)';
 
-                //console.debug (new RegExp(rxsuf +'$', 'g'));
                 if(!cur.text.match(new RegExp(rxsuf +'$', 'g')))
                 {
                         cur.text = cur.text + ' ' + suf;
@@ -490,7 +483,7 @@ function updateSelected()
             }
 	}
 	
-	//console.debug()
+	
 	
 	cur.regex = $("#regex").val();
 	cur.verify = !!$("#verify").attr("checked");
@@ -599,15 +592,23 @@ function updateSelected()
 		
 		cfrm.fields = newFlds;
         }
-           
         
-        $('#' + cfrm.name).addClass('unsaved');
-        $('#destination .selected').removeClass('editing');
-        $('.editmarker').hide();
-        $('#details').hide();
-        currentControl = cur;
-        currentForm = cfrm;
-	return true;
+        
+        if(!is_silent)
+        {
+            $('#' + cfrm.name).addClass('unsaved');
+            $('#destination .selected').removeClass('editing');
+            $('.editmarker').hide();
+            $('#details').hide();
+           
+        }
+        else
+        {
+            updateEditMarker();
+        }
+	currentControl = cur;
+        currentForm = cfrm; 
+        return true;
 }
 
 function updateSelectedCtl(){
@@ -646,7 +647,7 @@ function updateForm()
 function updateJumps()
 {
 	try{
-	updateForm();
+	//updateForm();
 		
 	var opts = currentControl.options;
 	
@@ -766,6 +767,21 @@ function genID()
 	return name;
 }
 
+function updateEditMarker()
+{
+    var jqEle = $('#destination .selected');
+    var mkr = $('.editmarker');
+    mkr.show();
+    mkr.animate({
+        height : jqEle.outerHeight(),
+        top : jqEle.offset().top - $('#destination').offset().top,
+        width : jqEle.width(),
+        left : jqEle.offset().left - $('#destination').offset().left
+    }, {
+        duration : 100
+    });
+}
+
 function setSelected(jq)
 {
         var jqEle = jq;
@@ -784,16 +800,7 @@ function setSelected(jq)
                 $("#destination .ecplus-form-element").removeClass("selected");
                 jqEle.addClass("selected");
 
-                var mkr = $('.editmarker');
-                mkr.show();
-                mkr.animate({
-                    height : jqEle.outerHeight(),
-                    top : jqEle.offset().top - $('#middle').offset().top,
-                    width : jqEle.width(),
-                    left : jqEle.offset().left - $('#source').offset().left
-                }, {
-                    duration : 100
-                });
+                updateEditMarker();
           
                     
                 $('#date').val('');
