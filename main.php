@@ -1950,7 +1950,7 @@ function formHandler()
 							//take the GPS fields table, apply each one as a suffix to the field name and then splice 
 							
 							$gps_flds = array_values(EcTable::$GPS_FIELDS);
-							foreach($gps_flds	 as &$val)
+							foreach($gps_flds as &$val)
 							{
 								$val = sprintf('%s%s', $name, $val);
 							}
