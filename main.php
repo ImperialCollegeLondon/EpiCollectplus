@@ -8,7 +8,7 @@ $dat = new DateTime('now');
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.4";
+$CODE_VERSION = "1.4a";
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
@@ -71,7 +71,7 @@ include (sprintf('%s/Classes/EcEntry.php', $DIR));
  * End of Ec Class definitions
  */
 global $cfg;
-$cfg = new ConfigManager(sprintf('%s/ec/epicollect.ini', ltrim($DIR, '/')));
+$cfg = new ConfigManager(sprintf('%s/ec/epicollect.ini', rtrim($DIR, '/')));
 
 function genStr()
 {
@@ -1942,6 +1942,7 @@ function formHandler()
 						if(!$fld->active)
 						{
 							array_splice($headers, $i + $_off, 1);
+                                                        $num_h--;
 						}
 						elseif($fld->type == "gps" || $fld->type == "location")
 						{
