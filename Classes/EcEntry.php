@@ -464,13 +464,19 @@
 			$tbl = $this->form->survey->getNextTable($this->form->name, true);
 			if($tbl)
 			{
-				$children = $tbl->get(array($this->form->key => $this->key));
+				$children = array();
+                                $tbl->ask(array($this->form->key => $this->key));
+                                while($res = $tbl->recieve())
+                                {
+                                    array_push($children, $res);
+                                }
+                                
 			}
 			else
 			{
 				return array();
 			}
-			return $children[$tbl->name];
+			return $children;
 		}
 		
 		public function getBranchEntries()
@@ -478,7 +484,13 @@
 			$branchEntries = array();
 			for($i = 0; $i < count($this->form->branches); $i++)
 			{
-				$branches = $this->form->survey->tables[$this->form->branches[$i]]->get(array($this->form->key => $this->key));
+				$branches = array();
+                                $this->form->survey->tables[$this->form->branches[$i]]->ask(array($this->form->key => $this->key));
+                                while($res = $this->form->survey->tables[$this->form->branches[$i]]->recieve())
+                                {
+                                    array_push($branches, $res);
+                                }
+                                        
 				for($j = 0; $j < count($branches[$this->form->branches[$i]]); $j++)
 				{
 					array_push($branchEntries, $branches[$this->form->branches[$i]][$j]);
