@@ -534,6 +534,7 @@ tr.alt
 {
 	display : inline-block;
 	width : 7em;
+    min-width: 7em;
 }
 
 .ecplus-columns .last input[type!=submit]
