@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `entryvalue` (
   `value` varchar(1000) DEFAULT NULL COLLATE utf8_bin,
   `entry` int(11) NOT NULL,
   PRIMARY KEY (`idEntryValue`),
-  KEY `value` (`value`(255)),
+  KEY `value` (`value`(1000)),
   KEY `fieldname` (`fieldName`) USING HASH,
   KEY `formname` (`formName`) USING HASH,
   KEY `entry` (`entry`)

@@ -1086,9 +1086,15 @@ function switchToBranch()
 		flds[key].type = 'input';
 		flds[key].text = fklabel;
 		flds[key].form = project.forms[frm];
+        
+        currentForm = project.forms[frm];
+        currentForm.main = false;
+        askForKey(false);
 	}
-	currentForm = project.forms[frm];
-	currentForm.main = false;
+    else
+    {
+         currentForm = project.forms[frm];
+	}
 	formName = currentForm.name;
 	drawFormControls(currentForm);
 }

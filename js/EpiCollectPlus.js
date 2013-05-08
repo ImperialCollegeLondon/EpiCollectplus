@@ -355,10 +355,10 @@ EpiCollect.Project = function()
 	{
 		var n = Number(this.forms[name].num) + 1;
 		var tbl = false;
-		
+		console.debug(n);
 		for(var t in this.forms)
 		{
-			if(this.forms[t].num === n)
+			if(Number(this.forms[t].num) === n)
 			{
 				tbl = this.forms[t];
 				break;
@@ -404,7 +404,7 @@ EpiCollect.Project = function()
 	
 	this.validateFieldName = function(form, name)
 	{
-            console.debug(form,name);
+            
                 if(name === "") return "The field name cannot be blank";
 		if(this.forms[form].fields[name])  return "There is already a field called " + name + " in this form" ;
 		var kw = EpiCollect.KEYWORDS;
@@ -1378,7 +1378,7 @@ EpiCollect.Form = function()
 				}
 			}	
 		}
-		console.debug(JSON.stringify(ent));
+		
 		localStorage[project.name + "_" + formName] = JSON.stringify(ent);
 	};
 		
@@ -2058,7 +2058,7 @@ EpiCollect.Field = function()
 					
 				var matchStr = $("#" + info[1]).val().match(new RegExp(info[3]))[0];
 				var valStr = value.match(new RegExp(info[3]))[0];
-				console.debug(matchStr + ' ' + valStr + ' ' + info[3]);
+		
 				if(valStr !== matchStr) msgs.push("The value does not match the string from the parent field");
 			}
 			
