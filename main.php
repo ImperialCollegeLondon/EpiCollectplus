@@ -8,7 +8,7 @@ $dat = new DateTime('now');
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.4c_++";
+$CODE_VERSION = "1.4c";
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
@@ -70,32 +70,59 @@ include (sprintf('%s/Classes/EcEntry.php', $DIR));
 /*
  * End of Ec Class definitions
  */
-global $cfg;
-$cfg = new ConfigManager(sprintf('%s/ec/epicollect.ini', rtrim($DIR, '/')));
 
+ function openCfg()
+ {
+    global $cfg, $DIR;
+    
+    $cfg_fn = sprintf('%s/ec/epicollect.ini', rtrim($DIR, '/'));
+    
+    if(!file_exists($cfg_fn)) { makeCfg(); }
+        
+    try{
+        $cfg = new ConfigManager($cfg_fn);
+        
+        if($cfg->settings['security']['use_ldap'] && !function_exists('ldap_connect'))
+        {
+            $cfg->settings['security']['use_ldap'] = false;
+            $cfg->writeConfig();
+        }
+
+
+        if(!array_key_exists('salt',$cfg->settings['security']) || trim($cfg->settings['security']['salt']) == '')
+        {
+            $str = genStr();
+            $cfg->settings['security']['salt'] = $str;
+            $cfg->writeConfig();
+        }
+        
+    }
+    catch (Exception $err)
+    {
+        die ('could not load configuration');
+    }
+ }
+
+ function makeCfg()
+ {
+    global $DIR;
+ 
+    $cfg_tpl_fn = sprintf('%s/ec/epicollect-blank.ini', rtrim($DIR, '/'));
+    $cfg_fn = sprintf('%s/ec/epicollect.ini', rtrim($DIR, '/'));
+    
+    copy($cfg_tpl_fn, $cfg_fn);
+    
+ }
+ 
 function genStr()
 {
 	$source_str = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 	$rand_str = str_shuffle($source_str);
 	$str = substr($rand_str, -22);
 
-        unset($source_str, $rand_str);
-        
-        return $str;
-}
-
-if($cfg->settings['security']['use_ldap'] && !function_exists('ldap_connect'))
-{
-	$cfg->settings['security']['use_ldap'] = false;
-	$cfg->writeConfig();
-}
-
-
-if(!array_key_exists('salt',$cfg->settings['security']) || trim($cfg->settings['security']['salt']) == '')
-{
-	$str = genStr();
-	$cfg->settings['security']['salt'] = $str;
-	$cfg->writeConfig();
+    unset($source_str, $rand_str);
+    
+    return $str;
 }
 
 function makeUrl($fn)
@@ -123,8 +150,10 @@ function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
 }
 
 
-set_error_handler('handleError', E_ALL);
 
+
+set_error_handler('handleError', E_ALL);
+openCfg();
 $DEFAULT_OUT = $cfg->settings['misc']['default_out'];
 $log = new Logger('Ec2');
 global $db, $auth;
