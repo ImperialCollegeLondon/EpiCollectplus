@@ -24,6 +24,7 @@
 ######################
 *.log
 *.sqlite
+*.tmp
 
 # OS generated files #
 ######################
@@ -39,5 +40,4 @@ index-blah.html
 instructions*
 /nbproject/private/
 /nbproject/
-/ec/uploads/
-/ec/xml/
+/ec/

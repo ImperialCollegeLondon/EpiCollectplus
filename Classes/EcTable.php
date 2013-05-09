@@ -701,7 +701,7 @@
 						}
 						elseif($full_urls && $this->fields[$kv[0]]->type == "photo" && $kv[1] != '')
 						{
-							$arr[$kv[0]] = sprintf('http://%s/%s%s/%s/__getImage?img=%s', $_SERVER['HTTP_HOST'], trim($SITE_ROOT, '/') . '/', $this->name, $this->projectName, $kv[1]);
+							$arr[$kv[0]] = sprintf('http://%s/%s%s/%s/__getImage?img=%s', $_SERVER['HTTP_HOST'], trim($SITE_ROOT, '/') . '/', $this->projectName, $this->name, $kv[1]);
 						}
 						elseif ($full_urls && $this->fields[$kv[0]]->valueIsFile() && $kv[1] != '')
 						{
