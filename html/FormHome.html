@@ -1421,7 +1421,7 @@
                         {
                             $.ajax(location.pathname + '/__activity', {success : function(xhr){
                                     var act = JSON.parse(xhr);
-                                    console.debug(act );
+                                    
                                     if(EpiCollect.parseDate(act['edited']) > map_lastupdated || EpiCollect.parseDate(act['uploaded']) > map_lastupdated )
                                     {
                                             var urlStr = url + "/" + formName + ".json?gt::modified=" + EpiCollect.server_format(map_lastupdated) + "sort=" +  project.forms[formName].titleField + "&limit=" +mapChunkSize + "&start=" + offset;
