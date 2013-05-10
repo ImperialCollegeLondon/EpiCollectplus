@@ -699,7 +699,7 @@
 			
 			for($i = -1; ($n > ++$i) && ($arr = $db->get_row_array()) ; )
 			{
-                print_r($arr);
+                //print_r($arr);
                 
 				$vals = explode('~~', $arr['data']);
                                // $arr['created'] = EcTable::formatCreated($arr['created']);
@@ -726,10 +726,7 @@
                             $arr[$kv[0]] = $kv[1];
 						}
 					}
-                    else
-                    {
-                        print_r($kv);
-                    }
+                   
 				} 
 				array_push($ret, $arr);	
 			}
