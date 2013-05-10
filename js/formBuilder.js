@@ -278,7 +278,7 @@ function addControlToForm(id, text, type)
 {
 	if(type.trimChars() === "") return; 
 
-	if(!type.match(/\.?ecplus-[a-z]+-element/))
+	if(!type.match(/\.?ecplus-[a-z0-9]+-element/))
 	{
 		type = '.ecplus-' + type + '-element';
 	}
