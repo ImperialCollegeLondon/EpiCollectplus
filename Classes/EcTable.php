@@ -457,56 +457,56 @@
 			{
 				foreach($args as $k_sep => $v)
 				{
-                                    $op = 'eq';
-                                        /*
-                                         * Search Operators (op::fieldname)
-                                         * 
-                                         * eq
-                                         * lt - less than
-                                         * gt - greather than
-                                         * lte - less than or equal to
-                                         * gte - greater than or equal to
-                                         * not - not
-                                         * like - like
-                                         * in
-                                         * notin
-                                         */
-                                        
-                                    $seppos = strpos($k_sep, '::');
+                    $op = 'eq';
+                        /*
+                         * Search Operators (op::fieldname)
+                         * 
+                         * eq
+                         * lt - less than
+                         * gt - greather than
+                         * lte - less than or equal to
+                         * gte - greater than or equal to
+                         * not - not
+                         * like - like
+                         * in
+                         * notin
+                         */
+                        
+                    $seppos = strpos($k_sep, '::');
+                    
+                    //if the separator is in there then remove the seperator to get the key
+                    $k = $k_sep;
+                    
+                    if($seppos !== false){
+                        $k = substr($k_sep, $seppos >= 0 ? $seppos + 2 : 0);
+                        $op = substr($k_sep, 0, $seppos);
+                    }
+                    
+                    $s_k = str_replace('.', '_', $k);
+                        
+                    if( $v == '' ) continue;
+                    if( array_key_exists($k, $this->fields) && $this->fields[$k]->type != "" )
+                    {
+                        
+                            $join .= sprintf(' LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
+                            if( $exact === true )
+                            {
                                     
-                                    //if the separator is in there then remove the seperator to get the key
-                                    $k = $k_sep;
-                                    
-                                    if($seppos !== false){
-                                        $k = substr($k_sep, $seppos >= 0 ? $seppos + 2 : 0);
-                                        $op = substr($k_sep, 0, $seppos);
-                                    }
-                                    
-                                    $s_k = str_replace('.', '_', $k);
-                                        
-                                    if( $v == '' ) continue;
-                                    if( array_key_exists($k, $this->fields) && $this->fields[$k]->type != "" )
-                                    {
-                                        
-                                            $join .= sprintf(' LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
-                                            if( $exact === true )
-                                            {
-                                                    
-                                                    $where .= sprintf(' AND `ev%s`.value ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\'', $s_k, $v);
-                                            }
-                                            else
-                                            {
-                                                    $where .= sprintf(' AND `ev%s`.value Like \'%s\'', $s_k, $v);
-                                            }
-                                    }
-                                    elseif(array_search($k, EcTable::$STATIC_FIELDS) !== false)
-                                    {
-                                        $where .= sprintf(' AND `e`.%s ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\'', $s_k, $v);
-                                    }
-                                    elseif($k == 'modified')
-                                    {
-                                         $where .= sprintf(' AND (`e`.uploaded ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\' OR `e`.lastEdited ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\')', $v, $v);
-                                    }
+                                    $where .= sprintf(' AND `ev%s`.value ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\'', $s_k, $v);
+                            }
+                            else
+                            {
+                                    $where .= sprintf(' AND `ev%s`.value Like \'%s\'', $s_k, $v);
+                            }
+                    }
+                    elseif(array_search($k, EcTable::$STATIC_FIELDS) !== false)
+                    {
+                        $where .= sprintf(' AND `e`.%s ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\'', $s_k, $v);
+                    }
+                    elseif($k == 'modified')
+                    {
+                         $where .= sprintf(' AND (`e`.uploaded ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\' OR `e`.lastEdited ' . EcTable::$DECODE_OP_SQL[$op] . ' \'%s\')', $v, $v);
+                    }
 				}
                                 
 			}
@@ -520,24 +520,27 @@
 				
 			}
 			
+            
+            
 			for($i = count($this->branchfields); $i-- && $includeChildCount;)
 			{
+                
 				$bf =  str_replace('.', '_', $this->branchfields[$i]);
 				
 				if($format == 'json'){
-					$select .= sprintf(' \', "%s" : \' , COUNT(distinct `ev%s_entries`.entry) ,', $bf, $this->branches[$i]);
+					$select .= sprintf(' \', "%s" : \' , COUNT(distinct `%s`.entry) ,', $bf, $this->branchfields[$i]);
 				}elseif($format == 'xml'){
-					$select .= sprintf(' \'<%s>\', COUNT(distinct `ev%s_entries`.entry), \'</%s>\',', $bf, $this->branches[$i], $bf);
+					$select .= sprintf(' \'<%s>\', COUNT(distinct `%s`.entry), \'</%s>\',', $bf, $this->branchfields[$i], $bf);
 				}elseif($format == 'csv'){
-					$select .= sprintf(', COUNT(distinct `ev%s_entries`.entry) ', $this->branches[$i]);
+					$select .= sprintf(', COUNT(distinct `%s`.entry) ', $this->branchfields[$i]);
 				}elseif($format == 'tsv'){
-					$select .= sprintf(', COUNT(distinct `ev%s_entries`.entry)  ', $this->branches[$i]);
+					$select .= sprintf(', COUNT(distinct `%s`.entry)  ', $this->branchfields[$i]);
 				}elseif($format == 'kml'){
 					throw new Exception ('Format not yet implemented');
 				}elseif($format == 'tskv'){
-					$select .= sprintf(',%s , COUNT(distinct `ev%s_entries`.entry)', $bf, $this->branches[$i]);
-				}elseif($format != 'object'){
-					$select .= sprintf(', COUNT(distinct `ev%s_entries`.entry) as %s_entries', $this->branches[$i], $this->branches[$i]);
+					$select .= sprintf(',%s , COUNT(distinct `%s`.entry)', $bf, $this->branchfields[$i]);
+				}elseif($format == 'object'){
+					$select .= sprintf(', COUNT(distinct `%s`.entry) as `%s`', $this->branchfields[$i], $this->branchfields[$i]);
 				}
 				
 				if(!strstr($join, sprintf('ev%s', $this->key)))
@@ -545,17 +548,21 @@
 					$join .= sprintf(' LEFT JOIN entryvalue `ev%s` on `ev%s`.entry = e.idEntry and `ev%s`.fieldName = \'%s\'', $this->key,$this->key,$this->key,$this->key);
 				}
 				
-				$join .= sprintf(' LEFT JOIN entryValue `ev%s_entries`  ON `ev%s`.value = `ev%s_entries`.value  AND `ev%s_entries`.projectName = \'%s\' AND `ev%s_entries`.formName = \'%s\' AND `ev%s_entries`.fieldName = \'%s\'',
-						$this->branches[$i],
+				$join .= sprintf(' LEFT JOIN entryValue `%s`  ON `ev%s`.value = `%s`.value  AND `%s`.projectName = \'%s\' AND `%s`.formName = \'%s\' AND `%s`.fieldName = \'%s\'',
+						$this->branchfields[$i],
 						$this->key, 
-						$this->branches[$i],
-						$this->branches[$i],
+						$this->branchfields[$i],
+						$this->branchfields[$i],
 						$this->survey->name,
+						$this->branchfields[$i], 
 						$this->branches[$i], 
-						$this->branches[$i], 
-						$this->branches[$i], 
+						$this->branchfields[$i], 
 						$this->key);
+                        
+                
 			}
+            
+            
 			
 			$child = $this->survey->getNextTable($this->name, true);
 			
@@ -601,6 +608,8 @@
  				{
  					$join .= sprintf(' LEFT JOIN `%s_c_entries` on `%s_c_entries`.entry = e.idEntry',  $child->name, $child->name);
  				}
+                
+                
  			}
  			
  			
@@ -660,11 +669,14 @@
 			$qry = sprintf('%s %s %s %s AND ev.fieldName in (%s) %s %s %s ', $qry, $select, $join, $where, $fields, $group, $order, $limit_s);
 			//echo $qry;
 			//return;
+        
 			unset($select, $join, $where, $group, $order, $limit_s);
 			
 			$res = $db->do_multi_query($qry);
 			if($res !== true) return $res;
 			
+            
+            
 			return $db->getLastResultSet();
 				
 		}
@@ -687,6 +699,8 @@
 			
 			for($i = -1; ($n > ++$i) && ($arr = $db->get_row_array()) ; )
 			{
+                print_r($arr);
+                
 				$vals = explode('~~', $arr['data']);
                                // $arr['created'] = EcTable::formatCreated($arr['created']);
 				unset($arr['data']);
@@ -707,11 +721,15 @@
 						{
 							$arr[$kv[0]] = makeUrl($this->survey->name . '~' . $kv[1]);
 						}
-                                                else
+                        else
 						{
-                                                    $arr[$kv[0]] = $kv[1];
+                            $arr[$kv[0]] = $kv[1];
 						}
 					}
+                    else
+                    {
+                        print_r($kv);
+                    }
 				} 
 				array_push($ret, $arr);	
 			}
