@@ -8,7 +8,7 @@ $dat = new DateTime('now');
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.4c";
+$CODE_VERSION = "1.4d";
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
