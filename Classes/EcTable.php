@@ -684,9 +684,14 @@
 		function checkExists($keyValue)
 		{
 			global $db;
-			$sql = sprintf('SELECT entry, count(idEntryValue) AS cnt FROM entryvalue WHERE projectName = \'%s\' AND formName = \'%s\' AND fieldName= \'%s\' AND value = \'%s\' COLLATE utf8_bin', $this->projectName, $this->name, $this->key, $keyValue);
+			$sql = sprintf('SELECT entry, count(idEntryValue) AS cnt FROM entryvalue WHERE projectName = \'%s\' AND formName = \'%s\' AND fieldName= \'%s\' AND value = \'%s\'', $this->projectName, $this->name, $this->key, $keyValue);
 			
 			$res = $db->do_query($sql);
+            if($res !== true)
+            {
+                header('HTTP/1.1 500 Error', 500);
+                echo $res;
+            }
 			$count = 0;
 			while($arr = $db->get_row_array()){ $count = intval($arr['entry']); }
 			return $count;			
