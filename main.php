@@ -8,7 +8,7 @@ $dat = new DateTime('now');
 
 $SITE_ROOT = '';
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.4d";
+$CODE_VERSION = "1.4e";
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
@@ -23,6 +23,11 @@ function getValIfExists($array, $key)
 	{
 		return null;
 	}
+}
+
+function escape_xml($str)
+{
+    return str_replace('>', '&gt;', str_replace('<', '&lt;', str_replace('&', '&amp;', $str)));    
 }
 
 $DIR = str_replace('main.php', '', $_SERVER['SCRIPT_FILENAME']);
@@ -78,7 +83,7 @@ include (sprintf('%s/Classes/EcEntry.php', $DIR));
     $cfg_fn = sprintf('%s/ec/epicollect.ini', rtrim($DIR, '/'));
     
     if(!file_exists($cfg_fn)) { makeCfg(); }
-        
+    makedirs();
     try{
         $cfg = new ConfigManager($cfg_fn);
         
@@ -111,7 +116,16 @@ include (sprintf('%s/Classes/EcEntry.php', $DIR));
     $cfg_fn = sprintf('%s/ec/epicollect.ini', rtrim($DIR, '/'));
     
     copy($cfg_tpl_fn, $cfg_fn);
+    makedirs();
     
+ }
+ 
+ function makedirs()
+ {
+    global $DIR;
+ 
+    $updir = sprintf('%s/ec/uploads', rtrim($DIR, '/'));
+    if(!file_exists($updir)) mkdir($updir);
  }
  
 function genStr()
@@ -629,7 +643,7 @@ function projectList()
 	$usr_prjs = array();
 	if($auth->isLoggedIn())
 	{  
-            $usr_prjs = EcProject::getUserProjects($auth->getEcUserId());
+            $usr_prjs = EcProject::getUserProjects($auth->getEcUserId(), true);
             $up_l = count($usr_prjs);
             for($p = 0; $p < $up_l; $p++ )
             {
@@ -762,7 +776,13 @@ function projectHome()
                 header('Cache-Control: no-cache, must-revalidate');
                 header('Content-type: text/xml; charset=utf-8;');
                 echo $prj->toXML();
-            }else {
+            }elseif ( $format == 'json' ){
+                header('Cache-Control: no-cache, must-revalidate');
+                header('Content-type: application/json; charset=utf-8;');
+                echo $prj->toJSON();
+            }else{
+            
+            
             header('Cache-Control: no-cache, must-revalidate');
             header('Content-type: text/html;');
 
@@ -1154,6 +1174,9 @@ function siteHome()
 function uploadData()
 {
 	global  $url, $log;
+    
+    
+    
 	$flog = fopen('ec/uploads/fileUploadLog.log', 'a');
 	$prj = new EcProject();
 	$prj->name = preg_replace('/\/upload\.?(xml|json)?$/', '', $url);
@@ -3712,6 +3735,7 @@ $pageRules = array(
 		'css/.+' => new PageRule(),
                 'EpiCollectplus\.apk' => new PageRule(),
 		'html/projectIFrame.html' => new PageRule(),
+        'api' => new PageRule('apidocs.html', 'defaultHandler'),
 
 //project handlers
 		'pc' => new PageRule(null, 'projectCreator', true),

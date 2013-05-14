@@ -644,7 +644,7 @@ class EcProject{
 			{
 				array_push($periods, $dat->format($formats[$res][2]));
 			}
-			$sql = "SELECT a.date as dateField, IFNULL(b.userTotal, 0) as userTotal, IFNULL(b.entryTotal, 0)  as entryTotal FROM (SELECT '" . implode("' as date UNION SELECT '", $periods) . "') a $sql";
+			$sql = "SELECT a.date as `date`, IFNULL(b.userTotal, 0) as users, IFNULL(b.entryTotal, 0)  as entries FROM (SELECT '" . implode("' as date UNION SELECT '", $periods) . "') a $sql";
 			
 			$db = new dbConnection();
 			$res = $db->do_query($sql);
@@ -653,11 +653,11 @@ class EcProject{
 				$resArr = array();
 				while($arr = $db->get_row_array())
 				{
-						$arr["userTotal"] = (int) $arr["userTotal"];
-						$arr["entryTotal"] = (int) $arr["entryTotal"];
+						$arr["users"] = (int) $arr["users"];
+						$arr["entries"] = (int) $arr["entries"];
 						array_push($resArr, $arr);
 				}
-				return json_encode(array("results" => $resArr));
+				return json_encode($resArr);
 			}
 			else
 			{
@@ -754,25 +754,25 @@ class EcProject{
 			return $projects;
 		}
 		
-		public static function getUserProjects($uid, $fmt = 'json')
+		public static function getUserProjects($uid, $fmt = 'json', $nodups = false)
 		{
 			global $db;
 			
 			$qry = sprintf('SELECT p.name as name, p.ttl as ttl, p.ttl24 as ttl24, p.isListed as listed FROM (SELECT id,name, count(entry.idEntry) as ttl, x.ttl as ttl24, isListed FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName group by project.name) p join userprojectpermission upp on p.id = upp.project WHERE upp.user = %s order by p.name asc', $uid);
 			$res = $db->do_query($qry);
 			$projects = array();
-			if($res === true)
+			if( $res === true )
 			{
-				while($arr = $db->get_row_array())
-				{       if($arr['listed'] === '1')
-                                        {
-                                            continue;
-                                        }
-					//if($json != '[') $json .= ',';
-					//$json .= sprintf('{ "name" : "%s", "total" : %s, "last24" : %s }', $arr['name'], $arr['ttl'], $arr['ttl24']);
+				while( $arr = $db->get_row_array() )
+                {       
+                    if( $nodups && $arr['listed'] === '1' )
+                    {                    
+                        continue;
+                    }
+   
 					$arr['listed'] = ( $arr['listed'] === '1' ? 'public' : 'private' );
-                                         $arr['ttl'] = intval($arr['ttl']);
-                                        $arr['ttl24'] = intval($arr['ttl24']);
+                    $arr['ttl'] = intval($arr['ttl']);
+                    $arr['ttl24'] = intval($arr['ttl24']);
 					array_push($projects, $arr);
 				}
 			}

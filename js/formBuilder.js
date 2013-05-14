@@ -255,6 +255,10 @@ function newForm(message, name)
                         newForm("<p class=\"err\">You must give your first form a name</p>", name);
                     }
 
+                },
+                'Cancel' : function()
+                {
+                    $( this ).dialog('close');
                 }
             },
             content : "<p>What would you like to call the new form?</p>" + (message ? message : '')
@@ -264,7 +268,7 @@ function newForm(message, name)
 
 function addFormToList(name)
 {
-	$("#formList .control").before("<span id=\"" + name + "\" class=\"form\">" + name + "</span>");
+	$( "#formList .control" ).before("<span id=\"" + name + "\" class=\"form\">" + name + "</span>");
 }
 
 /**
@@ -287,7 +291,7 @@ function addControlToForm(id, text, type)
 	var jq = $(type, $(".first")).clone();
 	
 	
-	$("p.title", jq).text(text);
+	$("p.title", jq).text(text.replace('<', '&lt;').replace('>', '&gt;'));
 	jq.attr("id", id);
 	
 	$(".option", jq).remove();
@@ -298,11 +302,11 @@ function addControlToForm(id, text, type)
 		var l = opts.length;
 		for( var i = 0; i < l; i++ )
 		{
-			jq.append("<p class=\"option\">" + opts[i].label + "</p>");
+			jq.append("<p class=\"option\">" + opts[i].label.replace('<', '&lt;').replace('>', '&gt;') + "</p>");
 		}
 	}
 	
-	$("#destination").append(jq);
+	$( "#destination" ).append(jq);
 }
 
 function addOption()
@@ -392,7 +396,10 @@ function drawFormControls(form)
 				if(f !== form.name && fld.id === forms[f].key && fld.form.num > forms[f].num) cls = "ecplus-fk-element";
 			}
 		}
-		else cls = "ecplus-" + fld.type + "-element";
+		else
+        {        
+            cls = "ecplus-" + fld.type + "-element";
+        }
 		
 		addControlToForm(fld.id, fld.text, cls);		
 	}
@@ -404,49 +411,52 @@ function updateSelected(is_silent)
 	var jq = $("#destination .selected");
 	var cur = currentControl;
         var cfrm = currentForm;
-	if(jq === undefined || jq.length === 0) return true;
+	if( jq === undefined || jq.length === 0 ) return true;
 	
 	var name = cur.id; 
 	var _type = jq.attr("type");
 	
-	if(_type === 'fk')
+	if( _type === 'fk' )
 	{
 	//	cur.id = project.forms[$('#parent').val()].key;
 	}
 	else
 	{
-            cur.id = $('#inputId').val();
-            cur.text = $('#inputLabel').val();
-            if(_type === "date" || _type === "time")
-            {
-                var suf = '(' + $('#' + _type).val() + ')';
-                var rxsuf = '\\(' + $('#' + _type).val().replace(/\//g, '\\/') + '\\)';
+        cur.id = $('#inputId').val();
+        cur.text = $('#inputLabel').val();
+        if(_type === "date" || _type === "time")
+        {
+            var suf = '(' + $('#' + _type).val() + ')';
+            var rxsuf = '\\(' + $('#' + _type).val().replace(/\//g, '\\/') + '\\)';
 
-                if(!cur.text.match(new RegExp(rxsuf +'$', 'g')))
-                {
-                        cur.text = cur.text + ' ' + suf;
-                }
+            if(!cur.text.match(new RegExp(rxsuf +'$', 'g')))
+            {
+                    cur.text = cur.text + ' ' + suf;
             }
+        }
 	}
 	
-	if(!cfrm.validateFieldName(cur.id, name))
+	if( !cfrm.validateFieldName(cur.id, name) )
 	{
             EpiCollect.dialog({ content : 'Field name must be unique within the form, not the same as the form name and not one of ' + EpiCollect.KEYWORDS.join(', ') });
             return false;
 	}
 	
-	if(_type.match(/^(text|numeric|date|time|fk)$/))
+	if( _type.match(/^(text|numeric|date|time|fk)$/) )
 	{
-            cur.type = "input";
-            if(_type === "fk")
-            {
-                    /*var f = cur.
-                    var frm = project.forms[f]
-                    cur.id = frm.key;
-                    cur.text = frm.fields[frm.key].text;*/
-            }
+        cur.type = "input";
+        if(_type === "fk")
+        {
+            /*var f = cur.
+            var frm = project.forms[f]
+            cur.id = frm.key;
+            cur.text = frm.fields[frm.key].text;*/
+        }
 	}
-	else{ cur.type = _type; }
+	else
+    { 
+        cur.type = _type; 
+    }
 	
 	var notset = !$("#set").attr("checked");
 	//TODO: need to set other params;
@@ -454,36 +464,35 @@ function updateSelected(is_silent)
 	
 	cur.required = !!$("#required").attr("checked");
 	cur.title = !!$("#title").attr("checked");
-	if($("#key").attr("checked") === "checked")
+    
+	if( $("#key").attr("checked") === "checked" )
 	{
-            if(cfrm.key !== cur.id && cfrm.key !== "")
+        if(cfrm.key !== cur.id && cfrm.key !== "")
+        {
+            if(confirm("You have chose to make " + cur.id + " the key for this form, but " + cfrm.key + " is already marked as the key. do you want to change the form's key field to be " + cur.id))
             {
-                if(confirm("You have chose to make " + cur.id + " the key for this form, but " + cfrm.key + " is already marked as the key. do you want to change the form's key field to be " + cur.id))
-                {
-                        cur.isKey = true;
-                        if( cfrm.fields[cfrm.key]) cfrm.fields[cfrm.key].isKey = false;
-                        cfrm.key = cur.id;			
-                }
-                else
-                {
-                        $("#key").attr("checked", "");
-                }
-            }
-	}
-	else
-	{
-            if( cfrm.key === cur.id )
-            {
-                    EpiCollect.dialog("This is currently the form's key field, please set another field as the key");
-                    $("#key").attr("checked", "checked");
+                    cur.isKey = true;
+                    if( cfrm.fields[cfrm.key]) cfrm.fields[cfrm.key].isKey = false;
+                    cfrm.key = cur.id;			
             }
             else
             {
-                    cur.isKey = false;
+                    $("#key").attr("checked", "");
             }
+        }
 	}
-	
-	
+	else
+	{
+        if( cfrm.key === cur.id )
+        {
+            EpiCollect.dialog("This is currently the form's key field, please set another field as the key");
+            $("#key").attr("checked", "checked");
+        }
+        else
+        {
+            cur.isKey = false;
+        }
+	}
 	
 	cur.regex = $("#regex").val();
 	cur.verify = !!$("#verify").attr("checked");
@@ -759,10 +768,10 @@ function updateLastJump()
 function genID()
 {
 	var x = $('#destination .ecplus-form-element').length;
-	var name= 'ecplus-' + currentForm.name + '-ctrl' + x;
+	var name= 'ecplus_' + currentForm.name + '_ctrl' + x;
 	for(; currentForm.fields[name]; x++)
 	{
-		name = 'ecplus-' + currentForm.name + '-ctrl' + x;
+		name = 'ecplus_' + currentForm.name + '_ctrl' + x;
 	}
 	return name;
 }
@@ -986,22 +995,25 @@ function removeForm(name)
 		var num = project.forms[name].num;
 		project.forms[name].num = -1;
 		
+        console.debug(num);
+        
 		for( frm in project.forms )
 		{
-			if(!currentForm) switchToForm(frm);
-			for( fld in project.forms[frm].fields )
+			if( !currentForm ) switchToForm(frm);
+            if(project.forms[frm].num > num)
 			{
-				if( fld === key )
-				{
-					delete project.forms[frm].fields[fld];
-				}
-			}
-			if(project.forms[frm].num > num)
-			{
+                for( fld in project.forms[frm].fields )
+                {
+                    if( fld === key )
+                    {
+                        delete project.forms[frm].fields[fld];
+                    }
+                }
 				project.forms[frm].num = Number(project.forms[frm].num) - 1;
 			}
-		}
-		$('#destination').empty();
+            
+		}   
+		//$('#destination').empty();
 	}
 }
 
@@ -1097,6 +1109,8 @@ function switchToBranch()
 	}
 	formName = currentForm.name;
 	drawFormControls(currentForm);
+    
+    $('#source .ecplus-branch-element').hide();
 }
 
 function switchToForm(name)
@@ -1129,8 +1143,9 @@ function switchToForm(name)
 	{
 		askForKey();
 	}
-	
+	$('#source .ecplus-branch-element').show();
 	drawFormControls(currentForm);
+    
 }
 
 function askForKey(keyDeleted)
@@ -1178,55 +1193,55 @@ function askForKey(keyDeleted)
 				}
 				var fieldNameValid = project.validateFieldName(frm.name, vals.key_name);
                                 
-                                if(vals.key !== "yes" || (fieldNameValid === true && vals.key_label !== '' && vals.key_type !== ''))
-                                {
-				
-                                    $( this ).dialog("close");
-                                    var key_id = '';
-                                    if(vals.key === 'yes')
-                                    {
-                                        key_id = vals.key_name ;
-                                        currentForm.fields[key_id] = new EpiCollect.Field();
-                                        currentForm.fields[key_id].id = vals.key_name;
-                                        currentForm.fields[key_id].text =  vals.key_label;
-                                        currentForm.fields[key_id].isKey = true;
-                                        currentForm.fields[key_id].title = false;
-                                        currentForm.fields[key_id].type = vals.key_type === 'barcode' ? 'barcode' : 'input';
-                                        currentForm.fields[key_id].form = frm;
-                                        currentForm.fields[key_id].isInt = (vals.key_type === 'numeric');
-                                        currentForm.fields[key_id].genkey = false;
-                                        addControlToForm(key_id,  vals.key_label, vals.key_type);
-                                    }
-                                    else if(vals.key ==='no')
-                                    {
-                                        key_id = default_name ;
-                                        currentForm.fields[key_id] = new EpiCollect.Field();
-                                        currentForm.fields[key_id].id = key_id;
-                                        currentForm.fields[key_id].text = 'Unique ID';
-                                        currentForm.fields[key_id].isKey = true;
-                                        currentForm.fields[key_id].title = false;
-                                        currentForm.fields[key_id].type = 'input';
-                                        currentForm.fields[key_id].form = currentForm;
-                                        currentForm.fields[key_id].isInt = false;
-                                        currentForm.fields[key_id].genkey = true;
-                                        addControlToForm(key_id,  'Unique ID', 'text');
-                                    }
-                                    else
-                                    {
-                                        key_id = vals.new_key;
-                                        currentForm.fields[vals.new_key].isKey = true; 
-                                    }
-                                    
-                                    currentForm.key = key_id;		
-                                    setSelected($('#' + key_id));
-                                    
-                                }
-                                else
-                                {
-                                    if(fieldNameValid !== true) $('#key_name_err').text(fieldNameValid).addClass('err');
-                                    if(vals.key_label === '') $('#key_label_err').text("The field must have a a label").addClass('err');
-                                    if(vals.key_type === '') $('#key_type_err').text("You must select a key type").addClass('err');
-                                }
+                if(vals.key !== "yes" || (fieldNameValid === true && vals.key_label !== '' && vals.key_type !== ''))
+                {
+
+                    $( this ).dialog("close");
+                    var key_id = '';
+                    if(vals.key === 'yes')
+                    {
+                        key_id = vals.key_name ;
+                        currentForm.fields[key_id] = new EpiCollect.Field();
+                        currentForm.fields[key_id].id = vals.key_name;
+                        currentForm.fields[key_id].text =  vals.key_label;
+                        currentForm.fields[key_id].isKey = true;
+                        currentForm.fields[key_id].title = false;
+                        currentForm.fields[key_id].type = vals.key_type === 'barcode' ? 'barcode' : 'input';
+                        currentForm.fields[key_id].form = frm;
+                        currentForm.fields[key_id].isInt = (vals.key_type === 'numeric');
+                        currentForm.fields[key_id].genkey = false;
+                        addControlToForm(key_id,  vals.key_label, vals.key_type);
+                    }
+                    else if(vals.key ==='no')
+                    {
+                        key_id = default_name ;
+                        currentForm.fields[key_id] = new EpiCollect.Field();
+                        currentForm.fields[key_id].id = key_id;
+                        currentForm.fields[key_id].text = 'Unique ID';
+                        currentForm.fields[key_id].isKey = true;
+                        currentForm.fields[key_id].title = false;
+                        currentForm.fields[key_id].type = 'input';
+                        currentForm.fields[key_id].form = currentForm;
+                        currentForm.fields[key_id].isInt = false;
+                        currentForm.fields[key_id].genkey = true;
+                        addControlToForm(key_id,  'Unique ID', 'text');
+                    }
+                    else
+                    {
+                        key_id = vals.new_key;
+                        currentForm.fields[vals.new_key].isKey = true; 
+                    }
+                    
+                    currentForm.key = key_id;		
+                    setSelected($('#' + key_id));
+                    
+                }
+                else
+                {
+                    if(fieldNameValid !== true) $('#key_name_err').text(fieldNameValid).addClass('err');
+                    if(vals.key_label === '') $('#key_label_err').text("The field must have a a label").addClass('err');
+                    if(vals.key_type === '') $('#key_type_err').text("You must select a key type").addClass('err');
+                }
 			}
 		}
 	});

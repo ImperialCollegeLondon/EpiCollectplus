@@ -65,33 +65,33 @@ class EcField{
 		
 		public static function dtConvert($str)
 		{
-				$pStr = "";
-				
-				$a = array();
-				$b = array();
-				$c = 0; // max number of chunks
-				$mi = -1; // index of max number of chunks;
-				
-				for($i = 0; $i < count($dateTimeSeps); $i++)
-				{
-						$a = explode($datTimeSeps[0], $str);
-						$b[$i] = $a;
-						if(count($a) > $c)
-						{
-								$c = count($a);
-								$mi = $i;
-						}
-				}
-				
-				$d = $b[$mi];
-				$r = "";
-				
-				for($i = 0; $i < $c; $i++)
-				{
-						$r .= $dateTimeBlocks[$d[$i]];
-				}
-				
-				return $r;
+            $pStr = "";
+            
+            $a = array();
+            $b = array();
+            $c = 0; // max number of chunks
+            $mi = -1; // index of max number of chunks;
+            
+            for($i = 0; $i < count($dateTimeSeps); $i++)
+            {
+                $a = explode($datTimeSeps[0], $str);
+                $b[$i] = $a;
+                if(count($a) > $c)
+                {
+                        $c = count($a);
+                        $mi = $i;
+                }
+            }
+            
+            $d = $b[$mi];
+            $r = "";
+            
+            for($i = 0; $i < $c; $i++)
+            {
+                $r .= $dateTimeBlocks[$d[$i]];
+            }
+            
+            return $r;
 		}
 		
 		public function toXML()
@@ -124,11 +124,11 @@ class EcField{
 			{
 				foreach( $this->otherAttributes as $att => $val ) {  $xml = sprintf('%s %s="%s"', $xml, $att, $val); }
 			}
-			
-			$xml.= ">\n\t\t\t<label>{$this->label}</label>\n\t\t";
+			 
+			$xml.= ">\n\t\t\t<label>" . escape_xml($this->label) . "</label>\n\t\t";
 			foreach( $this->options as $opt )
 			{
-				$xml .= "\n\t\t\t\t<item>\n\t\t\t\t\t<label>{$opt->label}</label>\n\t\t\t\t\t<value>{$opt->value}</value>\n\t\t\t\t</item>";
+				$xml .= '<item><label>' . escape_xml($opt->label) . "</label>\n\t\t\t\t\t<value>{$opt->value}</value>\n\t\t\t\t</item>";
 			}
 			$xml.= "</{$this->type}>";
 			return $xml;
