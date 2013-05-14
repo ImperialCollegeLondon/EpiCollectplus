@@ -7,6 +7,11 @@ var checking = {};
 var nchecks = 0;
 var formName = '';
 
+if(!window['console'])
+{
+    window.console = {};
+    console.debug = function(msg){};
+}
 
 checker.oncheck = function(evt)
 {
@@ -54,7 +59,7 @@ EpiCollect.dialog = function(conf)
 					$( this ).dialog("close");
 				}
 			},
-                        closeOnEscape: false,
+            closeOnEscape: false,
 			resizable : false
 		});
 	}
@@ -63,7 +68,7 @@ EpiCollect.dialog = function(conf)
 		diajq.dialog({
 			modal : true,
 			buttons: conf.buttons,	
-                        closeOnEscape: false,
+            closeOnEscape: false,
 			resizable : false
 		});
 	}

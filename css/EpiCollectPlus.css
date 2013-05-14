@@ -9,7 +9,8 @@ body{
 	font-size: 14px;
 	margin : 2em auto 10px auto;
 	min-width: 760px;
-        max-width: 1280px;
+    max-width: 1280px;
+    
         
 }
 
@@ -18,18 +19,64 @@ h1
 	border-bottom : 1px solid #CCCCCC;
 	color: #808080;
 	font-size : 20px;
+    line-height : 22px;
 	padding-bottom : 5px;
 	margin-bottom : 0.2em; 
 }
 
+h2
+{
+    padding-bottom: 6px;
+    font-size : 18px;
+    line-height : 20px;
+}
+
+h3
+{
+    padding-bottom: 4px;
+    font-size : 16px;
+    line-height : 18px;
+}
+
 h4
 {
+    padding-bottom: 2px;
+    font-size : 14px;
+    line-height : 16px;
 	margin-top: 0.7em;	
+}
+
+table {
+    border-top : 1px solid #CCC;
+    border-left : 1px solid #CCC;
+    margin : 4px 2px;
+    border-radius : 8px;
+}
+
+th
+{
+    padding: 6px 8px;  
+    border-bottom: 2px solid #666;
+    border-right: 1px solid #CCC;
+}
+
+td 
+{
+    font-weight : normal;
+    font-size : 14px;
+    padding: 4px 4px 4px 4px;   
+    border-bottom: 1px solid #CCC;
+    border-right: 1px solid #CCC;
 }
 
 a	
 {
 	text-decoration : none;
+}
+
+section 
+{
+    margin : 1em 0;
 }
 
 a:hover
@@ -42,6 +89,15 @@ a:visited
 	color : #0000FF;
 }
 
+code 
+{
+    display : inline-block;
+    background-color: #EEE;
+    border : 1px solid #CCC;
+    color : #A00;
+    margin : 2px 0px 2px 0px;
+}
+
 fieldset
 {
 	border : 0;
@@ -50,6 +106,7 @@ fieldset
 p
 {
 	margin : 0.5em 0 1.75em 0;	
+    line-height : 18px;
 }
 
 form p, .ecplus-form-element p, .filterControl p
@@ -183,6 +240,14 @@ tr.alt
 .ecplus-checking
 {
 	border:1px solid #a354ee;
+}
+
+.formats
+{
+    font-size : 10pt;
+    color : #888;
+    vertical-align : bottom;
+    
 }
 
 .ecplus-invalid
