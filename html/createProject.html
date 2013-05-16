@@ -45,33 +45,80 @@
   	var listOpts;
   	var curEmail = "{#userEmail#}";
   	
+    
+    /***
+     *  Stop the user from moving forward, and mark the field edited as invalid
+     *  @param HTMLElement target The 
+     */
+    function disableNext(target, message)
+    {
+        var _parent = $(target).parent();
+        $('.panelSwitcher.next', _parent).button("disable");
+		$(target).addClass('ecplus-invalid');
+        if(message !='')
+        {
+            $('.msg', _parent)
+                .text(message)
+                .addClass('err');
+            
+        }
+    }
+    
+    /***
+     *  Allow the user to move forward, and mark the edited field as valid
+     */
+    function enableNext(target, message)
+    {
+        var _parent = $(target).parent();
+        $('.panelSwitcher.next', _parent).button("enable");
+        $(target).removeClass('ecplus-invalid');
+        if(message !='')
+        {
+             $('.msg', _parent)
+                .text(message)
+                .removeClass('err');
+        }
+    }
+    
+    /**
+     * Check the typed project name is valid
+     *
+     * @param HTMLElement ctrl the control containing the project name  
+     */
+    function checkProjectName(ctrl){
+        //if( $( '.projectName' ).text() != '' ) return; // if the projectName has been set by uploading the XML then ignore chang
+        
+        var name = ctrl.value;
+        
+        if( !name.match(/^[a-z0-9_]+$/i) ) //check name is valid before checking it's available.
+        {
+            disableNext(ctrl, 'The project name must only contain letter, numbers and underscores.');
+        }
+        else
+        {
+            $.ajax({
+                url: './' + name,
+                error: function(xhr, status, s){
+                    enableNext(ctrl, 'Project name available.');
+                },
+                success: function(){
+                    disableNext(ctrl, 'Project name is already in use. Project name must be unique.');
+                }
+            });
+        }
+    }
+    
   	$(function(){
-  		publicOpts = $('#public').buttonset();
-  		listOpts = $('#listed').buttonset();
-  		$('.panelSwitcher, .button').button();
-		$('#pdNext').button("disable");
+  		var publicOpts = $( '#public' ).buttonset();
+  		var listOpts = $( '#listed' ).buttonset();
+        
+  		$( '.panelSwitcher, .button' ).button();
+		$( '#pdNext' ).button("disable");
 		
-		$('#s_managers tbody').append("<tr><td>" + curEmail + "</td></tr>");
-		$('#managers').val(curEmail);
+		$( '#s_managers tbody' ).append("<tr><td>" + curEmail + "</td></tr>");
+		$( '#managers' ).val(curEmail);
  		
-		$('input[name=name]').on('change', function(evt){
-			if($('.projectName').text() != '') return;
-			
-			$.ajax({
-				url: './' + $(evt.target).val(),
-				error: function(xhr, status, s){
-					$('#pdNext').button("enable");
-					$(evt.target).removeClass('ecplus-invalid');
-					$('#projectNameMsg').html('<p class="msg">Project name available.</p>');
-				},
-				success: function(){
-					$('#pdNext').button("disable");
-					
-					$(evt.target).addClass('ecplus-invalid');
-					$('#projectNameMsg').html('<p class="err">Project name is already in use. Project name must be unique.</p>');
-				}
-			});
-		});
+		$( 'input[name=name]' ).on('change', function(evt){ checkProjectName(evt.target); });
 		
 		$('#uploadxml').on('load', function(){
 			var doc = ($('#uploadxml')[0].contentWindow.document || $('#uploadxml')[0].contentDocument);
@@ -186,12 +233,12 @@
 	  <form id="projectOptions" action="create" method="POST">
 		  	<div id="projectDef" class="section">
 			  	<h2>1. Project Definition</h2>
-			  	<p>Choose a name for the project</p>
+			  	<p>Choose a name for the project; project names must only contain letters, numbers and underscores.</p>
 			  	<input name="name" />
-			  	<div id="projectNameMsg"></div>
+			  	<div id="projectNameMsg" class="msg"></div>
 			  	<p>Or</p>
 			  	<div id="uploadBox">
-			  		<h3><a href="#">Upload an existing EpiCollect project definition</a></h3>
+			  		<h3><a href="#">Alternatively, upload an existing EpiCollect project definition (advanced users, see instructions)</a></h3>
 			  		<div>
 			  			<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
 		  				<div id="uploadStatus" class="flash"></div>	
@@ -199,36 +246,37 @@
 		 			</div>
 		 			<br/>
 		 		</div>
-		 		<a class="panelSwitcher" id="pdNext" href="javascript:goTo('visibility');"> Continue </a>
+		 		<a class="panelSwitcher next" id="pdNext" href="javascript:goTo('visibility');"> Continue </a>
 	 		</div>
 		 	<div id="visibility" class="section">
-				<h2>2. Visibility</h2>
-				<p>EpiCollect+ allows project data to either be public of private, please choose one of the following options</p>
-				<div id="public">
-					<input type="radio" name="public" id="isPublic" value="true" checked="checked"/><label for="isPublic">I would like anyone to be able <br />to view the data in this project.</label>
-					<input type="radio" name="public" id="isPrivate" value="false" /><label for="isPrivate">I only want people I specify to be able<br /> to view the data in this project.</label>
+				<h2>2. Data Visibility</h2>
+				<p>You can choose whether your data is available to anyone via this website, or restricted to the project managers and curators. You will be able to add Curators and Managers from the 'Manage Project' page once your project is created.</p>
+				<div id="public" class="choice">
+					<input type="radio" name="public" id="isPublic" value="true" checked="checked"/><label for="isPublic"><b>Public</b> I would like anyone have access to this projects' data.</label>
+					<input type="radio" name="public" id="isPrivate" value="false" /><label for="isPrivate"><b>Private</b> I want to restrict access to the project managers and curators.</label>
 				</div>
 				<br/>
-				<a class="panelSwitcher" href="javascript:goTo('listing');"> Continue </a>	
-				<a class="panelSwitcher" href="javascript:goTo('projectDef');"> Back </a>
+				<a class="panelSwitcher next" href="javascript:goTo('listing');"> Continue </a>	
+				<a class="panelSwitcher prev" href="javascript:goTo('projectDef');"> Back </a>
 				
 			</div>
 			<div id="listing" class="section">
-				<h2>3. Listing on the Homepage</h2>
-				<p>The front page of this server displays a list of projects that have been created on this server, please choose one of the following options</p>
-				<div id="listed">
-					<input type="radio" name="listed" id="isListed" value="true" checked="checked" /><label for="isListed">I would like this project to appear <br />on the list on the homepage of this server.</label>
-					<input type="radio" name="listed" id="notListed" value="false" /><label for="notListed">I would not like this project to appear <br />on the list on the homepage of this server.</label>
+				<h2>3. Project Listing on the Homepage</h2>
+				<p>You can choose to have projects listed on the front page of the website, and if someone uses the APIs to get a list of projects. This may help to publicise your project and encourage people to 
+                submit data. If you choose to do this then consider adding a description and project image through the 'Manage Project' page.</p>
+				<div id="listed" class="choice">
+					<input type="radio" name="listed" id="isListed" value="true" checked="checked" /><label for="isListed"><b>Listed</b> I would like my project listed publically</label>
+					<input type="radio" name="listed" id="notListed" value="false" /><label for="notListed"><b>Hidden</b> I do not want my project to be listed publically</label>
 				</div>
 				<br/>
-				<a class="panelSwitcher" href="javascript:document.forms[0].submit();"> Create Project </a>	
+				<a class="panelSwitcher next" href="javascript:document.forms[0].submit();"> Create Project </a>	
 				<!-- <a class="panelSwitcher" href="javascript:goTo('s_managers');"> Continue </a> -->	
-				<a class="panelSwitcher" href="javascript:goTo('visibility');"> Back </a>
+				<a class="panelSwitcher prev" href="javascript:goTo('visibility');"> Back </a>
 			</div>
 			<div id="s_managers"  class="section">
 				<h2>4. Project Managers</h2>
-				<p>Any users in this group have the ability to add and remove other project managers and curators, they can also update the project 
-				settings and the project definition. Managers can also Add, edit and remove data using the web interface.</p>
+				<p>Managers have the ability to add and remove other project managers and curators, they can also update the project 
+				settings and the project definition. Managers can also Add, edit and delete data using the web interface.</p>
 				<table> 
 					<thead>
 						<tr><th>Email</th><th class="remove">Remove</th></tr>
@@ -244,7 +292,7 @@
 			</div>
 			<div id="s_curators" class="section">
 				<h2>5. Project Curators</h2>
-				<p>Any users in this group are allowed to use the web interface to add, edit and remove data. Anyone can upload data from the EpiCollect+ Android App. If this project is not public then 
+				<p>Curators can use the web interface to add, edit and remove data. Anyone can upload data from the EpiCollect+ Android App. If this project's data is not public then 
 				only Curators and managers will be able to use the web interface for this project.</p>
 				<table> 
 					<thead>

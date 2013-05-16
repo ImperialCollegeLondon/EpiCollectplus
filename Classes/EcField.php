@@ -125,10 +125,10 @@ class EcField{
 				foreach( $this->otherAttributes as $att => $val ) {  $xml = sprintf('%s %s="%s"', $xml, $att, $val); }
 			}
 			 
-			$xml.= ">\n\t\t\t<label>" . escape_xml($this->label) . "</label>\n\t\t";
+			$xml.= ">\n\t\t\t<label>" . htmlentities($this->label) . "</label>\n\t\t";
 			foreach( $this->options as $opt )
 			{
-				$xml .= '<item><label>' . escape_xml($opt->label) . "</label>\n\t\t\t\t\t<value>{$opt->value}</value>\n\t\t\t\t</item>";
+				$xml .= '<item><label>' . htmlentities($opt->label) . "</label>\n\t\t\t\t\t<value>{$opt->value}</value>\n\t\t\t\t</item>";
 			}
 			$xml.= "</{$this->type}>";
 			return $xml;
@@ -443,12 +443,12 @@ class EcField{
 				$oIdx = count($this->options);
 				if($opt->getName() == 'label')
 				{
-					$this->label = (string)$opt;
+					$this->label = html_entity_decode((string)$opt);
 				}
 				else if($opt->getName() == 'item')
 				{
 					$this->options[$oIdx] = new EcOption();
-					$this->options[$oIdx]->label = (string)$opt->label[0];
+					$this->options[$oIdx]->label = html_entity_decode((string)$opt->label[0]);
 					$this->options[$oIdx]->value = (string)$opt->value[0];
 					$this->options[$oIdx]->idx = $oIdx;
 		

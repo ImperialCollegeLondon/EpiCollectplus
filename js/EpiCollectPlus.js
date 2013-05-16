@@ -32,6 +32,25 @@ EpiCollect.KEYWORDS = [
      'test', 'markers', 'images', 'js', 'css', 'ec', 'pc', 'create'
 ];
 
+if (!String.prototype.encodeXML) {
+  String.prototype.encodeXML = function () {
+    return this.replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;')
+               .replace(/"/g, '&quot;');
+  };
+}
+
+if (!String.prototype.decodeXML) {
+  String.prototype.decodeXML = function () {
+    return this.replace(/&amp;/g, '&')
+               .replace(/&lt;/g, '<')
+               .replace(/&gt;/g, '>')
+               .replace(/&quot;/g, '"');
+  };
+}
+
+
 /**
  * Function to produce a dialog box.
  * 
@@ -47,6 +66,8 @@ EpiCollect.dialog = function(conf)
 	}
 	diajq.hide();
 	diajq.html(conf.content);
+    console.debug(conf.closeable);
+  
 	if(conf.title) diajq.attr('title', conf.title);
 	else diajq.attr('title', 'EpiCollect+ Message');
 	
@@ -71,7 +92,12 @@ EpiCollect.dialog = function(conf)
             closeOnEscape: false,
 			resizable : false
 		});
-	}
+	} 
+    
+    if(conf.closeable === false){
+        diajq.parent().addClass('uncloseable');
+    }
+    
 };
 
 EpiCollect.prompt = function(conf)
@@ -84,7 +110,8 @@ EpiCollect.prompt = function(conf)
 	}
 	diajq.hide();
 	diajq.html(conf.content);
-	
+
+    
 	if(!conf.form)
 	{
 		diajq.append('<br /><input type="text" style="width: 80%" name="ecplus-dialog-input" />');
@@ -124,7 +151,10 @@ EpiCollect.prompt = function(conf)
 			width : 'auto'
 		});
 	}
-	
+	if(conf.closeable === false){
+ 
+        diajq.parent().addClass('uncloseable');
+    }
 	$('.toggle').buttonset();
 };
 
@@ -380,7 +410,7 @@ EpiCollect.Project = function()
 		
 		for(var t in this.forms)
 		{
-			if(this.forms[t].num === n)
+			if(Number(this.forms[t].num) === n)
 			{
 				tbl = this.forms[t];
 				break;
@@ -391,36 +421,37 @@ EpiCollect.Project = function()
 	
 	this.validateFormName = function(name)
 	{
-		if(this.forms[name]) return "There is already a form called " + name + " in this project" ;
+		if(this.forms[name] && this.forms[name].num > 0) return "There is already a form called " + name + " in this project" ;
 		var kw = EpiCollect.KEYWORDS;
 		
 		for(var i = kw.length; kw--;)
 		{
-                    if (name === kw[i])
-                    {
-                        return name + " cannot be user as a form name, other words that cannot be used are : " + EpiCollect.KEYWORDS.join(', ');
-                    }
+            if (name === kw[i])
+            {
+                return name + " cannot be user as a form name, other words that cannot be used are : " + EpiCollect.KEYWORDS.join(', ');
+            }
 		}
                     
-                if(name.match(/\s/gi)) return "The form name cannot contain spaces";
-                if(name.match(/[^A-Z0-9_-]/gi)) return "The form name can only contain letter, numbers and _ or -";
-                return true;
+        if(name.match(/\s/gi)) return "The form name cannot contain spaces";
+        if(name.match(/[^A-Z0-9_-]/gi)) return "The form name can only contain letter, numbers and _ or -";
+        return true;
 	};
 	
-	this.validateFieldName = function(form, name)
+	this.validateFieldName = function(form, field)
 	{
-            
-                if(name === "") return "The field name cannot be blank";
-		if(this.forms[form].fields[name])  return "There is already a field called " + name + " in this form" ;
+        name = field.id
+        if(name === "") return 'The field ID cannot be blank';
+		if(form.fields[name] && form.fields[name] != field)  return '<em>' + name + '</em> is not a valid ID.  <br /> <br /> There is already a field called ' + name + ' in this form';
 		var kw = EpiCollect.KEYWORDS;
 		
 		for(var i = kw.length; kw--;)
 		{
-			if (name === kw[i]) return name + " cannot be user as a field name, other words that cannot be used are : " + EpiCollect.KEYWORDS.join(', ');
+			if (name === kw[i]) return name + " cannot be user as a field ID.  <br /> <br /> Other words that cannot be used are : " + EpiCollect.KEYWORDS.join(', ');
 		}
-                if(name === form) return "The field name cannot be the same as the form name";
-		if(name.match(/\s/gi)) return "The form name cannot contain spaces";
-                if(name.match(/[^A-Z0-9_-]/gi)) return "The form name can only contain letter, numbers and _ or -";
+        
+        if(name === form) return '<em>' + name + '</em> is not a valid ID. <br /> <br /> The field name cannot be the same as the form name';
+		if(name.match(/\s/gi)) return '<em>' + name + '</em> is not a valid ID. <br /> <br />  The form name cannot contain spaces'
+        if(name.match(/[^A-Z0-9_]/gi)) return '<em>' + name + '</em> is not a valid ID. <br /> <br />  The field ID can only contain letter, numbers and underscores';
                 
 		return true;
 	};
@@ -2204,12 +2235,12 @@ EpiCollect.Field = function()
 		if(this.jump) xml = xml + " jump=\"" + this.jump + "\"";
 		if(this.type === "branch") xml = xml + " branch_form=\"" + this.connectedForm +"\"";
 		
-		xml = xml + "><label>" + this.text + "</label>";
+		xml = xml + "><label>" + this.text.encodeXML() + "</label>";
 		
 		for(var i = 0; i < this.options.length; i++)
 		{
 			var opt = this.options[i];
-			xml = xml + "<item><label>" + opt.label + "</label><value>" + opt.value + "</value></item>";
+			xml = xml + "<item><label>" + opt.label.encodeXML() + "</label><value>" + opt.value + "</value></item>";
 		}
 		
 		xml = xml + "</" + this.type + ">";

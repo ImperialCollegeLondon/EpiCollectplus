@@ -316,11 +316,11 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 			//if so put the user's name and a logout option in the login section
 			if($auth->isServerManager())
 			{
-				$template = str_replace('{#loggedIn#}', 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ')  <a href="{#SITE_ROOT#}/logout">Sign out</a>  <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>  <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
+				$template = str_replace('{#loggedIn#}', 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ')  <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
 			}
 			else
 			{
-				$template = str_replace('{#loggedIn#}', sprintf('Logged in as %s (%s) <a class="btn btn-mini" href="{#SITE_ROOT#}/logout">Sign out</a>  <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $auth->getUserNickname(), $auth->getUserEmail()), $template);
+				$template = str_replace('{#loggedIn#}', sprintf('Logged in as %s (%s) <a class="btn btn-mini" href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $auth->getUserNickname(), $auth->getUserEmail()), $template);
 			}
 			$templateVars['userEmail'] = $auth->getUserEmail();
 		}
@@ -3342,7 +3342,7 @@ function uploadMedia()
 		
 	}
 
-	if(array_key_exists("fn", $_GET))
+	if(getValIfExists($_GET, 'fn'))
 	{
 		$fn = "ec/uploads/{$pname}~".$_GET["fn"];
 		$tvals["mediaTag"] = "<img src=\"$SITE_ROOT/{$fn}\" height=\"150\" />";
@@ -3733,7 +3733,7 @@ $pageRules = array(
 		'favicon\..+' => new PageRule(),
 		'js/.+' => new PageRule(),
 		'css/.+' => new PageRule(),
-                'EpiCollectplus\.apk' => new PageRule(),
+        'EpiCollectplus\.apk' => new PageRule(),
 		'html/projectIFrame.html' => new PageRule(),
         'api' => new PageRule('apidocs.html', 'defaultHandler'),
 
@@ -3764,7 +3764,7 @@ $pageRules = array(
 		'disableUser' => new PageRule(null, 'disableUser',true),
 		'enableUser' => new PageRule(null, 'enableUser',true),
 		'resetPassword' => new PageRule(null, 'resetPassword',true),
-                'register' => new PageRule(null, 'createAccount', false),
+        'register' => new PageRule(null, 'createAccount', false),
 		
 //generic, dynamic handlers
 		'getControls' =>  new PageRule(null, 'getControlTypes'),
@@ -3791,7 +3791,7 @@ $pageRules = array(
 		'[a-zA-Z0-9_-]+/manage' =>new PageRule(null, 'updateProject', true),
 		'[a-zA-Z0-9_-]+/updateStructure' =>new PageRule(null, 'updateXML', true),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__stats' =>new PageRule(null, 'tableStats'),
-                '[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__activity' =>new PageRule(null, 'formDataLastUpdated'),
+        '[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__activity' =>new PageRule(null, 'formDataLastUpdated'),
 		'[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__getImage' =>new PageRule(null, 'getImage'),

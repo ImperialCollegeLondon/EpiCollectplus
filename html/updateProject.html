@@ -27,10 +27,6 @@
 			width : 50em;
 			height: 50em;
 		}
-		div.section p
-		{
-			text-align: center;
-		}
 		
 		.panelSwitcher 
 		{
@@ -266,9 +262,9 @@
 	 		</div> -->
 	 		<div id="description" class="section">
 			  	<h2>Project Description and Image</h2>
-			  	<p>Enter a few lines of text to describe your project</p>
+			  	<p>Here you can add a plain text description of your project.</p>
 			  	<textarea rows="10" cols="50" id="description" name="description">{#description#}</textarea>
-			  	<p>If your project has a logo or an image you can upload it here</p>
+			  	<p>You can also upload a logo or other image that will be displayed on your project page.</p>
 			  	<iframe id="uploadimage" src="uploadMedia?fn={#image#}"></iframe>
 		  		<div id="uploadStatusImage" class="flash"></div>
 		 		<input type="hidden" name="projectImage"/>
@@ -276,8 +272,8 @@
 		 		
 	 		</div>
 		 	<div id="visibility" class="section">
-				<h2>Visibility</h2>
-				<p>EpiCollect+ allows project data to either be public of private, please choose one of the following options</p>
+				<h2>Data Visibility</h2>
+				<p>You can choose whether your data is available to anyone via this website, or restricted to the project managers and curators. You can add Managers and Curators using the tabs on this page.</p>
 				<div id="public">
 					<input type="radio" name="public" id="isPublic" value="true" /><label for="isPublic">I would like anyone to be able <br />to view the data in this project.</label>
 					<input type="radio" name="public" id="isPrivate" value="false" /><label for="isPrivate">I only want people I specify to be able<br /> to view the data in this project.</label>
@@ -296,8 +292,8 @@
 			</div>
 			<div id="s_managers" class="section">
 				<h2>Project Managers</h2>
-				<p>Any users in this group have the ability to add and remove other project managers and curators, they can also update the project 
-				settings and the project definition. Managers can also Add, edit and remove data using the web interface.</p>
+				<p>Managers have the ability to add and remove other project managers and curators, they can also update the project 
+				settings and the project definition. Managers can also Add, edit and delete data using the web interface.</p>
 				<table> 
 					<thead>
 						<tr><th>Email</th><th class="remove">Remove</th></tr>

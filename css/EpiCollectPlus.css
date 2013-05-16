@@ -109,6 +109,11 @@ p
     line-height : 18px;
 }
 
+iframe
+{
+    border : none;
+}
+
 form p, .ecplus-form-element p, .filterControl p
 {
     margin : 0.5em 0 0.5em 0;	
@@ -991,6 +996,20 @@ tr.alt
 	background : url("../images/branch.png") 2px 1.75em no-repeat;		
 }
 
+.ui-buttonset .ui-state-active
+{
+    border : 3px solid green;
+    font-weight : normal;
+    max-width : 10em;
+    background : url('../images/glyphicons/glyphicons_206_ok_2.png') 6px 45% no-repeat;
+}
+
+.ui-buttonset .ui-state-default
+{   
+    padding: .6em 1.5em;
+    max-width : 10em;
+}
+
 #ec_dialog p
 {
     margin-bottom: 0.5em;
@@ -1088,7 +1107,7 @@ tr.alt
 	margin-bottom : 1.5em;
 }
 
-.ui-dialog-titlebar-close
+.uncloseable .ui-dialog-titlebar-close
 { 
     display : none !important; 
 }

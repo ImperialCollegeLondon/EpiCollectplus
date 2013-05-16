@@ -215,6 +215,7 @@ function newForm(message, name)
 	}
         
 	EpiCollect.prompt({ 
+        closeable : false,
             buttons: {
                 'OK' :function(){ 
                     var name = $( 'input', this ).val();
@@ -291,7 +292,7 @@ function addControlToForm(id, text, type)
 	var jq = $(type, $(".first")).clone();
 	
 	
-	$("p.title", jq).text(text.replace('<', '&lt;').replace('>', '&gt;'));
+	$("p.title", jq).text(text.decodeXML());
 	jq.attr("id", id);
 	
 	$(".option", jq).remove();
@@ -302,7 +303,7 @@ function addControlToForm(id, text, type)
 		var l = opts.length;
 		for( var i = 0; i < l; i++ )
 		{
-			jq.append("<p class=\"option\">" + opts[i].label.replace('<', '&lt;').replace('>', '&gt;') + "</p>");
+			jq.append("<p class=\"option\">" + opts[i].label.decodeXML() + "</p>");
 		}
 	}
 	
@@ -436,9 +437,11 @@ function updateSelected(is_silent)
         }
 	}
 	
-	if( !cfrm.validateFieldName(cur.id, name) )
+    var nameValid = project.validateFieldName(cfrm, cur);
+    
+	if( nameValid !== true )
 	{
-            EpiCollect.dialog({ content : 'Field name must be unique within the form, not the same as the form name and not one of ' + EpiCollect.KEYWORDS.join(', ') });
+            EpiCollect.dialog({ content : nameValid });
             return false;
 	}
 	
@@ -986,6 +989,11 @@ function setSelected(jq)
 
 function removeForm(name)
 {
+    if(project.getNextForm(name))
+    {    
+        EpiCollect.dialog({ content : "You can only delete the last form in the project." });
+        return;
+    }
 	
 	if(confirm('Are you sure you want to remove the form ' + name + '?'))
 	{
@@ -999,20 +1007,12 @@ function removeForm(name)
         
 		for( frm in project.forms )
 		{
-			if( !currentForm ) switchToForm(frm);
-            if(project.forms[frm].num > num)
-			{
-                for( fld in project.forms[frm].fields )
-                {
-                    if( fld === key )
-                    {
-                        delete project.forms[frm].fields[fld];
-                    }
-                }
-				project.forms[frm].num = Number(project.forms[frm].num) - 1;
-			}
-            
+			if( !currentForm ) switchToForm(frm); // switch to the first form
+            break;
 		}   
+        
+        delete project.forms[frm];
+        
 		//$('#destination').empty();
 	}
 }
@@ -1041,22 +1041,32 @@ function renameForm(name)
 		var forms = project.forms;
 		var form = forms[name];
 		var newForms = {};
-		form.name = newName;
-		
-		for(frm in forms)
-		{
-			if(frm === name)
-			{
-				newForms[newName] = form;
-			}
-			else
-			{
-				newForms[frm] = forms[frm];
-			}
-		}
-		
-		project.forms = newForms;
-		drawProject(project);
+        
+        var valid = project.validateFormName(newName);
+        
+        if(valid === true)
+        {
+            form.name = newName;
+            
+            for(frm in forms)
+            {
+                if(frm === name)
+                {
+                    newForms[newName] = form;
+                }
+                else
+                {
+                    newForms[frm] = forms[frm];
+                }
+            }
+            
+            project.forms = newForms;
+            drawProject(project);
+        }
+        else
+        {
+            EpiCollect.dialog({ content : valid });
+        }
 	}});
 }
 
@@ -1111,6 +1121,7 @@ function switchToBranch()
 	drawFormControls(currentForm);
     
     $('#source .ecplus-branch-element').hide();
+    $('#source .ecplus-fk-element').hide();
 }
 
 function switchToForm(name)
@@ -1139,11 +1150,21 @@ function switchToForm(name)
 	currentForm = project.forms[name];
 	formName = name;
 	
-	if(!currentForm.key)
+	if( !currentForm.key )
 	{
 		askForKey();
 	}
 	$('#source .ecplus-branch-element').show();
+    
+    console.debug(currentForm.name, project.getPrevForm(currentForm.name))
+	if( project.getPrevForm(currentForm.name) )
+    {
+        $('#source .ecplus-fk-element').show();
+    }
+    else
+    {
+         $('#source .ecplus-fk-element').hide();
+    }
 	drawFormControls(currentForm);
     
 }
@@ -1166,6 +1187,7 @@ function askForKey(keyDeleted)
         
 	EpiCollect.prompt({
 		title : "Add a key field",
+        closable : false,
 		content : (!keyDeleted ? "Every EpiCollect Form must have a unique key so it can identify each entry. Do you have a question that is unique to each entry?" : "You have deleted the key for this form, please choose a new key field to generate. " ),
 		form:(!keyDeleted ? "<form><div id=\"key_radios\" class=\"toggle\"> <label for=\"key_yes\">Yes, I do have a unique key for this form<br/>&nbsp;</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/>"+
 			"<label for=\"key_no\">No, I do not have a unique key for this form, <br />please generate a key for me.</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" /></div>"+
