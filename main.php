@@ -7,8 +7,10 @@ $dat = new DateTime('now');
 //$dfmat = '%s.u';
 
 $SITE_ROOT = '';
+$PUBLIC = false;
 $XML_VERSION = 1.0;
 $CODE_VERSION = "1.4e";
+
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
@@ -78,7 +80,7 @@ include (sprintf('%s/Classes/EcEntry.php', $DIR));
 
  function openCfg()
  {
-    global $cfg, $DIR;
+    global $cfg, $DIR, $PUBLIC;
     
     $cfg_fn = sprintf('%s/ec/epicollect.ini', rtrim($DIR, '/'));
     
@@ -93,13 +95,14 @@ include (sprintf('%s/Classes/EcEntry.php', $DIR));
             $cfg->writeConfig();
         }
 
-
         if(!array_key_exists('salt',$cfg->settings['security']) || trim($cfg->settings['security']['salt']) == '')
         {
             $str = genStr();
             $cfg->settings['security']['salt'] = $str;
             $cfg->writeConfig();
         }
+        
+        $PUBLIC = $cfg->settings['misc']['public_server'];
         
     }
     catch (Exception $err)
@@ -316,18 +319,19 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 			//if so put the user's name and a logout option in the login section
 			if($auth->isServerManager())
 			{
-				$template = str_replace('{#loggedIn#}', 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ')  <a href="{#SITE_ROOT#}/logout">Sign out</a>  <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>  <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
+				$template = str_replace('{#loggedIn#}', 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ')  <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
 			}
 			else
 			{
-				$template = str_replace('{#loggedIn#}', sprintf('Logged in as %s (%s) <a class="btn btn-mini" href="{#SITE_ROOT#}/logout">Sign out</a>  <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $auth->getUserNickname(), $auth->getUserEmail()), $template);
+				$template = str_replace('{#loggedIn#}', sprintf('Logged in as %s (%s) <a class="btn btn-mini" href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $auth->getUserNickname(), $auth->getUserEmail()), $template);
 			}
 			$templateVars['userEmail'] = $auth->getUserEmail();
 		}
 		// else show the login link
 		else
 		{
-			$template = str_replace('{#loggedIn#}', '<a href="{#SITE_ROOT#}/login.php">Sign in</a>', $template);
+            global $PUBLIC;
+			$template = str_replace('{#loggedIn#}', '<a href="{#SITE_ROOT#}/login.php">Log in</a>' . ($PUBLIC ? ' or <a href="{#SITE_ROOT#}/register">register</a>' : ''), $template);
 		}
 		// work out breadcrumbs
 		//$template = str_replace("{#breadcrumbs#}", '', $template);
@@ -1478,6 +1482,7 @@ function downloadData()
 	else if($dataType == "data")
 	{
 		header("Content-type: text/plain");
+        
 		$txn = "$root\\ec\\uploads\\{$baseFn}.tsv";
 		$ts_url = "$wwwroot/ec/uploads/{$baseFn}.tsv";
 		if(file_exists($txn))
@@ -1911,11 +1916,26 @@ function formHandler()
 				if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
 				{
 					echo "<entries>";
-					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "xml");
+					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object");
 					if($res !== true) die($res);
 					while($ent = $prj->tables[$frmName]->recieve(1, true))
 					{
-						echo $ent;
+                        echo "<entry>";
+                        foreach ( $ent[0] as $key => $val )
+                        {
+                            if( array_key_exists($key, $prj->tables[$frmName]->fields) && ( $prj->tables[$frmName]->fields[$key]->type === 'location' ||  $prj->tables[$frmName]->fields[$key]->type === 'gps' ))
+                            {
+                                foreach( $val as $x => $y )
+                                {
+                                    printf('<%s_%s>%s</%s_%s>', $key, $x, $y, $key, $x);
+                                }
+                            }
+                            else
+                            {
+                                printf('<%s>%s</%s>', $key, $val, $key);
+                            }
+                        }
+                        echo "</entry>";
 					}
 					echo "</entries>";
 					return;
@@ -2090,7 +2110,7 @@ function formHandler()
 			
 			case "tsv":
 		
-				//
+				
 				if( !file_exists('ec/uploads')) mkdir('ec/uploads');
 				$filename = sprintf('ec/uploads/%s_%s_%s%s.tsv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
 				
@@ -3223,20 +3243,20 @@ function formBuilder()
 	global $url, $auth;
 	$prj_name = str_replace('/formBuilder', '', $url);
 	
-        $prj = new EcProject();
-        $prj->name = $prj_name;
-        $prj->fetch();
-        
-        $uid = $auth->getEcUserId();
-        
-        if($prj->checkPermission($uid))
-        {
-            echo applyTemplate('./base.html' , './createOrEditForm.html', array('projectName' => $prj_name));
-        }
-        else
-        {
-            accessDenied(sprintf(' Project %s' , $prj_name ));
-        }
+    $prj = new EcProject();
+    $prj->name = $prj_name;
+    $prj->fetch();
+    
+    $uid = $auth->getEcUserId();
+    
+    if($prj->checkPermission($uid))
+    {
+        echo applyTemplate('./base.html' , './createOrEditForm.html', array('projectName' => $prj_name));
+    }
+    else
+    {
+        accessDenied(sprintf(' Project %s' , $prj_name ));
+    }
 }
 
 function getControlTypes()
@@ -3342,7 +3362,7 @@ function uploadMedia()
 		
 	}
 
-	if(array_key_exists("fn", $_GET))
+	if(getValIfExists($_GET, 'fn'))
 	{
 		$fn = "ec/uploads/{$pname}~".$_GET["fn"];
 		$tvals["mediaTag"] = "<img src=\"$SITE_ROOT/{$fn}\" height=\"150\" />";
@@ -3356,6 +3376,8 @@ function getMedia()
 {
 	global $url;
 	
+    header("Content-Disposition: attachment");
+    
 	if(preg_match('~tn~', $url) )
 	{
 		//if the image is a thumbnail just try and open it
@@ -3507,6 +3529,13 @@ function projectUsage()
 	$sum = $prj->getUsage();
 	header("Content-type: text/plain");
 	echo $sum; //"{\"forms\" : ". json_encode($sum) . "}";
+}
+
+function getUpload()
+{
+    global $url;
+    header("Content-Disposition: attachment");
+    echo file_get_contents("./" . $url);
 }
 
 function writeSettings()
@@ -3733,7 +3762,7 @@ $pageRules = array(
 		'favicon\..+' => new PageRule(),
 		'js/.+' => new PageRule(),
 		'css/.+' => new PageRule(),
-                'EpiCollectplus\.apk' => new PageRule(),
+        'EpiCollectplus\.apk' => new PageRule(),
 		'html/projectIFrame.html' => new PageRule(),
         'api' => new PageRule('apidocs.html', 'defaultHandler'),
 
@@ -3764,13 +3793,13 @@ $pageRules = array(
 		'disableUser' => new PageRule(null, 'disableUser',true),
 		'enableUser' => new PageRule(null, 'enableUser',true),
 		'resetPassword' => new PageRule(null, 'resetPassword',true),
-                'register' => new PageRule(null, 'createAccount', false),
+        'register' => new PageRule(null, 'createAccount', false),
 		
 //generic, dynamic handlers
 		'getControls' =>  new PageRule(null, 'getControlTypes'),
 		'uploadFile.php' => new PageRule(null, 'uploadHandlerFromExt'),
 		'ec/uploads/.+\.(jpe?g|mp4)$' => new PageRule(null, 'getMedia'),
-		'ec/uploads/.+' => new PageRule(null, null),
+		'ec/uploads/.+' => new PageRule(null, 'getUpload'),
 	
 		'uploadTest.html' => new PageRule(null, 'defaultHandler', true),
 		'test' => new PageRule(null, 'siteTest', false),
@@ -3791,7 +3820,7 @@ $pageRules = array(
 		'[a-zA-Z0-9_-]+/manage' =>new PageRule(null, 'updateProject', true),
 		'[a-zA-Z0-9_-]+/updateStructure' =>new PageRule(null, 'updateXML', true),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__stats' =>new PageRule(null, 'tableStats'),
-                '[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__activity' =>new PageRule(null, 'formDataLastUpdated'),
+        '[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__activity' =>new PageRule(null, 'formDataLastUpdated'),
 		'[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia' =>new PageRule(null, 'uploadMedia'),
 		'[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__getImage' =>new PageRule(null, 'getImage'),

@@ -432,7 +432,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
  *
  * http://docs.jquery.com/UI/Dialog#theming
  */
-.ui-dialog { position: absolute; background-color: #FFFFFF; border: 1px solid #CCCCCC; width: 300px; overflow: hidden;box-shadow: 10px 10px 5px #888888; }
+.ui-dialog { position: absolute; background-color: #FFFFFF; border: 1px solid #CCCCCC; max-width: 70em; width: 300px; overflow: hidden;box-shadow: 10px 10px 5px #888888; }
 .ui-dialog .ui-dialog-titlebar { padding: .4em 1em; position: relative;  }
 .ui-dialog .ui-dialog-title { float: left; margin: .1em 16px .1em 0; } 
 .ui-dialog .ui-dialog-titlebar-close { position: absolute; right: .3em; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 18px; }
@@ -478,7 +478,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
  */
 .ui-tabs { position: relative; padding: .2em; zoom: 1; } /* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
 .ui-tabs .ui-tabs-nav { margin: 0; padding: .2em .2em 0; background: none; border : 0; border-bottom: 1px solid #CCCCCC;}
-.ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relative; top: 1px; margin: 0 .2em 1px 0; border-bottom: 0 !important; padding: 0; white-space: nowrap; }
+.ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relative; top: 1px; margin: 0 .2em -1px 0; border-bottom: 0 !important; padding: 0; white-space: nowrap; }
 .ui-tabs .ui-tabs-nav li a { float: left; padding: .2em .5em; text-decoration: none; }
 .ui-tabs .ui-tabs-nav li.ui-tabs-selected { margin-bottom: 0; padding-bottom: 1px; }
 .ui-tabs .ui-tabs-nav li.ui-tabs-selected a, .ui-tabs .ui-tabs-nav li.ui-state-disabled a, .ui-tabs .ui-tabs-nav li.ui-state-processing a { cursor: text; }
