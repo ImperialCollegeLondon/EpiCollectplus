@@ -439,7 +439,9 @@ EpiCollect.Project = function()
 	
 	this.validateFieldName = function(form, field)
 	{
-        name = field.id
+        
+        
+        var name = field.id
         if(name === "") return 'The field ID cannot be blank';
 		if(form.fields[name] && form.fields[name] != field)  return '<em>' + name + '</em> is not a valid ID.  <br /> <br /> There is already a field called ' + name + ' in this form';
 		var kw = EpiCollect.KEYWORDS;
@@ -1920,7 +1922,7 @@ EpiCollect.Field = function()
 		}
 	};
 	
-	this.validate = function(value)
+	this.validate = function(value, ignoreDouble)
 	{
 		
 		//console.debug('checking...' + this.id + '  = ' + value);
@@ -2098,7 +2100,7 @@ EpiCollect.Field = function()
 				if(valStr !== matchStr) msgs.push("The value does not match the string from the parent field");
 			}
 			
-			if( this.verify )
+			if( this.verify && !ignoreDouble )
 			{
 				if( !$("#" + this.id).hasClass("ecplus-valid" ))
 				{

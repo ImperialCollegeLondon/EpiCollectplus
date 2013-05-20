@@ -86,42 +86,6 @@
  		
 		$('form').tabs();
 		
-		/*$('#uploadxml').load(function(){
-			$('#uploadxml')[0].contentDocument.forms[0].update.value = true
-			$('#uploadxml').unbind('load');
-			if($('#uploadxml')[0].contentDocument.forms[0])
-			{
-		  		$($('#uploadxml')[0].contentDocument.forms[0].xml).change(function(){
-		  			$('#uploadxml')[0].contentDocument.forms[0].submit();
-		  		});
-			}
-			$('#uploadxml').load(function(){
-				$('#uploadStatus').empty();
-	  			try{obj = JSON.parse($($('#uploadxml')[0].contentDocument.body).text());}catch(err){}
-	  			if(!obj || !obj.valid){
-	  				
-	  				if($('#uploadxml')[0].contentWindow.location.href != location.origin + "{#SITE_ROOT#}/html/projectIFrame.html") {$('#uploadxml')[0].src = "{#SITE_ROOT#}/html/projectIFrame.html";}
-	  				$('#uploadxml').show();
-	  				//show error messages
-	  				$('#uploadStatus').addClass("err");
-	  				$('#uploadStatus').removeClass("go");
-	  				$('#uploadStatus').append("<p>" + obj.msgs.join("</p><p>") + "</p>");
-	  				$('#pdNext').button("disable");
-	  			}
-	  			else
-	  			{
-	  				if($('#uploadxml')[0].contentWindow.location.href != location.origin + "{#SITE_ROOT#}/html/projectIFrame.html") {$('#uploadxml')[0].src = "{#SITE_ROOT#}/html/projectIFrame.html";}
-	  				$('#uploadStatus').addClass("go");
-	  				$('#uploadStatus').removeClass("err");
-	  			
-	  				$('#uploadStatus').append("XML is valid for the project " + obj.name);
-	  				$('.projectName').empty().append(obj.name);
-	  				$(document.forms[0].xml).val(obj.file);
-	  				$('#pdNext').button("enable");
-	  			}
-	  		});
-		});*/
-		
 		$('#uploadimage').load(function(evt){
 			var ele = evt.target;
 			var doc = ele.contentDocument;
@@ -136,9 +100,6 @@
 			}
 		});
   		
-  		//goTo('projectDef');
-		
-		
   	});
   	
   	function goTo(sectionId)
@@ -155,7 +116,14 @@
   			
   			if(!$("#s_" + uType).val().match(new RegExp(email, "i")))
   			{
-  				if(email != curEmail) rm = "<a class=\"remove\" href=\"javascript:removeUser('" + uType + "','" + email + "')\">Remove</a>";
+  				if(email == curEmail) 
+                {
+                    rm = "<a class=\"remove\" href=\"javascript:removeUser('" + uType + "','" + email + "')\">Remove</a>";
+                }
+                else
+                {
+                    rm = '<em>You cannot remove yourself as a manager.</em>';
+                }
   				$("#s_" + uType + " tbody").append("<tr><td>" + email + "</td><td>"  + rm + "</td></tr>");
   			}
   			updateUField(uType);
@@ -240,12 +208,12 @@
   &gt; <a href="../{#projectName#}">{#projectName#}</a> &gt; <a href="../{#projectName#}/update">Manage Project</a>
 {{/breadcrumbs}}
 {{main}}
-	  <h1 id="title">Manage <span class="projectName"></span></h1>
+	  <h1 id="title">Manage Project : <span class="projectName"></span></h1>
 	  <div id="message"></div>
 	  <form id="projectOptions" action="updateStructure" method="POST">
 	  		<ul>
 	  			<!-- <li><a href="#projectDef">Project Definition</a></li> -->
-	  			<li><a href="#description">Description</a></li>
+	  			<li><a href="#description">Description and Image</a></li>
 	  			<li><a href="#visibility">Visibility</a></li>
 	  			<li><a href="#listing">Listing</a></li>
 	  			<li><a href="#s_managers">Managers</a></li>
@@ -261,22 +229,26 @@
 		 		
 	 		</div> -->
 	 		<div id="description" class="section">
-			  	<h2>Project Description and Image</h2>
-			  	<p>Here you can add a plain text description of your project.</p>
-			  	<textarea rows="10" cols="50" id="description" name="description">{#description#}</textarea>
-			  	<p>You can also upload a logo or other image that will be displayed on your project page.</p>
-			  	<iframe id="uploadimage" src="uploadMedia?fn={#image#}"></iframe>
-		  		<div id="uploadStatusImage" class="flash"></div>
-		 		<input type="hidden" name="projectImage"/>
-		 		<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
-		 		
+                <div class="group">
+                    <h2>Project Description</h2>
+                    <p>Here you can add a plain text description of your project.</p>
+                    <textarea rows="10" cols="50" id="description" name="description">{#description#}</textarea>
+                </div>
+                <div class="group">
+                    <h2>Project Image or Logo</h2>
+                    <p>You can also upload a logo or other image that will be displayed on your project page.</p>
+                    <iframe id="uploadimage" src="uploadMedia?fn={#image#}"></iframe>
+                    <div id="uploadStatusImage" class="flash"></div>
+                    <input type="hidden" name="projectImage"/>
+                    <a class="panelSwitcher" href="javascript:save()">Save Changes</a>
+		 		</div>
 	 		</div>
 		 	<div id="visibility" class="section">
 				<h2>Data Visibility</h2>
 				<p>You can choose whether your data is available to anyone via this website, or restricted to the project managers and curators. You can add Managers and Curators using the tabs on this page.</p>
 				<div id="public">
-					<input type="radio" name="public" id="isPublic" value="true" /><label for="isPublic">I would like anyone to be able <br />to view the data in this project.</label>
-					<input type="radio" name="public" id="isPrivate" value="false" /><label for="isPrivate">I only want people I specify to be able<br /> to view the data in this project.</label>
+					<input type="radio" name="public" id="isPublic" value="true" /><label for="isPublic"><b>Public</b> I would like anyone have access to this project's data.</label>
+					<input type="radio" name="public" id="isPrivate" value="false" /><label for="isPrivate"><b>Private</b> I want to restrict access to the project managers and curators.</label>
 				</div>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 				
@@ -285,15 +257,15 @@
 				<h2>Listing on the Homepage</h2>
 				<p>The front page of this server displays a list of projects that have been created on this server, please choose one of the following options</p>
 				<div id="listed">
-					<input type="radio" name="listed" id="isListed" value="true" /><label for="isListed">I would like this project to appear <br />on the list on the homepage of this server.</label>
-					<input type="radio" name="listed" id="notListed" value="" /><label for="notListed">I would not like this project to appear <br />on the list on the homepage of this server.</label>
+					<input type="radio" name="listed" id="isListed" value="true" /><label for="isListed"><b>Listed</b> I would like my project listed publically</label>
+					<input type="radio" name="listed" id="notListed" value="" /><label for="notListed"><b>Hidden</b> I do not want my project to be listed publically</label>
 				</div>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 			</div>
 			<div id="s_managers" class="section">
 				<h2>Project Managers</h2>
 				<p>Managers have the ability to add and remove other project managers and curators, they can also update the project 
-				settings and the project definition. Managers can also Add, edit and delete data using the web interface.</p>
+				settings and the project definition. Managers can also add, edit and delete data using the web interface.</p>
 				<table> 
 					<thead>
 						<tr><th>Email</th><th class="remove">Remove</th></tr>
@@ -322,7 +294,7 @@
 			</div>
 			<div id="s_delete" class="section">
 				<h2>Delete Project</h2>
-				<p>Use the button below to delete this project and all of its data from the server.</p>
+				<p>Use the button below to delete this project and all of its data from the server. Deleting your project is permenant and cannot be undone.</p>
 				<a href="javascript:deleteProject()" class="danger button"> Delete Project </a>
 			</div>
 			

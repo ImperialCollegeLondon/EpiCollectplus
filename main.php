@@ -7,8 +7,10 @@ $dat = new DateTime('now');
 //$dfmat = '%s.u';
 
 $SITE_ROOT = '';
+$PUBLIC = false;
 $XML_VERSION = 1.0;
 $CODE_VERSION = "1.4e";
+
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
@@ -78,7 +80,7 @@ include (sprintf('%s/Classes/EcEntry.php', $DIR));
 
  function openCfg()
  {
-    global $cfg, $DIR;
+    global $cfg, $DIR, $PUBLIC;
     
     $cfg_fn = sprintf('%s/ec/epicollect.ini', rtrim($DIR, '/'));
     
@@ -93,13 +95,14 @@ include (sprintf('%s/Classes/EcEntry.php', $DIR));
             $cfg->writeConfig();
         }
 
-
         if(!array_key_exists('salt',$cfg->settings['security']) || trim($cfg->settings['security']['salt']) == '')
         {
             $str = genStr();
             $cfg->settings['security']['salt'] = $str;
             $cfg->writeConfig();
         }
+        
+        $PUBLIC = $cfg->settings['misc']['public_server'];
         
     }
     catch (Exception $err)
@@ -327,7 +330,8 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 		// else show the login link
 		else
 		{
-			$template = str_replace('{#loggedIn#}', '<a href="{#SITE_ROOT#}/login.php">Sign in</a>', $template);
+            global $PUBLIC;
+			$template = str_replace('{#loggedIn#}', '<a href="{#SITE_ROOT#}/login.php">Log in</a>' . ($PUBLIC ? ' or <a href="{#SITE_ROOT#}/register">register</a>' : ''), $template);
 		}
 		// work out breadcrumbs
 		//$template = str_replace("{#breadcrumbs#}", '', $template);
@@ -1911,11 +1915,26 @@ function formHandler()
 				if(array_key_exists("mode", $_GET) && $_GET["mode"] == "list")
 				{
 					echo "<entries>";
-					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "xml");
+					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object");
 					if($res !== true) die($res);
 					while($ent = $prj->tables[$frmName]->recieve(1, true))
 					{
-						echo $ent;
+                        echo "<entry>";
+                        foreach ( $ent[0] as $key => $val )
+                        {
+                            if( array_key_exists($key, $prj->tables[$frmName]->fields) && ( $prj->tables[$frmName]->fields[$key]->type === 'location' ||  $prj->tables[$frmName]->fields[$key]->type === 'gps' ))
+                            {
+                                foreach( $val as $x => $y )
+                                {
+                                    printf('<%s_%s>%s</%s_%s>', $key, $x, $y, $key, $x);
+                                }
+                            }
+                            else
+                            {
+                                printf('<%s>%s</%s>', $key, $val, $key);
+                            }
+                        }
+                        echo "</entry>";
 					}
 					echo "</entries>";
 					return;
@@ -3223,20 +3242,20 @@ function formBuilder()
 	global $url, $auth;
 	$prj_name = str_replace('/formBuilder', '', $url);
 	
-        $prj = new EcProject();
-        $prj->name = $prj_name;
-        $prj->fetch();
-        
-        $uid = $auth->getEcUserId();
-        
-        if($prj->checkPermission($uid))
-        {
-            echo applyTemplate('./base.html' , './createOrEditForm.html', array('projectName' => $prj_name));
-        }
-        else
-        {
-            accessDenied(sprintf(' Project %s' , $prj_name ));
-        }
+    $prj = new EcProject();
+    $prj->name = $prj_name;
+    $prj->fetch();
+    
+    $uid = $auth->getEcUserId();
+    
+    if($prj->checkPermission($uid))
+    {
+        echo applyTemplate('./base.html' , './createOrEditForm.html', array('projectName' => $prj_name));
+    }
+    else
+    {
+        accessDenied(sprintf(' Project %s' , $prj_name ));
+    }
 }
 
 function getControlTypes()

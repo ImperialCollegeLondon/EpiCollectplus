@@ -135,11 +135,6 @@ form p, .ecplus-form-element p, .filterControl p
     background-color:#444488;
 }
 
-tr
-{
-	
-}
-
 #pageHead
 {
     position: relative;
@@ -232,14 +227,10 @@ tr.alt
 	overflow-x : auto;
 }
 
-.ecplus-data
+.group
 {
-	
-}
-
-.ecplus-valid
-{
-	
+    padding-top: 0.5em;
+    padding-bottom: 1.5em;
 }
 
 .ecplus-checking
@@ -746,14 +737,16 @@ tr.alt
 }
 
 .button.danger, .ui-widget-content.danger, .ui-button.danger
-{
-	background : #FFEEEE !important;
-	border: 1px solid #FF6666 !important;
+{ 
+	background : #CC0000 !important;
+	border: 2px solid #F00 !important;
+    color : white;
+    font-weight : bold;
 }
 
 .button.danger:hover
 {
-	background-color : #FF6666 !important;
+	background-color : #CC3333 !important;
 }
 
 .flash
@@ -998,16 +991,16 @@ tr.alt
 
 .ui-buttonset .ui-state-active
 {
-    border : 3px solid green;
+    border : 3px solid #a54df9;
     font-weight : normal;
-    max-width : 10em;
+    max-width : 20em;
     background : url('../images/glyphicons/glyphicons_206_ok_2.png') 6px 45% no-repeat;
 }
 
 .ui-buttonset .ui-state-default
 {   
     padding: .6em 1.5em;
-    max-width : 10em;
+    max-width : 20em;
 }
 
 #ec_dialog p
