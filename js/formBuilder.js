@@ -159,10 +159,14 @@ $(function()
 	
 	$("#options .removeOption").unbind('click').bind('click', removeOption);
 	$("#jumps .remove").unbind('click').bind('click', removeOption);
-        $('#destination').append('<img src="../images/editmarker.png" class="editmarker">')
-        $('.editmarker').hide();
-        $('.last input, .last select').change(function(){ $('#destination .selected').addClass('editing'); });
-        $('.last').hide();
+    $('#destination').append('<img src="../images/editmarker.png" class="editmarker">')
+    $('.editmarker').hide();
+    $('.last input, .last select').change(function(){ $('#destination .selected').addClass('editing'); });
+    $('.last').hide();
+    $('#required').change(function(evt)
+    {
+        $('[name=jumpType] option[value=NULL]').toggle(!$( this ) .attr('checked'));
+    });
 });
 
 function drawProject(prj)
@@ -295,7 +299,7 @@ function addControlToForm(id, text, type)
 	
 	$("p.title", jq).text(text.decodeXML());
 	jq.attr("id", id);
-	
+    
 	$(".option", jq).remove();
 
 	if( type.match(/select1?|radio/) )
@@ -361,6 +365,8 @@ function removeJump(evt)
 	$(ele).remove();
 }
 
+
+
 function drawFormControls(form)
 {	
 	$("#destination div").remove();
@@ -371,7 +377,8 @@ function drawFormControls(form)
 	{
 		var fld = fields[f];
 		var cls = undefined;
-		
+		var suffix = '';
+        
 		if(fld.type === "input")
 		{
 			
@@ -382,10 +389,12 @@ function drawFormControls(form)
 			else if(fld.date || fld.setDate)
 			{
 				cls = "ecplus-date-element";
+              
 			}
 			else if(fld.time || fld.setTime)
 			{
 				cls = "ecplus-time-element";
+              
 			}
 			else
 			{
@@ -403,7 +412,9 @@ function drawFormControls(form)
             cls = "ecplus-" + fld.type + "-element";
         }
 		
-		addControlToForm(fld.id, fld.text, cls);		
+        
+        
+		addControlToForm(fld.id, fld.text + fld.getSuffix(), cls);		
 	}
 	
 }
@@ -417,7 +428,7 @@ function updateSelected(is_silent)
 	
 	var name = cur.id; 
 	var _type = jq.attr("type");
-	
+    
 	if( _type === 'fk' )
 	{
 	//	cur.id = project.forms[$('#parent').val()].key;
@@ -426,16 +437,6 @@ function updateSelected(is_silent)
 	{
         cur.id = $('#inputId').val();
         cur.text = $('#inputLabel').val();
-        if(_type === "date" || _type === "time")
-        {
-            var suf = '(' + $('#' + _type).val() + ')';
-            var rxsuf = '\\(' + $('#' + _type).val().replace(/\//g, '\\/') + '\\)';
-
-            if(!cur.text.match(new RegExp(rxsuf +'$', 'g')))
-            {
-                    cur.text = cur.text + ' ' + suf;
-            }
-        }
 	}
 	
     var nameValid = project.validateFieldName(cfrm, cur);
@@ -569,7 +570,7 @@ function updateSelected(is_silent)
 	cur.jump = jump.trimChars(",");
 	
 	jq.attr("id", cur.id);
-	$("p.title", jq).text(cur.text);
+	$("p.title", jq).text(cur.text + cur.getSuffix());
 	
 	$(".option", jq).remove();
 	
@@ -660,66 +661,70 @@ function updateForm()
 function updateJumps()
 {
 	try{
-	//updateForm();
-		
-	var opts = currentControl.options;
-	
-	var fieldCtls = $(".jumpvalues");
-	
-	var vals = [];
-	
-	
-	fieldCtls.each(function(idx, ele){
-		vals[idx] = $(ele).val();
-	});
-	
-	fieldCtls.empty();
-	fieldCtls.html(fieldCtls.html());
-	for(var i = opts.length; i--;)
-	{
-		fieldCtls.html("<option value=\"" + (i + 1) + "\" >" + opts[i].label + "</option>" + fieldCtls.html());
-	}
-	
-	$(".jumpvalues").each(function(idx, ele){
-		 $(ele).val(vals[idx]);
-	});
-	
-	fieldCtls = $(".jumpdestination");
-	
-	vals = [];
-	
-	fieldCtls.each(function(idx, ele){
-		vals[idx] = $(ele).val();
-	});
-	
-	for(fld in currentForm.fields)
-	{
-		var field = currentForm.fields[fld];
-		var lbl = currentForm.fields[fld].text;
-		if(lbl.length > 25) lbl = lbl.substr(0,22) + "...";
-		if(field.type && !field.hidden) fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
-	}
-	fieldCtls.append("<option value=\"END\">END OF FORM</option>");
-	$(".jumpdestination").each(function(idx, ele){
-		 var jq = $(ele);
-		 var opts = $('option', jq);
-		 var len = opts.length;
-		 
-		 var show = false;
-		 var cField = $('.ecplus-form-element.selected').attr('id');
-		 var fidx;
-		 
-		 for(var i = 0; i < len; i++ )
-		 {
-			$(opts[i]).attr('disabled', !show);
-			if( opts[i].value === cField ) {
-				// hide the next + 1 element as there's no point jumping to the next question!
-				$(opts[++i]).attr('disabled', !show);
-				show = true;
-			}
-		 }
-		 if(vals.length > idx) jq.val(vals[idx]);
-	});
+        //updateForm();
+            
+        var opts = currentControl.options;
+        
+        var fieldCtls = $(".jumpvalues");
+        
+        var vals = [];
+        
+        
+        fieldCtls.each(function(idx, ele){
+            vals[idx] = $(ele).val();
+        });
+        
+        fieldCtls.empty();
+        fieldCtls.html(fieldCtls.html());
+        for(var i = opts.length; i--;)
+        {
+            fieldCtls.html("<option value=\"" + (i + 1) + "\" >" + opts[i].label + "</option>" + fieldCtls.html());
+        }
+        
+        $(".jumpvalues").each(function(idx, ele){
+             $(ele).val(vals[idx]);
+        });
+        
+        fieldCtls = $(".jumpdestination");
+        
+        vals = [];
+        
+        fieldCtls.each(function(idx, ele){
+            vals[idx] = $(ele).val();
+        });
+        
+        for(fld in currentForm.fields)
+        {
+            var field = currentForm.fields[fld];
+            var lbl = currentForm.fields[fld].text;
+            if(lbl.length > 25) lbl = lbl.substr(0,22) + "...";
+            if(field.type && !field.hidden) fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
+        }
+        fieldCtls.append("<option value=\"END\">END OF FORM</option>");
+        
+        $(".jumpdestination").each(function(idx, ele){
+             var jq = $(ele);
+             var opts = $('option', jq);
+             var len = opts.length;
+             
+             var show = false;
+             var cField = $('.ecplus-form-element.selected').attr('id');
+             var fidx;
+             
+             for(var i = 0; i < len; i++ )
+             {
+                $(opts[i]).toggle(show);
+                if( opts[i].value === cField ) {
+                    // hide the next + 1 element as there's no point jumping to the next question!
+                    $(opts[++i]).toggle(show)
+                    show = true;
+                }
+             }
+             if(vals.length > idx) jq.val(vals[idx]);
+        });
+        
+        $('[name=jumpType] option[value=NULL]').toggle(!$('#required').attr('checked'));
+        
 	}catch(err)
 	{
 		/*alert(err)*/;

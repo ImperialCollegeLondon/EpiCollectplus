@@ -989,7 +989,7 @@ tr.alt
 	background : url("../images/branch.png") 2px 1.75em no-repeat;		
 }
 
-.ui-buttonset .ui-state-active
+.choice .ui-buttonset .ui-state-active
 {
     border : 3px solid #a54df9;
     font-weight : normal;
@@ -997,7 +997,7 @@ tr.alt
     background : url('../images/glyphicons/glyphicons_206_ok_2.png') 6px 45% no-repeat;
 }
 
-.ui-buttonset .ui-state-default
+.choice .ui-buttonset .ui-state-default
 {   
     padding: .6em 1.5em;
     max-width : 20em;

@@ -1605,6 +1605,30 @@ EpiCollect.Field = function()
 		if(this.title) this.required = true;
     };
 
+    this.getSuffix = function()
+    {
+        var suffix = '';
+        if(this.date || this.setDate)
+        {
+            suffix = ' (' + (this.date ? this.date : this.setDate) + ')';
+          
+        }
+        else if(this.time || this.setTime)
+        {
+            suffix = ' (' + (this.time ? this.time : this.setTime);
+            if(suffix.match(/HH/g))
+            {
+                suffix += ' - 24 hours';
+            }
+            else if(suffix.match(/hh/g))
+            {
+                suffix += ' - 12 hours';
+            }
+            suffix += ')';
+            
+        }
+        return suffix;
+    }
     
    this.getInput = function(val, debug)
    {

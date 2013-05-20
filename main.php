@@ -1482,6 +1482,7 @@ function downloadData()
 	else if($dataType == "data")
 	{
 		header("Content-type: text/plain");
+        
 		$txn = "$root\\ec\\uploads\\{$baseFn}.tsv";
 		$ts_url = "$wwwroot/ec/uploads/{$baseFn}.tsv";
 		if(file_exists($txn))
@@ -2109,7 +2110,7 @@ function formHandler()
 			
 			case "tsv":
 		
-				//
+				
 				if( !file_exists('ec/uploads')) mkdir('ec/uploads');
 				$filename = sprintf('ec/uploads/%s_%s_%s%s.tsv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
 				
@@ -3375,6 +3376,8 @@ function getMedia()
 {
 	global $url;
 	
+    header("Content-Disposition: attachment");
+    
 	if(preg_match('~tn~', $url) )
 	{
 		//if the image is a thumbnail just try and open it
@@ -3526,6 +3529,13 @@ function projectUsage()
 	$sum = $prj->getUsage();
 	header("Content-type: text/plain");
 	echo $sum; //"{\"forms\" : ". json_encode($sum) . "}";
+}
+
+function getUpload()
+{
+    global $url;
+    header("Content-Disposition: attachment");
+    echo file_get_contents("./" . $url);
 }
 
 function writeSettings()
@@ -3789,7 +3799,7 @@ $pageRules = array(
 		'getControls' =>  new PageRule(null, 'getControlTypes'),
 		'uploadFile.php' => new PageRule(null, 'uploadHandlerFromExt'),
 		'ec/uploads/.+\.(jpe?g|mp4)$' => new PageRule(null, 'getMedia'),
-		'ec/uploads/.+' => new PageRule(null, null),
+		'ec/uploads/.+' => new PageRule(null, 'getUpload'),
 	
 		'uploadTest.html' => new PageRule(null, 'defaultHandler', true),
 		'test' => new PageRule(null, 'siteTest', false),
