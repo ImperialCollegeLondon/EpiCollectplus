@@ -21,7 +21,8 @@
 		{
 			vertical-align: top;
 			display:inline-block;
-			width : 49%;
+			width : 45%;
+            margin-right : 2em;
 		}
 		
 		#users section table
@@ -36,23 +37,22 @@
 	
 		.reset
 		{
-			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_240_rotation_lock.png") 2px 2px no-repeat;
+			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_240_rotation_lock.png") 0.5em 45% no-repeat;
 		}
 		
 		.disable
 		{
-			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_007_user_remove.png") 2px 2px no-repeat;
+			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_007_user_remove.png") 0.5em 45% no-repeat;
 		}
 		
 		.enable
 		{
-			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_006_user_add.png") 2px 2px no-repeat;
+			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_006_user_add.png") 0.5em 45% no-repeat;
 		}
 	
 		.reset, .disable, .enable
 		{
-			padding : 0;
-			height : 26px;
+			vertical-align : middle;
 		}
 		
 		.reset a, .disable a, .enable a
@@ -60,8 +60,9 @@
 			margin: 0;
 			display: inline-block;
 			height: 26px;
-			padding-left : 30px;
-			padding-top: 5px;
+			padding-left : 32px;
+			padding-top: 4px;
+            padding-bottom: 4px;
 		}
 		
 		.reset a:hover, .disable a:hover, .enable a :hover
@@ -73,13 +74,14 @@
 {{script}}
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui.min.js"></script>
         <script type="text/javascript">
-		var en = false
+		var en = false;
 	
 		function openResetForm(usr)
 		{
 			userToEdit = usr;
 			$("#resetConfirmDialog").dialog("open");
 		}
+        
 		function openDisableForm(usr, enable)
 		{
 			userToEdit = usr;
@@ -97,11 +99,18 @@
 		{
 			$.getJSON("{#SITE_ROOT#}/listUsers", "", function(obj, status, request){
 				$("#users table tbody").empty();
-				for(var i = 0; i < obj.users.length; i++)
+				for( var i = 0; i < obj.users.length; i++ )
 				{
-					if(obj.users[i].active)
+					if( obj.users[i].active )
 					{
-						$("#users table tbody").append("<tr><td>" + obj.users[i].firstName + "</td><td>" + obj.users[i].lastName + "</td><td>" + obj.users[i].email + "</td><td class=\"disable\"><a href=\"javascript:openDisableForm(" + obj.users[i].userId + ")\">Disable User</a></td><td class=\"reset\"><a href=\"javascript:openResetForm(" + obj.users[i].userId + ")\">Reset password</a></td></tr>")
+                        if( obj.users[i].email.match(/@g(oogle)?mail.com$/) )
+                        {
+                            $("#users table tbody").append("<tr><td>" + obj.users[i].firstName + "</td><td>" + obj.users[i].lastName + "</td><td>" + obj.users[i].email + "</td><td class=\"disable\"><a href=\"javascript:openDisableForm(" + obj.users[i].userId + ")\">Disable User</a></td><td class=\"blank\">&nbsp;</td></tr>")
+                        }
+                        else
+                        {
+                            $("#users table tbody").append("<tr><td>" + obj.users[i].firstName + "</td><td>" + obj.users[i].lastName + "</td><td>" + obj.users[i].email + "</td><td class=\"disable\"><a href=\"javascript:openDisableForm(" + obj.users[i].userId + ")\">Disable User</a></td><td class=\"reset\"><a href=\"javascript:openResetForm(" + obj.users[i].userId + ")\">Reset password</a></td></tr>")
+                        }
 					}
 					else
 					{

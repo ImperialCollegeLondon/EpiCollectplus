@@ -93,7 +93,7 @@
 		#map
 		{
 			position : relative;
-			margin : 1em 16em 1em 15em; 
+			margin : -1em 16em 1em 15em; 
 			height : 30em;
 			border: 1px solid #CCCCCC;
 			left:0;
@@ -131,6 +131,23 @@
 			margin : 0px;
 		}
 		
+        #fieldSelector
+        {
+            left : 0;
+			position : absolute;
+			top : 1.5em;
+            width : 15em;
+            height : 1.5em
+        }
+        
+        #fieldSelectorlabel
+        {   
+            left : 0;
+			position : absolute;
+			top : 0;
+            width : 15em;
+            height : 1.5em
+        }
 		#sidebar 
 		{
 			border: 1px solid #CCCCCC;
@@ -138,7 +155,8 @@
 			overflow : auto;
 			left : 0;
 			position : absolute;
-			top : 0em;
+			top : 3.5em;
+            bottom: 0em;
 			width : 14em;
 		}
 		
@@ -351,9 +369,9 @@
 					{
 						if(ui.newPanel.attr('id') === "mapTab")
 						{
-                                                        google.maps.event.trigger(map, 'resize');
-                                                        if(mapBounds) map.fitBounds(mapBounds);
-                                                        drawGraph($('#graphOne .ecplus-pane'), $('#mapColourField').val(), 'pie');
+                            google.maps.event.trigger(map, 'resize');
+                            if(mapBounds) map.fitBounds(mapBounds);
+                            drawGraph($('#graphOne .ecplus-pane'), $('#mapColourField').val(), 'pie');
                                                         
 						}
 					}
@@ -579,19 +597,19 @@
 						}
 					}
 				}
-				
-                                
-                                
+				    
 				getData();
 				
-                                $('.showHideToggle').button();
-                                $('.button-set').buttonset();
-                                $('.btn').button();
-                                $('#showHideFields a').button({
-                                    icons: {
-                                      secondary: "ui-icon-triangle-1-s"
-                                    }
-                                });
+                $('.showHideToggle').button();
+                $('.button-set').buttonset();
+                $('.btn').button();
+                $('#showHideFields a').button({
+                    icons: {
+                      secondary: "ui-icon-triangle-1-s"
+                    }
+                });
+                
+                
 				$('#showHideFields input').change(function(evt){
 					var ctrl = $(evt.target).val();
 					hiddenColumns[ctrl] = !evt.target.checked;
@@ -642,6 +660,23 @@
 				$('.minmax').mouseleave(function(){
 					$(this).parent().removeClass('hover');
 				});
+                
+                var _gps_f = prj.forms[formName].gpsFlds;                
+                var _gps_n = _gps_f.length;
+                var _gps_o = '';
+                var _frm_flds = prj.forms[formName].fields;
+                
+                for(  var n = _gps_n ; n--; )
+                {
+                    var fld = '<option value="' + _gps_f[n] + '" ' + (n ? '' : 'SELECTED')+ '>' + _frm_flds[_gps_f[n]].text + '</option>';
+                    _gps_o = fld + _gps_o;
+                }
+                console.debug(_gps_o);
+                $('#fieldSelector').append(_gps_o);
+                
+                $('#fieldSelector').change(function(){
+                    setLocationField($( this ).val() );
+                });
 			};	
 			
 			function firstPage()
@@ -849,8 +884,23 @@
 				$("#total").text(stats["ttl"]);
 
 			}
-                        
-                        
+             
+            function setLocationField(name)
+            {
+                var len = mapData.length;
+				
+                
+				for(var i = len; i--;)
+				{
+					var d = mapData[i];
+					var mkr = markers[i];
+                    
+                    mkr.setPosition(new google.maps.LatLng(d[name].latitude, d[name].longitude))
+
+                }
+                
+                markerClusterer.repaint();
+            }
 			
 			function mapDataCallback(data, status, xhr)
 			{
@@ -988,7 +1038,7 @@
 					}
 					
 					$('#map-container').height(mapHeight);
-					mapWidth = $('#map').width();
+					
 					$('#map').css('position', '');
 					
                                         window.mapBounds = new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon));
@@ -997,13 +1047,11 @@
 						var div = $('.ecplus-pane', $(this).parent());
 						var par = $(this).parent(); 
 						var img = this;
-						
-						
-						
+
 						if (par.hasClass('minimised'))
 						{
 							//par.switchClass('minimised', '',1000,'swing',function(){
-								
+                            var mapWidth = $('#map').width();
 							$('#legend').hide();
 							par.animate({height : mapHeight, width : mapWidth },1000,'swing',function(){
 								par.removeClass('minimised');
@@ -1021,7 +1069,7 @@
 						else
 						{
 							$('#legend').show();
-						
+                            var mapWidth = $('#graphOne').width();
 							//par.switchClass('', 'minimised',1000,'swing',function(){
 							par.animate({height : 210, width : 210 },1000,'swing',function(){
 								par.addClass('minimised');	
@@ -1537,6 +1585,8 @@
 			<div id="progressbar"><div class="progress-label">Getting Total no of Entries...</div></div>
 			<div id="map-container">
 				<div id="graphOne" class="graphPanel minimised"></div>
+                <h4 id="fieldSelectorLabel">Mapping location : </h4>
+                <select id="fieldSelector"></select>
 				<div id="sidebar">
 					
 				</div>

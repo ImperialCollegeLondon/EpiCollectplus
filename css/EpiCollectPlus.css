@@ -109,6 +109,11 @@ p
     line-height : 18px;
 }
 
+iframe
+{
+    border : none;
+}
+
 form p, .ecplus-form-element p, .filterControl p
 {
     margin : 0.5em 0 0.5em 0;	
@@ -128,11 +133,6 @@ form p, .ecplus-form-element p, .filterControl p
 .ecplus-data th:hover
 {
     background-color:#444488;
-}
-
-tr
-{
-	
 }
 
 #pageHead
@@ -227,14 +227,10 @@ tr.alt
 	overflow-x : auto;
 }
 
-.ecplus-data
+.group
 {
-	
-}
-
-.ecplus-valid
-{
-	
+    padding-top: 0.5em;
+    padding-bottom: 1.5em;
 }
 
 .ecplus-checking
@@ -741,14 +737,16 @@ tr.alt
 }
 
 .button.danger, .ui-widget-content.danger, .ui-button.danger
-{
-	background : #FFEEEE !important;
-	border: 1px solid #FF6666 !important;
+{ 
+	background : #CC0000 !important;
+	border: 2px solid #F00 !important;
+    color : white;
+    font-weight : bold;
 }
 
 .button.danger:hover
 {
-	background-color : #FF6666 !important;
+	background-color : #CC3333 !important;
 }
 
 .flash
@@ -991,6 +989,20 @@ tr.alt
 	background : url("../images/branch.png") 2px 1.75em no-repeat;		
 }
 
+.choice .ui-buttonset .ui-state-active
+{
+    border : 3px solid #a54df9;
+    font-weight : normal;
+    max-width : 20em;
+    background : url('../images/glyphicons/glyphicons_206_ok_2.png') 6px 45% no-repeat;
+}
+
+.choice .ui-buttonset .ui-state-default
+{   
+    padding: .6em 1.5em;
+    max-width : 20em;
+}
+
 #ec_dialog p
 {
     margin-bottom: 0.5em;
@@ -1088,7 +1100,7 @@ tr.alt
 	margin-bottom : 1.5em;
 }
 
-.ui-dialog-titlebar-close
+.uncloseable .ui-dialog-titlebar-close
 { 
     display : none !important; 
 }
