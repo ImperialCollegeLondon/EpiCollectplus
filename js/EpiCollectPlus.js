@@ -32,6 +32,278 @@ EpiCollect.KEYWORDS = [
      'test', 'markers', 'images', 'js', 'css', 'ec', 'pc', 'create'
 ];
 
+/**
+ * Methods to validate entries into EpiCollect+ from the WebApp. Each method will take a value, paramaters in an object/dictionary and a callback. The callback will accept a dictionary containing a validation 
+ * result and an array containing messages that describe any validation errors.
+ *
+ * @author Chris I Powell
+ */
+EpiCollect.Validators = {
+    "required" : function(val, params, callback, ctrl_id)
+    {
+        if(!!val)
+        {
+            callback({ valid : true, messages :[], control_id : ctrl_id, name : 'required' });
+        }
+        else
+        {
+            callback({ valid : false, messages :['This field is required'], control_id : ctrl_id, name : 'required'  });
+        }
+    },
+    "integer" : function(val, params, callback, ctrl_id)
+    {
+        var intval = Number(val);
+        
+        if(isNaN(intval))
+        {
+            callback({ valid : false, messages : ['is not a number'], name : 'integer', control_id : ctrl_id  });
+        }
+        else if( intval % 1 !== 0 )
+        {
+            callback({ valid : false, messages : ['is not an integer'], name : 'integer', control_id : ctrl_id   });
+        }
+        else
+        {
+            callback({ valid : true, messages :[], control_id : ctrl_id });
+        }
+    },
+    "double" : function(val, params, callback, ctrl_id)
+    {
+        var dblval = Number(val);
+        
+        if(isNaN(dblval))
+        {
+            callback({ valid : false, messages : ['is not a number'], name : 'double', control_id : ctrl_id   });
+        }
+        else
+        {
+            callback({ valid : true, messages :[], name : 'double', control_id : ctrl_id  });
+        }
+    },
+    "date" : function(value, params, callback, ctrl_id)
+    {			
+        var fmt = params.fmt;
+        
+    
+        var day = null;
+        var month = null;
+        var year = null;
+        
+        var msgs = [];
+        
+        for( var i = 0; i < fmt.length; i++ )
+        {
+            if(fmt[i] === "d")
+            {
+                if(fmt[i+1] === "d")
+                {
+                    //console.debug(value.substr(i,2))
+                    day = Number(value.substr(i,2));
+                    if(isNaN(day)) msgs.push("Day is not a number");
+                    i++;
+                }
+                else
+                {
+                    throw "Invalid date format";
+                }
+            }
+            else if( fmt[i] === "M" )
+            {
+                if( fmt[i+1] === "M" )
+                {
+                    //console.debug(value.substr(i,2))
+                    month = Number(value.substr(i,2));
+                    if(isNaN(month)) msgs.push("Month is not a number");
+                    i++;
+                }
+                else
+                {
+                    throw "Invalid date format";
+                }
+            }
+            else if( fmt[i] === "y" )
+            {
+                if( fmt[i+1] === "y" && fmt[i+2] === "y" && fmt[i+3] === "y" )
+                {
+                    year = Number(value.substr(i,4));
+                    if(isNaN(year)) msgs.push("Year is not a number");
+                    i+=3;
+                }
+                else
+                {
+                    throw "Invalid date format";
+                }
+            }
+            
+        }
+        //console.debug('Day = ' + day)
+        if(day || day === 0)
+        {
+            if(day < 1 || day > 31)	msgs.push("Day is out of range");
+            else if(month && (month === 4 || month === 6 || month === 9 || month === 11) && day > 30) msgs.push("Day is out of range");
+            else if(month && month === 2 && day > 29 && (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0))) msgs.push("Day is out of range");
+            else if(month && month === 2 && day > 28) msgs.push("Day is out of range");
+        }
+        //console.debug('Month = ' + month)
+        if(month || month === 0)
+        {
+            if(month < 1 ||  month > 12) msgs.push("Month is out of range");
+        }
+        
+        callback({ valid : msgs.length == 0, messages : msgs, name : 'date', control_id : ctrl_id  });
+    },
+    "time" : function(value, params, callback, ctrl_id)
+    {
+        var fmt = params.fmt;
+    
+        var hours = null;
+        var minutes = null;
+        var seconds = null;
+        
+        var msgs = [];
+        
+        for( var i = 0; i < fmt.length; i ++ )
+        {
+            if( fmt[i] === "H" )
+            {
+                if( fmt[i+1] === "H" )
+                { 
+                    hours = Number(value.substr(i, 2));
+                    if(isNaN(hours)) msgs.push("Hours are not a number");
+                    if(hours < 0 || hours > 23) msgs.push("Hours out of range");
+                    i++;
+                    
+                }
+                else
+                    throw "Time Format is invalid";
+                    
+            }
+            else if( fmt[i] === "m" ) 
+            {
+                if( fmt[i+1] === "m" )
+                {
+                    minutes === Number(value.substr(i,2));
+                    if(isNaN(minutes)) msgs.push("Minutes are not a number");
+                    if(minutes < 0 || minutes > 59) msgs.push("Minutes out of range");
+                    i++;
+                }
+            }
+            else if( fmt[i] === "s" )
+            {
+                if( fmt[i+1] === "s" )
+                {
+                    seconds === Number(value.substr(i,2));
+                    if(isNaN(seconds)) msgs.push("Seconds are not a number");
+                    if(seconds < 0 || seconds > 59) msgs.push("Seconds out of range");
+                    i++;
+                }
+            }
+        }
+        
+         callback({ valid : msgs.length == 0, messages : msgs, name : 'time', control_id : ctrl_id  });
+    },
+    "regex" :function(value, params, callback, ctrl_id)
+    {
+        if(!(value.match(new RegExp(params.regex))))
+        {
+            callback({ valid : false, messages : [params.regexMessage ? params.regexMessage : "The value you have entered is not in the right format."], name : 'regex', control_id : ctrl_id  });;
+        }
+        else
+        {
+            callback({ value : true, messages : [], name : 'regex', control_id : ctrl_id  });
+        }
+    },
+    "max" : function(val, params, callback, ctrl_id)
+    {
+        var nval = Number(val);
+        
+        if(nval > params.max)
+        {
+            callback({ valid : false, messages : ['value must be less than ' + params.max] , name : 'max', control_id : ctrl_id  });
+        }
+        else
+        {
+            callback({ valid : true, messages : [''], name : 'max', control_id : ctrl_id  });
+        }
+        
+    },
+    "min" : function(val, params, callback, ctrl_id)
+    {
+        if(nval < params.min)
+        {
+            callback({ valid : false, messages : ['value must be greater than ' + params.min] , name : 'min', control_id : ctrl_id });
+        }
+        else
+        {
+            callback({ valid : true, messages : [''], name : 'min' , control_id : ctrl_id });
+        }
+    },
+    "match" : function(val, params, callback, ctrl_id)
+    {
+        var matchStr = params.parentValue.match(new RegExp(params.regex))[0];
+        var valStr = value.match(new RegExp(params.regex))[0];
+		
+		if(valStr !== matchStr)
+        {
+            callback({ valid : false, messages : ["The value does not match the string from the parent field"], name : 'match', control_id : ctrl_id  });
+        }
+        else
+        {
+            callback({ valid : true, messages : [''], name : 'match', control_id : ctrl_id  });
+        }
+    },
+    "verify" : function(value, params, callback, ctrl_id)
+    {
+        $("#" + this.id).hide();
+        var ct = this;
+        EpiCollect.prompt({ content : "Please re-enter the value for " + this.text + " to confirm the value", callback : function(newvalue){
+            if( newvalue !== value )
+            {
+                callback({ valid : false, messages : ['the two entered values did not match, please try again.'], name : 'verify', control_id : ctrl_id  });
+            }
+            else
+            {
+                callback({ valid : true, messages : [], name : 'verify', control_id : ctrl_id  });
+            }
+        }});
+    },
+    "key" : function(value, params, callback, ctrl_id)
+    {                        
+        $.ajax({
+            url : params.url + '?' + params.field + '=' + value,
+            success : function(data,status,xhr)
+            {
+                if(data.length > 0)
+                {
+                    callback({ valid : false, messages : ["This field must be unique, the value " + value + " had already been saved for this form."], name : 'key', control_id : ctrl_id  });
+                }
+                else
+                {
+                    callback({ valid : true, messages : [], name : 'key', control_id : ctrl_id  });
+                }
+            }
+        });
+    },
+    "fk" : function(value, params, callback, ctrl_id)
+    {
+        $.ajax({
+            url : params.url + '?term=' + value + '&validate=true',
+            success : function(data, status, xhr)
+            {
+                var res = JSON.parse(data);
+                if(res.valid)
+                {
+                   callback({ valid : true, messages : [], name : 'fk', control_id : ctrl_id  });
+                }
+                else
+                {
+                    callback({ valid : false, messages : ['the parent entry could not be found'], name : 'fk', control_id : ctrl_id  });
+                }
+            }
+        });
+    }
+};
+
 if (!String.prototype.encodeXML) {
   String.prototype.encodeXML = function () {
     return this.replace(/&/g, '&amp;')
@@ -390,7 +662,7 @@ EpiCollect.Project = function()
 	{
 		var n = Number(this.forms[name].num) + 1;
 		var tbl = false;
-		console.debug(n);
+
 		for(var t in this.forms)
 		{
 			if(Number(this.forms[t].num) === n)
@@ -641,11 +913,11 @@ EpiCollect.Form = function()
 			}
 		}
 		
-                if(this.key && this.fields[this.key])
-                {
-                    this.fields[this.key].isKey = true;
-                    this.fields[this.key].required = true;
-                }
+        if(this.key && this.fields[this.key])
+        {
+            this.fields[this.key].isKey = true;
+            this.fields[this.key].required = true;
+        }
     };
 		
 	this.nextMkr = function()
@@ -717,49 +989,7 @@ EpiCollect.Form = function()
 		}
 		while(i < this.legend.childNodes.length) this.legend.removeChild(this.legend.childNodes[i]);
 	};
-	
-	
-	
-	this.showAndFocus = function(key)
-	{
-		if(this.w) this.w.close();
-		/*for(mkr in this.markers)
-		{
-			if(this.markers[mkr].proprietary_infowindow)this.markers[mkr].proprietary_infowindow.close();
-		}*/
-		if(!this.infoWindow) this.infoWindow = new google.maps.InfoWindow({});
-		this.infoWindow.close();
-		if(this.markers[key])
-		{
-			//this.markers[key].openBubble();
-			this.infoWindow.setContent(this.markerData[key].infoBubble);
-			this.infoWindow.setPosition(this.markers[key].getPosition());
-			this.infoWindow.open(map);
-			map.setCenter(this.markers[key].location);
-			map.setZoom(10);
-		}
-		else
-		{
-			
-			this.w = new Ext.Window({
-				width: 215,
-				title: 'Entry without position',
-				html:this.descs[key],
-				layout:{
-					type: 'hbox',
-					defaultMargins : {
-						top : 5,
-						left : 5,
-						bottom : 5,
-						right : 5
-					},
-					align:'center'								
-				}
-			});
-			this.w.show();
-		}
-	};
-	
+
 	this.removeAllMarkers = function()
 	{
 		for(var mkr in this.markers)
@@ -839,7 +1069,7 @@ EpiCollect.Form = function()
 			.attr("title", (editMode ? "Edit " : "Add ") + this.name)
 			.addClass(vertical ? "ecplus-vertical-form" : "ecplus-form")
 			.removeClass(vertical ? "ecplus-form" :"ecplus-vertical-form")
-			.append("<div class=\"ecplus-form-next\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].moveNext();\">Next</a></div>")
+			.append("<div class=\"ecplus-form-next\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].checkAndAdvance();\">Next</a></div>")
 			.append("<div class=\"ecplus-form-previous\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].movePrevious();\">Previous</a></div>")
 			.append("<div class=\"ecplus-form-pane\"><form name=\"" + this.name + "\"></form></div>");
 		
@@ -928,7 +1158,7 @@ EpiCollect.Form = function()
 					},
 					onClose:function(input, inst)
 					{
-						$( input ).focusin();
+						//$( input ).focusin();
 						/*$( input ).on('blur', function(evt)
 						{
 							if(!project.forms[formName].moveNext(true))
@@ -947,20 +1177,29 @@ EpiCollect.Form = function()
 			
 			$("input.ecplus-timepicker", this.formElement).each(function(idx, ele) { 
 				var fmt = project.forms[formName].fields[ele.name].time;
+                var jq = $(ele)
+                
 				if(project.forms[formName].fields[ele.name].setTime)
 				{
 					fmt = project.forms[formName].fields[ele.name].setTime;					
 				}
 				
-				$(ele).timepicker({ format : fmt });
+				jq.timepicker({ format : fmt });
 				if(project.forms[formName].fields[ele.name].setTime)
 				{
-					if(!data || !data[ele.name]) $(ele).timepicker("setTime", new Date().format(fmt));
-					else $(ele).timepicker("setTime", data[ele.name]);
+					if(!data || !data[ele.name])
+                    {
+                        console.debug(jq.attr('id'));
+                        jq.timepicker("setTime", new Date().format(fmt));
+                    }
+					else 
+                    { 
+                        jq.timepicker("setTime", data[ele.name]); 
+                    }
 				}
 			});
 		//}
-		if(this.gpsFlds.length > 0) $(".locationControl", this.formElement).gpsPicker();
+		if(this.gpsFlds.length > 0) $(".locationControl", this.formElement).each(function(idx, ele) { $( ele ).gpsPicker(); } );
 		$(".ecplus-radio-group, .ecplus-check-group, select", this.formElement).controlgroup();
 		$(".ecplus-media-input", this.formElement).mediainput();
 		
@@ -980,56 +1219,47 @@ EpiCollect.Form = function()
 			child.attr('parentfield', ctrl.attr('id'));
 		});
 		
-		if(vertical)
-		{
-			$(".ecplus-input", this.formElement).blur(function(evt){
-				var ctrl = $(evt.target);
-				var ctrlName = evt.target.id;
-				var frm = project.forms[formName];
-				
-				if(ctrl.hasClass('ecplus-ac')) ctrlName = ctrlName.replace('-ac', '');
-				
-				if(frm.fields[ctrlName].validate(ctrl.val()))
-				{
-					if(frm.fields[ctrlName].jump)
-					{
-						var jumped = false; // is a jump required
-						jbits = frm.fields[ctrlName].jump.split(",");
-														
-						for(var j = 0; j < jbits.length; j+=2)
-						{
-							if( jbits[j+1] === $("#" + frm.fields[ctrlName].id, frm.formElement).idx() + 1 || jbits[j+1].toLowerCase() === 'all' )
-							{
-								frm.doJump(jbits[j], ctrlName);
-								jumped = true;
-							}
-						}
-						
-						if(!jumped)
-						{
-							frm.doJump(false);
-						}
-					}
-				}
-			});
-		}
-		else
-		{
-			/*$(".ecplus-input", this.formElement).blur(function(evt){
-				
-				if(!project.forms[formName].moveNext(true))
-				{
-					$(evt.target).focus();
-				}
-			});*/
-			$('.ecplus-form').keydown(function(e) { 
-				  var keyCode = e.keyCode || e.which; 
+		
+        // $(".ecplus-input", this.formElement).change(function(evt){
+            // console.debug('change');
+            // var ctrl = $(evt.target);
+            // var ctrlName = evt.target.id;
+            // var frm = project.forms[formName];
+            
+            // if(ctrl.hasClass('ecplus-ac')) ctrlName = ctrlName.replace('-ac', '');
+            
+            // if(frm.fields[ctrlName].validate(ctrl.val()))
+            // {
+                // if(frm.fields[ctrlName].jump)
+                // {
+                    // var jumped = false; // is a jump required
+                    // jbits = frm.fields[ctrlName].jump.split(",");
+                                                    
+                    // for(var j = 0; j < jbits.length; j+=2)
+                    // {
+                        // if( jbits[j+1] === $("#" + frm.fields[ctrlName].id, frm.formElement).idx() + 1 || jbits[j+1].toLowerCase() === 'all' )
+                        // {
+                            // frm.doJump(jbits[j], ctrlName);
+                            // jumped = true;
+                        // }
+                    // }
+                    
+                    // if(!jumped)
+                    // {
+                        // frm.doJump(false);
+                    // }
+                // }
+            // }
+        // });
+    
+        $('.ecplus-form').keydown(function(e) { 
+              var keyCode = e.keyCode || e.which; 
 
-				  if (keyCode === 9) { 
-				    e.preventDefault(); 
-				  }
-			});
-		}
+              if (keyCode === 9) { 
+                e.preventDefault(); 
+              }
+        });
+		
 		
 	
 		$('.ecplus-ac').each(function(idx, ele)
@@ -1071,11 +1301,36 @@ EpiCollect.Form = function()
 		$(".ecplus-input", this.formElement).unbind("blur");
 		this.formElement.dialog("close");
 	};
+    
+    this.getCurrentControl = function()
+    {
+        var ctrlindex = this.formIndex
+        
+        var field_id = $('.ecplus-input', $('.ecplus-question')[ctrlindex]).attr('id');
+        
+        return this.fields[field_id];
+    }
+    
+    this.checkAndAdvance = function()
+    {
+        var field = this.getCurrentControl();
+       
+        var control =  $('#' + field.id);
+   
+        control.off('valid'); //clear any handlers already present
+        
+        control.one('valid', {form : this}, function(evt) {
+            evt.data.form.moveNext();
+        });
+        
+
+        field.validate(control.val());
+    }
 	
 	this.doJump = function(fieldName, startField)
 	{
-		//console.debug("Jump to : " + fieldName)
-		
+		console.debug("Jump to : " + fieldName)
+            
 		var start = this.formIndex;
 		var done = false;
 		
@@ -1175,60 +1430,35 @@ EpiCollect.Form = function()
 			if(this.formIndex === $('.ecplus-question').length - 1) return;
 			//validate answer to previous question
 			var fldName = $('.ecplus-question')[this.formIndex].id.replace("ecplus-question-", "");
-			var val = $("#" + fldName, this.formElement).val();
-			if(this.fields[fldName].fkField && this.fields[fldName].fkTable)
-			{
-				val = $("#" + fldName + '-ac', this.formElement).val();
-			}
+
+            if(this.fields[fldName].jump)
+            {
+                var jumped = false; // is a jump required
+                jbits = this.fields[fldName].jump.split(",");
+                
+                  console.debug(jbits);
+                    
+                for(var j = 0; j < jbits.length; j+=2)
+                {
+                    
+                    if(Number(jbits[j+1]) === $("#" + this.fields[fldName].id, this.formElement).idx() || jbits[j+1].toLowerCase().trimChars() === 'all')
+                    {
+                        this.doJump(jbits[j]);
+                        jumped = true;
+                        break;
+                    }
+                }
+                
+                if(!jumped)
+                {
+                    this.doJump(false);
+                }
+            }
+            
+            this.formIndex++;
+            this.moveFormTo(this.formIndex);
+            return true;
 			
-			var valid = this.fields[fldName].validate(val);
-			$("#" + fldName + "-messages").empty();
-			
-			if(!preventBlur)
-			{
-				//console.debug('preventing blur');
-				$("#" + fldName, this.formElement)
-					.unbind("blur")
-					.blur();
-					/*$("#" + fldName, this.formElement).blur(function(evt){
-						project.forms[formName].moveNext(true);
-					});*/
-			}
-			
-			if(valid === true || valid.length === 0)
-			{
-				if(this.fields[fldName].jump)
-				{
-					var jumped = false; // is a jump required
-					jbits = this.fields[fldName].jump.split(",");
-													
-					for(var j = 0; j < jbits.length; j+=2)
-					{
-						if(jbits[j+1] === $("#" + this.fields[fldName].id, this.formElement).idx() + 1 || jbits[j+1].toLowerCase().trimChars() === 'all')
-						{
-							this.doJump(jbits[j]);
-							jumped = true;
-						}
-					}
-					
-					if(!jumped)
-					{
-						this.doJump(false);
-					}
-				}
-				
-				this.formIndex++;
-				this.moveFormTo(this.formIndex);
-				return true;
-			}
-			else	
-			{
-				for (msg in valid)
-				{
-					$("#" + fldName + "-messages").append("<p class=\"err\">" + valid[msg] + "<p>");
-				}
-				return  false;
-			}
 		}catch(err){/*alert(err);*/}
 	};
 	
@@ -1650,7 +1880,11 @@ EpiCollect.Field = function()
 			   {
 				   val = "web_" + new Date().getTime();
 			   }
-			   else
+			   else if(this.defaultValue)
+               {
+                    val = this.defaultValue;
+               }
+               else
 			   {
 				   val = "";
 			   }
@@ -1695,7 +1929,7 @@ EpiCollect.Field = function()
 					   var cname = this.id;
 					   var key = frm.key;
 					   var title = frm.titleField;
-					   var ctrl = '<input name="' + cname + '-ac" id="' + cname +  '-ac" class="ecplus-input ecplus-ac" pfield="' + key + '" pform="' + frm.name + '" ' + (fkfld ? ' childcontrol="' + fkfld + '"' : '') + ' /><input type="hidden" name="' + cname + '" id="' + cname +  '" value="' + val + '" class="ecplus-input-hidden" />';
+					   var ctrl = '<input name="' + cname + '" id="' + cname +  '" class="ecplus-input ecplus-ac" pfield="' + key + '" pform="' + frm.name + '" ' + (fkfld ? ' childcontrol="' + fkfld + '"' : '') + ' /><input type="hidden" name="' + cname + '" id="' + cname +  '" value="' + val + '" class="ecplus-input-hidden" />';
 					   
 					   if(val)
 					   {
@@ -1946,291 +2180,180 @@ EpiCollect.Field = function()
 		}
 	};
 	
+    this.getValidators = function(ignoreDouble) // ignoreDouble entry (verify)
+    {
+        var validators = [];
+        
+         if( this.required )
+        {
+            validators.push({ name : 'required', params : {} });
+        }
+        
+        if( this.isinteger )
+        {
+            validators.push({ name : 'integer', params : {} });
+        }
+        
+        if( this.isdouble )
+        {
+            validators.push({ name : 'double', params : {} });
+        }
+        
+        if( !ignoreDouble && this.verify )
+        {
+            validators.push({ name : 'verify', params : {} });
+        }
+        
+        if( this.date || this.setDate )
+        {
+            validators.push({ name : 'date', params : { fmt : this.date ? this.date : this.setDate } });
+        }
+        
+        if( this.time || this.setTime )
+        {
+            validators.push({ name : 'time', params : { fmt : this.time ? this.time : this.setTime } });
+        }
+        
+        if( this.regex )
+        {
+            validators.push({ name : 'regex', params : { regex : this.regex } });
+        }
+        
+        if( this.max )
+        {
+            validators.push({ name : 'max', params : { max : this.max } });
+        }
+        
+        if( this.min )
+        {
+            validators.push({ name : 'min', params : { min : this.min } });
+        }
+        
+        if( this.min )
+        {
+            validators.push({ name : 'min', params : { min : this.min } });
+        }
+        
+        if( this.match )
+        {
+            validators.push({ name : 'match', params : { regex : this.match.split(',')[3], parentValue : '' } });
+        }
+        
+        if( this.isKey )
+        {
+            validators.push({ name : 'key', params : { url :  baseUrl + '/../' + this.form.name + '.json' , field : this.id }});
+        }
+        
+        if( this.fkField && this.fkTable )
+        {
+            validators.push({ name : 'fk' , params : { url : baseUrl + '/../' + this.fkTable + '/title' }});  
+        }
+        
+        return validators;
+    }
+    
+    
 	this.validate = function(value, ignoreDouble)
 	{
-		
-		//console.debug('checking...' + this.id + '  = ' + value);
-		var msgs = [];
-		if(this.required && (!value || value === "")) msgs.push("This field is required");
-		if(value && value !== "")
-	    {
-			if( this.uppercase )
-			{
-				value = value.toUpperCase();
-				$('#' + this.id).val(value);
-			}
-			
-			if( this.isinteger )
-			{
-				if( !value.match(/^[0-9]+$/) )
-				{
-					msgs.push("This field must be an Integer");
-				}
-			}
-			if( this.isdouble )
-			{
-				if(!value.match(/^[0-9]+(\.[0-9]+)?$/))
-				{
-					msgs.push("This field must be an decimal");
-				}
-			}
-			if( this.date || this.setDate )
-			{
-				// will consist of dd MM and yyyy
-				var fmt = this.date ? this.date : this.setDate; 
-				var sep = null;
-				
-				var day = null;
-				var month = null;
-				var year = null;
-				
-				
-				for( var i = 0; i < fmt.length; i++ )
-				{
-					if(fmt[i] === "d")
-					{
-						if(fmt[i+1] === "d")
-						{
-							//console.debug(value.substr(i,2))
-							day = Number(value.substr(i,2));
-							if(isNaN(day)) msgs.push("Day is not a number");
-							i++;
-						}
-						else
-						{
-							throw "Invalid date format";
-						}
-					}
-					else if( fmt[i] === "M" )
-					{
-						if( fmt[i+1] === "M" )
-						{
-							//console.debug(value.substr(i,2))
-							month = Number(value.substr(i,2));
-							if(isNaN(month)) msgs.push("Month is not a number");
-							i++;
-						}
-						else
-						{
-							throw "Invalid date format";
-						}
-					}
-					else if( fmt[i] === "y" )
-					{
-						if( fmt[i+1] === "y" && fmt[i+2] === "y" && fmt[i+3] === "y" )
-						{
-							year = Number(value.substr(i,4));
-							if(isNaN(year)) msgs.push("Year is not a number");
-							i+=3;
-						}
-						else
-						{
-							throw "Invalid date format";
-						}
-					}
-					else
-					{
-						if(!sep) sep = fmt[i];
-					}
-				}
-				//console.debug('Day = ' + day)
-				if(day || day === 0)
-				{
-					if(day < 1 || day > 31)	msgs.push("Day is out of range");
-					else if(month && (month === 4 || month === 6 || month === 9 || month === 11) && day > 30) msgs.push("Day is out of range");
-					else if(month && month === 2 && day > 29 && (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0))) msgs.push("Day is out of range");
-					else if(month && month === 2 && day > 28) msgs.push("Day is out of range");
-				}
-				//console.debug('Month = ' + month)
-				if(month || month === 0)
-				{
-					if(month < 1 ||  month > 12) msgs.push("Month is out of range");
-				}
-				
-			}
-			if( this.time || this.setTime )
-			{
-				var fmt = this.time ? this.time :  this.setTime; 
-				var sep = null;
-				
-				var hours = null;
-				var minutes = null;
-				var seconds = null;
-				
-				for( var i = 0; i < fmt.length; i ++ )
-				{
-					if( fmt[i] === "H" )
-					{
-						if( fmt[i+1] === "H" )
-						{ 
-							hours = Number(value.substr(i, 2));
-							if(isNaN(hours)) msgs.push("Hours are not a number");
-							if(hours < 0 || hours > 23) msgs.push("Hours out of range");
-							i++;
-							
-						}
-						else
-							throw "Time Format is invalid";
-							
-					}
-					else if( fmt[i] === "m" ) 
-					{
-						if( fmt[i+1] === "m" )
-						{
-							minutes === Number(value.substr(i,2));
-							if(isNaN(minutes)) msgs.push("Minutes are not a number");
-							if(minutes < 0 || minutes > 59) msgs.push("Minutes out of range");
-							i++;
-						}
-					}
-					else if( fmt[i] === "s" )
-					{
-						if( fmt[i+1] === "s" )
-						{
-							seconds === Number(value.substr(i,2));
-							if(isNaN(seconds)) msgs.push("Seconds are not a number");
-							if(seconds < 0 || seconds > 59) msgs.push("Seconds out of range");
-							i++;
-						}
-					}
-				}
-			}
-			
-			
-			if( this.regex )
-			{
-				//console.debug(this.regex);
-				if(!value.match(new RegExp(this.regex))) msgs.push(this.regexMessage ? this.regexMessage : "The value you have entered is not in the right format.");
-			}
-			
-			if( this.max )
-			{
-				if(Number(value) > this.max) msgs.push("Value must be less than  or equal to" + this.max);
-			}
-			
-			if( this.min )
-			{
-				if(Number(value) < this.min) msgs.push("Value must be greater than or equal to " + this.min);
-			}
-			
-			if( this.match )
-			{
-				//in this version the match field must be present on the page and filled in
-				var info = this.match.split(",");
-					
-				var matchStr = $("#" + info[1]).val().match(new RegExp(info[3]))[0];
-				var valStr = value.match(new RegExp(info[3]))[0];
-		
-				if(valStr !== matchStr) msgs.push("The value does not match the string from the parent field");
-			}
-			
-			if( this.verify && !ignoreDouble )
-			{
-				if( !$("#" + this.id).hasClass("ecplus-valid" ))
-				{
-					$("#" + this.id).hide();
-					var ct = this;
-					EpiCollect.prompt({ content : "Please re-enter the value for " + this.text + " to confirm the value", callback : function(new_value){
-						if( newvalue !== value )
-						{
-							EpiCollect.dialog({ content : "field values must match" });
-							msgs.push("field values must match");
-							$("#" + ct.id).val("");
-							$("#" + ct.id).removeClass("ecplus-valid");
-							$("#" + ct.id).addClass("ecplus-invalid");
-						}
-						$("#" + ct.id).show();
-					}});
-				}
-				
-			}
-			
-			if(msgs.length === 0 && this.isKey && !$('#ecplus-form-' + this.form.name ).hasClass('editing'))
-			{
-				var ctx = this;
-				this.form.pendingReqs.push($.ajax({
-					url : baseUrl + '/../' + this.form.name + '.json?' + this.id + '=' + value,
-					async : false,
-					success : function(data,status,xhr)
-					{
-						if(data.length > 0)
-						{
-							msgs.push("This field must be unique, the value " + value + " had already been saved for this form.");
-						}
-					}
-				}));
-			}
-			else if(msgs.length === 0 && this.fkField && this.fkTable)
-			{
-				var fld = '#' + this.id + '-ac';
-				//console.debug('checking...' + this.id);
-				$(fld).addClass('ecplus-checking');
-				$(fld).removeClass('ecplus-invalid');
-				
-				var _url =  baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true';
-				if(this.parentval && this.parentfld)
-				{
-					_url += 'seconda_field=' + this.parentfld + '&secondary_value=' + this.parentval;  
-				}
-				var ctx = this;
-				for(var req = this.form.pendingReqs.pop(); this.form.pendingReqs.length; req = this.form.pendingReqs.pop())
-				{
-					req.abort();
-				}
-				this.form.pendingReqs.push($.ajax({
-					url : baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true',
-					async : false,
-					success : function(data, status, xhr)
-					{
-						var res = JSON.parse(data);
-						if(res.valid)
-						{
-							$(fld)
-								.removeClass('ecplus-checking')
-								.addClass('ecplus-valid');
-							$('#' + ctx.id).val(res.key);
-
-							var cc = $(fld).attr('childcontrol');
-							if(cc)
-							{
-								//console.debug(cc);
-								var jqc = $('#' + cc + '-ac');
-								var src = jqc.autocomplete('option', 'source');
-								if(src.indexOf('?') > 0) src = src.substr(0, src.indexOf('?'));
-								//console.debug(src);
-								src += '?secondary_field=' + ctx.id + '&secondary_value=' + res.key;
-								var src = jqc.autocomplete('option', 'source', src);								
-							}
-							
-						}
-						else
-						{
-							$(fld)
-								.removeClass('ecplus-checking')
-								.addClass('ecplus-invalid');
-							msgs.push(res.msg);
-							$('#' + this.id).val('');
-						}
-					}
-				}));
-			}
-	    }
-		
-		if( msgs.length === 0 )
-		{
-			$("#" + this.id).removeClass("ecplus-invalid");
-			$("#" + this.id).addClass("ecplus-valid");
-		}
-		else
-		{
-			$("#" + this.id).removeClass("ecplus-valid");
-			$("#" + this.id).addClass("ecplus-invalid");
-		}	
-		
-		if(msgs.length === 0) $('.ecpval-' + this.id).text(value); 
-		
-		return msgs.length === 0 ? true : msgs;		
+        var validators = this.getValidators(ignoreDouble);
+        var n_vals = validators.length;
+        
+        if(n_vals !== 0)
+        {
+            $("#" + this.id).addClass('checking')
+                .removeClass('valid')
+                .removeClass('invalid');
+                
+            $("#" + this.id + '-messages').empty();
+            
+            
+            for ( var v = n_vals; v--; )
+            {
+                this.dispatchValidator(value, validators[v]);
+            }
+        }
+        else
+        {
+            $('#' + this.id).trigger({ type : 'valid', field : this.id });
+        }
 	};
+    
+    this.dispatchValidator = function(value, validatorDescription)
+    {
+        var control = $('#' + this.id);
+        var voter = {};
+        
+        if( control.prop('voter') )
+        {
+            voter = control.prop('voter');
+        }
+        
+        voter[validatorDescription.name] = undefined;
+        control.prop('voter', voter);
+     
+        EpiCollect.Validators[validatorDescription.name](value, validatorDescription.params, this.validatorCallback, this.id);
+    }
+    
+    /**
+     * Add messages to the field, primarily for validation.
+     *
+     *  @param messages [] an array of messages
+     *  @param className String The CSS class of the messages.
+     */
+    this.addMessages = function(messages, className)
+    {
+        var mlen = messages.length;
+        var control = $('#' + this.id);
+        var messageArea = $('#' +this.id + '-messages');
+        
+        for ( var m = mlen; m--; )
+        {
+            messageArea.append('<p class=' + className + '>' + messages[m] + '</p>');
+        }
+    }
+    
+    this.validatorCallback = function(result)
+    {
+        var field = project.forms[formName].fields[result.control_id]
+        var control = $('#' + result.control_id);
+       
+       console.debug(result);
+        
+        var voter = control.prop('voter');
+        voter[result.name] = result.valid;
+        control.prop('voter', voter);
+        
+        if( !result.valid )
+        {
+            control.addClass('invalid');
+            
+            field.addMessages(result.messages, 'err');
+        }
+        
+        var complete = true;
+        
+        for ( var v in voter )
+        {
+            complete = complete && voter[v] !== undefined;
+        }
+        
+        console.debug(voter);
+        
+        if(complete) 
+        { 
+            control.removeClass('checking');
+            if(control.hasClass('invalid'))
+            {
+                control.trigger({ type : 'invalid', field : result.control_id });
+            }
+            else
+            {
+                control.addClass('valid');
+                control.trigger({ type : 'valid', field : result.control_id });
+            }
+            
+        }
+    }
 	
 	this.toXML = function()
 	{
@@ -2274,3 +2397,288 @@ EpiCollect.Field = function()
 	};
 	
 };
+// old valid
+
+
+		// // console.debug('checking...' + this.id + '  = ' + value);
+		// // var msgs = [];
+		// // if(this.required && (!value || value === "")) msgs.push("This field is required");
+		// // if(value && value !== "")
+	    // // {
+			// // if( this.uppercase )
+			// // {
+				// // value = value.toUpperCase();
+				// // $('#' + this.id).val(value);
+			// // }
+			
+			// // if( this.isinteger )
+			// // {
+				// // if( !value.match(/^[0-9]+$/) )
+				// // {
+					// // msgs.push("This field must be an Integer");
+				// // }
+			// // }
+			// // if( this.isdouble )
+			// // {
+				// // if(!value.match(/^[0-9]+(\.[0-9]+)?$/))
+				// // {
+					// // msgs.push("This field must be an decimal");
+				// // }
+			// // }
+			// // if( this.date || this.setDate )
+			// // {
+				// // will consist of dd MM and yyyy
+				// // var fmt = this.date ? this.date : this.setDate; 
+				// // var sep = null;
+				
+				// // var day = null;
+				// // var month = null;
+				// // var year = null;
+				
+				
+				// // for( var i = 0; i < fmt.length; i++ )
+				// // {
+					// // if(fmt[i] === "d")
+					// // {
+						// // if(fmt[i+1] === "d")
+						// // {
+							// // console.debug(value.substr(i,2))
+							// // day = Number(value.substr(i,2));
+							// // if(isNaN(day)) msgs.push("Day is not a number");
+							// // i++;
+						// // }
+						// // else
+						// // {
+							// // throw "Invalid date format";
+						// // }
+					// // }
+					// // else if( fmt[i] === "M" )
+					// // {
+						// // if( fmt[i+1] === "M" )
+						// // {
+							// // console.debug(value.substr(i,2))
+							// // month = Number(value.substr(i,2));
+							// // if(isNaN(month)) msgs.push("Month is not a number");
+							// // i++;
+						// // }
+						// // else
+						// // {
+							// // throw "Invalid date format";
+						// // }
+					// // }
+					// // else if( fmt[i] === "y" )
+					// // {
+						// // if( fmt[i+1] === "y" && fmt[i+2] === "y" && fmt[i+3] === "y" )
+						// // {
+							// // year = Number(value.substr(i,4));
+							// // if(isNaN(year)) msgs.push("Year is not a number");
+							// // i+=3;
+						// // }
+						// // else
+						// // {
+							// // throw "Invalid date format";
+						// // }
+					// // }
+					// // else
+					// // {
+						// // if(!sep) sep = fmt[i];
+					// // }
+				// // }
+				// console.debug('Day = ' + day)
+				// // if(day || day === 0)
+				// // {
+					// // if(day < 1 || day > 31)	msgs.push("Day is out of range");
+					// // else if(month && (month === 4 || month === 6 || month === 9 || month === 11) && day > 30) msgs.push("Day is out of range");
+					// // else if(month && month === 2 && day > 29 && (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0))) msgs.push("Day is out of range");
+					// // else if(month && month === 2 && day > 28) msgs.push("Day is out of range");
+				// // }
+				// console.debug('Month = ' + month)
+				// // if(month || month === 0)
+				// // {
+					// // if(month < 1 ||  month > 12) msgs.push("Month is out of range");
+				// // }
+				
+			// // }
+			// // if( this.time || this.setTime )
+			// // {
+				// // var fmt = this.time ? this.time :  this.setTime; 
+				// // var sep = null;
+				
+				// // var hours = null;
+				// // var minutes = null;
+				// // var seconds = null;
+				
+				// // for( var i = 0; i < fmt.length; i ++ )
+				// // {
+					// // if( fmt[i] === "H" )
+					// // {
+						// // if( fmt[i+1] === "H" )
+						// // { 
+							// // hours = Number(value.substr(i, 2));
+							// // if(isNaN(hours)) msgs.push("Hours are not a number");
+							// // if(hours < 0 || hours > 23) msgs.push("Hours out of range");
+							// // i++;
+							
+						// // }
+						// // else
+							// // throw "Time Format is invalid";
+							
+					// // }
+					// // else if( fmt[i] === "m" ) 
+					// // {
+						// // if( fmt[i+1] === "m" )
+						// // {
+							// // minutes === Number(value.substr(i,2));
+							// // if(isNaN(minutes)) msgs.push("Minutes are not a number");
+							// // if(minutes < 0 || minutes > 59) msgs.push("Minutes out of range");
+							// // i++;
+						// // }
+					// // }
+					// // else if( fmt[i] === "s" )
+					// // {
+						// // if( fmt[i+1] === "s" )
+						// // {
+							// // seconds === Number(value.substr(i,2));
+							// // if(isNaN(seconds)) msgs.push("Seconds are not a number");
+							// // if(seconds < 0 || seconds > 59) msgs.push("Seconds out of range");
+							// // i++;
+						// // }
+					// // }
+				// // }
+			// // }
+			
+			
+			// // if( this.regex )
+			// // {
+				// // console.debug(this.regex);
+				// // if(!value.match(new RegExp(this.regex))) msgs.push(this.regexMessage ? this.regexMessage : "The value you have entered is not in the right format.");
+			// // }
+			
+			// // if( this.max )
+			// // {
+				// // if(Number(value) > this.max) msgs.push("Value must be less than  or equal to" + this.max);
+			// // }
+			
+			// // if( this.min )
+			// // {
+				// // if(Number(value) < this.min) msgs.push("Value must be greater than or equal to " + this.min);
+			// // }
+			
+			// // if( this.match )
+			// // {
+				// // in this version the match field must be present on the page and filled in
+				// // var info = this.match.split(",");
+					
+				// // var matchStr = $("#" + info[1]).val().match(new RegExp(info[3]))[0];
+				// // var valStr = value.match(new RegExp(info[3]))[0];
+		
+				// // if(valStr !== matchStr) msgs.push("The value does not match the string from the parent field");
+			// // }
+			
+			// // if( this.verify && !ignoreDouble )
+			// // {
+				// // if( !$("#" + this.id).hasClass("ecplus-valid" ))
+				// // {
+					// // $("#" + this.id).hide();
+					// // var ct = this;
+					// // EpiCollect.prompt({ content : "Please re-enter the value for " + this.text + " to confirm the value", callback : function(new_value){
+						// // if( newvalue !== value )
+						// // {
+							// // EpiCollect.dialog({ content : "field values must match" });
+							// // msgs.push("field values must match");
+							// // $("#" + ct.id).val("");
+							// // $("#" + ct.id).removeClass("ecplus-valid");
+							// // $("#" + ct.id).addClass("ecplus-invalid");
+						// // }
+						// // $("#" + ct.id).show();
+					// // }});
+				// // }
+				
+			// // }
+            
+            
+			// if(msgs.length === 0 && this.isKey && !$('#ecplus-form-' + this.form.name ).hasClass('editing'))
+			// {
+				// var ctx = this;
+				// this.form.pendingReqs.push($.ajax({
+					// url : baseUrl + '/../' + this.form.name + '.json?' + this.id + '=' + value,
+					// async : false,
+					// success : function(data,status,xhr)
+					// {
+						// if(data.length > 0)
+						// {
+							// msgs.push("This field must be unique, the value " + value + " had already been saved for this form.");
+						// }
+					// }
+				// }));
+			// }
+			// else if(msgs.length === 0 && this.fkField && this.fkTable)
+			// {
+				// var fld = '#' + this.id + '-ac';
+				// //console.debug('checking...' + this.id);
+				// $(fld).addClass('ecplus-checking');
+				// $(fld).removeClass('ecplus-invalid');
+				
+				// var _url =  baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true';
+				// if(this.parentval && this.parentfld)
+				// {
+					// _url += 'seconda_field=' + this.parentfld + '&secondary_value=' + this.parentval;  
+				// }
+				// var ctx = this;
+				// for(var req = this.form.pendingReqs.pop(); this.form.pendingReqs.length; req = this.form.pendingReqs.pop())
+				// {
+					// req.abort();
+				// }
+				// this.form.pendingReqs.push($.ajax({
+					// url : baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true',
+					// async : false,
+					// success : function(data, status, xhr)
+					// {
+						// var res = JSON.parse(data);
+						// if(res.valid)
+						// {
+							// $(fld)
+								// .removeClass('ecplus-checking')
+								// .addClass('ecplus-valid');
+							// $('#' + ctx.id).val(res.key);
+
+							// var cc = $(fld).attr('childcontrol');
+							// if(cc)
+							// {
+								// //console.debug(cc);
+								// var jqc = $('#' + cc + '-ac');
+								// var src = jqc.autocomplete('option', 'source');
+								// if(src.indexOf('?') > 0) src = src.substr(0, src.indexOf('?'));
+								// //console.debug(src);
+								// src += '?secondary_field=' + ctx.id + '&secondary_value=' + res.key;
+								// var src = jqc.autocomplete('option', 'source', src);								
+							// }
+							
+						// }
+						// else
+						// {
+							// $(fld)
+								// .removeClass('ecplus-checking')
+								// .addClass('ecplus-invalid');
+							// msgs.push(res.msg);
+							// $('#' + this.id).val('');
+						// }
+					// }
+				// }));
+			// }
+	    // }
+		
+		// if( msgs.length === 0 )
+		// {
+			// $("#" + this.id).removeClass("ecplus-invalid");
+			// $("#" + this.id).addClass("ecplus-valid");
+		// }
+		// else
+		// {
+			// $("#" + this.id).removeClass("ecplus-valid");
+			// $("#" + this.id).addClass("ecplus-invalid");
+		// }	
+		
+		// if(msgs.length === 0) $('.ecpval-' + this.id).text(value); 
+		
+		// return msgs.length === 0 ? true : msgs;		
