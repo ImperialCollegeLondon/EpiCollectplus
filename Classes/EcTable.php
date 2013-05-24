@@ -724,7 +724,15 @@
 						}
 						elseif ($full_urls && $this->fields[$kv[0]]->valueIsFile() && $kv[1] != '')
 						{
-							$arr[$kv[0]] = makeUrl($this->survey->name . '~' . $kv[1]);
+                            
+                            if( strstr($kv[1], $this->survey->name . '~') )
+                            {
+                                $arr[$kv[0]] = makeUrl($kv[1]); 
+                            }
+                            else
+                            {
+                                $arr[$kv[0]] = makeUrl($this->survey->name . '~' . $kv[1]);
+                            }
 						}
                         else
 						{
@@ -1131,11 +1139,11 @@
 			
 			if($ents == '')
 			{
-				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \', \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $val );
+				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $val );
 			}
 			else
 			{
-				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \', \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $val );
+				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $val );
 			}
 			$res = $db->do_query($select);
 			if($res === true)
@@ -1191,11 +1199,11 @@
 			
 			if($ents == '')
 			{
-				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \', \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') GROUP BY entry) a where title like \'%s\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $db->escapeArg($val) );
+				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') GROUP BY entry) a where title like \'%s\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $db->escapeArg($val) );
 			}
 			else
 			{
-				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \', \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title = \'%s\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $db->escapeArg($val) );
+				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title = \'%s\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $db->escapeArg($val) );
 			}
 			
 			$res = $db->do_query($select);
@@ -1231,13 +1239,13 @@
 			{
 				for($i = 0; $i < $cnt; $i++)
 				{
-					if($i > 0) $tstr .= ", ";
-					if(array_key_exists($this->titleFields[$i], $obj))
+					if($i > 0) $tstr .= " - ";
+					if(array_key_exists($this->titleFields[$i], $obj[0]))
 					{
-						$tstr .= $obj[$this->titleFields[$i]];
+						$tstr .= $obj[0][$this->titleFields[$i]];
 					}
 				}
-				if($tstr == '') $tstr = $obj[$this->key]; 
+				if($tstr == '') $tstr = $obj[0][$this->key]; 
 			}
 			return $tstr;
 		}

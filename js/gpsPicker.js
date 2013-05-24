@@ -1,11 +1,14 @@
 (function( $ ) {
   $.fn.gpsPicker = function(cnf) {
-	  
+      
+      var _id = this.attr("id");
+      
 	  if(typeof cnf != "object") cnf = {};
 	  if(!cnf.mapType) cnf.mapType = "google";
 	  
-	  eleService = null;
-	  coder = null;
+	  var eleService = null;
+	  var coder = null;
+      var mkr = null;
 	  
 	  if(cnf.mapType == "google")
 	  {
@@ -14,20 +17,20 @@
 	  }
 	  
 	  
-	  this.append("<div id=\"" + this.attr("id") + "_map\" class=\"ecplus-map\" style=\"height: " +this.height()+ "px;\"></div>");
+	  this.append("<div id=\"" + _id + "_map\" class=\"ecplus-map\" style=\"height: " +this.height()+ "px;\"></div>");
 	  this.append("<div class=\"ecplus-map-controls\"  style=\"display:inline-block;\">" +
-	  		"<fieldset><label for=\"search\">Search for an address </label><input  type=text id=\"geocodeCtrl\" /><a href=\"javascript:$('#" + this.attr("id") + "').geocode($('#geocodeCtrl', $('#" + this.attr("id") + "')[0]).val())\">Search</a></fieldset>" +
+	  		"<fieldset><label for=\"search\">Search for an address </label><input  type=text id=\"" + _id + "geocodeCtrl\" /><a class=\"geocode button\">Search</a></fieldset>" +
 	  		"<fieldset>" +
-	  		"<label for=\"latitude\">Latitude (Decimal Degrees)</label><input type=\"number\" id=\"latitude\"/>" +
-	  		"<label for=\"longitude\">Longitude (Decimal Degrees)</label><input type=\"number\" id=\"longitude\"/>" +
-	  		"<label for=\"altitude\">Altitude (in meters)</label><input type=\"number\" id=\"altitude\"/>" +
-	  		"<label for=\"accuracy\">Accuracy (in meters)</label><input type=\"number\" id=\"accuracy\"/>" +
-	  		"<label for=\"bearing\">Bearing</label><input type=\"number\" id=\"bearing\"/>" +
-	  		"<label for=\"provider\">Source of the Position</label><input type=\"text\" id=\"provider\"/>" +
+	  		"<label for=\"" + _id + "latitude\">Latitude (Decimal Degrees)</label><input type=\"number\" id=\"" + _id + "latitude\"/>" +
+	  		"<label for=\"" + _id + "longitude\">Longitude (Decimal Degrees)</label><input type=\"number\" id=\"" + _id + "longitude\"/>" +
+	  		"<label for=\"" + _id + "altitude\">Altitude (in meters)</label><input type=\"number\" id=\"" + _id + "altitude\"/>" +
+	  		"<label for=\"" + _id + "accuracy\">Accuracy (in meters)</label><input type=\"number\" id=\"" + _id + "accuracy\"/>" +
+	  		"<label for=\"" + _id + "bearing\">Bearing</label><input type=\"number\" id=\"" + _id + "bearing\"/>" +
+	  		"<label for=\"" + _id + "provider\">Source of the Position</label><input type=\"text\" id=\"" + _id + "provider\"/>" +
 	  		"</fieldset></div>");
 	  
 	  
-	  lmap = (cnf.mapType == "osm" ? new L.Map(this.attr("id") + "_map") : new google.maps.Map($("#" + this.attr("id") + "_map")[0],
+	  var lmap = (cnf.mapType == "osm" ? new L.Map(_id + "_map") : new google.maps.Map($('.ecplus-map', this)[0],
 			  {
 		  		mapTypeId : google.maps.MapTypeId.ROADMAP,
 		  		center : new google.maps.LatLng(0,0),
@@ -61,7 +64,6 @@
 		  
 		  accCircle = new google.maps.Circle({center : new google.maps.LatLng(0, 0), radius : 100, map : lmap});  
 	  }
-	  ctx = this;	  
 	  
 	  function dropmarker(){ 
 		  try{
@@ -74,11 +76,11 @@
 				  accCircle.setCenter(mkr.getPosition());
 			  }
 			  
-			  $("#latitude", ctx).val((cnf.mapType == "osm" ? mkr.getLatLng().lat : mkr.getPosition().lat()));
-			  $("#longitude", ctx).val((cnf.mapType == "osm" ? mkr.getLatLng().lng : mkr.getPosition().lng()));
-			  $("#accuracy", ctx).val(Math.max(accCircle.radius, 100));
-			  $("#provider", ctx).val("Marker Dropped");
-			  $("#bearing", ctx).val("0");
+			  $("#" + _id + "latitude").val((cnf.mapType == "osm" ? mkr.getLatLng().lat : mkr.getPosition().lat()));
+			  $("#" + _id + "longitude").val((cnf.mapType == "osm" ? mkr.getLatLng().lng : mkr.getPosition().lng()));
+			  $("#" + _id + "accuracy").val(Math.max(accCircle.radius, 100));
+			  $("#" + _id + "provider").val("Marker Dropped");
+			  $("#" + _id + "bearing").val("0");
 			  
 			  if(eleService)
 			  {
@@ -91,7 +93,7 @@
 	  {
 		  if(status == google.maps.ElevationStatus.OK)
 		  {
-			  $("#altitude", ctx).val(results[0].elevation);
+			  $("#" + _id + "altitude").val(results[0].elevation);
 		  }
 		  else
 		  {
@@ -101,6 +103,9 @@
 	  
 	  function geocodeSearch(address)
 	  {
+        
+        
+        
 		if(!coder) return;
 		
 		coder.geocode({address : address}, geocodeCallback);
@@ -112,16 +117,24 @@
 		  if(status == google.maps.GeocoderStatus.OK)
 		  {
 			  var res = results[0].geometry
-			  pos = res.location;
+			  var pos = res.location;
+              var bnds;
+              
+              if(res.bounds)
+              {
+                bnds = res.bounds;
+                acc = google.maps.geometry.spherical.computeDistanceBetween(bnds.getCenter(), bnds.getNorthEast());
+             }
+             else
+             {
+                acc = 1000;
+             }
 			  
-			  var bnds = res.bounds;
-			  var acc = google.maps.geometry.spherical.computeDistanceBetween(bnds.getCenter(), bnds.getNorthEast());
-			  
-			  $("#latitude", ctx).val(pos.lat());
-			  $("#longitude", ctx).val(pos.lng());
-			  $("#accuracy", ctx).val(acc);
-			  $("#provider", ctx).val("Geocoding");
-			  $("#bearing", ctx).val("0");
+			  $("#" + _id + "latitude").val(pos.lat());
+			  $("#" + _id + "longitude").val(pos.lng());
+			  $("#" + _id + "accuracy").val(acc);
+			  $("#" + _id + "provider").val("Geocoding");
+			  $("#" + _id + "bearing").val("0");
 			  
 			  mkr.setPosition(pos);
 			  accCircle.setCenter(pos);
@@ -134,18 +147,18 @@
 		  }
 	  }
 	  
-	  $.fn.geocode = geocodeSearch;
+	  $('.geocode', this).click(function(){ geocodeSearch($('#' + _id + 'geocodeCtrl').val()); })
 	  
-	  $("#latitude, #longitude", ctx).change(function()
+	  $("#" + _id + "latitude, #" + _id + "longitude").change(function()
 	  {
-		  var pos = (cnf.mapType == "osm" ? new L.LatLng($("#latitude", ctx).val(), $("#longitude", ctx).val()) : new google.maps.LatLng($("#latitude", ctx).val(), $("#longitude", ctx).val()));
+		  var pos = (cnf.mapType == "osm" ? new L.LatLng($("#" + _id + "latitude").val(), $("#" + _id + "longitude").val()) : new google.maps.LatLng($("#" + _id + "latitude").val(), $("#" + _id + "longitude").val()));
 		  cnf.mapType == "osm" ? mkr.setLatLng(pos) : mkr.setPosition(pos);
 		  cnf.mapType == "osm" ? accCircle.setLatLng(pos) : accCircle.setCenter(pos);
 		  cnf.mapType == "osm" ? lmap.setView(pos, 9): lmap.setCenter(pos);
 	  });
 	  
-	  $("#accuracy", ctx).change(function(){
-		  accCircle.setRadius(Number($("#accuracy", ctx).val())); 		  
+	  $("#" + _id + "accuracy").change(function(){
+		  accCircle.setRadius(Number($("#" + _id + "accuracy").val())); 		  
 	  });
 	
 	  if(cnf.mapType == "osm")
@@ -183,22 +196,22 @@
 	  
 	  function toJSON()
 	  {
-		  var lat = $("#latitude", ctx).val();
+		  var lat = $("#" + _id + "latitude").val();
 		  lat = lat ? lat : "0";
-		  var lon = $("#longitude", ctx).val();
+		  var lon = $("#" + _id + "longitude").val();
 		  lon = lon ? lon : "0";
-		  var acc = $("#accuracy", ctx).val();
+		  var acc = $("#" + _id + "accuracy").val();
 		  acc = acc ? acc : "-1";
-		  var alt = $("#altitude", ctx).val();
+		  var alt = $("#" + _id + "altitude").val();
 		  alt = alt ? alt : "0";
-		  var bear = $("#bearing", ctx).val();
+		  var bear = $("#" + _id + "bearing").val();
 		  bear = bear ? bear : "0";
 		  return  "{ \"latitude\" : " + lat +
 		  	" , \"longitude\" : " + lon + 
 		  	", \"accuracy\" : " +  acc +
 		  	", \"altitude\" : " + alt  +
 		  	", \"bearing\" : " + bear  + 
-		  	", \"provider\" : \"" + $("#provider", ctx).val()+ "\"}";
+		  	", \"provider\" : \"" + $("#" + _id + "provider").val()+ "\"}";
 	  }
 	  
 	  function fromJSON(json)
@@ -208,7 +221,7 @@
 		  
 		  for(f in obj)
 		  {
-			  $("#" + f, ctx).val(obj[f] === 0 ? "0" : obj[f]);
+			  $("#" + _id + f).val(obj[f] === 0 ? "0" : obj[f]);
 		  }
 		  
 		  center = new google.maps.LatLng(obj.latitude, obj.longitude);

@@ -5,14 +5,18 @@
 			var i = 0;
 			var t = val.split(':');
 			
-			$('.ecplus-timepicker-section input').each(function(idx, ele){
+            this.val(val);
+            
+			$('.ecplus-timepicker-section input', this.parent()).each(function(idx, ele){
 				if(t[i]) $(ele).val(t[i++]);
 			});
+            
 		}
 		else if( cnf == 'getTime' )
 		{
+            
 			var time = '';
-			$('.ecplus-timepicker-section input').each(function(idx, ele){
+			$('.ecplus-timepicker-section input', this.parent()).each(function(idx, ele){
 				if(time == '')
 				{
 					time = $(ele).val();
