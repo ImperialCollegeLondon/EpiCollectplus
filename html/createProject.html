@@ -86,7 +86,7 @@
      * @param HTMLElement ctrl the control containing the project name  
      */
     function checkProjectName(ctrl){
-        //if( $( '.projectName' ).text() != '' ) return; // if the projectName has been set by uploading the XML then ignore chang
+        if( $( '.projectName' ).text() != '' ) return; // if the projectName has been set by uploading the XML then ignore chang
         
         var name = ctrl.value;
         

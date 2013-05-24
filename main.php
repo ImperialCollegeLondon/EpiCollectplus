@@ -2494,7 +2494,7 @@ function entryHandler()
 		{
 			if($do)
 			{
-				echo $prj->tables[$frmName]->validateTitle($val, $secondary_field, $secondary_value);				
+				echo json_encode($prj->tables[$frmName]->validateTitle($val, $secondary_field, $secondary_value));				
 			}
 			elseif($key_from)
 			{

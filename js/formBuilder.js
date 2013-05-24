@@ -1100,7 +1100,7 @@ function switchToBranch()
 	if(!project.forms[frm])
 	{
 		project.forms[frm] = new EpiCollect.Form();
-		project.forms[frm].num = Object.keys(project.forms).length;
+		project.forms[frm].num = Object.keys(project.forms).length + 1; // Form numbering is 1-indexed not 0-indexed
 		project.forms[frm].name = frm;
 		
 		var key = currentForm.key;
@@ -1195,13 +1195,13 @@ function askForKey(keyDeleted)
 		title : "Add a key field",
         closable : false,
 		content : (!keyDeleted ? "Each form needs a unique \"key\" for identifying and linking records. Should this key be generated or entered?" : "You have deleted the key for this form, please choose a new key field to generate. " ),
-		form:(!keyDeleted ? "<form><div id=\"key_radios\" class=\"toggle\"> "+
+		form:(!keyDeleted ? "<form><div id=\"key_radios\" class=\"toggle choice\"> "+
             "<label for=\"key_no\"><b>Generated</b> There is no unique question in this form, so generated a key</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" />"+
 			"<label for=\"key_yes\"><b>Entered</b> There is a question in this form that will have a unique answer for each entry</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/></div>"+
 			"<div id=\"key_details\" style=\"display:none;\"><label for=\"key_type\">My key field is a </label><select id=\"key_type\" name=\"key_type\"><option value=\"text\">Text Field</option><option value=\"numeric\">Integer Field</option><option value=\"barcode\">Barcode Field</option></select><p id=\"key_type_err\" class=\"validation-msg\"></p>" + 
             "<label for=\"key_label\">Label for the key field</label><input id=\"key_label\" name=\"key_label\" /><p id=\"key_label_err\" class=\"validation-msg\"></p>"+
             "<label for=\"key_name\">ID for the key field</label><input id=\"key_name\" name=\"key_name\" /><p id=\"key_name_err\" class=\"validation-msg\"></p>"+
-			"</div></form>" :"<form><div id=\"key_radios\" class=\"toggle\">"+ 
+			"</div></form>" :"<form><div id=\"key_radios\" class=\"toggle choice\">"+ 
             "<label for=\"key_change\">I want to make another<br /> field the key<br />&nbsp;</label><input type=\"radio\" id=\"key_change\" name=\"key\" value = \"change\"/><label for=\"key_yes\">Yes, I do have a <br />unique key for this form<br/>&nbsp;</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/>"+
 			"<label for=\"key_no\">No, I do not have a unique <br />key for this form, <br />please generate a key for me.</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" /></div>"+  
 			"<div id=\"key_details\" style=\"display:none;\"><label for=\"key_type\">My key field is a </label><select id=\"key_type\" name=\"key_type\"><option value=\"text\">Text Field</option><option value=\"numeric\">Integer Field</option><option value=\"barcode\">Barcode Field</option></select><p id=\"key_type_err\" class=\"validation-msg\"></p>" + 

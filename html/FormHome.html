@@ -424,6 +424,7 @@
 					$('#map-container').height(mapHeight);
 				});
 				$(window).resize();
+                
 				$('#graphbar').resizable({
 					handles: 'w',
 					resize: function(event, ui)
@@ -432,7 +433,8 @@
 						$('#map, #bottombar').css('margin-right', ui.helper.width() + 'px');
 					}
 				});
-                                if(google.maps) startMapLoad();
+                
+                if(window['google'] && google['maps']) startMapLoad();
 			});
 	
 			function setProgressMessage(msg)
@@ -671,7 +673,7 @@
                     var fld = '<option value="' + _gps_f[n] + '" ' + (n ? '' : 'SELECTED')+ '>' + _frm_flds[_gps_f[n]].text + '</option>';
                     _gps_o = fld + _gps_o;
                 }
-                console.debug(_gps_o);
+                
                 $('#fieldSelector').append(_gps_o);
                 
                 $('#fieldSelector').change(function(){
