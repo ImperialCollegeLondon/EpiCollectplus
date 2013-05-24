@@ -721,7 +721,7 @@
 				loader.start();
 				offset = pageNo * numEnts;
 				
-				var urlStr = url + "/" + formName + ".json?mode=list&start=" + offset + "&limit=" + numEnts + "&sort=" + sortCol + "&dir=" +sortDir + (location.search  ? "&" + location.search.substr(1) : "");
+				var urlStr = url + "/" + formName + ".json?full_paths=false&mode=list&start=" + offset + "&limit=" + numEnts + "&sort=" + sortCol + "&dir=" +sortDir + (location.search  ? "&" + location.search.substr(1) : "");
 				var statUrl = url + "/" + formName + "/__stats?" + location.search.substr(1);
 				
 				if(filterField && filterValue)
@@ -1474,7 +1474,7 @@
                                     
                                     if(EpiCollect.parseDate(act['edited']) > map_lastupdated || EpiCollect.parseDate(act['uploaded']) > map_lastupdated )
                                     {
-                                            var urlStr = url + "/" + formName + ".json?gt::modified=" + EpiCollect.server_format(map_lastupdated) + "sort=" +  project.forms[formName].titleField + "&limit=" +mapChunkSize + "&start=" + offset;
+                                            var urlStr = url + "/" + formName + ".json?full_paths=false&gt::modified=" + EpiCollect.server_format(map_lastupdated) + "sort=" +  project.forms[formName].titleField + "&limit=" +mapChunkSize + "&start=" + offset;
 
                                             if(filterField && filterValue)
                                             {

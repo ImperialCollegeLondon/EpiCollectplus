@@ -15,7 +15,7 @@ $CODE_VERSION = "1.4e";
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
 
-function getValIfExists($array, $key)
+function getValIfExists($array, $key, $default = null)
 {
 	if(array_key_exists($key, $array))
 	{
@@ -23,7 +23,7 @@ function getValIfExists($array, $key)
 	}
 	else
 	{
-		return null;
+		return $default;
 	}
 }
 
@@ -1887,8 +1887,17 @@ function formHandler()
 		header("Cache-Control: no-cache, must-revalidate");
 		$offset = array_key_exists('start', $_GET) ? $_GET['start'] : 0;
 		$limit = array_key_exists('limit', $_GET) ? $_GET['limit'] : 0;;
-		
-		
+		$full_urls = getValIfExists($_GET, 'full_paths', true);
+        
+        if($full_urls === 'false')
+        {
+            $full_urls = false;
+        }
+        elseif($full_urls === 'true')
+        {
+            $full_urls = true;
+        }
+        
 		switch($format){
 			case 'json':
 				
@@ -1901,7 +1910,7 @@ function formHandler()
 				
 				$recordSet = array();
 				
-				while($rec = $prj->tables[$frmName]->recieve(1, true))
+				while($rec = $prj->tables[$frmName]->recieve(1, $full_urls))
 				{
 					$recordSet = array_merge($recordSet, $rec); 
 				}
