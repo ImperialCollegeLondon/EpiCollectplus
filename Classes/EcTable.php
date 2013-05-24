@@ -1139,11 +1139,11 @@
 			
 			if($ents == '')
 			{
-				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \', \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $val );
+				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $val );
 			}
 			else
 			{
-				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \', \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $val );
+				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $val );
 			}
 			$res = $db->do_query($select);
 			if($res === true)
@@ -1239,13 +1239,13 @@
 			{
 				for($i = 0; $i < $cnt; $i++)
 				{
-					if($i > 0) $tstr .= ", ";
-					if(array_key_exists($this->titleFields[$i], $obj))
+					if($i > 0) $tstr .= " - ";
+					if(array_key_exists($this->titleFields[$i], $obj[0]))
 					{
-						$tstr .= $obj[$this->titleFields[$i]];
+						$tstr .= $obj[0][$this->titleFields[$i]];
 					}
 				}
-				if($tstr == '') $tstr = $obj[$this->key]; 
+				if($tstr == '') $tstr = $obj[0][$this->key]; 
 			}
 			return $tstr;
 		}

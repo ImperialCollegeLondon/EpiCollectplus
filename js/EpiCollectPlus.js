@@ -812,7 +812,7 @@ EpiCollect.Form = function()
     this.num = 0;
     this.name = '';
     this.key = '';
-    this.titleField = '';
+    this.titleFields = [];
     this.cols = [];
 	this.main = true;
 	
@@ -892,7 +892,7 @@ EpiCollect.Form = function()
 					field.fkField = field.id;
 					field.fkTable = keys[field.id];
 				}
-				if(field.title)this.titleField = field.id;
+				if(field.title)this.titleFields.push(field.id);
 				if(field.type === "video" || field.type === "audio" || field.type === "photo")
 				{
 					this.hasMedia = true;
@@ -1928,7 +1928,7 @@ EpiCollect.Field = function()
 					   //get options;
 					   var cname = this.id;
 					   var key = frm.key;
-					   var title = frm.titleField;
+					   var title = frm.titleFields;
 					   var ctrl = '<input name="' + cname + '" id="' + cname +  '" class="ecplus-input ecplus-ac" pfield="' + key + '" pform="' + frm.name + '" ' + (fkfld ? ' childcontrol="' + fkfld + '"' : '') + ' /><input type="hidden" name="' + cname + '" id="' + cname +  '" value="' + val + '" class="ecplus-input-hidden" />';
 					   
 					   if(val)
@@ -1941,7 +1941,7 @@ EpiCollect.Field = function()
 								   //console.debug(data);
 								   if(data.trimChars() !== "")
 								   {
-									   $('#' + this.id + '-ac')
+									   $('#' + this.id)
 								   			.val(data)
 								   			.removeClass('loading');
 									   
