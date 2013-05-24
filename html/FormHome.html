@@ -778,8 +778,7 @@
 			function getMapData(chunkSize, offset)
 			{
 							
-				var urlStr = url + "/" + formName + ".json?mode=list&sort=" +  project.forms[formName].titleField + "&limit=" + chunkSize + "&start=" + offset;
-				
+				var urlStr = url + "/" + formName + ".json?full_paths=false&mode=list&sort=" +  project.forms[formName].titleField + "&limit=" + chunkSize + "&start=" + offset;
 
 				if(filterField && filterValue)
 				{
