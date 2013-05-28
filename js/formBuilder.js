@@ -1259,7 +1259,7 @@ function askForKey(keyDeleted)
                 
                 var fieldNameValid = project.validateFieldName(frm, new_field);
                 
-                if(vals.key !== "yes" || (fieldnameValue === true && vals.key_label !== '' && vals.key_type !== ''))
+                if(vals.key !== "yes" || (fieldNameValid === true && vals.key_label !== '' && vals.key_type !== ''))
                 {
                     if( vals.key !== 'change' ) addControlToForm(new_field.id, new_field.text, vals.key_type);
                     currentForm.key = key_id;		
