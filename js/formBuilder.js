@@ -875,23 +875,23 @@ function setSelected(jq)
                     if(currentControl.date)$("#date").val(currentControl.date);
                     if(!!currentControl.setDate)
                     {
-                            $("#date").val(currentControl.setDate);
-                            $("#set").attr("checked", true);
+                        $("#date").val(currentControl.setDate);
+                        $("#set").attr("checked", true);
                     }
                     else
                     {
-                            $("#set").attr("checked", false);
+                        $("#set").attr("checked", false);
                     }
 
                     if(currentControl.time) $("#time").val(currentControl.time);
                     if(currentControl.setTime)
                     {
-                            $("#time").val(currentControl.setTime);
-                            $("#set").attr("checked", true);
+                        $("#time").val(currentControl.setTime);
+                        $("#set").attr("checked", true);
                     }
                     else
                     {
-                            if(!currentControl.setDate) $("#set").attr("checked", false);
+                        if(!currentControl.setDate) $("#set").attr("checked", false);
                     }
 
                     $("#default").val(currentControl.defaultValue);
@@ -1268,13 +1268,14 @@ function askForKey(keyDeleted)
                 }
                 else
                 {
-                    if(fieldNameValid !== true) $('#key_name_err').text(fieldNameValid).addClass('err');
-                    if(vals.key_label === '') $('#key_label_err').text("The field must have a a label").addClass('err');
-                    if(vals.key_type === '') $('#key_type_err').text("You must select a key type").addClass('err');
+                    if(fieldNameValid !== true) $('#key_name_err').html(fieldNameValid).addClass('err');
+                    if(vals.key_label === '') $('#key_label_err').html("The field must have a a label").addClass('err');
+                    if(vals.key_type === '') $('#key_type_err').html("You must select a key type").addClass('err');
                 }
 			}
 		}
 	});
+    
 	$('#key_radios input[type=radio]').on('change', function(){
 		$('#key_details').toggle(this.id === "key_yes");
                 $('#select_key').toggle(this.id === "key_change");

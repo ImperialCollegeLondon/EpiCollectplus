@@ -723,7 +723,7 @@ EpiCollect.Project = function()
 			if (name === kw[i]) return name + " cannot be user as a field ID.  <br /> <br /> Other words that cannot be used are : " + EpiCollect.KEYWORDS.join(', ');
 		}
         
-        if(name === form) return '<em>' + name + '</em> is not a valid ID. <br /> <br /> The field name cannot be the same as the form name';
+        if(name === form.name) return '<em>' + name + '</em> is not a valid ID. <br /> <br /> The field name cannot be the same as the form name';
 		if(name.match(/\s/gi)) return '<em>' + name + '</em> is not a valid ID. <br /> <br />  The form name cannot contain spaces'
         if(name.match(/[^A-Z0-9_]/gi)) return '<em>' + name + '</em> is not a valid ID. <br /> <br />  The field ID can only contain letter, numbers and underscores';
                 
