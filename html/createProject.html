@@ -99,10 +99,10 @@
             $.ajax({
                 url: './' + name,
                 error: function(xhr, status, s){
-                    enableNext(ctrl, 'Project name available.');
+                    enableNext(ctrl, 'Project name available, please click ‘continue’');
                 },
                 success: function(){
-                    disableNext(ctrl, 'Project name is already in use. Please choose another name.');
+                    disableNext(ctrl, 'Project name is already in use, please choose an alternative');
                 }
             });
         }
@@ -250,10 +250,11 @@
 	 		</div>
 		 	<div id="visibility" class="section">
 				<h2>2. Data Visibility</h2>
-				<p>You can choose whether your data is available to anyone via this website, or restricted to the project managers and curators. You will be able to add Curators and Managers from the 'Manage Project' page once your project is created.</p>
+				<p>Here you can specify/change whether you would like your project to be public (i.e. available for anyone to view data via the web) or private (will require a user to login to see data).  
+                You can add users to a private project using the 'Managers' and/or 'Curators' tab on the 'Manage Project' screen.</p>
 				<div id="public" class="choice">
-					<input type="radio" name="public" id="isPublic" value="true" checked="checked"/><label for="isPublic"><b>Public</b> I would like anyone have access to this project's data</label>
-					<input type="radio" name="public" id="isPrivate" value="false" /><label for="isPrivate"><b>Private</b> I want to restrict access to the project managers and curators</label>
+					<input type="radio" name="public" id="isPublic" value="true" checked="checked"/><label for="isPublic"><b>Public</b> I would like to make my project open and visible to anyone</label>
+					<input type="radio" name="public" id="isPrivate" value="false" /><label for="isPrivate"><b>Private</b> I would like to restrict access to users I specify</label>
 				</div>
 				<br/>
 				<a class="panelSwitcher next" href="javascript:goTo('listing');"> Continue </a>	
@@ -262,11 +263,10 @@
 			</div>
 			<div id="listing" class="section">
 				<h2>3. Project Listing on the Homepage</h2>
-				<p>You can choose to have projects listed on the front page of the website, and if someone uses the APIs to get a list of projects. This may help to publicise your project and encourage people to 
-                submit data. If you choose to do this then consider adding a description and project image through the 'Manage Project' page.</p>
+				<p>Here you can choose whether you would like your project to appear in a list of projects available for anyone to browse.  This will encourage users to add data to your project. If you choose to do this then consider adding a description and project image through the 'Manage Project' page.</p>
 				<div id="listed" class="choice">
-					<input type="radio" name="listed" id="isListed" value="true" checked="checked" /><label for="isListed"><b>Listed</b> I would like my project listed publically</label>
-					<input type="radio" name="listed" id="notListed" value="false" /><label for="notListed"><b>Hidden</b> I do not want my project to be listed publically</label>
+					<input type="radio" name="listed" id="isListed" value="true" checked="checked" /><label for="isListed"><b>Listed</b> I would like my project to appear in a list of projects on the server homepage</label>
+					<input type="radio" name="listed" id="notListed" value="false" /><label for="notListed"><b>Hidden</b> I would not like my project to appear in a list of projects on the server homepage.</label>
 				</div>
 				<br/>
 				<a class="panelSwitcher next" href="javascript:document.forms[0].submit();"> Create Project </a>	

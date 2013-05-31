@@ -1102,8 +1102,8 @@ function getPointMarker()
 	
 	$colour = getValIfExists($_GET, "colour");
 	$shape = getValIfExists($_GET, "shape");
+    
 	if(!$colour) $colour = "FF0000";
-	$colour = trim($colour, "#");
 	header("Content-type: image/svg+xml");
 	echo getMapMaker($colour, $shape);
 }

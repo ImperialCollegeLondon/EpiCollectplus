@@ -264,8 +264,8 @@
 			</div>
 			<div id="s_managers" class="section">
 				<h2>Project Managers</h2>
-				<p>Managers have the ability to add and remove other project managers and curators, they can also update the project 
-				settings and the project definition. Managers can also add, edit and delete data using the web interface.</p>
+				<p>Here you can add email addresses of those users you would like to have full access to managing your project.    Managers are able to add and remove other managers and curators, Managers can also add/edit/delete data via the web interface.</p>
+                <p></p>
 				<table> 
 					<thead>
 						<tr><th>Email</th><th class="remove">Remove</th></tr>
@@ -273,14 +273,14 @@
 					<tbody>
 					</tbody>
 				</table>
-				<label for="newmanager">Enter the email address for the manager you wish to add </label><input type="email" id="newmanager" /><a class="button" href="javascript:addUser('managers', $('#newmanager').val())">Add manager</a>
+				<label for="newmanager">Please enter gmail or (for local users) email address for the manager you would like to add: </label><input type="email" id="newmanager" /><a class="button" href="javascript:addUser('managers', $('#newmanager').val())">Add manager</a>
 				<input type="hidden" name="managers" id="managers"/>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 			</div>
 			<div id="s_curators" class="section">
 				<h2>Project Curators</h2>
-				<p>Any users in this group are allowed to use the web interface to add, edit and remove data. Anyone can upload data from the EpiCollect+ Android App. If this project is not public then 
-				only Curators and managers will be able to use the web interface for this project.</p>
+				<p>Here you can add email addresses of those users you would like to act as curators.  Curators can add/edit/delete data via the web interface.</p>
+                <p>If this project is not publicly visible only curators and managers can add data via the web.</p>
 				<table> 
 					<thead>
 						<tr><th>Email</th><th class="remove">Remove</th></tr>
@@ -288,13 +288,13 @@
 					<tbody>
 					</tbody>
 				</table>
-				<label for="newcurator">Enter the email address for the curator you wish to add </label><input type="email" id="newcurator" /><a class="button" href="javascript:addUser('curators', $('#newcurator').val())">Add curator</a>
+				<label for="newcurator"Please enter gmail or (for local users) email address for the curator you would like to add: </label><input type="email" id="newcurator" /><a class="button" href="javascript:addUser('curators', $('#newcurator').val())">Add curator</a>
 				<input type="hidden" name="curators" id="curators"/>
 				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
 			</div>
 			<div id="s_delete" class="section">
 				<h2>Delete Project</h2>
-				<p>Use the button below to delete this project and all of its data from the server. Deleting your project is permenant and cannot be undone.</p>
+				<p>Use the button below to delete this project and all of its data from the server. Deleting your project is permanent and all data will be removed. </p>
 				<a href="javascript:deleteProject()" class="danger button"> Delete Project </a>
 			</div>
 			

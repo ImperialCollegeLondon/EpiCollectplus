@@ -46,10 +46,16 @@
 			
 		}
 		
-		.nolocation
+		.no-location
 		{
 			font-style : italic; 
+            
 		}
+        
+        .no-location:after
+        {
+            content: ' (no location)';
+        }
 		
 		#timeText
 		{
@@ -285,9 +291,6 @@
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.controlgroup.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.settingspanel.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.mediainput.js"></script>
-	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.js"></script>
-	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.categories.js"></script>
-	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.flot.pie.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.timepicker.js"></script>
 	<script type="text/javascript">
 			var formName = "";
@@ -319,7 +322,7 @@
 			var hiddenColumns = { created : false, uploaded : true, lastEdited : true, DeviceID : true};
 			
 			var totalents = 0;
-			var mapChunkSize = 100;
+			var mapChunkSize = 1000;
 			var map_lastupdated = new Date(0);
                         var mapBounds = null;
                         
@@ -327,28 +330,32 @@
                         var mapchecker = null;
 			
 			var colours = [
-				"rgba(255,0,0,1)",
-				"rgba(0,128,0,1)",
-				"rgba(192,192,192,1)",
-				"rgba(255,255,0,1)",
-				"rgba(255,255,255,1)",
-				"rgba(128,0,128,1)",
-				"rgba(128,128,128,1)",
-				"rgba(128,0,0,1)",
-				"rgba(0,0,204,1)", 
-				"rgba(159,255,159,1)",
-				"rgba(255,157,206,1)",
-				"rgba(179,102,255,1)",
-				"rgba(120,68,33,1)"
+				"#FF0000",
+				"#008000",
+				"#C0C0C0",
+				"#FFFF00",
+				"#FFFFFF",
+				"#800080",
+				"#808080",
+				"#800000",
+				"#0000CC", 
+				"#9FFF9F",
+				"#FF9FCC",
+				"#B366FF",
+				"#784421"
 			];
 			
 			if(localStorage && localStorage.getItem('num_entries')) numEnts = localStorage.getItem('num_entries');
 			
+            var IE8 = false; //annoying, but we need the SVG to work... or the workaround to work in IE8
+            
 			$(function()
 			{
 				var ele = document.createElement('img');
 				ele.src = "../images/loading.gif";
 				
+                IE8 = $.browser.msie  && (parseInt($.browser.version, 10) < 9); 
+                
 				url = location.href.trimChars("/");
 				if(url.indexOf("?") > 0)url = url.substr(0, url.indexOf("?"));
 				formName = url.substr(url.lastIndexOf("/") + 1).replace(/#.*$/, "");
@@ -778,7 +785,7 @@
 			function getMapData(chunkSize, offset)
 			{
 							
-				var urlStr = url + "/" + formName + ".json?full_paths=false&mode=list&sort=" +  project.forms[formName].titleField + "&limit=" + chunkSize + "&start=" + offset;
+				var urlStr = url + "/" + formName + ".json?full_paths=false&mode=list&limit=" + chunkSize + "&start=" + offset;
 
 				if(filterField && filterValue)
 				{
@@ -903,6 +910,18 @@
                 markerClusterer.repaint();
             }
 			
+            function getMarkerIcon(colour)
+            {
+                if(IE8)
+                {
+                    return "https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%20|" + colour.replace('#', '');
+                }
+                else
+                {
+                    return "http://" + location.host +  "/{#SITE_ROOT#}/markers/point?colour=" + colour.replace('#', '');
+                }
+            }
+            
 			function mapDataCallback(data, status, xhr)
 			{
 				mapData = mapData.concat(data);
@@ -920,16 +939,37 @@
 				var minlon = 180;
 				var maxlon = -180;
 				
+                var ttl_fld = project.forms[formName].titleField;
+                if(!ttl_fld) ttl = project.forms[formName].key;
+                
+                var key_fld = project.forms[formName].key;
+                
 				for(var i = 0; i < data.length; i++)
 				{
+                    
+                    var ttl = data[i][ttl_fld];
+                    if(!ttl || ttl.trimChars(' ') === '')
+                    {
+                        if(ttl_fld != key_fld)
+                        {
+                            ttl = data[i][key_fld];
+                        }
+                        else
+                        {
+                            ttls = data[i]['created'];
+                        }
+                    }
+                    
+                
 					if(!data[i][geoField]) continue;
 					if(!data[i][geoField].accuracy) data[i][geoField].accuracy = (data[i][geoField].latitude !== 0 && data[i][geoField].longitude !==0) ? 100 : -1;
-					if(data[i][geoField].latitude >= -90 && data[i][geoField].latitude <= 90 && data[i][geoField].longitude >= -180 && data[i][geoField].longitude <= 180 && data[i][geoField].accuracy > 0)
+					if(data[i][geoField].latitude >= -90 && data[i][geoField].latitude <= 90 && data[i][geoField].longitude >= -180 && data[i][geoField].longitude <= 180 && data[i][geoField].accuracy > 0
+                        && data[i][geoField].longitude != null && data[i][geoField].longitude != null) 
 					{
 						var mkr = new google.maps.Marker({
 							id : data[i][keyField],
 							position : new google.maps.LatLng(data[i][geoField].latitude, data[i][geoField].longitude),
-							icon : "{#SITE_ROOT#}/markers/point",
+							icon :  new google.maps.MarkerImage("{#SITE_ROOT#}/markers/point"),
 							index : i
 						});
 					
@@ -943,30 +983,32 @@
 						});
 					
 						markers.push(mkr);
+                        addToSidebar(i, ttl);
 					}
 					else
 					{
 						markers.push(null);
+                        addToSidebar(i, ttl, false);
 					}
 					
 					mincreated = Math.min(mincreated, Number(data[i]["created"]));
 					maxcreated = Math.max(maxcreated, Number(data[i]["created"]));
 					
-					var ttl = data[i][project.forms[formName].titleField];
-					if(!ttl || ttl.trimChars(' ') === '') ttl = '<i>' + data[i]['created'] + '</i>';
+					
 					
                                         
-                                        var uploaded = EpiCollect.parseDate(data[i]["uploaded"]);
-                                        if(map_lastupdated < uploaded) map_lastupdated = uploaded;
+                    var uploaded = EpiCollect.parseDate(data[i]["uploaded"]);
+                    if(map_lastupdated < uploaded) map_lastupdated = uploaded;
+                    
+                    if(data[i]["lastEdited"]){
+                        var updated = EpiCollect.parseDate(data[i]["lastEdited"]);
+                        if(map_lastupdated < updated) map_lastupdated = updated;
+                    }
                                         
-                                        if(data[i]["lastEdited"]){
-                                            var updated = EpiCollect.parseDate(data[i]["lastEdited"]);
-                                            if(map_lastupdated < updated) map_lastupdated = updated;
-                                        }
-                                        
-					addToSidebar(i, ttl);
+					
 				}
 				
+                
 				//update progress bar
 				setProgress(markers.length);
 				
@@ -991,7 +1033,7 @@
 
 					map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
 					
-					if(!markerClusterer)
+					if(!markerClusterer && !IE8)
 					{
 						markerClusterer = new MarkerClusterer(map, markers,
 						{
@@ -1033,10 +1075,9 @@
 							]
 						});
 					}
-					else
-					{
-						markerClusterer.addMarkers(markers);	
-					}
+					
+					if(markerClusterer) markerClusterer.addMarkers(markers);	
+					
 					
 					$('#map-container').height(mapHeight);
 					
@@ -1098,12 +1139,19 @@
 			{
 				if(bubble) closeBubble();
 				
-				bubble = new google.maps.InfoWindow({
-					content : getContentFor(mkrIdx),
-					position : getPositionFor(mkrIdx)
-				});
-				
-				bubble.open(map);
+                if(markers[mkrIdx])
+                {
+                    bubble = new google.maps.InfoWindow({
+                        content : getContentFor(mkrIdx),
+                        position : getPositionFor(mkrIdx)
+                    });
+                    
+                    bubble.open(map);
+                }
+                else
+                {
+                    EpiCollect.dialog({ content : getContentFor(mkrIdx) })
+                }
 			}
 			
 			function getMarkerAt(latlng)
@@ -1116,9 +1164,16 @@
 				}
 			}
 			
-			function addToSidebar(index, text)
+			function addToSidebar(index, text, hasPosition)
 			{
-				$("#sidebar").append("<a href=\"javascript:showBubbleFor(" + index + ")\" index=\"" + index +"\">" + text +  "</a>");
+                if(hasPosition !== false)
+                {
+                    $("#sidebar").append("<a href=\"javascript:showBubbleFor(" + index + ")\" index=\"" + index +"\">" + text +  "</a>");
+                }
+                else
+                {
+                    $("#sidebar").append("<a class=\"no-location\" href=\"javascript:showBubbleFor(" + index + ")\" index=\"" + index +"\">" + text +  "</a> ");
+                }
 			}
 			
 			function closeBubble()
@@ -1185,7 +1240,7 @@
 				
 				for(var i = len; i--;)
 				{
-					if( mkrs[i] ) mkrs[i].setVisible(true);
+					if( mkrs[i] ) mkrs[i].  e(true);
 				}
 				markerClusterer.repaint();
 				
@@ -1239,8 +1294,10 @@
 					{
 						colourGrps[d[fld]] = colours[colourIdx++ % colours.length];
 					}
-					mkr.setIcon("http://" + location.host +  "/{#SITE_ROOT#}/markers/point?colour=" + colourGrps[d[fld]]);
-					mkr.colour = colourGrps[d[fld]];
+                    
+                    mkr.colour = colourGrps[d[fld]];
+					mkr.setIcon(getMarkerIcon(mkr.colour));
+					
 				}
 				
 				window.colourField = fld;
@@ -1274,7 +1331,7 @@
 					var legRow = document.createElement('div');
 					var img = document.createElement('img');
 					img.style.display = 'inline';
-					img.src = "../markers/point?colour=" + colourGrps[grp];
+					img.src = getMarkerIcon(colourGrps[grp]);
 					legRow.appendChild(img);
 					$(legRow).append(grp);
 					if(i < legend.childNodes.length)
@@ -1333,7 +1390,7 @@
 				}
 				
 				
-				$.plot(jq , ser, {
+				/*$.plot(jq , ser, {
 					xaxis: {
 						mode: "categories",
 			            tickLength: 0,
@@ -1364,7 +1421,7 @@
 						$('#tooltip').show();
 					}
 					
-				});
+				});*/
 			}
 			
 			function drawPie(jq, data, field)
@@ -1390,7 +1447,7 @@
 					}
 				}
 				
-				$.plot(jq , s, {
+				/*$.plot(jq , s, {
 					series: {
 						pie: {
 							show : true,
@@ -1425,7 +1482,7 @@
 						$('#tooltip').show();
 					}
 					
-				});
+				});*/
 				
 				
 			}
@@ -1469,19 +1526,19 @@
                         function checkForMapUpdates()
                         {
                             $.ajax(location.pathname + '/__activity', {success : function(xhr){
-                                    var act = JSON.parse(xhr);
+                                    var act = xhr;
                                     
                                     if(EpiCollect.parseDate(act['edited']) > map_lastupdated || EpiCollect.parseDate(act['uploaded']) > map_lastupdated )
                                     {
-                                            var urlStr = url + "/" + formName + ".json?full_paths=false&gt::modified=" + EpiCollect.server_format(map_lastupdated) + "sort=" +  project.forms[formName].titleField + "&limit=" +mapChunkSize + "&start=" + offset;
+                                        var urlStr = url + "/" + formName + ".json?full_paths=false&gt::modified=" + EpiCollect.server_format(map_lastupdated) + "sort=" +  project.forms[formName].titleField + "&limit=" +mapChunkSize + "&start=" + offset;
 
-                                            if(filterField && filterValue)
-                                            {
-                                                    urlStr += "&" + filterField + "=" + filterValue;
-                                                    statUrl += "&" + filterField + "=" + filterValue; 
-                                            }
-                                            $.getJSON(urlStr , mapDataCallback);
-                                         
+                                        if(filterField && filterValue)
+                                        {
+                                                urlStr += "&" + filterField + "=" + filterValue;
+                                                statUrl += "&" + filterField + "=" + filterValue; 
+                                        }
+                                        $.getJSON(urlStr , mapDataCallback);
+                                     
                                     }
                                 }
                             });
@@ -1535,7 +1592,7 @@
 			<p class="ecplus-toolbar">
 				{#curationbuttons#}
 				<span class="ecplus-toolbar-divider">&nbsp;</span> 
-                                <label>Filter List By</label for="filter_fields"><select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> 
+                                <label for="filter_fields">Filter List By</label><select id="filter_fields" class="fieldList"></select> <input id="filter_value" /> 
                                 <span id="filterControls" class="button-set">
                                         <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value').val());">
                                             <img class="toolbar-icon" src="{#SITE_ROOT#}/images/glyphicons/glyphicons_027_search.png" title="Filter" alt="Filter">
@@ -1610,7 +1667,7 @@
 				<div id="fieldFilter" class ="filterControl">
 					<h4>Filter By Field</h4>
 					<p><b>Field </b><select id="mapFilterField" class="fieldList"></select></p>
-					<p><b>Value </b><input id="mapFilterValue"></input></p>
+					<p><b>Value </b><input id="mapFilterValue" /></p>
 					<p><a href="javascript:doMapFieldFilter()">Apply Filter</a></p>
 					<a class="clearFilter" href="javascript:clearMapFilter();">Clear Filter</a>
 				</div>
