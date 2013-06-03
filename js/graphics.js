@@ -10,22 +10,27 @@ var gfx = function(){};
  * @param beta double End angle in radians
  * @param r int radius in pixels
  */
-gfx.getWedgePath = function(alpha, beta, r)
+gfx.getWedgePath = function(alpha, beta, r, m, centre)
 {
-    var basestr = 'M ~r ~r L ~x ~y A ~r ~r 0 ~f 0 ~sx ~sy';
+    var basestr = 'M ~cx ~cy L ~x ~y A ~r_ ~r_ 0 ~f 0 ~sx ~sy';
     
-    var x = r + (r * Math.sin(alpha));
-    var y = r + (r * Math.cos(alpha));
-    var sx = r + (r * Math.sin(beta));
-    var sy = r + (r * Math.cos(beta));
+    var r_ = r - m;
     
-    var pathstr = basestr.replace(/~r/g, r)
+    var x = centre[0] + (r_ * Math.sin(alpha));
+    var y = centre[1] + (r_ * Math.cos(alpha));
+    var sx = centre[0] + (r_ * Math.sin(beta));
+    var sy = centre[1] + (r_ * Math.cos(beta));
+    
+    var pathstr = basestr.replace(/~r_/g, r_)
+        .replace(/~r/g, r)
         .replace(/~x/g, x)
         .replace(/~y/g, y)
-        .replace(/~sx/g, sx)
+        .replace(/~cx/g, centre[0])
+        .replace(/~cy/g, centre[1]).replace(/~sx/g, sx)
         .replace(/~sy/g, sy)
         .replace(/~f/,  Math.abs(alpha-beta) < Math.PI ? '0' : '1');
             
+      
     return pathstr;
 };
 
@@ -41,7 +46,12 @@ gfx.drawPie = function(div_id, data, r, roundel, roundel_margin)
     
     var d = r * 2;
     
-    var raph = Raphael(div_id, d, d);
+    var jq = $('#' + div_id);
+    
+    var raph = Raphael(div_id, jq.width(), jq.height());
+    
+    var cx = jq.width() / 2;
+    var cy = jq.height() / 2;
     
     for ( var i = data.length; i--; )
     {
@@ -52,18 +62,56 @@ gfx.drawPie = function(div_id, data, r, roundel, roundel_margin)
     var alpha = 0;
     
     var pieces = []
-
+    var margin = 10;
+    
     for ( var i = data.length; i--; )
     {
         var beta = this.getBeta(alpha, data[i][1], total, omega); // get end angle
-        var pathstr = this.getWedgePath(alpha, beta, r);
+        var pathstr = this.getWedgePath(alpha, beta, r, margin, [cx, cy]);
         
         var segment = raph.path(pathstr);
         segment.attr('stroke', '#000');
         segment.attr('fill', data[i].length > 2 ? data[i][2] : Raphael.getColor());
+        segment.label = data[i][0];
+        segment.value = data[i][1];
+        
+        segment.hover(function(evt){//hover On
+            this._glow = this.glow({ 
+                color : this.attr('fill'), 
+                width : margin * 2,
+                opacity : 0.8
+            });
+            
+            this.attr('stroke-width', 2);
+            
+            var p = evt.clientY - $('#graphOne').offset().top;
+            var h = $('#graphOne svg').height();
+            
+            var top = ( p < r ? h - 50 : 0 );
+            
+            this.desc = raph.set()
+            var pct = (this.value / total).toString() ;
+            pct = pct.substr(0, pct.indexOf('.') + 3);
+           
+            this.desc.push( 
+                raph.rect(0, top, jq.width(), 50),
+                raph.text(jq.width()/2, top + 25, this.label + ' : ' + this.value + ' (' +  pct  + '%)')
+            );
+            
+            this.desc[1].attr('fill', 'rgba(0, 0, 0, 1)');
+            this.desc[1].attr('font-weight', 'bold');
+            this.desc[1].attr('font-size', '14pt');
+            
+            this.desc[0].attr('fill', 'rgba(255, 255, 255, 0.8)');
+            
+        }, function(){ //hover off
+            this._glow.remove();
+            this.attr('stroke-width', 1);
+            
+            this.desc.remove();
+        });
         
         alpha = beta;
-        
     }
     
     if(roundel)
@@ -164,4 +212,155 @@ gfx.drawPieMarker = function(lat, lng, data, r)
     mkr_div.remove();
     
     return mkr;
+};
+
+gfx.drawBarChart = function(div_id, data)
+{
+    var total = 0;
+    var labels = [];
+    
+    var jq = $('#' + div_id);
+    var max = 0;
+    
+    var w = jq.width(), h = jq.height();
+    
+    var margins = Math.max(10, Math.min(25, w * 0.05));
+    var textSize = Math.max(8, Math.min(16, w * 0.05));
+    
+    for ( var i = data.length; i--; )
+    {
+        total += data[i][1];
+        labels[i] = data[i][0];
+        max = Math.max(max, data[i][1]);
+    }
+    
+    var bar_width = (w - (margins * 3)) / labels.length;
+    var max_height = (h - (margins * 3));
+    var unit_height = max_height / max;
+    
+    var raph = Raphael(div_id, w, h);
+    
+    this.drawCatAxis(raph, labels, margins, w, h, bar_width, textSize);
+    this.drawValAxis(raph, max, margins, w, h, textSize);
+     
+    for ( var i = data.length; i--; )
+    {
+        this.drawBar(raph, i, data[i][1], data[i][0], margins, data[i].length > 2 ? data[i][2] : Raphael.getColor(), bar_width, unit_height, h);
+    }
+};
+
+gfx.drawCatAxis = function(raph, labels, margin, width, height, bar_w, text_size){
+    var y = height - margin * 2
+    var fx = (margin  * 2) // firstx
+    
+    var ax = raph.path('M ' + fx + ' ' + y + ' L ' + (width - margin) + ' ' + y);
+    ax.attr('stroke', '#000');
+    
+    for( var l = labels.length; l--; )
+    {
+        var x = fx + bar_w * (l + 1)  ;
+    
+        var t = raph.path( 'M ' + x + ' ' + y + ' L ' + x  + ' ' + (y + margin));
+        t.attr('stroke', '#000');
+        
+        var tx = raph.text(x - bar_w/2, y + margin/2, labels[l]);
+        tx.attr('font-size', text_size + 'pt');
+    }
+    
+    
+};
+
+gfx.drawValAxis = function(raph, max, margin, width, height, text_size){
+    var x = margin * 2;
+    var y = height - margin;
+    
+    var ax_height = height - margin * 3;
+    
+    var ax = raph.path('M ' + x + ' ' + (x - margin) + ' L ' + x + ' ' + y);
+    ax.attr('stroke', '#000');
+    
+    var nt = 15;
+    var tick_sz = 0;
+   
+    for ( ; !tick_sz || tick_sz % 1; nt-- )
+    {
+        tick_sz = max / nt;
+    }
+        
+    nt++;
+        
+    var t_hgt = ax_height / nt; //height per tick
+    var ax_bottom = height - margin * 2;
+    
+    for( var z = 1; z <= nt; z++ )
+    {
+        var t_val = z * tick_sz;
+        var ty = ax_bottom - (t_hgt * z);
+        var txs =  ( x - margin/2)
+    
+        var tk = raph.path('M ' + txs + ' ' + ty + ' L ' + x + ' ' + ty);
+        tk.attr('stroke', '#000');
+        
+        var tkx = raph.text(txs, ty, t_val);
+        tkx.attr('font-size', text_size + 'pt');
+        tkx.attr('text-anchor', 'end');
+    }
+    
+    
+};
+
+gfx.drawBar = function(raph, i, value, label, margin, colour, barwidth, unitheight, height){
+    var padding = 5;
+    var _width = barwidth  - padding * 2;
+    
+    var x = margin * 2;
+    var y = height - x;
+    
+    var _left = x + i * barwidth + padding;
+    var _height = unitheight * value;
+            
+    var _top = y - _height;
+    
+    var _bar = raph.rect(_left, _top, _width, _height);
+    _bar.attr('fill', colour);
+    _bar.label = label;
+    _bar.value = value;
+    
+    _bar.hover(function(evt){//hover On
+        this._glow = this.glow({ 
+            color : this.attr('fill'), 
+            width : margin,
+            opacity : 0.8
+        });
+        
+        this.attr('stroke-width', 2);
+        
+        var p = evt.clientY - $('#graphOne').offset().top;
+        var h = $('#graphOne svg').height(), w =  $('#graphOne svg').height();
+        var r = h/2;
+        
+        var top = ( p < r ? h - 50 : 0 );
+        
+        this.desc = raph.set()
+        
+        this.desc.push( 
+            raph.rect(0, top, w, 50),
+            raph.text(w/2, top + 25, this.label + ' : ' + this.value)
+        );
+        
+        this.desc[1].attr('fill', 'rgba(0, 0, 0, 1)');
+        this.desc[1].attr('font-weight', 'bold');
+        this.desc[1].attr('font-size', '14pt');
+        
+        this.desc[0].attr('fill', 'rgba(255, 255, 255, 0.8)');
+        
+    }, function(){ //hover off
+        this._glow.remove();
+        this.attr('stroke-width', 1);
+        
+        this.desc.remove();
+    });
 }
+
+
+

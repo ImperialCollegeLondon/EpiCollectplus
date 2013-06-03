@@ -292,6 +292,8 @@
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.settingspanel.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.mediainput.js"></script>
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.timepicker.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/raphael-min.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/graphics.js"></script>
 	<script type="text/javascript">
 			var formName = "";
 			var map = null;
@@ -918,7 +920,8 @@
                 }
                 else
                 {
-                    return "http://" + location.host +  "/{#SITE_ROOT#}/markers/point?colour=" + colour.replace('#', '');
+                    return "http://" + location.host +  "{#SITE_ROOT#}/markers/point?colour=" + colour.replace('#', '');
+                    
                 }
             }
             
@@ -1285,9 +1288,7 @@
 				{
 					var d = mapData[i];
 					var mkr = markers[i];
-					
-					if(!mkr) continue;
-					
+
 					if(!d[fld]) d[fld] = "<i>No value</i>";
 					
 					if(!colourGrps[d[fld]])
@@ -1295,8 +1296,10 @@
 						colourGrps[d[fld]] = colours[colourIdx++ % colours.length];
 					}
                     
+                    if(!mkr) continue;
+                    
                     mkr.colour = colourGrps[d[fld]];
-					mkr.setIcon(getMarkerIcon(mkr.colour));
+					mkr.setIcon(new google.maps.MarkerImage(getMarkerIcon(mkr.colour)));
 					
 				}
 				
@@ -1349,47 +1352,19 @@
 			
 			function drawBar(jq, data, field)
 			{
+				var len = data.length;
 				var d = data;
-				var s = [];
+                var formatedData = formatData(data, field);
+                
+                jq.empty();				
+                jq.attr('id', jq.parent().attr('id') + '_canvas');
+                
+                try{
+                    gfx.drawBarChart(jq.attr('id'), formatedData);
+                    
+                }catch(err){console.error(err);}
 				
-				var idx = 0;
-				var ser = [];
-				if(field === window.colourField)
-				{
-					for(var i in d)
-					{
-						ser.push({
-							data : [[i, d[i]]],
-							bars : {
-				                show: true,
-				                barWidth: 0.6,
-				                align: "center"
-				            },
-			                color : window.colourGrps[i]
-						});
-					}
-					
-				
-				}
-				else
-				{
-					for(var i in d)
-					{
-						s[idx++] = [i, d[i]];
-					}
-					
-					ser = [{
-							data : s,
-							bars : {
-				                show: true,
-				                barWidth: 0.6,
-				                align: "center" 
-				            }
-						}]
-					;
-				}
-				
-				
+                
 				/*$.plot(jq , ser, {
 					xaxis: {
 						mode: "categories",
@@ -1424,29 +1399,42 @@
 				});*/
 			}
 			
+            
+            function formatData(data, field)
+            {
+                var s = [];
+                var idx = 0;
+            
+                if(field === window.colourField)
+				{
+					for(var i in data)
+					{
+						s[idx++] = [i.replace(/<\/?\w>/gi, ''), data[i], window.colourGrps[i]];
+					}
+				}
+				else
+				{
+					for(var i in data)
+					{
+						s[idx++] = [ i.replace(/<\/?.*>/gi, '')	, data[i]];
+					}
+				}
+                
+                return s
+            }
+            
 			function drawPie(jq, data, field)
 			{
 				
 				var len = data.length;
 				var d = data;
-				
-				var s = [];
-				var idx = 0;
-				if(field === window.colourField)
-				{
-					for(var i in d)
-					{
-						s[idx++] = { label : i.replace(/<\/?\w>/gi, ''), data : d[i], color : window.colourGrps[i]};
-					}
-				}
-				else
-				{
-					for(var i in d)
-					{
-						s[idx++] = { label : i.replace(/<\/?.*>/gi, '')	, data : d[i]};
-					}
-				}
-				
+                var formatedDate = formatData(data, field);
+                
+                jq.empty();				
+                jq.attr('id', jq.parent().attr('id') + '_canvas');
+                
+                gfx.drawPie(jq.attr('id'), formatedDate, (Math.min(jq.width(), jq.height())  / 2));
+                
 				/*$.plot(jq , s, {
 					series: {
 						pie: {
