@@ -193,7 +193,7 @@ function drawProject(prj)
         
         if($("#formList .form").length === 0)
         {
-            newForm('Enter the name for the first form in your project in the box below. Form names must only contain letters, numbers and underscores.');
+            newForm('Please choose a name for your first form - this should consist only of only letters, numbers and underscores.');
         }
         else
         {
@@ -875,23 +875,23 @@ function setSelected(jq)
                     if(currentControl.date)$("#date").val(currentControl.date);
                     if(!!currentControl.setDate)
                     {
-                            $("#date").val(currentControl.setDate);
-                            $("#set").attr("checked", true);
+                        $("#date").val(currentControl.setDate);
+                        $("#set").attr("checked", true);
                     }
                     else
                     {
-                            $("#set").attr("checked", false);
+                        $("#set").attr("checked", false);
                     }
 
                     if(currentControl.time) $("#time").val(currentControl.time);
                     if(currentControl.setTime)
                     {
-                            $("#time").val(currentControl.setTime);
-                            $("#set").attr("checked", true);
+                        $("#time").val(currentControl.setTime);
+                        $("#set").attr("checked", true);
                     }
                     else
                     {
-                            if(!currentControl.setDate) $("#set").attr("checked", false);
+                        if(!currentControl.setDate) $("#set").attr("checked", false);
                     }
 
                     $("#default").val(currentControl.defaultValue);
@@ -1194,19 +1194,19 @@ function askForKey(keyDeleted)
 	EpiCollect.prompt({
 		title : "Add a key field",
         closable : false,
-		content : (!keyDeleted ? "Each form needs a unique \"key\" for identifying and linking records. Should this key be generated or entered?" : "You have deleted the key for this form, please choose a new key field to generate. " ),
+		content : (!keyDeleted ? "Each EpiCollect+ form must have a unique 'key' question - i.e. one where the value entered by a user will be unique each time a form is filled in.   Do you have a question that will be unique to each form entry?" : "You have deleted the key for this form, please choose a new key field to generate. " ),
 		form:(!keyDeleted ? "<form><div id=\"key_radios\" class=\"toggle choice\"> "+
-            "<label for=\"key_no\"><b>Generated</b> There is no unique question in this form, so generated a key</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" />"+
-			"<label for=\"key_yes\"><b>Entered</b> There is a question in this form that will have a unique answer for each entry</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/></div>"+
+            "<label for=\"key_no\"><b>No</b> I do not have a unique key question for this form, please generate one for me</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" />"+
+			"<label for=\"key_yes\"><b>Yes</b> I have a unique key question for this form.</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/></div>"+
 			"<div id=\"key_details\" style=\"display:none;\"><label for=\"key_type\">My key field is a </label><select id=\"key_type\" name=\"key_type\"><option value=\"text\">Text Field</option><option value=\"numeric\">Integer Field</option><option value=\"barcode\">Barcode Field</option></select><p id=\"key_type_err\" class=\"validation-msg\"></p>" + 
-            "<label for=\"key_label\">Label for the key field</label><input id=\"key_label\" name=\"key_label\" /><p id=\"key_label_err\" class=\"validation-msg\"></p>"+
-            "<label for=\"key_name\">ID for the key field</label><input id=\"key_name\" name=\"key_name\" /><p id=\"key_name_err\" class=\"validation-msg\"></p>"+
+            "<label for=\"key_label\">Label for the key field (the question a user is asked e.g. what colour are your eyes?)</label><input id=\"key_label\" name=\"key_label\" /><p id=\"key_label_err\" class=\"validation-msg\"></p>"+
+            "<label for=\"key_name\">ID for the key field (a name used to identify the question. e.g. colour)</label><input id=\"key_name\" name=\"key_name\" /><p id=\"key_name_err\" class=\"validation-msg\"></p>"+
 			"</div></form>" :"<form><div id=\"key_radios\" class=\"toggle choice\">"+ 
-            "<label for=\"key_change\">I want to make another<br /> field the key<br />&nbsp;</label><input type=\"radio\" id=\"key_change\" name=\"key\" value = \"change\"/><label for=\"key_yes\">Yes, I do have a <br />unique key for this form<br/>&nbsp;</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/>"+
-			"<label for=\"key_no\">No, I do not have a unique <br />key for this form, <br />please generate a key for me.</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" /></div>"+  
+            "<label for=\"key_change\">I want to make another<br /> field the key<br />&nbsp;</label><input type=\"radio\" id=\"key_change\" name=\"key\" value = \"change\"/><label for=\"key_yes\"><b>Yes</b> I have a unique key question for this form.</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/>"+
+			"<label for=\"key_no\"><b>No</b> I do not have a unique key question for this form, please generate one for me</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" /></div>"+  
 			"<div id=\"key_details\" style=\"display:none;\"><label for=\"key_type\">My key field is a </label><select id=\"key_type\" name=\"key_type\"><option value=\"text\">Text Field</option><option value=\"numeric\">Integer Field</option><option value=\"barcode\">Barcode Field</option></select><p id=\"key_type_err\" class=\"validation-msg\"></p>" + 
-            "<label for=\"key_label\">Label for the key field</label><input id=\"key_label\" name=\"key_label\" /><p id=\"key_label_err\" class=\"validation-msg\"></p>"+
-            "<label for=\"key_name\">ID of the key field</label><input id=\"key_name\" name=\"key_name\" /><p id=\"key_name_err\" class=\"validation-msg\"></p>"+
+            "<label for=\"key_label\">Label for the key field (the question a user is asked e.g. what colour are your eyes?)</label><input id=\"key_label\" name=\"key_label\" /><p id=\"key_label_err\" class=\"validation-msg\"></p>"+
+            "<label for=\"key_name\">ID for the key field (a name used to identify the question. eg colour)</label><input id=\"key_name\" name=\"key_name\" /><p id=\"key_name_err\" class=\"validation-msg\"></p>"+
 			"</div>"+
             "<div id=\"select_key\" style=\"display:none;\"> Please make this field the key <select id=\"new_key\" name=\"new_key\">" + possibleFields + "</select>"+
             "</form>"),
@@ -1259,7 +1259,7 @@ function askForKey(keyDeleted)
                 
                 var fieldNameValid = project.validateFieldName(frm, new_field);
                 
-                if(vals.key !== "yes" || (fieldnameValue === true && vals.key_label !== '' && vals.key_type !== ''))
+                if(vals.key !== "yes" || (fieldNameValid === true && vals.key_label !== '' && vals.key_type !== ''))
                 {
                     if( vals.key !== 'change' ) addControlToForm(new_field.id, new_field.text, vals.key_type);
                     currentForm.key = key_id;		
@@ -1268,13 +1268,14 @@ function askForKey(keyDeleted)
                 }
                 else
                 {
-                    if(fieldNameValid !== true) $('#key_name_err').text(fieldNameValid).addClass('err');
-                    if(vals.key_label === '') $('#key_label_err').text("The field must have a a label").addClass('err');
-                    if(vals.key_type === '') $('#key_type_err').text("You must select a key type").addClass('err');
+                    if(fieldNameValid !== true) $('#key_name_err').html(fieldNameValid).addClass('err');
+                    if(vals.key_label === '') $('#key_label_err').html("The field must have a a label").addClass('err');
+                    if(vals.key_type === '') $('#key_type_err').html("You must select a key type").addClass('err');
                 }
 			}
 		}
 	});
+    
 	$('#key_radios input[type=radio]').on('change', function(){
 		$('#key_details').toggle(this.id === "key_yes");
                 $('#select_key').toggle(this.id === "key_change");

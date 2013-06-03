@@ -34,7 +34,7 @@
 	  {
 		  this[0].expanded = false;
 		  
-		  this.append("<div class=\"ecplus-settingspanel\"></div><div class=\"ecplus-pane\"> </div><img class=\"minmax\" src=\"\../images/glyphicons/glyphicons_215_resize_full.png\" />");
+		  this.append("<div class=\"ecplus-settingspanel\"></div><div class=\"ecplus-pane\"> </div><img class=\"minmax\" src=\"" + SITE_ROOT + "/images/glyphicons/glyphicons_215_resize_full.png\" />");
 		  //this.css("position", "relative");
 		  //$(".ecplus-settingspanel", this).append("<div class=\"ecplus-expansionbar\">&lt;&lt;</div>");
 		  //$(".ecplus-settingspanel", this).height(this.height);

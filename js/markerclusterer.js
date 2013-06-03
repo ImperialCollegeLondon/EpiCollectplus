@@ -1561,11 +1561,12 @@ MarkerClusterer.CALCULATOR = function (markers, numStyles) {
 	  }
 	  dv++;
   }
+  
   var colours = "";
   var counts = "";
   for(l in cols)
   {
-	  colours += l + "|";
+	  colours += l.replace('#', '') + "|";
 	  counts  += cols[l] + "|";
   }
 
