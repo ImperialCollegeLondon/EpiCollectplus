@@ -526,17 +526,17 @@ String.prototype.pluralize = function(str)
 	return str;
 };
 
-String.prototype.padLeft = function(length, char)	
+String.prototype.padLeft = function(length, c)	
 {
 	var str = this;
-	while(str.length < length) { str = char + str; }
+	while(str.length < length) { str = c + str; }
 	return str;
 };
 
-String.prototype.padRight = function(length, char)	
+String.prototype.padRight = function(length, c)	
 {
 	var str = this;
-	while(str.length < length) { str = str + char; }
+	while(str.length < length) { str = str + c; }
 	return str;
 };
 
@@ -547,13 +547,14 @@ String.prototype.trimChars = function(chars)
 	var str = this;
 	if(chars)
 	{
-		for(var char = 0; char < chars.length; char++)
+		for(var c = 0; c < chars.length; c++)
 		{
-			if(chars[char] === this[0])
+            
+			if(chars[c] === this.charAt(0))
 			{
 				str = str.substr(1);
 			}
-			if(chars[char] === str[str.length -1])
+			if(chars[c] === str.charAt(str.length -1))
 			{
 				str = str.substr(0, str.length - 1);
 			}
@@ -723,7 +724,7 @@ EpiCollect.Project = function()
 			if (name === kw[i]) return name + " cannot be user as a field ID.  <br /> <br /> Other words that cannot be used are : " + EpiCollect.KEYWORDS.join(', ');
 		}
         
-        if(name === form) return '<em>' + name + '</em> is not a valid ID. <br /> <br /> The field name cannot be the same as the form name';
+        if(name === form.name) return '<em>' + name + '</em> is not a valid ID. <br /> <br /> The field name cannot be the same as the form name';
 		if(name.match(/\s/gi)) return '<em>' + name + '</em> is not a valid ID. <br /> <br />  The form name cannot contain spaces'
         if(name.match(/[^A-Z0-9_]/gi)) return '<em>' + name + '</em> is not a valid ID. <br /> <br />  The field ID can only contain letter, numbers and underscores';
                 

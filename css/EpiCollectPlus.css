@@ -233,8 +233,6 @@ tr.alt
     padding-bottom: 1.5em;
 }
 
-
-
 .formats
 {
     font-size : 10pt;
@@ -1111,4 +1109,18 @@ tr.alt
 .uncloseable .ui-dialog-titlebar-close
 { 
     display : none !important; 
+}
+
+#key_details label
+{
+    width : 15em;
+    text-align : right;
+    margin-right : 0.5em;
+}
+
+#key_details select, #key_details input
+{
+    width : 15em;
+    text-align : left;
+    margin-right : 0.5em;
 }

@@ -2,6 +2,11 @@
 
 function getMapMaker($colour, $shape)
 {
+    if(preg_match('/^[0-9A-Fa-f]{3,6}$/', $colour))
+    {
+        $colour = '#' . $colour;
+    }
+
 	$svg = '<?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="22px" height="32px">
 	<g';
@@ -65,7 +70,7 @@ function getGroupMarker($colours, $counts)
 			$omega = ($counts[$i] / $ttl) * 2 * pi();
 			$theta +=  $omega;// chart slice angle
 			
-			$svg .= sprintf('<path style="fill:%s;stroke:black" d=" 
+			$svg .= sprintf('<path style="fill:#%s;stroke:black" d=" 
 				M 24 24 
 				L %s %s
 				A 22 22 0 %s 0 ', $colours[$i], $sx, $sy, ($omega < pi() ? "0" : "1")) ;
@@ -78,7 +83,7 @@ function getGroupMarker($colours, $counts)
 	}
 	else
 	{
-		$svg .= sprintf('<circle style="fill:%s;stroke:black;" cx="24" cy="24" r="24" />',$colours[0]);
+		$svg .= sprintf('<circle style="fill:#%s;stroke:black;" cx="24" cy="24" r="24" />',$colours[0]);
 	}
 		
 	$svg .= sprintf('
