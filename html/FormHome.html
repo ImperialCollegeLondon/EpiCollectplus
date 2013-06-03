@@ -951,8 +951,7 @@
 				{
                     
                     var ttl = data[i][ttl_fld];
-                    if(!ttl || ttl.trimChars(' ') === '')
-                    {
+                    if(!ttl || ttl.trimChars(' ') === ''){
                         if(ttl_fld != key_fld)
                         {
                             ttl = data[i][key_fld];
@@ -985,6 +984,8 @@
 							showBubbleFor(getMarkerAt(evt.latLng).index);
 						});
 					
+                        if(!markerClusterer) mkr.setMap(map);
+                        
 						markers.push(mkr);
                         addToSidebar(i, ttl);
 					}
@@ -1299,7 +1300,7 @@
                     if(!mkr) continue;
                     
                     mkr.colour = colourGrps[d[fld]];
-					mkr.setIcon(new google.maps.MarkerImage(getMarkerIcon(mkr.colour)));
+					mkr.setIcon(getMarkerIcon(mkr.colour));
 					
 				}
 				
