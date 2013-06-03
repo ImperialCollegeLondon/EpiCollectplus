@@ -207,7 +207,7 @@ function drawProject(prj)
  * @param message
  * @param name
  */
-function newForm(message, name, closable)
+function newForm(message, name, closeable)
 {
 	if(!message) 
 	{
@@ -257,7 +257,7 @@ function newForm(message, name, closable)
         }
     };
         
-    if(closable){
+    if(closeable){
         buttons[ 'Cancel' ] = function()
         {
             $( this ).dialog('close');
@@ -265,7 +265,7 @@ function newForm(message, name, closable)
     }
         
 	EpiCollect.prompt({ 
-        closable : closable,
+        closeable : closeable,
         buttons: buttons,
         content : "<p>" + message + "</p>"
     });
@@ -1193,7 +1193,7 @@ function askForKey(keyDeleted)
         
 	EpiCollect.prompt({
 		title : "Add a key field",
-        closable : false,
+        closeable : false,
 		content : (!keyDeleted ? "Each EpiCollect+ form must have a unique 'key' question - i.e. one where the value entered by a user will be unique each time a form is filled in.   Do you have a question that will be unique to each form entry?" : "You have deleted the key for this form, please choose a new key field to generate. " ),
 		form:(!keyDeleted ? "<form><div id=\"key_radios\" class=\"toggle choice\"> "+
             "<label for=\"key_no\"><b>No</b> I do not have a unique key question for this form, please generate one for me</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" />"+

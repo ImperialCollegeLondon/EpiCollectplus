@@ -338,7 +338,6 @@ EpiCollect.dialog = function(conf)
 	}
 	diajq.hide();
 	diajq.html(conf.content);
-    console.debug(conf.closeable);
   
 	if(conf.title) diajq.attr('title', conf.title);
 	else diajq.attr('title', 'EpiCollect+ Message');
