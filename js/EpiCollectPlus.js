@@ -338,7 +338,6 @@ EpiCollect.dialog = function(conf)
 	}
 	diajq.hide();
 	diajq.html(conf.content);
-    console.debug(conf.closeable);
   
 	if(conf.title) diajq.attr('title', conf.title);
 	else diajq.attr('title', 'EpiCollect+ Message');
@@ -371,6 +370,15 @@ EpiCollect.dialog = function(conf)
     }
     
 };
+
+EpiCollect.toJSTimestamp = function(val){
+    var value = Number(val);
+    while((Math.log(value) / Math.log(10)) < 12)
+    {
+        value = value * 10;
+    }
+    return value;
+}
 
 EpiCollect.prompt = function(conf)
 {
@@ -2150,12 +2158,7 @@ EpiCollect.Field = function()
 		}
 		else if(this.id === 'created' && value.match(/^\d+$/))
 		{
-			value = Number(value);
-			while((Math.log(value) / Math.log(10)) < 12)
-			{
-				value = value * 10;
-			}
-			return new Date(value).toLocaleString();
+			return new Date(EpiCollect.toJSTimestamp(value)).toLocaleString();
 		}
 		else if(this.type === 'branch')
 		{

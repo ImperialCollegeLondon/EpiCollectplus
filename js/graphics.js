@@ -39,7 +39,7 @@ gfx.getWedgePath = function(alpha, beta, r, m, centre)
  */
 gfx.drawPie = function(div_id, data, r, roundel, roundel_margin)
 {
-    var omega = 2 * Math.PI; //total angle;
+    var omega = (2 * Math.PI) - 0.000001; //total angle;
     
     var total = 0;
     var labels = [];
@@ -82,6 +82,8 @@ gfx.drawPie = function(div_id, data, r, roundel, roundel_margin)
                 opacity : 0.8
             });
             
+            console.debug(total);
+            
             this.attr('stroke-width', 2);
             
             var p = evt.clientY - $('#graphOne').offset().top;
@@ -90,8 +92,8 @@ gfx.drawPie = function(div_id, data, r, roundel, roundel_margin)
             var top = ( p < r ? h - 50 : 0 );
             
             this.desc = raph.set()
-            var pct = (this.value / total).toString() ;
-            pct = pct.substr(0, pct.indexOf('.') + 3);
+            var pct = ((this.value / total) * 100).toString() ;
+            pct = pct.substr(0, Math.max(pct.indexOf('.'), 0) + 3);
            
             this.desc.push( 
                 raph.rect(0, top, jq.width(), 50),
