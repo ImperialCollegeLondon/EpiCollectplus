@@ -371,6 +371,15 @@ EpiCollect.dialog = function(conf)
     
 };
 
+EpiCollect.toJSTimestamp = function(val){
+    var value = Number(val);
+    while((Math.log(value) / Math.log(10)) < 12)
+    {
+        value = value * 10;
+    }
+    return value;
+}
+
 EpiCollect.prompt = function(conf)
 {
 	var diajq = $('#ec_dialog');
@@ -2149,12 +2158,7 @@ EpiCollect.Field = function()
 		}
 		else if(this.id === 'created' && value.match(/^\d+$/))
 		{
-			value = Number(value);
-			while((Math.log(value) / Math.log(10)) < 12)
-			{
-				value = value * 10;
-			}
-			return new Date(value).toLocaleString();
+			return new Date(EpiCollect.toJSTimestamp(value)).toLocaleString();
 		}
 		else if(this.type === 'branch')
 		{

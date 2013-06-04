@@ -346,6 +346,11 @@
 				"#B366FF",
 				"#784421"
 			];
+            
+            var _graphdiv;
+            var _graphfield;
+            var _graphtype;
+            var mapFilterFunction;
 			
 			if(localStorage && localStorage.getItem('num_entries')) numEnts = localStorage.getItem('num_entries');
 			
@@ -656,12 +661,17 @@
 					values: [0,  t],
 					slide: function (event, ui)
 					{
-						filterMap(function(data){ return data["created"] >= ui.values[0] / 1000 && data["created"] <= ui.values[1] / 1000; });
+						filterMap(function(data){ 
+                            var _created = EpiCollect.toJSTimestamp(data["created"]);
+                            return _created >= ui.values[0] && _created <= ui.values[1] ; 
+                        });
 						$("#timeFrom").text(new Date(ui.values[0]).format(dateFormat));
 						$("#timeTo").text(new Date(ui.values[1]).format(dateFormat));
 						
 						$(".filterControl").removeClass("active");
 						$("#timeFilter").addClass("active");
+                        
+
 					}
 				});
 				
@@ -929,8 +939,8 @@
 			{
 				mapData = mapData.concat(data);
 				
-				var mincreated = new Date().getTime();
-				var maxcreated = 0;
+				var mincreated = (window['_mincreated'] ? _mincreated : new Date().getTime());
+				var maxcreated = (window['_maxcreated'] ? _maxcreated : 0);
 				
 				var keyField = project.forms[formName].key;
 				
@@ -958,7 +968,7 @@
                         }
                         else
                         {
-                            ttls = data[i]['created'];
+                            ttl = data[i]['created'];
                         }
                     }
                     
@@ -994,13 +1004,12 @@
 						markers.push(null);
                         addToSidebar(i, ttl, false);
 					}
-					
-					mincreated = Math.min(mincreated, Number(data[i]["created"]));
-					maxcreated = Math.max(maxcreated, Number(data[i]["created"]));
-					
-					
-					
-                                        
+                    
+					var _cre = EpiCollect.toJSTimestamp(data[i]["created"]);
+                    
+					mincreated = Math.min(mincreated, _cre);
+					maxcreated = Math.max(maxcreated, _cre);
+ 
                     var uploaded = EpiCollect.parseDate(data[i]["uploaded"]);
                     if(map_lastupdated < uploaded) map_lastupdated = uploaded;
                     
@@ -1018,15 +1027,12 @@
 				
 				if(markers.length < totalents && markers.length % mapChunkSize === 0)
 				{
+                    _mincreated = mincreated;
+                    _maxcreated = maxcreated;
 					getMapData(mapChunkSize, markers.length);					
 				}
 				else
 				{
-					var tconst = new Date().getTime() / 1000;
-					
-					if(mincreated < tconst) mincreated = mincreated * 1000;
-					if(maxcreated < tconst) maxcreated = maxcreated * 1000;
-					
 					$("#slider-range").slider("option", "min", mincreated);
 					$("#slider-range").slider("option", "max", maxcreated);
 					
@@ -1212,7 +1218,8 @@
 			function filterMap(filterFunction)
 			{
 				markerClusterer.setIgnoreHidden(true);
-				
+				mapFilterFunction = filterFunction;
+                
 				var len = mapData.length;
 				var mkrs = markers;
 				var data = mapData;
@@ -1226,15 +1233,7 @@
 					
 				}
 				markerClusterer.repaint();
-				
-				mapFilterFunction = filterFunction;
-				
-				$('.graphPanel').each(function(idx,ele){
-					if($('.flot-base', ele).length)
-					{
-						$('a', ele).click();
-					}
-				});
+				redrawGraph();
 			}
 			
 			function clearMapFilter()
@@ -1309,6 +1308,7 @@
 				
 				if(markerClusterer) markerClusterer.repaint();
 				drawMapLegend();
+                redrawGraph();
 			}
 			
 			function drawMapLegend()
@@ -1478,7 +1478,10 @@
 			
 			function drawGraph(div, field, type)
 			{
-				
+				_graphdiv = div;
+                _graphfield = field;
+                _graphtype = type;
+                
 				var jq = $(div);
 				
 				jq.attr('graph-field', field);
@@ -1488,11 +1491,15 @@
 				var d = mapData;
 				var len = d.length;
 				
+                var filter = false;
+                
+                if(mapFilterFunction) filter = mapFilterFunction;
+                
 				var agg = {};
 				
 				for(var i = len; i--;)
 				{
-					if( !window["mapFilterFunction"] || mapFilterFunction(d[i]) )
+					if( !filter || filter(d[i]) )
 					{
 						var val = d[i][field];
 						if( !agg[val] ){ agg[val] = 1; } else { agg[val]++; }
@@ -1511,7 +1518,12 @@
 				
 				
 			}
-			                                                
+			              
+            function redrawGraph()
+            {
+                if(_graphdiv && _graphfield && _graphtype) drawGraph(_graphdiv, _graphfield, _graphtype)
+            }
+            
                         function checkForMapUpdates()
                         {
                             $.ajax(location.pathname + '/__activity', {success : function(xhr){
