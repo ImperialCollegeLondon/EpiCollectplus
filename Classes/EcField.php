@@ -51,7 +51,7 @@ class EcField{
 		
 		public $active = true;
 		
-		public $dateTimeBlocks = array(
+		public static $DATETIMEBLOCKS = array(
 				"dd" => "d",
 				"MM" => "m",
 				"yyyy" => "Y",
@@ -61,7 +61,7 @@ class EcField{
 				"ss" => "s"
 		); // xml => php
 		
-		public $datTimeSeps = array ("/", ":", ".", "-", "|", "\\", "~", ",");
+		public static $DATETIMESEPS = array ("/", ":", ".", "-", "|", "\\", "~", ",");
 		
 		public static function dtConvert($str)
 		{
@@ -72,9 +72,9 @@ class EcField{
             $c = 0; // max number of chunks
             $mi = -1; // index of max number of chunks;
             
-            for($i = 0; $i < count($dateTimeSeps); $i++)
+            for($i = 0; $i < count(EcField::$DATETIMESEPS); $i++)
             {
-                $a = explode($datTimeSeps[0], $str);
+                $a = explode(EcField::$DATETIMESEPS[0], $str);
                 $b[$i] = $a;
                 if(count($a) > $c)
                 {
@@ -88,7 +88,7 @@ class EcField{
             
             for($i = 0; $i < $c; $i++)
             {
-                $r .= $dateTimeBlocks[$d[$i]];
+                $r .= EcField::$DATETIMEBLOCKS[$d[$i]];
             }
             
             return $r;
@@ -125,10 +125,10 @@ class EcField{
 				foreach( $this->otherAttributes as $att => $val ) {  $xml = sprintf('%s %s="%s"', $xml, $att, $val); }
 			}
 			 
-			$xml.= ">\n\t\t\t<label>" . htmlentities($this->label) . "</label>\n\t\t";
+			$xml.= ">\n\t\t\t<label>" . htmlspecialchars($this->label, null, 'UTF-8') . "</label>\n\t\t";
 			foreach( $this->options as $opt )
 			{
-				$xml .= '<item><label>' . htmlentities($opt->label) . "</label>\n\t\t\t\t\t<value>{$opt->value}</value>\n\t\t\t\t</item>";
+				$xml .= '<item><label>' . htmlspecialchars($opt->label, null, 'UTF-8') . "</label>\n\t\t\t\t\t<value>{$opt->value}</value>\n\t\t\t\t</item>";
 			}
 			$xml.= "</{$this->type}>";
 			return $xml;
@@ -160,7 +160,7 @@ class EcField{
 			if($this->defaultValue) $json .= " \"default\":\"{$this->defaultValue}\",";
 			
 			foreach( $this->otherAttributes as $att => $val ) {
-				$json = sprintf('%s "%s" : "%s",', $xml, $att, $val);
+				$json = sprintf('%s "%s" : "%s",', $json, $att, $val);
 			}
 			
 			$json.= "\n\t\t\t\"label\" : \"{$this->label}\",\n\t\t\"options\":[";
