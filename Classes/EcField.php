@@ -124,11 +124,27 @@ class EcField{
 			{
 				foreach( $this->otherAttributes as $att => $val ) {  $xml = sprintf('%s %s="%s"', $xml, $att, $val); }
 			}
-			 
-			$xml.= ">\n\t\t\t<label>" . htmlspecialchars($this->label, null, 'UTF-8') . "</label>\n\t\t";
+
+            if(!defined('ENT_SUBSTITUTE'))
+            {
+                $flags = ENT_IGNORE;
+            }
+            else
+            {
+                if(defined('ENT_XML1'))
+                {
+                    $flags = ENT_SUBSTITUTE | ENT_XML1;
+                }
+                else
+                {
+                    $flags = ENT_SUBSTITUTE;
+                }
+            }
+
+			$xml.= ">\n\t\t\t<label>" .  htmlspecialchars($this->label, $flags, 'UTF-8') . "</label>\n\t\t";
 			foreach( $this->options as $opt )
 			{
-				$xml .= '<item><label>' . htmlspecialchars($opt->label, null, 'UTF-8') . "</label>\n\t\t\t\t\t<value>{$opt->value}</value>\n\t\t\t\t</item>";
+				$xml .= '<item><label>' . htmlspecialchars($opt->label, $flags, 'UTF-8') . "</label>\n\t\t\t\t\t<value>{$opt->value}</value>\n\t\t\t\t</item>";
 			}
 			$xml.= "</{$this->type}>";
 			return $xml;
