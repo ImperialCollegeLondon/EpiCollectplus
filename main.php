@@ -53,6 +53,7 @@ else
 include (sprintf('%s/utils/HttpUtils.php', $DIR));
 include (sprintf('%s/Auth/AuthManager.php', $DIR));
 include (sprintf('%s/db/dbConnection.php', $DIR));
+include (sprintf('%s/utils/Encoding.php', $DIR));
 
 $url = (array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : $_SERVER["HTTP_X_ORIGINAL_URL"]); //strip off site root and GET query
 if($SITE_ROOT != '') $url = str_replace($SITE_ROOT, '', $url);
@@ -1814,6 +1815,7 @@ function formHandler()
 			{
 				try{
 					ini_set('max_execution_time', 200);
+                    ini_set("auto_detect_line_endings", true);
 					if( preg_match("/\.csv$/", $_f["name"]) )
 					{
 						$fh = fopen($_f["tmp_name"], 'r');
@@ -1914,7 +1916,8 @@ function formHandler()
 				{
 					$recordSet = array_merge($recordSet, $rec); 
 				}
-				
+
+
 				echo json_encode($recordSet);
 				
 				return;
@@ -2657,7 +2660,7 @@ function createFromXml()
 		flash("No project name provided");
 		header("location: http://$server/$root/createProject.html");
 	}
-	
+
 	$prj->isListed = $_REQUEST["listed"] == "true";
 	$prj->isPublic = $_REQUEST["public"] == "true";
 	$prj->publicSubmission = true;

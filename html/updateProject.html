@@ -116,7 +116,7 @@
   			
   			if(!$("#s_" + uType).val().match(new RegExp(email, "i")))
   			{
-  				if(email == curEmail) 
+  				if(email !== curEmail)
                 {
                     rm = "<a class=\"remove\" href=\"javascript:removeUser('" + uType + "','" + email + "')\">Remove</a>";
                 }

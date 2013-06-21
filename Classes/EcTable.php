@@ -519,9 +519,7 @@
 				$join = sprintf('%s LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $join, $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
 				
 			}
-			
-            
-            
+
 			for($i = count($this->branchfields); $i-- && $includeChildCount;)
 			{
                 
@@ -923,11 +921,14 @@
 			//$lines = explode("\r\n", $txt);
 			// assumes that the first line is the header
 			//$lines[0] = trim($lines[0], ',');
+
+
 			try{
 				$headers = fgetcsv($fp);//$this->parseCSVLine($lines[0]);
 			}
 			catch(Exception $err)
 			{
+
 				throw new Exception(str_replace('xx', '0', $err->getMessage()));
 			}
 			
@@ -935,9 +936,12 @@
 			$ents = array();
 			$fields = array_keys($this->fields);
 			$x = 0;
-			
+
+
+
 			while($vals = fgetcsv($fp))
 			{
+
 				$entry = new EcEntry($this);
 				$vars = array_keys(get_object_vars($entry));
 				
@@ -986,11 +990,10 @@
 					{	
 						if(array_key_exists($fields[$f], $ent))
 						{
-							$entry->values[$fields[$f]] = $ent[$fields[$f]];
+							$entry->values[$fields[$f]] = Encoding::toUTF8($ent[$fields[$f]]);
 						}
 					}
 				}
-				
 				
 				if( !preg_match('/^[0-9]+$/', $entry->created) )
 				{
@@ -1012,9 +1015,9 @@
 					$entry->postEntries($ents);
 					unset($ents);
 					$ents = array();
-				}							
+				}
 			}
-			if(count($ents) > 0) $entry->postEntries($ents);
+		    if(count($ents) > 0) $entry->postEntries($ents);
 			return true;
 		}
 		
