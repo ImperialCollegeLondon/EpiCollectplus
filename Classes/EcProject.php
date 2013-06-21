@@ -105,7 +105,7 @@ class EcProject{
 		public function parse($xml, $edit=false)
 		{
 			global $XML_VERSION;
-			
+
 			$root = simplexml_load_string($xml);
 			
 			foreach($root->attrubutes as $name => $val)
