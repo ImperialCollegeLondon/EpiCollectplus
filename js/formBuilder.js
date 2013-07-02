@@ -191,14 +191,14 @@ function drawProject(prj)
 		addFormToList(frm);
 	}
         
-        if($("#formList .form").length === 0)
-        {
-            newForm('Please choose a name for your first form - this should consist only of only letters, numbers and underscores.');
-        }
-        else
-        {
-            switchToForm(Object.keys(project.forms)[0]);
-        }
+    if($("#formList .form").length === 0)
+    {
+        newForm('Please choose a name for your first form - this should only consist of letters, numbers and underscores.');
+    }
+    else
+    {
+        switchToForm(Object.keys(project.forms)[0]);
+    }
    
 }
 
