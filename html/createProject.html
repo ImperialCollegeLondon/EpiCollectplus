@@ -99,7 +99,7 @@
             $.ajax({
                 url: './' + name,
                 error: function(xhr, status, s){
-                    enableNext(ctrl, 'Project name available, please click ‘continue’');
+                    enableNext(ctrl, 'Project name available, please click "continue"');
                 },
                 success: function(){
                     disableNext(ctrl, 'Project name is already in use, please choose an alternative');
