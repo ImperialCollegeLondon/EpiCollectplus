@@ -1226,7 +1226,7 @@ function uploadData()
 						echo ($res === true ? "1" : "0");
 					}
 				}
-				else if(preg_match("/\.(png|gif|rtf|docx?|pdf|jpg|jpeg|txt|avi|mpe?g|mov|mpe?g?3|wav|mpe?g?4)$/", $file['name']))
+				else if(preg_match("/\.(png|gif|rtf|docx?|pdf|jpg|jpeg|txt|avi|mpe?g|mov|mpe?g?3|wav|mpe?g?4|3gp)$/", $file['name']))
 				{
 
 					try{
