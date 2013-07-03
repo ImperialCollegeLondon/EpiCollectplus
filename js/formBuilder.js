@@ -70,7 +70,7 @@ $(function()
 	$('#destination').sortable({
 		revert : 50,
 		tolerance : 'pointer',
-                items : '> .ecplus-form-element',
+        items : '> .ecplus-form-element',
 		start : function(evt, ui)
 		{
 			ui.placeholder.css("visibility", "");
@@ -98,7 +98,7 @@ $(function()
 		revert: "invalid",
 		revertDuration : 100,
 		appendTo : 'body',
-                scroll : true
+        scroll : true
 	});
 	
 	$('#destination').click(function(evt){
@@ -171,17 +171,17 @@ $(function()
 
 function drawProject(prj)
 {
-        project = prj;
-        var temp_xml = localStorage.getItem(project.name + '_xml');
-        if(temp_xml)
+    project = prj;
+    var temp_xml = localStorage.getItem(project.name + '_xml');
+    if(temp_xml)
+    {
+        if(confirm("There is an unsaved version of this project stored locally. Do you wish to load it?"))
         {
-            if(confirm("There is an unsaved version of this project stored locally. Do you wish to load it?"))
-            {
-                project = new EpiCollect.Project();
-                project.parse($.parseXML(temp_xml));
-                
-            }
+            project = new EpiCollect.Project();
+            project.parse($.parseXML(temp_xml));
+
         }
+    }
     
 	$("#formList .form").remove();
 	
@@ -847,6 +847,7 @@ function setSelected(jq)
                         $("[allow*=key]").show();
                         $("[notfor*=key]").hide();
                 }
+
                 if(currentControl.genkey)
                 {
                         $("[allow*=gen]").show();
@@ -1247,6 +1248,7 @@ function askForKey(keyDeleted)
                     new_field.type = 'input';
                     new_field.form = currentForm;
                     new_field.isInt = false;
+                    new_field.genkey = true;
                     vals.key_type = 'text';
                 }
                 else

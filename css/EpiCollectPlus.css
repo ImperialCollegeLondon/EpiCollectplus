@@ -197,7 +197,7 @@ label
 
 .ecplus-settingspanel label
 {
-	min-width : auto;
+	min-width : 0px;
 }
 
 .provider
@@ -624,7 +624,7 @@ tr.alt
 
 .second div.ecplus-form-element:hover, .ecplus-form-element .ui-sortable-placeholder
 {
-	visibility : show;
+	visibility : visible;
 	background-color : #CCFFCC;
 }
 
@@ -663,7 +663,7 @@ tr.alt
 {
 	position: relative;
 	display: inline-block;
-	overflow: show;
+	overflow: visible;
 }
 
 .ecplus-dropdown div
@@ -784,6 +784,12 @@ tr.alt
 .projectImage
 {
 	float:right;
+    height : 150px;
+}
+
+#projectDescription
+{
+    min-height: 150px;
 }
 
 .hMenu

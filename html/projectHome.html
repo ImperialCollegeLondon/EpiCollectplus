@@ -57,15 +57,15 @@
 				
 				var frmCount = 0;
 				
-				for(frm in project.forms)
+				for(var frm in project.forms)
 				{
 					frmCount++;
 					
 					if(!project.forms[frm].main) continue;
-					opts = "";
-					for(fld in project.forms[frm].fields)
+					var opts = "";
+					for(var fld in project.forms[frm].fields)
 					{
-						txt = project.forms[frm].fields[fld].text;
+						var txt = project.forms[frm].fields[fld].text;
 						if(project.forms[frm].fields[fld].text.length > 40)
 						{
 							txt = txt.substr(0,37) + "...";
@@ -86,7 +86,7 @@
 				if(frmCount == 0)
 				{
 					var curpage = location.href.trimChars('/');
-					$("#main p").remove();
+					$("#menu p").remove();
 					$("#menu").append("<p>This project's homepage is <a href=\"" + curpage + "\">" + curpage + "</a></p>");
 					$("#menu").append('<p>Now that you have created this project you can <a href="' + curpage + '/formBuilder">create the project forms</a> and <a href="' + curpage + '/manage">update the project\'s settings</a> to change who can access the project and add an image or desctription to the project</p>');
 					$("#menu").append('<p>Once you have created your forms you can update the forms using the <a href="' + curpage + '/formBuilder">Edit Forms</a> option and manager the other project settings using <a href="' + curpage + '/manage">Manage</a> option above this message.</p>');
