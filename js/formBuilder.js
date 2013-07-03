@@ -1,13 +1,16 @@
 var currentForm = undefined;
 var currentControl = undefined;
 var formName = undefined;
+var dirty = false;
+
+
 
 $(function()
 {
 	var url = location.href;
         
 	EpiCollect.loadProject(url.substr(0, url.lastIndexOf("/")) + ".xml", drawProject);
-	
+
 	var details_top = $("#details").offset().top;
 	var toolbox_top =  $("#toolbox").offset().top;
 	details_top = details_top - $("#toolbox").height();
@@ -87,7 +90,8 @@ $(function()
 			{
 				var jq = $('#destination .end').remove();
 				$('#destination').append(jq[0]);
-                                setSelected($(ui.item));
+                setSelected($(ui.item));
+                dirty = true;
 			}
 		}
 	});
@@ -167,6 +171,8 @@ $(function()
     {
         $('[name=jumpType] option[value=NULL]').toggle(!$( this ) .attr('checked'));
     });
+
+    $('.last input, .last select').bind('change', function(){ console.debug('change'); dirty = true; });
 });
 
 function drawProject(prj)
@@ -179,7 +185,10 @@ function drawProject(prj)
         {
             project = new EpiCollect.Project();
             project.parse($.parseXML(temp_xml));
-
+        }
+        else
+        {
+            localStorage.removeItem(project.name + '_xml');
         }
     }
     
@@ -319,7 +328,8 @@ function addOption()
 {
 	var panel = $("#options");
 	panel.append('<div class="selectOption"><hr /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Label</a><input name="optLabel" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),\'Option &gt; Name\', \'The label displayed to the user\')">?</a></div>	<br /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Value</a><input name="optValue" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),\'Option &gt; Value\', \'The value entered into the database\')">?</a></div>	<br><a href="javascript:void(0);" class="button removeOption" >Remove Option</a> </div>');
-	
+
+    $('.last input, .last select').unbind('change').bind('change', function(){ console.debug('change'); dirty = true; });
 	$("#options .removeOption").unbind('click').bind('click', removeOption);
 	
 	$("#options input").unbind();
@@ -355,6 +365,7 @@ function addJump()
 	}
 	
 	$("#jumps .remove").unbind('click').bind('click', removeJump);
+    ('.last input, .last select').unbind('change').bind('change', function(){ console.debug('change'); dirty = true; });
 }
 
 function removeJump(evt)
@@ -421,6 +432,8 @@ function drawFormControls(form)
 
 function updateSelected(is_silent)
 {
+    if(!dirty) return true;
+
 	var jq = $("#destination .selected");
 	var cur = currentControl;
         var cfrm = currentForm;
@@ -620,7 +633,7 @@ function updateSelected(is_silent)
         {
             updateEditMarker();
         }
-	currentControl = cur;
+	    currentControl = cur;
         currentForm = cfrm; 
         return true;
 }
@@ -640,7 +653,7 @@ function updateForm()
 		return false;
 	}
 	
-        $('#' + currentForm.name).addClass('unsaved');
+     if(dirty) $('#' + currentForm.name).addClass('unsaved');
         
 	var fields = {};
 	var form = currentForm;
@@ -803,6 +816,7 @@ function updateEditMarker()
 function setSelected(jq)
 {
         var jqEle = jq;
+        dirty = false;
     
             if(jqEle.hasClass("ecplus-form-element"))
             {
