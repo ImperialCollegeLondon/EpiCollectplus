@@ -268,7 +268,8 @@ EpiCollect.Validators = {
         }});
     },
     "key" : function(value, params, callback, ctrl_id)
-    {                        
+    {
+
         $.ajax({
             url : params.url + '?' + params.field + '=' + value,
             success : function(data,status,xhr)
@@ -378,6 +379,13 @@ EpiCollect.toJSTimestamp = function(val){
         value = value * 10;
     }
     return value;
+}
+
+EpiCollect.ShowPrivacy = function()
+{
+    console.debug('show privacy')
+    var html = "<p>EpiCollect plus will place one cookie in your browser labelled PHPSESSID. The only reason we do this is to track whether you are logged in or not.</p><p>EpiCollect does not collect data for commercial purposes.</p>";
+    EpiCollect.dialog({ content : html });
 }
 
 EpiCollect.prompt = function(conf)
@@ -1070,7 +1078,8 @@ EpiCollect.Form = function()
 				$(event.target).remove();
 			}
 		});
-		
+
+
 		
 		this.formElement
 			.dialog("option", "title", "Add " + this.name)
@@ -1084,34 +1093,21 @@ EpiCollect.Form = function()
 		
 		
 		
-		if(editMode) { this.formElement.addClass('editing'); } else { this.formElement.removeClass('editing'); } 
-		//if(console){console.debug($(".ecplus-form-pane").width());}
+		if(editMode) { this.formElement.addClass('editing'); } else { this.formElement.removeClass('editing'); }
 		
-		$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question", this.formElement).width() * $(".ecplus-question", this.formElement).length + 1) + "px");
-		
-		/*$(".ecplus-form-next a, .ecplus-form-previous a").mouseover(function(evt)
-		{
-			window.evt = evt;
-			$(evt.target.parentElement).clearQueue();
-			$(evt.target.parentElement).animate({width : 110});
-		});
-		
-		$(".ecplus-form-next a, .ecplus-form-previous a").mouseout(function(evt)
-		{
-			$(evt.target.parentElement).clearQueue();
-			$(evt.target.parentElement).animate({width : 26});
-		});*/
+		var form_ele = $(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question", this.formElement).width() * $(".ecplus-question", this.formElement).length + 1) + "px");
+
 		
 		for(var field in this.fields)
 		{
 			if(this.fields[field].type === "" || (this.fields[field].hidden && project.getPrevForm(this.name).key !== field))
 			{
-				$("form", this.formElement).append("<div class=\"ecplus-question-hidden\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
+                form_ele.append("<div class=\"ecplus-question-hidden\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
 				$("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined, cnf.debug));
 			}
 			else
 			{
-				$("form", this.formElement).append("<div class=\"ecplus-question\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
+                form_ele.append("<div class=\"ecplus-question\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
 				$("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined, cnf.debug));
 				$("#ecplus-question-" + field, this.formElement).append("<div  id=\"" + field + "-messages\" class=\"ecplus-messages\"></div>");
 				
@@ -1119,95 +1115,88 @@ EpiCollect.Form = function()
 		}
 		
 		
-		$("form", this.formElement).append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /></div>");
+		//$("form", this.formElement).append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /></div>");
 		if(cnf.debug)
 		{
-			$("#ecplus-save-button", this.formElement).append("<a class=\"button\" href=\"javascript:project.forms['" + this.name +  "'].closeForm();\">End of Form</a>");
+            form_ele.append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /><a class=\"button\" href=\"javascript:project.forms['" + this.name +  "'].closeForm();\">End of Form, click here to close.</a></div>");
 		}
 		else if(editMode)
 		{
-			$("#ecplus-save-button", this.formElement).append("<a class=\"button\" href=\"javascript:project.forms['" + this.name +  "'].editEntry();\">Save Entry</a>");
+            form_ele.append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /><a class=\"button\" href=\"javascript:project.forms['" + this.name +  "'].editEntry();\">Save Entry</a></div>");
 		}
 		else
 		{
-			$("#ecplus-save-button", this.formElement).append("<a class=\"button\" href=\"javascript:project.forms['" + this.name +  "'].addEntry();\">Save Entry</a>");
+            form_ele.append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /><a class=\"button\" href=\"javascript:project.forms['" + this.name +  "'].addEntry();\">Save Entry</a></div>");
 		}
 		
 		$(".ecplus-question").width($(".ecplus-form-pane").width());
-		$(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question").width() * $(".ecplus-question").length + 1) + "px");
-		
-		
-		//if(popup)
-		//{
-			
-		//}
+        form_ele.css("width", ($(".ecplus-question").width() * $(".ecplus-question").length + 1) + "px");
+
 		
 		// TODO : Previously the idea was to set the type of the field to date and the use jQuery to augment the browsers that don't yet support
 		// type=date. However as HTML 5 does nto support formats that doesn't work. That said we should look at whether the date should
 		// be stored in-format or as unix timestamp/ISO format then displayed according to the locality settings of the browser/phone
 		// NB this could be a setting to localStorage, as number of rows is.
-		//
-		//if(!$.browser.webkit)
-		//{
-			$("input.ecplus-datepicker", this.formElement).each(function(idx, ele) {
-				if(!project.forms[formName].fields[ele.name]) return;
-				
-				var fmt = project.forms[formName].fields[ele.name].date;
-				if(project.forms[formName].fields[ele.name].setDate)
-				{
-					fmt = project.forms[formName].fields[ele.name].setDate;
-				}
-				fmt = fmt.replace("MM", "mm").replace("yyyy", "yy");
 
-				$(ele).datepicker({ 
-					dateFormat : fmt,
-					beforeShow : function(input, inst)
-					{
-						$(input).off('blur');
-					},
-					onClose:function(input, inst)
-					{
-						//$( input ).focusin();
-						/*$( input ).on('blur', function(evt)
-						{
-							if(!project.forms[formName].moveNext(true))
-							{
-								$(evt.target).focus();
-							}
-						});*/
-					}
-										
-				});
-				if(project.forms[formName].fields[ele.name].setDate)
-				{
-					$(ele).datepicker("setDate", new Date());
-				}
-			});
-			
-			$("input.ecplus-timepicker", this.formElement).each(function(idx, ele) { 
-				var fmt = project.forms[formName].fields[ele.name].time;
-                var jq = $(ele)
-                
-				if(project.forms[formName].fields[ele.name].setTime)
-				{
-					fmt = project.forms[formName].fields[ele.name].setTime;					
-				}
-				
-				jq.timepicker({ format : fmt });
-				if(project.forms[formName].fields[ele.name].setTime)
-				{
-					if(!data || !data[ele.name])
+        $("input.ecplus-datepicker", this.formElement).each(function(idx, ele) {
+            if(!project.forms[formName].fields[ele.name]) return;
+
+            var fmt = project.forms[formName].fields[ele.name].date;
+            if(project.forms[formName].fields[ele.name].setDate)
+            {
+                fmt = project.forms[formName].fields[ele.name].setDate;
+            }
+            fmt = fmt.replace("MM", "mm").replace("yyyy", "yy");
+
+            $(ele).datepicker({
+                dateFormat : fmt,
+                beforeShow : function(input, inst)
+                {
+                    $(input).off('blur');
+                },
+                onClose:function(input, inst)
+                {
+                    //$( input ).focusin();
+                    /*$( input ).on('blur', function(evt)
                     {
-                        console.debug(jq.attr('id'));
-                        jq.timepicker("setTime", new Date().format(fmt));
-                    }
-					else 
-                    { 
-                        jq.timepicker("setTime", data[ele.name]); 
-                    }
-				}
-			});
-		//}
+                        if(!project.forms[formName].moveNext(true))
+                        {
+                            $(evt.target).focus();
+                        }
+                    });*/
+                }
+
+            });
+            if(project.forms[formName].fields[ele.name].setDate)
+            {
+                $(ele).datepicker("setDate", new Date());
+            }
+        });
+
+        $("input.ecplus-timepicker", this.formElement).each(function(idx, ele) {
+            var fmt = project.forms[formName].fields[ele.name].time;
+            var jq = $(ele)
+
+            if(project.forms[formName].fields[ele.name].setTime)
+            {
+                fmt = project.forms[formName].fields[ele.name].setTime;
+            }
+
+            jq.timepicker({ format : fmt });
+            if(project.forms[formName].fields[ele.name].setTime)
+            {
+                if(!data || !data[ele.name])
+                {
+                    console.debug(jq.attr('id'));
+                    jq.timepicker("setTime", new Date().format(fmt));
+                }
+                else
+                {
+                    jq.timepicker("setTime", data[ele.name]);
+                }
+            }
+        });
+
 		if(this.gpsFlds.length > 0) $(".locationControl", this.formElement).each(function(idx, ele) { $( ele ).gpsPicker(); } );
 		$(".ecplus-radio-group, .ecplus-check-group, select", this.formElement).controlgroup();
 		$(".ecplus-media-input", this.formElement).mediainput();
@@ -1227,39 +1216,7 @@ EpiCollect.Form = function()
 			child.attr('parentvalue', ctrl.val());
 			child.attr('parentfield', ctrl.attr('id'));
 		});
-		
-		
-        // $(".ecplus-input", this.formElement).change(function(evt){
-            // console.debug('change');
-            // var ctrl = $(evt.target);
-            // var ctrlName = evt.target.id;
-            // var frm = project.forms[formName];
-            
-            // if(ctrl.hasClass('ecplus-ac')) ctrlName = ctrlName.replace('-ac', '');
-            
-            // if(frm.fields[ctrlName].validate(ctrl.val()))
-            // {
-                // if(frm.fields[ctrlName].jump)
-                // {
-                    // var jumped = false; // is a jump required
-                    // jbits = frm.fields[ctrlName].jump.split(",");
-                                                    
-                    // for(var j = 0; j < jbits.length; j+=2)
-                    // {
-                        // if( jbits[j+1] === $("#" + frm.fields[ctrlName].id, frm.formElement).idx() + 1 || jbits[j+1].toLowerCase() === 'all' )
-                        // {
-                            // frm.doJump(jbits[j], ctrlName);
-                            // jumped = true;
-                        // }
-                    // }
-                    
-                    // if(!jumped)
-                    // {
-                        // frm.doJump(false);
-                    // }
-                // }
-            // }
-        // });
+
     
         $('.ecplus-form').keydown(function(e) { 
               var keyCode = e.keyCode || e.which; 
@@ -1286,13 +1243,6 @@ EpiCollect.Form = function()
 				{
 					var ele = $(evt.target);
 					ele.focusin();
-					/*ele.on('blur', function(evt2)
-					{
-						if(!project.forms[formName].moveNext(true) && $('.ecplus-question')[project.forms[formName].formIndex].id.replace('ecplus-question-','') == evt2.target.id)
-						{
-							$(evt2.target).focus();
-						}
-					})*/;
 				}
 			});
 		});
@@ -1324,14 +1274,13 @@ EpiCollect.Form = function()
     {
         var field = this.getCurrentControl();
        
-        var control =  $('#' + field.id);
+        var control =  $('#' + field.id, this.formElement);
    
         control.off('valid'); //clear any handlers already present
         
         control.one('valid', {form : this}, function(evt) {
             evt.data.form.moveNext();
         });
-        
 
         field.validate(control.val());
     }
@@ -1407,7 +1356,7 @@ EpiCollect.Form = function()
 		}
 		this.formIndex = idx;
 		
-		step = $(".ecplus-question").width() / 15;
+		var step = $(".ecplus-question").width() / 15;
 		
 		interval = setInterval(function()
 		{
@@ -2123,24 +2072,24 @@ EpiCollect.Field = function()
 		}else if(this.type === "video" || this.type === "audio"){
 			if(value)
 			{
-                            var checkid = 'check' + (nchecks++);
-                            var checkurl;
-                            var valUrl;
-                            if(value.match(/^http:/i))
-                            {
-                                valUrl = value;
-                                checkurl = value;
-                            }
-                            else
-                            {
-				var valUrl = "../ec/uploads/" + project.name + "~" +value;
-				checkurl = (location.href.replace(project.name + '/' + formName, '') + valUrl).trimChars('/');
-                            }
-                            
-                            checking[checkurl] = checkid;
-                            checker.startCheck(checkurl);
+                var checkid = 'check' + (nchecks++);
+                var checkurl;
+                var valUrl;
+                if(value.match(/^http:/i))
+                {
+                    valUrl = value;
+                    checkurl = value;
+                }
+                else
+                {
+				    var valUrl = "ec/uploads/" + project.name + "~" +value;
+				    checkurl = (location.href.replace(project.name + '/' + formName, '') + valUrl).trimChars('/');
+                }
 
-                            return "<a id=\"" + checkid + "\" href=\"" + valUrl + "\" target=\"__blank\"> View Media </a>";
+                checking[checkurl] = checkid;
+                checker.startCheck(checkurl);
+
+                return "<a id=\"" + checkid + "\" href=\"" + valUrl + "\" target=\"__blank\"> View Media </a>";
 			}
 			else
 			{
@@ -2168,7 +2117,13 @@ EpiCollect.Field = function()
 			}
 			else
 			{
-				return value + (data ?  ' <a href="' + this.connectedForm + '?' + this.form.key +  '=' + data[this.form.key] + '&trail=' + this.form.name +  '">View entries</a> | <a href="javascript:project.forms[\'' + this.connectedForm + '\'].displayForm({ vertical : false, data : { \'' + this.form.key + '\': \'' + data[this.form.key] + '\'} });">Add ' +  this.connectedForm + '</a>' : '0 <a href="javascript:project.forms[\'' + this.connectedForm + '\'].displayForm({ vertical : false, data : { \'' + this.form.key + '\': \'' + data[this.form.key] + '\'} });">Add ' +  this.connectedForm + '</a>');
+                if(data){
+				    return value +  ' <a href="' + this.connectedForm + '?' + this.form.key +  '=' + data[this.form.key] + '&trail=' + this.form.name +  '">View entries</a> | <a href="javascript:project.forms[\'' + this.connectedForm + '\'].displayForm({ vertical : false, data : { \'' + this.form.key + '\': \'' + data[this.form.key] + '\'} });">Add ' +  this.connectedForm + '</a>' ;
+                }
+                else
+                {
+                    return value;
+                }
 			}
 		}
 		else
@@ -2261,16 +2216,15 @@ EpiCollect.Field = function()
 	{
         var validators = this.getValidators(ignoreDouble);
         var n_vals = validators.length;
-        
+
         if(n_vals !== 0)
         {
-            $("#" + this.id).addClass('checking')
+            $(".ecplus-form-pane #" + this.id).addClass('checking')
                 .removeClass('valid')
                 .removeClass('invalid');
                 
             $("#" + this.id + '-messages').empty();
-            
-            
+
             for ( var v = n_vals; v--; )
             {
                 this.dispatchValidator(value, validators[v]);
@@ -2278,13 +2232,13 @@ EpiCollect.Field = function()
         }
         else
         {
-            $('#' + this.id).trigger({ type : 'valid', field : this.id });
+            $('#' + this.id, this.form.formElement).trigger({ type : 'valid', field : this.id });
         }
 	};
     
     this.dispatchValidator = function(value, validatorDescription)
     {
-        var control = $('#' + this.id);
+        var control = $('#' + this.id, this.form.formElement);
         var voter = {};
         
         if( control.prop('voter') )
@@ -2294,7 +2248,7 @@ EpiCollect.Field = function()
         
         voter[validatorDescription.name] = undefined;
         control.prop('voter', voter);
-     
+
         EpiCollect.Validators[validatorDescription.name](value, validatorDescription.params, this.validatorCallback, this.id);
     }
     
@@ -2307,7 +2261,7 @@ EpiCollect.Field = function()
     this.addMessages = function(messages, className)
     {
         var mlen = messages.length;
-        var control = $('#' + this.id);
+        var control = $('#' + this.id, this.form.formElement);
         var messageArea = $('#' +this.id + '-messages');
         
         for ( var m = mlen; m--; )
@@ -2318,15 +2272,14 @@ EpiCollect.Field = function()
     
     this.validatorCallback = function(result)
     {
-        var field = project.forms[formName].fields[result.control_id]
-        var control = $('#' + result.control_id);
-       
-       console.debug(result);
-        
+        var form = project.forms[formName]
+        var field = form.fields[result.control_id]
+        var control = $('#' + result.control_id, form.formElement);
+
         var voter = control.prop('voter');
         voter[result.name] = result.valid;
         control.prop('voter', voter);
-        
+
         if( !result.valid )
         {
             control.addClass('invalid');
@@ -2340,9 +2293,7 @@ EpiCollect.Field = function()
         {
             complete = complete && voter[v] !== undefined;
         }
-        
-        console.debug(voter);
-        
+
         if(complete) 
         { 
             control.removeClass('checking');
@@ -2400,289 +2351,4 @@ EpiCollect.Field = function()
 		return xml;
 	};
 	
-};
-// old valid
-
-
-		// // console.debug('checking...' + this.id + '  = ' + value);
-		// // var msgs = [];
-		// // if(this.required && (!value || value === "")) msgs.push("This field is required");
-		// // if(value && value !== "")
-	    // // {
-			// // if( this.uppercase )
-			// // {
-				// // value = value.toUpperCase();
-				// // $('#' + this.id).val(value);
-			// // }
-			
-			// // if( this.isinteger )
-			// // {
-				// // if( !value.match(/^[0-9]+$/) )
-				// // {
-					// // msgs.push("This field must be an Integer");
-				// // }
-			// // }
-			// // if( this.isdouble )
-			// // {
-				// // if(!value.match(/^[0-9]+(\.[0-9]+)?$/))
-				// // {
-					// // msgs.push("This field must be an decimal");
-				// // }
-			// // }
-			// // if( this.date || this.setDate )
-			// // {
-				// // will consist of dd MM and yyyy
-				// // var fmt = this.date ? this.date : this.setDate; 
-				// // var sep = null;
-				
-				// // var day = null;
-				// // var month = null;
-				// // var year = null;
-				
-				
-				// // for( var i = 0; i < fmt.length; i++ )
-				// // {
-					// // if(fmt[i] === "d")
-					// // {
-						// // if(fmt[i+1] === "d")
-						// // {
-							// // console.debug(value.substr(i,2))
-							// // day = Number(value.substr(i,2));
-							// // if(isNaN(day)) msgs.push("Day is not a number");
-							// // i++;
-						// // }
-						// // else
-						// // {
-							// // throw "Invalid date format";
-						// // }
-					// // }
-					// // else if( fmt[i] === "M" )
-					// // {
-						// // if( fmt[i+1] === "M" )
-						// // {
-							// // console.debug(value.substr(i,2))
-							// // month = Number(value.substr(i,2));
-							// // if(isNaN(month)) msgs.push("Month is not a number");
-							// // i++;
-						// // }
-						// // else
-						// // {
-							// // throw "Invalid date format";
-						// // }
-					// // }
-					// // else if( fmt[i] === "y" )
-					// // {
-						// // if( fmt[i+1] === "y" && fmt[i+2] === "y" && fmt[i+3] === "y" )
-						// // {
-							// // year = Number(value.substr(i,4));
-							// // if(isNaN(year)) msgs.push("Year is not a number");
-							// // i+=3;
-						// // }
-						// // else
-						// // {
-							// // throw "Invalid date format";
-						// // }
-					// // }
-					// // else
-					// // {
-						// // if(!sep) sep = fmt[i];
-					// // }
-				// // }
-				// console.debug('Day = ' + day)
-				// // if(day || day === 0)
-				// // {
-					// // if(day < 1 || day > 31)	msgs.push("Day is out of range");
-					// // else if(month && (month === 4 || month === 6 || month === 9 || month === 11) && day > 30) msgs.push("Day is out of range");
-					// // else if(month && month === 2 && day > 29 && (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0))) msgs.push("Day is out of range");
-					// // else if(month && month === 2 && day > 28) msgs.push("Day is out of range");
-				// // }
-				// console.debug('Month = ' + month)
-				// // if(month || month === 0)
-				// // {
-					// // if(month < 1 ||  month > 12) msgs.push("Month is out of range");
-				// // }
-				
-			// // }
-			// // if( this.time || this.setTime )
-			// // {
-				// // var fmt = this.time ? this.time :  this.setTime; 
-				// // var sep = null;
-				
-				// // var hours = null;
-				// // var minutes = null;
-				// // var seconds = null;
-				
-				// // for( var i = 0; i < fmt.length; i ++ )
-				// // {
-					// // if( fmt[i] === "H" )
-					// // {
-						// // if( fmt[i+1] === "H" )
-						// // { 
-							// // hours = Number(value.substr(i, 2));
-							// // if(isNaN(hours)) msgs.push("Hours are not a number");
-							// // if(hours < 0 || hours > 23) msgs.push("Hours out of range");
-							// // i++;
-							
-						// // }
-						// // else
-							// // throw "Time Format is invalid";
-							
-					// // }
-					// // else if( fmt[i] === "m" ) 
-					// // {
-						// // if( fmt[i+1] === "m" )
-						// // {
-							// // minutes === Number(value.substr(i,2));
-							// // if(isNaN(minutes)) msgs.push("Minutes are not a number");
-							// // if(minutes < 0 || minutes > 59) msgs.push("Minutes out of range");
-							// // i++;
-						// // }
-					// // }
-					// // else if( fmt[i] === "s" )
-					// // {
-						// // if( fmt[i+1] === "s" )
-						// // {
-							// // seconds === Number(value.substr(i,2));
-							// // if(isNaN(seconds)) msgs.push("Seconds are not a number");
-							// // if(seconds < 0 || seconds > 59) msgs.push("Seconds out of range");
-							// // i++;
-						// // }
-					// // }
-				// // }
-			// // }
-			
-			
-			// // if( this.regex )
-			// // {
-				// // console.debug(this.regex);
-				// // if(!value.match(new RegExp(this.regex))) msgs.push(this.regexMessage ? this.regexMessage : "The value you have entered is not in the right format.");
-			// // }
-			
-			// // if( this.max )
-			// // {
-				// // if(Number(value) > this.max) msgs.push("Value must be less than  or equal to" + this.max);
-			// // }
-			
-			// // if( this.min )
-			// // {
-				// // if(Number(value) < this.min) msgs.push("Value must be greater than or equal to " + this.min);
-			// // }
-			
-			// // if( this.match )
-			// // {
-				// // in this version the match field must be present on the page and filled in
-				// // var info = this.match.split(",");
-					
-				// // var matchStr = $("#" + info[1]).val().match(new RegExp(info[3]))[0];
-				// // var valStr = value.match(new RegExp(info[3]))[0];
-		
-				// // if(valStr !== matchStr) msgs.push("The value does not match the string from the parent field");
-			// // }
-			
-			// // if( this.verify && !ignoreDouble )
-			// // {
-				// // if( !$("#" + this.id).hasClass("ecplus-valid" ))
-				// // {
-					// // $("#" + this.id).hide();
-					// // var ct = this;
-					// // EpiCollect.prompt({ content : "Please re-enter the value for " + this.text + " to confirm the value", callback : function(new_value){
-						// // if( newvalue !== value )
-						// // {
-							// // EpiCollect.dialog({ content : "field values must match" });
-							// // msgs.push("field values must match");
-							// // $("#" + ct.id).val("");
-							// // $("#" + ct.id).removeClass("ecplus-valid");
-							// // $("#" + ct.id).addClass("ecplus-invalid");
-						// // }
-						// // $("#" + ct.id).show();
-					// // }});
-				// // }
-				
-			// // }
-            
-            
-			// if(msgs.length === 0 && this.isKey && !$('#ecplus-form-' + this.form.name ).hasClass('editing'))
-			// {
-				// var ctx = this;
-				// this.form.pendingReqs.push($.ajax({
-					// url : baseUrl + '/../' + this.form.name + '.json?' + this.id + '=' + value,
-					// async : false,
-					// success : function(data,status,xhr)
-					// {
-						// if(data.length > 0)
-						// {
-							// msgs.push("This field must be unique, the value " + value + " had already been saved for this form.");
-						// }
-					// }
-				// }));
-			// }
-			// else if(msgs.length === 0 && this.fkField && this.fkTable)
-			// {
-				// var fld = '#' + this.id + '-ac';
-				// //console.debug('checking...' + this.id);
-				// $(fld).addClass('ecplus-checking');
-				// $(fld).removeClass('ecplus-invalid');
-				
-				// var _url =  baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true';
-				// if(this.parentval && this.parentfld)
-				// {
-					// _url += 'seconda_field=' + this.parentfld + '&secondary_value=' + this.parentval;  
-				// }
-				// var ctx = this;
-				// for(var req = this.form.pendingReqs.pop(); this.form.pendingReqs.length; req = this.form.pendingReqs.pop())
-				// {
-					// req.abort();
-				// }
-				// this.form.pendingReqs.push($.ajax({
-					// url : baseUrl + '/../' + this.fkTable + '/title?term=' + value + '&validate=true',
-					// async : false,
-					// success : function(data, status, xhr)
-					// {
-						// var res = JSON.parse(data);
-						// if(res.valid)
-						// {
-							// $(fld)
-								// .removeClass('ecplus-checking')
-								// .addClass('ecplus-valid');
-							// $('#' + ctx.id).val(res.key);
-
-							// var cc = $(fld).attr('childcontrol');
-							// if(cc)
-							// {
-								// //console.debug(cc);
-								// var jqc = $('#' + cc + '-ac');
-								// var src = jqc.autocomplete('option', 'source');
-								// if(src.indexOf('?') > 0) src = src.substr(0, src.indexOf('?'));
-								// //console.debug(src);
-								// src += '?secondary_field=' + ctx.id + '&secondary_value=' + res.key;
-								// var src = jqc.autocomplete('option', 'source', src);								
-							// }
-							
-						// }
-						// else
-						// {
-							// $(fld)
-								// .removeClass('ecplus-checking')
-								// .addClass('ecplus-invalid');
-							// msgs.push(res.msg);
-							// $('#' + this.id).val('');
-						// }
-					// }
-				// }));
-			// }
-	    // }
-		
-		// if( msgs.length === 0 )
-		// {
-			// $("#" + this.id).removeClass("ecplus-invalid");
-			// $("#" + this.id).addClass("ecplus-valid");
-		// }
-		// else
-		// {
-			// $("#" + this.id).removeClass("ecplus-valid");
-			// $("#" + this.id).addClass("ecplus-invalid");
-		// }	
-		
-		// if(msgs.length === 0) $('.ecpval-' + this.id).text(value); 
-		
-		// return msgs.length === 0 ? true : msgs;		
+}

@@ -9,7 +9,7 @@ $dat = new DateTime('now');
 $SITE_ROOT = '';
 $PUBLIC = false;
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.4e";
+$CODE_VERSION = "1.4g";
 
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
@@ -1226,7 +1226,7 @@ function uploadData()
 						echo ($res === true ? "1" : "0");
 					}
 				}
-				else if(preg_match("/\.(png|gif|rtf|docx?|pdf|jpg|jpeg|txt|avi|mpe?g|mov|mpe?g?3|wav|mpe?g?4)$/", $file['name']))
+				else if(preg_match("/\.(png|gif|rtf|docx?|pdf|jpg|jpeg|txt|avi|mpe?g|mov|mpe?g?3|wav|mpe?g?4|3gp)$/", $file['name']))
 				{
 
 					try{
