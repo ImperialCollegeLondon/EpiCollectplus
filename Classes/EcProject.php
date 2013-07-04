@@ -172,10 +172,12 @@ class EcProject{
 			{
 				$this->description = (string)$root->description[0];
 			}
-			
+
+            //Clear table array to prevent discrepancy
+            $this->tables = array();
+
 			if($root->form)
 			{
-				
 				$this->ecVersionNumber = "3";
 				for($t = 0; $t < count($root->form); $t++)
 				{
@@ -226,7 +228,7 @@ class EcProject{
 						}	
 						else
 						{
-							 throw new Exception("Table names must be unique. More that one table called " .(string)$atts['name'] . "in {$this->name}" );
+							 throw new Exception("Table names must be unique. More that one table called " .(string)$root->table[$t]->name . "in {$this->name}" );
 								//$tbl = $this->tables[(string)$atts['name']]; 
 						}
 						$tbl->parse($root->table[$t]);
@@ -477,7 +479,13 @@ class EcProject{
 		{
 				return $this->getPermission(1);
 		}
-		public function post()
+
+    /**
+     * Add the Project to the database
+     *
+     * @return bool|string
+     */
+    public function post()
 		{
 			global $auth;
 			$db=new dbConnection();
@@ -512,15 +520,16 @@ class EcProject{
 			}
 			
 		}
-		
-		public function put($oldName)
+
+    /**
+     * Update the project in the database
+     *
+     * @param $oldName -> The old project name if the project is being renamed (Deprecated)
+     * @return bool|string
+     */
+    public function put($oldName)
 		{
 			global $auth, $log, $db;
-			
-			/**
-			 * 
-			 */
-						
 			//$log = new Logger('Ec2');
 			$log->write('info', 'Starting project update');
 			
@@ -561,7 +570,13 @@ class EcProject{
 				
 				
 				$log->write('info', 'Project details updated');
-				
+
+                //Set all the forms as being inactive. They will then be given the proper numbers by the table updates.
+                $sql = "UPDATE form SET table_num = -1 WHERE projectName = '{$this->name}'";
+                $res = $db->do_query($sql);
+                if($res !== true) return $res;
+
+                //Update Each table.
 				foreach($this->tables as $tbl)
 				{
 						$log->write('info', "Updating form {$tbl->name}");
