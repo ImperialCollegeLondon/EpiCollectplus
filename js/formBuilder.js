@@ -12,7 +12,7 @@ $(function()
 	EpiCollect.loadProject(url.substr(0, url.lastIndexOf("/")) + ".xml", drawProject);
 
 	var details_top = $("#details").offset().top;
-	var toolbox_top =  $("#toolbox").offset().top;
+	
 	details_top = details_top - $("#toolbox").height();
 	        
 	$(window).scroll(function(evt){
@@ -90,8 +90,9 @@ $(function()
 			{
 				var jq = $('#destination .end').remove();
 				$('#destination').append(jq[0]);
+				dirty = true;
                 setSelected($(ui.item));
-                dirty = true;
+                
 			}
 		}
 	});
@@ -163,16 +164,19 @@ $(function()
 	
 	$("#options .removeOption").unbind('click').bind('click', removeOption);
 	$("#jumps .remove").unbind('click').bind('click', removeOption);
-    $('#destination').append('<img src="../images/editmarker.png" class="editmarker">')
+    $('#destination').append('<img src="../images/editmarker.png" class="editmarker">');
     $('.editmarker').hide();
-    $('.last input, .last select').change(function(){ $('#destination .selected').addClass('editing'); });
+    $('.last input, .last select').change(function(){ 
+    	$('#destination .selected').addClass('editing');
+    	dirty = true;
+    });
     $('.last').hide();
     $('#required').change(function(evt)
     {
         $('[name=jumpType] option[value=NULL]').toggle(!$( this ) .attr('checked'));
     });
 
-    $('.last input, .last select').bind('change', function(){ console.debug('change'); dirty = true; });
+    $('.last input, .last select').bind('change', function(){ dirty = true; });
 });
 
 function drawProject(prj)
@@ -270,7 +274,7 @@ function newForm(message, name, closeable)
         buttons[ 'Cancel' ] = function()
         {
             $( this ).dialog('close');
-        }
+        };
     }
         
 	EpiCollect.prompt({ 
@@ -329,7 +333,7 @@ function addOption()
 	var panel = $("#options");
 	panel.append('<div class="selectOption"><hr /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Label</a><input name="optLabel" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),\'Option &gt; Name\', \'The label displayed to the user\')">?</a></div>	<br /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Value</a><input name="optValue" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),\'Option &gt; Value\', \'The value entered into the database\')">?</a></div>	<br><a href="javascript:void(0);" class="button removeOption" >Remove Option</a> </div>');
 
-    $('.last input, .last select').unbind('change').bind('change', function(){ console.debug('change'); dirty = true; });
+    $('.last input, .last select').unbind('change').bind('change', function(){ dirty = true; });
 	$("#options .removeOption").unbind('click').bind('click', removeOption);
 	
 	$("#options input").unbind();
@@ -365,7 +369,7 @@ function addJump()
 	}
 	
 	$("#jumps .remove").unbind('click').bind('click', removeJump);
-    ('.last input, .last select').unbind('change').bind('change', function(){ console.debug('change'); dirty = true; });
+    $('.last input, .last select').unbind('change').bind('change', function(){ console.debug('change'); dirty = true; });
 }
 
 function removeJump(evt)
@@ -388,7 +392,7 @@ function drawFormControls(form)
 	{
 		var fld = fields[f];
 		var cls = undefined;
-		var suffix = '';
+		//var suffix = '';
         
 		if(fld.type === "input")
 		{
@@ -413,9 +417,13 @@ function drawFormControls(form)
 			}
 			
 			var forms = project.forms;
-			for(f in forms)
+			
+			for(var fm in forms)
 			{
-				if(f !== form.name && fld.id === forms[f].key && fld.form.num > forms[f].num) cls = "ecplus-fk-element";
+				if(fm !== form.name && fld.id === forms[fm].key && fld.form.num > forms[fm].num)
+				{
+					cls = "ecplus-fk-element";
+				}
 			}
 		}
 		else
@@ -423,20 +431,26 @@ function drawFormControls(form)
             cls = "ecplus-" + fld.type + "-element";
         }
 		
-        
-        
 		addControlToForm(fld.id, fld.text + fld.getSuffix(), cls);		
 	}
 	
 }
 
+/**
+ * @param is_silent
+ * @returns {Boolean}
+ */
 function updateSelected(is_silent)
 {
-    if(!dirty) return true;
+	//console.debug(dirty);
+	
+    //if(!dirty){ return true;}
 
+    var success = true;
+    
 	var jq = $("#destination .selected");
 	var cur = currentControl;
-        var cfrm = currentForm;
+    var cfrm = currentForm;
 	if( jq === undefined || jq.length === 0 ) return true;
 	
 	var name = cur.id; 
@@ -450,6 +464,7 @@ function updateSelected(is_silent)
 	{
         cur.id = $('#inputId').val();
         cur.text = $('#inputLabel').val();
+        console.debug(cur.text);
 	}
 	
     var nameValid = project.validateFieldName(cfrm, cur);
@@ -457,7 +472,7 @@ function updateSelected(is_silent)
 	if( nameValid !== true )
 	{
             EpiCollect.dialog({ content : nameValid });
-            return false;
+            success = false;
 	}
 	
 	if( _type.match(/^(text|numeric|date|time|fk)$/) )
@@ -477,8 +492,6 @@ function updateSelected(is_silent)
     }
 	
 	var notset = !$("#set").attr("checked");
-	//TODO: need to set other params;
-	var fk = $("#parent").val();
 	
 	cur.required = !!$("#required").attr("checked");
 	cur.title = !!$("#title").attr("checked");
@@ -529,35 +542,34 @@ function updateSelected(is_silent)
 		{
 			EpiCollect.dialog({ content : "You must select a date format." });
 			//throw "You must select a date format.";
-			return false;
+			success = false;
 		}
 		cur[(notset ? "date": "setDate")] = $("#date").val();
 	}
 	else if(_type === 'time')
 	{
-            if($("#time").val() === "")
-            {
-                EpiCollect.dialog({ content : "You must select a time format." });
-                return false; //throw "You must select a time format.";
-            }
-            cur[(notset ? "time": "setTime")] = $("#time").val();
+        if($("#time").val() === "")
+        {
+            EpiCollect.dialog({ content : "You must select a time format." });
+            success = false; //throw "You must select a time format.";
+        }
+        cur[(notset ? "time": "setTime")] = $("#time").val();
 	}
 	else if(_type === 'numeric')
 	{
-            cur.isinteger = !!$("#integer").attr("checked");
-            cur.isdouble = !!$("#decimal").attr("checked");
+        cur.isinteger = !!$("#integer").attr("checked");
+        cur.isdouble = !!$("#decimal").attr("checked");
 
-            cur.min = $("#min").val();
-            cur.max = $("#max").val();
+        cur.min = $("#min").val();
+        cur.max = $("#max").val();
 	}
 	cur.genkey = !!$("#genkey").attr("checked");
 	cur.hidden = !!$("#hidden").attr("checked");
 	
-	if( $("#default").val() !== '' && !cur.validate($("#default").val(), true) ) throw 'Default value does not match the format of the control';
+	if( $("#default").val() !== '' && !cur.validate($("#default").val(), true) ) alert( 'Default value does not match the format of the control');
 	cur.defaultValue = $("#default").val();
 	cur.search = !!$("#search").attr("checked");
 	
-	//TODO: get and add options
 	var optCtrls = $(".selectOption");
 	var options = [];
 	
@@ -584,7 +596,7 @@ function updateSelected(is_silent)
 	
 	jq.attr("id", cur.id);
 	$("p.title", jq).text(cur.text + cur.getSuffix());
-	
+	console.debug('xx');
 	$(".option", jq).remove();
 	
 	if(cur.type.match(/select1?|radio/))
@@ -618,24 +630,24 @@ function updateSelected(is_silent)
 		});
 		
 		cfrm.fields = newFlds;
-        }
-        
-        
-        if(!is_silent)
-        {
-            $('#' + cfrm.name).addClass('unsaved');
-            $('#destination .selected').removeClass('editing');
-            $('.editmarker').hide();
-            $('#details').hide();
-           
-        }
-        else
-        {
-            updateEditMarker();
-        }
-	    currentControl = cur;
-        currentForm = cfrm; 
-        return true;
+    }
+    
+  
+    if(!is_silent)
+    {
+        if(dirty) $('#' + cfrm.name).addClass('unsaved');
+        $('#destination .selected').removeClass('editing');
+        $('.editmarker').hide();
+        $('#details').hide();
+    }
+    else
+    {
+        updateEditMarker();
+    }
+   
+    currentControl = cur;
+    currentForm = cfrm; 
+    return success;
 }
 
 function updateSelectedCtl(){
@@ -644,8 +656,10 @@ function updateSelectedCtl(){
 
 function updateForm()
 {
+	var success = true;
+	
 	if(!currentForm) return true;
-	if(!updateSelected()) return false;	
+	if(!updateSelected()) success = false;	
 	if(!currentForm.key)
 	{
 		EpiCollect.dialog({ content : "The form " + currentForm.name + " needs a key defined." });
@@ -668,7 +682,7 @@ function updateForm()
 	}
 	
 	currentForm.fields = fields;
-	return true;
+	return success;
 }
 
 function updateJumps()
@@ -722,14 +736,14 @@ function updateJumps()
              
              var show = false;
              var cField = $('.ecplus-form-element.selected').attr('id');
-             var fidx;
+             //var fidx;
              
              for(var i = 0; i < len; i++ )
              {
                 $(opts[i]).toggle(show);
                 if( opts[i].value === cField ) {
                     // hide the next + 1 element as there's no point jumping to the next question!
-                    $(opts[++i]).toggle(show)
+                    $(opts[++i]).toggle(show);
                     show = true;
                 }
              }
@@ -761,7 +775,7 @@ function updateLastJump()
 	
 	var cField = $('.ecplus-form-element.selected').attr('id');
 	var hide = true;
-	var val;
+	var val = null;
 	
 	for(fld in currentForm.fields)
 	{
@@ -815,197 +829,199 @@ function updateEditMarker()
 
 function setSelected(jq)
 {
-        var jqEle = jq;
-        dirty = false;
+    var jqEle = jq;
+    dirty = false;
     
-            if(jqEle.hasClass("ecplus-form-element"))
+    console.debug('w');
+    
+    if(jqEle.hasClass("ecplus-form-element"))
+    {
+    	console.debug('x');
+        if(window["currentControl"])
+        {
+        	console.debug('saving');
+            if(!updateSelected()) return;
+            console.debug('saved');
+            $(".last input[type=text]").val("");
+            $(".last input[type=checkbox]").attr("checked", false);
+        }
+
+        $("#parent").val("");
+        $("#destination .ecplus-form-element").removeClass("selected");
+        jqEle.addClass("selected");
+
+        updateEditMarker();
+
+        $('#date').val('');
+        $('#time').val('');
+
+        if(currentForm.fields[jqEle.attr("id")])
+        {	
+            currentControl =  currentForm.fields[jqEle.attr("id")];
+        }
+        else
+        {
+            currentControl = new EpiCollect.Field(currentForm);
+        }
+
+        var type = jqEle.attr("type");
+
+        $("[allow]").hide();
+        $("[notfor]").show();
+
+        $("[allow*=" + type + "]").show();
+        $("[notfor*=" + type + "]").hide();
+
+
+        if(currentControl.isKey)
+        {
+                $("[allow*=key]").show();
+                $("[notfor*=key]").hide();
+        }
+
+        if(currentControl.genkey)
+        {
+                $("[allow*=gen]").show();
+                $("[notfor*=gen]").hide();
+        }
+
+        $('#inputLabel').val(currentControl.text);
+        
+        if(currentControl.id && currentControl.id !== '')
+        {
+                $('#inputId').val(currentControl.id);
+        }
+        else
+        {
+                $('#inputId').val(genID);
+        }
+        
+        $("#required").attr("checked", (currentControl.required));
+        $("#title").attr("checked", (currentControl.title));
+        $("#key").attr("checked", (currentControl.isKey));
+        $("#decimal").attr("checked", currentControl.isdouble);
+        if(! currentControl.isdouble) $("#integer").attr("checked", currentControl.isinteger);
+        $("#min").val(currentControl.min ? Number(currentControl.min) : '');
+        $("#max").val(currentControl.max ? Number(currentControl.max) : '');
+
+        if(currentControl.date)$("#date").val(currentControl.date);
+        if(!!currentControl.setDate)
+        {
+            $("#date").val(currentControl.setDate);
+            $("#set").attr("checked", true);
+        }
+        else
+        {
+            $("#set").attr("checked", false);
+        }
+
+        if(currentControl.time) $("#time").val(currentControl.time);
+        if(currentControl.setTime)
+        {
+            $("#time").val(currentControl.setTime);
+            $("#set").attr("checked", true);
+        }
+        else
+        {
+            if(!currentControl.setDate) $("#set").attr("checked", false);
+        }
+
+        $("#default").val(currentControl.defaultValue);
+        $("#regex").val(currentControl.regex);
+        $("#verify").attr("checked", currentControl.verify);
+        $("#hidden").attr("checked", currentControl.hidden);
+        $("#genkey").attr("checked", currentControl.genkey);
+        $("#search").attr("checked", currentControl.search);
+
+        var opts = currentControl.options;
+        var nOpts = currentControl.options.length;
+
+        $(".selectOption").remove();
+
+        while($(".selectOption").length < nOpts) addOption();
+
+        var optEles = $(".selectOption");
+        for(var i = nOpts; i--;)
+        {
+            $("input[name=optLabel]", optEles[i]).val(opts[i].label);
+            $("input[name=optValue]", optEles[i]).val(opts[i].value);
+        }
+
+        var forms = project.forms;
+
+        if(jqEle.attr("type") === "fk")
+        {	
+            for(f in forms)
             {
-                if(window["currentControl"])
-                {
-                    if(!updateSelected()) return;
-                    $(".last input[type=text]").val("");
-                    $(".last input[type=checkbox]").attr("checked", false);
-                    //$('#inputId').val(genID);
+                if(jqEle.attr("id") === forms[f].key){
+                    $("#parent").val(f);
                 }
+            }
+        }
 
-                $("#parent").val("");
-                $("#destination .ecplus-form-element").removeClass("selected");
-                jqEle.addClass("selected");
+        $(".jumpoption").remove();
 
-                updateEditMarker();
-          
-                    
-                $('#date').val('');
-                $('#time').val('');
+        if(currentControl.jump)
+        {
+            var jumps =  currentControl.jump.split(",");
+            var nJumps = jumps.length / 2;
 
-                if(currentForm.fields[jqEle.attr("id")])
-                {	
-                        currentControl =  currentForm.fields[jqEle.attr("id")];
+            while($(".jumpoption").length < nJumps) addJump();
+
+            updateJumps();
+            var jumpCtrls = $(".jumpoption");
+            var n = jumps.length;
+
+            for( var i = 0; i < n; i += 2 )
+            {
+                if(jumps[i+1] === "NULL")
+                {
+                    $("[name=jumpType]", jumpCtrls[i/2]).val('NULL');
+                    $(".jumpvalues", jumpCtrls[i/2]).val('');
+                }
+                else if(jumps[i+1] === "ALL")
+                {
+                    $("[name=jumpType]", jumpCtrls[i/2]).val('ALL');
+                    $(".jumpvalues", jumpCtrls[i/2]).val('');
+                }
+                else if(jumps[i+1][0] === "!")
+                {
+                    $("[name=jumpType]", jumpCtrls[i/2]).val('!');
+                    $(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1].substr(1));
                 }
                 else
                 {
-                        currentControl = new EpiCollect.Field(currentForm);
+                    $("[name=jumpType]", jumpCtrls[i/2]).val('');
+                    $(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1]);
                 }
-
-                var type = jqEle.attr("type");
-
-                $("[allow]").hide();
-                $("[notfor]").show();
-
-                $("[allow*=" + type + "]").show();
-                $("[notfor*=" + type + "]").hide();
-
-
-                if(currentControl.isKey)
-                {
-                        $("[allow*=key]").show();
-                        $("[notfor*=key]").hide();
-                }
-
-                if(currentControl.genkey)
-                {
-                        $("[allow*=gen]").show();
-                        $("[notfor*=gen]").hide();
-                }
-
-                   
-                        
-                    $('#inputLabel').val(currentControl.text);
-                    if(currentControl.id && currentControl.id !== '')
-                    {
-                            $('#inputId').val(currentControl.id);
-                    }
-                    else
-                    {
-                            $('#inputId').val(genID);
-                    }
-                    $("#required").attr("checked", (currentControl.required));
-                    $("#title").attr("checked", (currentControl.title));
-                    $("#key").attr("checked", (currentControl.isKey));
-                    $("#decimal").attr("checked", currentControl.isdouble);
-                    if(! currentControl.isdouble) $("#integer").attr("checked", currentControl.isinteger);
-                    $("#min").val(currentControl.min ? Number(currentControl.min) : '');
-                    $("#max").val(currentControl.max ? Number(currentControl.max) : '');
-
-                    if(currentControl.date)$("#date").val(currentControl.date);
-                    if(!!currentControl.setDate)
-                    {
-                        $("#date").val(currentControl.setDate);
-                        $("#set").attr("checked", true);
-                    }
-                    else
-                    {
-                        $("#set").attr("checked", false);
-                    }
-
-                    if(currentControl.time) $("#time").val(currentControl.time);
-                    if(currentControl.setTime)
-                    {
-                        $("#time").val(currentControl.setTime);
-                        $("#set").attr("checked", true);
-                    }
-                    else
-                    {
-                        if(!currentControl.setDate) $("#set").attr("checked", false);
-                    }
-
-                    $("#default").val(currentControl.defaultValue);
-                    $("#regex").val(currentControl.regex);
-                    $("#verify").attr("checked", currentControl.verify);
-                    $("#hidden").attr("checked", currentControl.hidden);
-                    $("#genkey").attr("checked", currentControl.genkey);
-                    $("#search").attr("checked", currentControl.search);
-
-                    var opts = currentControl.options;
-                    var nOpts = currentControl.options.length;
-
-                    $(".selectOption").remove();
-
-                    while($(".selectOption").length < nOpts) addOption();
-
-                    var optEles = $(".selectOption");
-                    for(var i = nOpts; i--;)
-                    {
-                            $("input[name=optLabel]", optEles[i]).val(opts[i].label);
-                            $("input[name=optValue]", optEles[i]).val(opts[i].value);
-                    }
-
-                    var forms = project.forms;
-
-                    if(jqEle.attr("type") === "fk")
-                    {	
-                            for(f in forms)
-                            {
-                                    if(jqEle.attr("id") === forms[f].key){
-                                            $("#parent").val(f);
-                                    }
-
-                            }
-                    }
-
-                    $(".jumpoption").remove();
-
-                    if(currentControl.jump)
-                    {
-                            var jumps =  currentControl.jump.split(",");
-                            var nJumps = jumps.length / 2;
-
-                            while($(".jumpoption").length < nJumps) addJump();
-
-                            updateJumps();
-                            var jumpCtrls = $(".jumpoption");
-                            var n = jumps.length;
-
-                            for( var i = 0; i < n; i += 2 )
-                            {
-                                    if(jumps[i+1] === "NULL")
-                                    {
-                                            $("[name=jumpType]", jumpCtrls[i/2]).val('NULL');
-                                            $(".jumpvalues", jumpCtrls[i/2]).val('');
-                                    }
-                                    else if(jumps[i+1] === "ALL")
-                                    {
-                                            $("[name=jumpType]", jumpCtrls[i/2]).val('ALL');
-                                            $(".jumpvalues", jumpCtrls[i/2]).val('');
-                                    }
-                                    else if(jumps[i+1][0] === "!")
-                                    {
-                                            $("[name=jumpType]", jumpCtrls[i/2]).val('!');
-                                            $(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1].substr(1));
-                                    }
-                                    else
-                                    {
-                                            $("[name=jumpType]", jumpCtrls[i/2]).val('');
-                                            $(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1]);
-                                    }
-                                    $(".jumpdestination", jumpCtrls[i/2]).val(jumps[i]);
-                            }
-
-                    }
-            }
-            else
-            {
-                    throw "div is not a form Element!";
-
+                $(".jumpdestination", jumpCtrls[i/2]).val(jumps[i]);
             }
 
-            if(currentControl){ $(".last").show();}
-            else {$(".last").hide();}
+        }
+    }
+    else
+    {
+            throw "div is not a form Element!";
 
-            if(type === 'numeric' && !($('#integer').attr('checked') || $('#decimal').attr('checked')))
-            {
-                    $('#integer').attr('checked', 'checked');
-            }
+    }
 
-            if( currentControl.id === project.getPrevForm(currentForm.name).key )
-            {
-                    $(".removeControl").hide();
-                    $("#fkPanel").hide();	
-            }
-            else
-            {
-                    $(".removeControl").show();
-            }
+    if(currentControl){ $(".last").show();}
+    else {$(".last").hide();}
+
+    if(type === 'numeric' && !($('#integer').attr('checked') || $('#decimal').attr('checked')))
+    {
+            $('#integer').attr('checked', 'checked');
+    }
+
+    if( currentControl.id === project.getPrevForm(currentForm.name).key )
+    {
+            $(".removeControl").hide();
+            $("#fkPanel").hide();	
+    }
+    else
+    {
+            $(".removeControl").show();
+    }
 }
 
 function removeForm(name)
@@ -1020,11 +1036,11 @@ function removeForm(name)
 	{
 		currentForm = false;
 		$('#' + name, $("#formList")).remove();
-		var key = project.forms[name].key;
-		var num = project.forms[name].num;
+		//var key = project.forms[name].key;
+		//var num = project.forms[name].num;
 		project.forms[name].num = -1;
 		
-        console.debug(num);
+        //console.debug(num);
         
 		for( frm in project.forms )
 		{
@@ -1177,7 +1193,6 @@ function switchToForm(name)
 	}
 	$('#source .ecplus-branch-element').show();
     
-    console.debug(currentForm.name, project.getPrevForm(currentForm.name))
 	if( project.getPrevForm(currentForm.name) )
     {
         $('#source .ecplus-fk-element').show();
@@ -1238,7 +1253,7 @@ function askForKey(keyDeleted)
 				}
 				
                 var key_id = '';
-                var new_field = new EpiCollect.Field
+                var new_field = new EpiCollect.Field();
                 new_field.isKey = true;
                 new_field.title = false;
                 

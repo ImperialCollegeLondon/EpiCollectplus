@@ -2219,7 +2219,7 @@ EpiCollect.Field = function()
 
         if(n_vals !== 0)
         {
-            $(".ecplus-form-pane #" + this.id).addClass('checking')
+            $("#" + this.id, this.form.formElement).addClass('checking')
                 .removeClass('valid')
                 .removeClass('invalid');
                 
@@ -2250,7 +2250,7 @@ EpiCollect.Field = function()
         control.prop('voter', voter);
 
         EpiCollect.Validators[validatorDescription.name](value, validatorDescription.params, this.validatorCallback, this.id);
-    }
+    };
     
     /**
      * Add messages to the field, primarily for validation.
@@ -2261,19 +2261,19 @@ EpiCollect.Field = function()
     this.addMessages = function(messages, className)
     {
         var mlen = messages.length;
-        var control = $('#' + this.id, this.form.formElement);
+
         var messageArea = $('#' +this.id + '-messages');
         
         for ( var m = mlen; m--; )
         {
             messageArea.append('<p class=' + className + '>' + messages[m] + '</p>');
         }
-    }
+    };
     
     this.validatorCallback = function(result)
     {
-        var form = project.forms[formName]
-        var field = form.fields[result.control_id]
+        var form = project.forms[formName];
+        var field = form.fields[result.control_id];
         var control = $('#' + result.control_id, form.formElement);
 
         var voter = control.prop('voter');
