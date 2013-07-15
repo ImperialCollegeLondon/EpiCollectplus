@@ -43,3 +43,5 @@ instructions*
 /ec/
 
 .htaccess
+/node_modules
+/.idea
