@@ -2082,14 +2082,14 @@ EpiCollect.Field = function()
                 }
                 else
                 {
-				    var valUrl = "ec/uploads/" + project.name + "~" +value;
+				    valUrl = "ec/uploads/" + project.name + "~" +value;
 				    checkurl = (location.href.replace(project.name + '/' + formName, '') + valUrl).trimChars('/');
                 }
 
                 checking[checkurl] = checkid;
                 checker.startCheck(checkurl);
 
-                return "<a id=\"" + checkid + "\" href=\"" + valUrl + "\" target=\"__blank\"> View Media </a>";
+                return "<a id=\"" + checkid + "\" href=\"" + checkurl + "\" target=\"__blank\"> View Media </a>";
 			}
 			else
 			{

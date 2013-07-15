@@ -92,7 +92,8 @@ $(function()
 				$('#destination').append(jq[0]);
 				dirty = true;
                 setSelected($(ui.item));
-                
+                updateStructure();
+                updateJumps();
 			}
 		}
 	});
@@ -369,7 +370,7 @@ function addJump()
 	}
 	
 	$("#jumps .remove").unbind('click').bind('click', removeJump);
-    $('.last input, .last select').unbind('change').bind('change', function(){ console.debug('change'); dirty = true; });
+    $('.last input, .last select').unbind('change').bind('change', function(){ dirty = true; });
 }
 
 function removeJump(evt)
@@ -442,7 +443,6 @@ function drawFormControls(form)
  */
 function updateSelected(is_silent)
 {
-	//console.debug(dirty);
 	
     //if(!dirty){ return true;}
 
@@ -464,7 +464,6 @@ function updateSelected(is_silent)
 	{
         cur.id = $('#inputId').val();
         cur.text = $('#inputLabel').val();
-        console.debug(cur.text);
 	}
 	
     var nameValid = project.validateFieldName(cfrm, cur);
@@ -596,7 +595,6 @@ function updateSelected(is_silent)
 	
 	jq.attr("id", cur.id);
 	$("p.title", jq).text(cur.text + cur.getSuffix());
-	console.debug('xx');
 	$(".option", jq).remove();
 	
 	if(cur.type.match(/select1?|radio/))
@@ -667,8 +665,16 @@ function updateForm()
 		return false;
 	}
 	
-     if(dirty) $('#' + currentForm.name).addClass('unsaved');
+    if(dirty) $('#' + currentForm.name).addClass('unsaved');
         
+	updateStructure();
+	
+	currentForm.fields = fields;
+	return success;
+}
+
+function updateStructure()
+{
 	var fields = {};
 	var form = currentForm;
 	
@@ -680,9 +686,6 @@ function updateForm()
 		
 		if(fields[id].isKey) form.key = id;
 	}
-	
-	currentForm.fields = fields;
-	return success;
 }
 
 function updateJumps()
@@ -702,10 +705,9 @@ function updateJumps()
         });
         
         fieldCtls.empty();
-        fieldCtls.html(fieldCtls.html());
-        for(var i = opts.length; i--;)
+        for(var i = 0; i < opts.length; i++)
         {
-            fieldCtls.html("<option value=\"" + (i + 1) + "\" >" + opts[i].label + "</option>" + fieldCtls.html());
+            fieldCtls.append("<option value=\"" + (i + 1) + "\" >" + opts[i].label + "</option>");
         }
         
         $(".jumpvalues").each(function(idx, ele){
@@ -720,13 +722,19 @@ function updateJumps()
             vals[idx] = $(ele).val();
         });
         
-        for(fld in currentForm.fields)
+        
+        fieldCtls.empty();
+        
+        var ctrls = $('#destination .ecplus-form-element');
+        
+        ctrls.each(function(idx, ele)
         {
+        	var fld = ele.id;
             var field = currentForm.fields[fld];
             var lbl = currentForm.fields[fld].text;
             if(lbl.length > 25) lbl = lbl.substr(0,22) + "...";
             if(field.type && !field.hidden) fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
-        }
+        });
         fieldCtls.append("<option value=\"END\">END OF FORM</option>");
         
         $(".jumpdestination").each(function(idx, ele){
@@ -832,16 +840,11 @@ function setSelected(jq)
     var jqEle = jq;
     dirty = false;
     
-    console.debug('w');
-    
     if(jqEle.hasClass("ecplus-form-element"))
     {
-    	console.debug('x');
         if(window["currentControl"])
         {
-        	console.debug('saving');
             if(!updateSelected()) return;
-            console.debug('saved');
             $(".last input[type=text]").val("");
             $(".last input[type=checkbox]").attr("checked", false);
         }
@@ -1036,11 +1039,8 @@ function removeForm(name)
 	{
 		currentForm = false;
 		$('#' + name, $("#formList")).remove();
-		//var key = project.forms[name].key;
-		//var num = project.forms[name].num;
 		project.forms[name].num = -1;
 		
-        //console.debug(num);
         
 		for( frm in project.forms )
 		{
@@ -1050,7 +1050,6 @@ function removeForm(name)
         
         delete project.forms[frm];
         
-		//$('#destination').empty();
 	}
 }
 
