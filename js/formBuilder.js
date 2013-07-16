@@ -668,8 +668,7 @@ function updateForm()
     if(dirty) $('#' + currentForm.name).addClass('unsaved');
         
 	updateStructure();
-	
-	currentForm.fields = fields;
+
 	return success;
 }
 
@@ -686,6 +685,7 @@ function updateStructure()
 		
 		if(fields[id].isKey) form.key = id;
 	}
+	currentForm.fields = fields;
 }
 
 function updateJumps()
