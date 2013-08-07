@@ -11,10 +11,16 @@
 				user-select: none;
 			}
 		
+			/*.column
+			{ 
+				border : 1px solid #333333;
+			}*/
+			
 			#formList
 			{
 				display : block;
 				height : 9em;
+				margin-right : 12em;
 				overflow-x : auto;
 				overflow-y : hidden;
 			}
@@ -32,10 +38,80 @@
 				vertical-align :middle;
 			}
 			
+			#errorList 
+			{
+				width : 20em;
+				height: 10em;
+				float: right;
+				position : relative;
+				padding : 0.5em;
+				border-radius : 0.5em;
+				border : 1px solid black;
+			}
+			
+			#errorList .body
+			{
+				position : absolute;
+				padding : 0.5em;
+				bottom : 31px;
+				left: 0px;
+				right: 0px;
+				top : 26px;
+				line-height: 14px;
+				border-top : 1px solid black;
+			}
+			
+			#errorList .footer
+			{
+				position : absolute;
+				padding : 0.5em;
+				bottom : 0px;
+				left: 0px;
+				right: 0px;
+				line-height: 16px;
+				border-top : 1px solid black;
+			}
+			
 			#formList .form
 			{	
 				border : 0.5em solid #CCCCCC;
 				margin-right : 1em;	
+			}
+			
+			#errorList .footer a
+			{	
+				float:right;
+				background : white;
+				padding : 0.5em;
+				border-left : 1px solid black;
+				margin : -0.5em 0em;
+			}
+			
+			#errorList .footer a.next
+			{
+				margin-right : -0.5em;
+				border-bottom-right-radius:0.5em;
+			}
+			
+			#errorList .footer a:hover
+			{
+				background: black;
+				color: white;
+			}
+			
+			#errorList .error
+			{
+				background-color : rgba(255, 200, 200, 1);
+			}
+			
+			#errorList .warning
+			{
+				background-color : rgba(255, 255, 200, 1);
+			}
+			
+			#errorList h4
+			{
+				margin-top: 0;
 			}
 			
 			#formList .form:after
@@ -103,24 +179,32 @@
 		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.controlgroup.js"></script>
 		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.settingspanel.js"></script>
 		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.mediainput.js"></script>
+		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.timepicker.js"></script>
+		
 {{/script}}
 {{breadcrumbs}}
 &gt; <a href="../{#projectName#}">Project : {#projectName#}</a> &gt; Form Builder
 {{/breadcrumbs}}
 {{main}}
 	<h1>Form Builder</h1>
+	<div id = "errorList">
+		Error list
+	</div>
 	<div id="toolbox">
 		<div id="toolbox-inner">
-			<a href="javascript:saveProject()" class="button">Save Project</a>
-			<a href="javascript:project.forms[currentForm.name].displayForm({ debug : true });" class="button">Preview Form</a>
+			
+			<a id="btn_save" href="javascript:saveProject()" class="button">Save Project</a>
+			<a id="btn_preview" href="javascript:project.forms[currentForm.name].displayForm({ debug : true });" class="button">Preview Form</a>
 			<a href="javascript:renameForm(currentForm.name);" class="button">Rename Form</a>
 			<a href="javascript:removeForm(currentForm.name);" class="button">Delete Form</a>
 		</div>
 	</div>
+	
 	<div id="formList">
 			<h4 class="label">Select a form to edit: </h4>
 			<span class="form">First_Form</span><span class="control">Add a new form</span>
 	</div>
+	
 
 	<div class="ecplus-columns">
 		<div id="source" class="column first">
@@ -203,7 +287,7 @@
 	    </div>
 	    <div id="details" class="column last">
 	        <h3>Field Properties</h3>	
-	       		<form id="props">
+	       		<form id="props" autocomplete="off">
 			   		<div id="labelCtrl" notfor="fk">
 				        	<label for="inputLabel">
 				        		<a href="http://www.epicollect.net/formHelp.asp#labels" target="_blank">Label</a>
@@ -211,27 +295,27 @@
 				        	<input id="inputLabel" name="text" type="text" />
 				    </div>
 				    <div id="nameCtrl" notfor="fk">
-				           	<label for="inputId">
+				           	<label for="id">
 				           		<a href="http://www.epicollect.net/formHelp.asp#ids" target="_blank">ID</a>
 				           	</label>
 				           	<input id="inputId" name="id" type="text"  maxlength="45" />
 				    </div>
 				    <div id="requiredCtrl" notfor="fk">
-				           	<label for="inputRequired">Required</label>
+				           	<label for="required">Required</label>
 				           	<input type="checkbox" id="required" name="required" value="true" />
 				    </div>
 				    <div id="fkPanel" allow="fk">
-				    	<label>Use key from </label><select id="parent" name="parent"></select>
+				    	<label for="parent">Use key from </label><select id="parent" name="parent"></select>
 				    </div>
 				    <div id="branchButton" allow="branch">
 				    	<a href="javascript:switchToBranch();" class="button">Edit branch form</a>
 				    </div>
 				    <div id="titleCtrl" allow="text,numeric,select1,radio,barcode">
-				           	<label for="inputTitle">Title</label> 
+				           	<label for="title">Title</label> 
 				           	<input type="checkbox" id="title" name="title" value="true" />
 				    </div>
 				    <div id="keyCtrl" allow="text,numeric,barcode">
-				           	<label for="inputKey">Key</label> 
+				           	<label for="key">Key</label> 
 				           	<input type="checkbox" id="key" name="key" value="true" disabled="disabled" />
 				    </div>
 				    <div allow="text,numeric,select1,radio,barcode">
@@ -239,10 +323,9 @@
 				        	<input type="checkbox" id="search" name="search" value="true" />
 				    </div>
 				    <div allow="numeric">
-				        	<label for="inputDec">Decimal</label> 
-				        	<input type="radio" id="decimal" name="numeric" value="decimal" />
-				        	<label for="inputInt">Integer</label> 
-				        	<input type="radio" id="integer"  name="numeric" value="integer" /><br/>
+				        	<input type="radio" id="rdo_decimal" name="numeric" value="decimal" /><label for="numeric">Decimal</label> <br/>
+				        	<input type="radio" id="rdo_integer" name="numeric" value="integer" /><label for="numeric">Integer</label> <br/>
+				        	
 				        	<label for="inputmin">Minumum Value</label> 
 				        	<input type="number" id="min" name="min" />
 				        	<label for="inputmax">Maximum Value</label> 
@@ -310,7 +393,7 @@
 					<div id="jumps" allow="select,radio,select1">
 						<hr />
 						<h3>Jumps</h3>
-						<a href="javascript:addJump();updateLastJump();" class="button">Add Jump</a>
+						<a href="javascript:addJump();updateJumps();" class="button">Add Jump</a>
 						
 					</div>
 					<hr />
