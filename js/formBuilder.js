@@ -3,7 +3,142 @@ var currentControl = undefined;
 var formName = undefined;
 var dirty = false;
 
+/**
+ * A widget to display Errors and warnings
+ * 
+ * @param id The id of the element containing the error List
+ * @returns
+ */
+function ErrorList(id)
+{
+	this.errors = [];
+	this.warnings = [];
+	
+	this.div = $('#' + id);
+	
+	this.div.empty();
+	
+	this.div.append('<h3>Form Errors</h3><div class="body"></div><div class="footer"><span class="index"></span> of <span class="total"></span><a class="next">next</a><a class="prev">previous</a></div>');
+	
+	$('.next', this.div).bind('click',{ctx : this}, function(evt){
+		evt.data.ctx.next();
+	});
+	
+	$('.prev', this.div).bind('click', {ctx : this}, function(evt){
+		evt.data.ctx.previous();
+	});
+	
+	this.reset();
+}
 
+ErrorList.prototype.addError = function(error){
+	this.errors.push(error);
+	
+	this.setTotal();
+	this.showError(0);
+	
+};
+
+ErrorList.prototype.addWarning = function(warning){
+	this.warnings.push(warning);
+	
+	this.setTotal();
+	this.showError(0);
+	
+};
+
+/**
+ * Add several errors to the errorlist
+ * 
+ * @param errors {Array}
+ */
+ErrorList.prototype.addErrors = function(errors){
+	for( var e = 0; e < errors.length; e++ )
+	{
+		this.addError(errors[e]);
+	}
+};
+
+ErrorList.prototype.setTotal = function()
+{
+	this.total = this.errors.length + this.warnings.length;
+	$('.total', this.div).text(this.total);
+	$('.index', this.div).text('0');
+	
+	if( this.total > 0 )
+	{
+		this.showError(0);
+	}
+	else
+	{
+		this.noErrors();
+	}
+};
+
+ErrorList.prototype.showError = function(idx)
+{
+	var err = {};
+	var cls = '';
+	
+	if(this.errors.length > 0 && idx < this.errors.length)
+	{
+		err = this.errors[idx];
+		cls = 'error';
+	}
+	else if( idx < this.total )
+	{
+		if(this.errors.length === 0)
+		{
+			err = this.warnings[idx];
+		}
+		else
+		{
+			err = this.warnings[idx % this.errors.length];
+		}
+		
+		cls = 'warning';
+	}
+	
+	$('.body', this.div).html('<h4>Component : ' + err.control + '</h4><p>' + err.message + '</p>');
+	$('.body', this.div).removeClass('error').removeClass('warning').addClass(cls);
+	
+	this.index = idx;
+	$('.index', this.div).text(idx + 1);
+};
+
+ErrorList.prototype.noErrors = function()
+{
+	//show message saying there are no error and a save and preview button
+	$('.body', this.div).html('<h4>Form Valid</h4><p>This form has no errors.</p>');
+};
+
+ErrorList.prototype.reset = function()
+{
+	this.errors = [];
+	this.warnings = [];
+	
+	$('.body', this.div).empty().removeClass('warning').removeClass('error');
+	
+	this.setTotal();
+};
+
+ErrorList.prototype.next = function()
+{
+	if( this.index < (this.total - 1))
+	{
+		this.showError(this.index + 1);
+	}
+};
+
+ErrorList.prototype.previous = function()
+{
+	if( this.index > 0)
+	{
+		this.showError(this.index - 1);
+	}
+};
+
+var errorList;
 
 $(function()
 {
@@ -31,17 +166,20 @@ $(function()
 		}
 		if($(document.body).scrollTop() > details_top) 
 		{  
-                        var dest = $('#destination');
+            var dest = $('#destination');
+            
 			$("#details").css({
 				"position":"fixed",
 				"top" : $("#toolbox-inner").height() + 10 + "px",
-				"left" : (dest.offset().left + dest.width()+20) + "px"
+				"left" : (dest.offset().left + dest.width() + 20) + "px"
 			}); 
+			
 			$("#source").css({
 				"position":"fixed",
 				"top" : $("#toolbox-inner").height() + 10 + "px",
 				"left" : "auto"
 			}); 
+			
 		}
 		else
 		{
@@ -58,12 +196,12 @@ $(function()
 		}	
 	});
         
-        $(window).unload(function(){
-            if($('.unsaved').length > 0)
-            {
-                localStorage.setItem(project.name + '_xml', project.toXML());
-            }
-        });
+    $(window).unload(function(){
+        if($('.unsaved').length > 0)
+        {
+            localStorage.setItem(project.name + '_xml', project.toXML());
+        }
+    });
 	
 	$('.first').accordion({ collapsible : true });
 	
@@ -174,10 +312,12 @@ $(function()
     $('.last').hide();
     $('#required').change(function(evt)
     {
-        $('[name=jumpType] option[value=NULL]').toggle(!$( this ) .attr('checked'));
+        $('[name=jumpType] option[value=NULL]').toggle(!$( this ) .prop('checked'));
     });
 
     $('.last input, .last select').bind('change', function(){ dirty = true; });
+    
+    errorList = new ErrorList('errorList');
 });
 
 function drawProject(prj)
@@ -212,6 +352,7 @@ function drawProject(prj)
     else
     {
         switchToForm(Object.keys(project.forms)[0]);
+        validateCurrentForm();
     }
    
 }
@@ -312,7 +453,7 @@ function addControlToForm(id, text, type)
 	
 	
 	$("p.title", jq).text(text.decodeXML());
-	jq.attr("id", id);
+	jq.prop("id", id);
     
 	$(".option", jq).remove();
 
@@ -332,7 +473,10 @@ function addControlToForm(id, text, type)
 function addOption()
 {
 	var panel = $("#options");
-	panel.append('<div class="selectOption"><hr /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Label</a><input name="optLabel" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),\'Option &gt; Name\', \'The label displayed to the user\')">?</a></div>	<br /><a href="http://www.epicollect.net/formHelp.asp#editSelects" target="_blank">Value</a><input name="optValue" size="12" /><div style="float:right; font-weight:bold;font-size:10pt;"><a href="javascript:void(0)" onclick="popup($(this).parent(),\'Option &gt; Value\', \'The value entered into the database\')">?</a></div>	<br><a href="javascript:void(0);" class="button removeOption" >Remove Option</a> </div>');
+	panel.append('<div class="selectOption"><hr /><label title="The text displayed to the user">Label</label><input title="The text displayed to the user" name="optLabel" size="12" />'
+			+ '<div style="float:right; font-weight:bold;font-size:10pt;"></div>'
+			+ '<br /><label title="The value stored in the database"l>Value</label><input title="The value stored in the database" name="optValue" size="12" />'
+			+ '<div style="float:right; font-weight:bold;font-size:10pt;"></div><br /><a href="javascript:void(0);" class="button removeOption" >Remove Option</a> </div>');
 
     $('.last input, .last select').unbind('change').bind('change', function(){ dirty = true; });
 	$("#options .removeOption").unbind('click').bind('click', removeOption);
@@ -437,6 +581,193 @@ function drawFormControls(form)
 	
 }
 
+function validateCurrentForm()
+{
+	errorList.reset();
+	
+	validateForm(currentForm);
+}
+
+function validateForm(v_form)
+{
+	var titleFields = [];
+	
+	for ( var fld in v_form.fields )
+	{
+		var jq = $('#destination #' + fld);
+		var _type = jq.attr("type");
+		
+		validateControl(v_form.fields[fld], _type, function(){});
+		
+		if( v_form.fields[fld].title ) { titleFields.push(fld); }
+		
+		if( !!v_form.fields[fld].jump )
+		{
+			var jump_arr = v_form.fields[fld].jump.split;
+			//TODO: Jump Validation
+		}
+	}
+	
+	$('#btn_save, #btn_preview').toggle(errorList.errors.length === 0);
+	$('.saveError').toggle(errorList.errors.length !== 0);
+	
+	if( titleFields.length === 0 )
+	{
+		errorList.addWarning({ control : 'form', message : "There is no title field selected, it is advisable to set a field as a title " +
+				"to help users quickly distinguish between entries" });
+	}
+}
+
+/**
+ * Added in 1.5 - fire validation asynchronously and generate and error list. If the list finishes empty enable the save button
+ * 
+ * @param ctrl
+ * @param callback
+ */
+function validateControl(ctrl, _type, callback)
+{
+	//validate control name
+	 var nameValid = project.validateFieldName(currentForm, ctrl);
+	 var messages = [];
+	 
+	ctrl.fb_voter = {};
+	
+	if( !ctrl.text )
+	{
+		console.debug('label fail');
+		messages.push({control : ctrl.id, message : "Every field must have a label"});
+	}
+	
+	if( nameValid !== true )
+	{
+		messages.push({ control : ctrl.id, message: nameValid });
+	}
+	
+	if(_type === 'date')
+	{	
+		if (!ctrl.date && !ctrl.setDate )
+		{
+			messages.push({control : ctrl.id,  message : "You must select a date format." });
+			//throw "You must select a date format.";
+			success = false;
+		}
+		
+	}
+	else if(_type === 'time')
+	{
+        if( !ctrl.time && !ctrl.setTime )
+        {
+        	messages.push({ control : ctrl.id, message : "You must select a time format." });
+            success = false; //throw "You must select a time format.";
+        }
+        
+	}
+	else if(_type === 'numeric')
+	{        
+       // if( isNaN(Number(ctrl.min)) ) messages.push({ control : ctrl.id, message : "Minimum value is not a number" });
+       // if( isNaN(Number(ctrl.max)) ) messages.push({ control : ctrl.id, message : "Maximum value is not a number" });
+
+        if(ctrl.min !== '')
+        {
+        	var validators = ctrl.getValidators(['key','fk', 'min', 'max', 'required']);
+    		for( var v = 0; v < validators.length; v++ )
+    		{
+    			var vali = validators[v];
+    			
+    			var res = EpiCollect.Validators[vali.name](ctrl.min, vali.params, null, ctrl.id);
+    			
+    			if ( !res.valid )
+    			{
+    				messages.push({ control : ctrl.id, message : '<em>Maximum</em> ' + res.messages[0] });
+    			}
+    		}
+        }
+        if(ctrl.max !== '')
+        {
+        	var validators = ctrl.getValidators(['key','fk', 'max', 'min', 'required']);
+    		for( var v = 0; v < validators.length; v++ )
+    		{
+    			var vali = validators[v];
+    			
+    			var res = EpiCollect.Validators[vali.name](ctrl.max, vali.params, null, ctrl.id);
+    			
+    			if ( !res.valid )
+    			{
+    				messages.push({ control : ctrl.id, message : '<em>Maximum</em> ' + res.messages[0] });
+    			}
+    		}
+        }
+        if((!!ctrl.min || ctrl.min === 0) && (!!ctrl.max|| ctrl.max === 0)  && ctrl.min >= ctrl.max)
+        {
+        	messages.push({ control : ctrl.id, message : "<em>Minimum</em> must be smaller than the <em>Maximum</em>" });
+        }
+	}
+	
+	//Validate Jumps?
+	
+	// All that's left is to validate the default, to do this we need to store the current message array
+	// If we hit errors 
+	var df_val = ctrl.defaultValue;
+	
+	if( !!df_val )
+	{
+		var validators = ctrl.getValidators(['key','fk', 'required']);
+		for( var v = 0; v < validators.length; v++ )
+		{
+			var vali = validators[v];
+			
+			var res = EpiCollect.Validators[vali.name](df_val, vali.params, null, ctrl.id);
+
+			if ( !res.valid )
+			{
+				messages.push({ control : ctrl.id, message : '<em>Default</em> ' + res.messages[0] });
+			}
+		}
+		
+	}		
+	
+	validateCallback({control : ctrl, messages : messages }, ctrl.fb_voter !== {});
+
+}
+
+/**
+ * Added in 1.5 
+ *  
+ * @param info
+ */
+function validateCallback(info, wait)
+{	
+	// check list length and enable/disable save button
+	//var errorList = $('#errorList');
+	//errorList.empty();
+	//$('.' + info.control.id, errorList).remove();	
+	
+	// populate list
+	for( var m = 0; info.messages && m < info.messages.length; m++ )
+	{
+		if(typeof info.messages[m] == 'object')
+		{
+			errorList.addError(info.messages[m]);
+		}
+		else
+		{
+			errorList.addError(info);
+		}
+	}
+	
+	if(wait) return;
+}
+
+function expandErrorList()
+{
+	
+}
+
+function collapseErrorList()
+{
+	//should leave one visible and the user should be able to change to one that they want to be able to seen and correct
+}
+
 /**
  * @param is_silent
  * @returns {Boolean}
@@ -445,8 +776,6 @@ function updateSelected(is_silent)
 {
 	
     //if(!dirty){ return true;}
-
-    var success = true;
     
 	var jq = $("#destination .selected");
 	var cur = currentControl;
@@ -466,14 +795,6 @@ function updateSelected(is_silent)
         cur.text = $('#inputLabel').val();
 	}
 	
-    var nameValid = project.validateFieldName(cfrm, cur);
-    
-	if( nameValid !== true )
-	{
-            EpiCollect.dialog({ content : nameValid });
-            success = false;
-	}
-	
 	if( _type.match(/^(text|numeric|date|time|fk)$/) )
 	{
         cur.type = "input";
@@ -490,84 +811,37 @@ function updateSelected(is_silent)
         cur.type = _type; 
     }
 	
-	var notset = !$("#set").attr("checked");
+	var notset = !$("#set").prop("checked");
 	
-	cur.required = !!$("#required").attr("checked");
-	cur.title = !!$("#title").attr("checked");
-    
-	if( $("#key").attr("checked") === "checked" )
-	{
-        if(cfrm.key !== cur.id && cfrm.key !== "")
-        {
-            if(confirm("You have chose to make " + cur.id + " the key for this form, but " + cfrm.key + " is already marked as the key. do you want to change the form's key field to be " + cur.id))
-            {
-                    cur.isKey = true;
-                    if( cfrm.fields[cfrm.key]) cfrm.fields[cfrm.key].isKey = false;
-                    cfrm.key = cur.id;			
-            }
-            else
-            {
-                    $("#key").attr("checked", "");
-            }
-        }
-	}
-	else
-	{
-        if( cfrm.key === cur.id )
-        {
-            EpiCollect.dialog("This is currently the form's key field, please set another field as the key");
-            $("#key").attr("checked", "checked");
-        }
-        else
-        {
-            cur.isKey = false;
-        }
-	}
+	cur.required = !!$("#required").prop("checked");
+	cur.title = !!$("#title").prop("checked");
+	cur.regex = $("#regex").val(); // Can't really validate regexes?!?
+	cur.verify = !!$("#verify").prop("checked");
 	
-	cur.regex = $("#regex").val();
-	cur.verify = !!$("#verify").attr("checked");
 	cur.date = false;
-	cur.time = false;
 	cur.setDate = false;
+	cur.time = false;
 	cur.setTime = false;
-	cur.isdouble = false;
-	cur.isinteger = false;
-	cur.min = false;
-	cur.max = false;
 	
-	if(_type === 'date')
+	if( _type === "time" )
 	{
-		if($("#date").val() === "")
-		{
-			EpiCollect.dialog({ content : "You must select a date format." });
-			//throw "You must select a date format.";
-			success = false;
-		}
+		cur[(notset ? "time": "setTime")] = $("#time").val();
+	}
+	if( _type === "date" )
+	{
 		cur[(notset ? "date": "setDate")] = $("#date").val();
 	}
-	else if(_type === 'time')
-	{
-        if($("#time").val() === "")
-        {
-            EpiCollect.dialog({ content : "You must select a time format." });
-            success = false; //throw "You must select a time format.";
-        }
-        cur[(notset ? "time": "setTime")] = $("#time").val();
-	}
-	else if(_type === 'numeric')
-	{
-        cur.isinteger = !!$("#integer").attr("checked");
-        cur.isdouble = !!$("#decimal").attr("checked");
 
-        cur.min = $("#min").val();
-        cur.max = $("#max").val();
-	}
-	cur.genkey = !!$("#genkey").attr("checked");
-	cur.hidden = !!$("#hidden").attr("checked");
+	cur.min = $('#min').val();
+	cur.max = $('#max').val();
+	cur.isinteger = !!$("#rdo_integer").prop("checked");
+	cur.isdouble = !!$("#rdo_decimal").prop("checked");
+
+    cur.genkey = !!$("#genkey").prop("checked");
+    cur.hidden = !!$("#hidden").prop("checked");
 	
-	if( $("#default").val() !== '' && !cur.validate($("#default").val(), true) ) alert( 'Default value does not match the format of the control');
 	cur.defaultValue = $("#default").val();
-	cur.search = !!$("#search").attr("checked");
+	cur.search = !!$("#search").prop("checked");
 	
 	var optCtrls = $(".selectOption");
 	var options = [];
@@ -645,7 +919,9 @@ function updateSelected(is_silent)
    
     currentControl = cur;
     currentForm = cfrm; 
-    return success;
+	
+	validateCurrentForm();
+    return true;
 }
 
 function updateSelectedCtl(){
@@ -681,7 +957,12 @@ function updateStructure()
 	for(var i = 0; i < elements.length && form; i++)
 	{
 		var id = elements[i].id;
-		fields[id] = form.fields[id]; 
+		
+		if(form.fields[id])
+		{
+			fields[id] = form.fields[id]; 
+			form.fields[id].index = i;
+		}
 		
 		if(fields[id].isKey) form.key = id;
 	}
@@ -758,55 +1039,12 @@ function updateJumps()
              if(vals.length > idx) jq.val(vals[idx]);
         });
         
-        $('[name=jumpType] option[value=NULL]').toggle(!$('#required').attr('checked'));
+        $('[name=jumpType] option[value=NULL]').toggle(!$('#required').prop('checked'));
         
 	}catch(err)
 	{
 		/*alert(err)*/;
 	}
-}
-
-function updateLastJump()
-{
-	var opts = currentControl.options;
-	
-	var fieldCtls = $(".jumpvalues:last");
-	
-	fieldCtls.empty();
-	fieldCtls.html(fieldCtls.html());
-	for(var i = opts.length; i; i--)
-	{
-		fieldCtls.html("<option value=\"" + i + "\">" + opts[i-1].label + "</option>" + fieldCtls.html());
-	}
-	
-	fieldCtls = $(".jumpdestination:last");
-	
-	var cField = $('.ecplus-form-element.selected').attr('id');
-	var hide = true;
-	var val = null;
-	
-	for(fld in currentForm.fields)
-	{
-		var field = currentForm.fields[fld];
-		var lbl = currentForm.fields[fld].text;
-		if(lbl.length > 25) lbl = lbl.substr(0,22) + "...";
-		
-		if(field.type && !field.hidden)
-		{
-			if(hide)
-			{
-				fieldCtls.append("<option value=\"" + fld + "\" style=\"display:none;\">" + lbl + "</option>");
-			}
-			else
-			{
-				if(!val) val = fld;
-				fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
-			}
-		}
-		hide = hide && fld !== cField;
-	}
-	fieldCtls.append("<option value=\"END\">END OF SURVEY</option>");
-	fieldCtls.val(val);
 }
 
 function genID()
@@ -846,7 +1084,7 @@ function setSelected(jq)
         {
             if(!updateSelected()) return;
             $(".last input[type=text]").val("");
-            $(".last input[type=checkbox]").attr("checked", false);
+            $(".last input[type=checkbox]").prop("checked", false);
         }
 
         $("#parent").val("");
@@ -857,6 +1095,9 @@ function setSelected(jq)
 
         $('#date').val('');
         $('#time').val('');
+        $('#min').val('');
+        $('#max').val('');
+        $('#default').val('');
 
         if(currentForm.fields[jqEle.attr("id")])
         {	
@@ -899,42 +1140,42 @@ function setSelected(jq)
                 $('#inputId').val(genID);
         }
         
-        $("#required").attr("checked", (currentControl.required));
-        $("#title").attr("checked", (currentControl.title));
-        $("#key").attr("checked", (currentControl.isKey));
-        $("#decimal").attr("checked", currentControl.isdouble);
-        if(! currentControl.isdouble) $("#integer").attr("checked", currentControl.isinteger);
-        $("#min").val(currentControl.min ? Number(currentControl.min) : '');
-        $("#max").val(currentControl.max ? Number(currentControl.max) : '');
+        $("#required").prop("checked", (currentControl.required));
+        $("#title").prop("checked", (currentControl.title));
+        $("#key").prop("checked", (currentControl.isKey));
+        $("#rdo_decimal").prop("checked", currentControl.isdouble);
+        $("#rdo_integer").prop("checked", currentControl.isinteger);
+        $("#min").val((currentControl.min || currentControl.min === 0) ? currentControl.min : '');
+        $("#max").val((currentControl.max || currentControl.max === 0) ? currentControl.max : '');
 
         if(currentControl.date)$("#date").val(currentControl.date);
         if(!!currentControl.setDate)
         {
             $("#date").val(currentControl.setDate);
-            $("#set").attr("checked", true);
+            $("#set").prop("checked", true);
         }
         else
         {
-            $("#set").attr("checked", false);
+            $("#set").prop("checked", false);
         }
 
         if(currentControl.time) $("#time").val(currentControl.time);
         if(currentControl.setTime)
         {
             $("#time").val(currentControl.setTime);
-            $("#set").attr("checked", true);
+            $("#set").prop("checked", true);
         }
         else
         {
-            if(!currentControl.setDate) $("#set").attr("checked", false);
+            if(!currentControl.setDate) $("#set").prop("checked", false);
         }
 
         $("#default").val(currentControl.defaultValue);
         $("#regex").val(currentControl.regex);
-        $("#verify").attr("checked", currentControl.verify);
-        $("#hidden").attr("checked", currentControl.hidden);
-        $("#genkey").attr("checked", currentControl.genkey);
-        $("#search").attr("checked", currentControl.search);
+        $("#verify").prop("checked", currentControl.verify);
+        $("#hidden").prop("checked", currentControl.hidden );
+        $("#genkey").prop("checked", currentControl.genkey );
+        $("#search").prop("checked", currentControl.search );
 
         var opts = currentControl.options;
         var nOpts = currentControl.options.length;
@@ -956,7 +1197,7 @@ function setSelected(jq)
         {	
             for(f in forms)
             {
-                if(jqEle.attr("id") === forms[f].key){
+                if(jqEle.prop("id") === forms[f].key){
                     $("#parent").val(f);
                 }
             }
@@ -1004,16 +1245,16 @@ function setSelected(jq)
     }
     else
     {
-            throw "div is not a form Element!";
-
+    	throw "div is not a form Element!";
     }
 
     if(currentControl){ $(".last").show();}
     else {$(".last").hide();}
 
-    if(type === 'numeric' && !($('#integer').attr('checked') || $('#decimal').attr('checked')))
+    //set default as integer
+    if(type === 'numeric' && !($('#rdo_integer').prop('checked') || $('#rdo_decimal').prop('checked')))
     {
-            $('#integer').attr('checked', 'checked');
+           $('#rdo_integer').prop('checked', 'checked');
     }
 
     if( currentControl.id === project.getPrevForm(currentForm.name).key )
@@ -1062,12 +1303,12 @@ function removeSelected()
 		askForKey(true);
 	}
 	
-	delete currentForm.fields[jq.attr("id")];
+	delete currentForm.fields[jq.prop("id")];
 	jq.remove();
 	
 	$("[allow]").hide();
 	$(".last input[type=text]").val("");
-	$(".last input[type=checkbox]").attr("checked", false);
+	$(".last input[type=checkbox]").prop("checked", false);
         $('.editmarker').hide();
 }
 

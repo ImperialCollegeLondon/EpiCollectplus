@@ -9,8 +9,8 @@ $dat = new DateTime('now');
 $SITE_ROOT = '';
 $PUBLIC = false;
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.4i";
-
+$CODE_VERSION = "1.5";
+$BUILD = "16";
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
@@ -291,12 +291,13 @@ function regexEscape($s)
 
 function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 {
-	global $db, $SITE_ROOT, $DIR, $auth, $CODE_VERSION, $cfg;
+	global $db, $SITE_ROOT, $DIR, $auth, $CODE_VERSION, $BUILD, $cfg;
 
 	$template = file_get_contents(sprintf('%shtml/%s', $DIR, trim( $baseUri,'.')));
 	$templateVars['SITE_ROOT'] = ltrim($SITE_ROOT, '\\');
 	$templateVars['uid'] = md5($_SERVER['HTTP_HOST']);
 	$templateVars['codeVersion'] = $CODE_VERSION;
+	$templateVars['build'] = $BUILD;
 	$templateVars['protocol'] = (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] == 'on' ? 'https' : 'http');
 	$templateVars['GA_ACCOUNT'] = $cfg->settings['misc']['ga_account'];
 	// Is there a user logged in?

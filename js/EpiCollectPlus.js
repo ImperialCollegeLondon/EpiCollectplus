@@ -9,8 +9,18 @@ var formName = '';
 
 if(!window['console'])
 {
-    window.console = {};
-    console.debug = function(msg){};
+    window.console = {};    
+}
+if(!console.debug)
+{
+	if( console.info )
+	{
+		console.debug = console.info;
+	}
+	else
+	{
+		console.debug = function(msg){};
+	}
 }
 
 checker.oncheck = function(evt)
@@ -25,6 +35,16 @@ checker.oncheck = function(evt)
 
 var baseUrl = (location.href.indexOf("?") > 0 ? location.href.substr(0, location.href.indexOf("?")) :location.href );
 baseUrl = baseUrl.indexOf('#') > 0 ? baseUrl.substr(0, baseUrl.indexOf('#')) : baseUrl;
+
+function generateUUID(){
+    var d = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+    });
+    return uuid;
+};
 
 EpiCollect = {};
 
@@ -41,49 +61,82 @@ EpiCollect.KEYWORDS = [
 EpiCollect.Validators = {
     "required" : function(val, params, callback, ctrl_id)
     {
+    	var obj ;
+    	
         if(!!val)
         {
-            callback({ valid : true, messages :[], control_id : ctrl_id, name : 'required' });
+        	 obj = { valid : true, messages : [], control_id : ctrl_id, name : 'required' };
+           
         }
         else
         {
-            callback({ valid : false, messages :['This field is required'], control_id : ctrl_id, name : 'required'  });
+             obj = { valid : false, messages : ['This field is required'], control_id : ctrl_id, name : 'required'  };
         }
+        
+        if ( callback ) 
+        {
+        	callback(obj);
+        }
+        else 
+        {
+        	return obj;
+        }
+        
     },
     "integer" : function(val, params, callback, ctrl_id)
     {
         var intval = Number(val);
+        var obj = {};
         
         if(isNaN(intval))
         {
-            callback({ valid : false, messages : ['is not a number'], name : 'integer', control_id : ctrl_id  });
+            obj = { valid : false, messages : ['is not a number'], name : 'integer', control_id : ctrl_id  };
         }
         else if( intval % 1 !== 0 )
         {
-            callback({ valid : false, messages : ['is not an integer'], name : 'integer', control_id : ctrl_id   });
+            obj = { valid : false, messages : ['is not an integer'], name : 'integer', control_id : ctrl_id   };
         }
         else
         {
-            callback({ valid : true, messages :[], control_id : ctrl_id });
+            obj = { valid : true, name : 'integer', messages :[], control_id : ctrl_id };
+        }
+   
+        if ( callback ) 
+        {
+        	callback(obj);
+        }
+        else 
+        {
+        	return obj;
         }
     },
     "double" : function(val, params, callback, ctrl_id)
     {
         var dblval = Number(val);
+        var obj = {};
         
         if(isNaN(dblval))
         {
-            callback({ valid : false, messages : ['is not a number'], name : 'double', control_id : ctrl_id   });
+            obj = { valid : false, messages : ['is not a number'], name : 'double', control_id : ctrl_id   };
         }
         else
         {
-            callback({ valid : true, messages :[], name : 'double', control_id : ctrl_id  });
+            obj = { valid : true, messages :[], name : 'double', control_id : ctrl_id  };
+        }
+        
+        if ( callback ) 
+        {
+        	callback(obj);
+        }
+        else 
+        {
+        	return obj;
         }
     },
     "date" : function(value, params, callback, ctrl_id)
     {			
         var fmt = params.fmt;
-        
+        var obj = {};
     
         var day = null;
         var month = null;
@@ -104,7 +157,7 @@ EpiCollect.Validators = {
                 }
                 else
                 {
-                    throw "Invalid date format";
+                    msgs.push( "Invalid date format");
                 }
             }
             else if( fmt[i] === "M" )
@@ -118,7 +171,7 @@ EpiCollect.Validators = {
                 }
                 else
                 {
-                    throw "Invalid date format";
+                	msgs.push( "Invalid date format");
                 }
             }
             else if( fmt[i] === "y" )
@@ -131,7 +184,7 @@ EpiCollect.Validators = {
                 }
                 else
                 {
-                    throw "Invalid date format";
+                	msgs.push( "Invalid date format");
                 }
             }
             
@@ -150,7 +203,16 @@ EpiCollect.Validators = {
             if(month < 1 ||  month > 12) msgs.push("Month is out of range");
         }
         
-        callback({ valid : msgs.length == 0, messages : msgs, name : 'date', control_id : ctrl_id  });
+        obj = { valid : msgs.length == 0, messages : msgs, name : 'date', control_id : ctrl_id  };
+        
+        if ( callback ) 
+        {
+        	callback(obj);
+        }
+        else 
+        {
+        	return obj;
+        }
     },
     "time" : function(value, params, callback, ctrl_id)
     {
@@ -175,7 +237,7 @@ EpiCollect.Validators = {
                     
                 }
                 else
-                    throw "Time Format is invalid";
+                	msgs.push("Time Format is invalid");
                     
             }
             else if( fmt[i] === "m" ) 
@@ -200,62 +262,121 @@ EpiCollect.Validators = {
             }
         }
         
-         callback({ valid : msgs.length == 0, messages : msgs, name : 'time', control_id : ctrl_id  });
+        var obj = { valid : msgs.length == 0, messages : msgs, name : 'time', control_id : ctrl_id  };
+        
+        if ( callback ) 
+        {
+        	return callback(obj);
+        }
+        else 
+        {
+        	return obj;
+        }
     },
     "regex" :function(value, params, callback, ctrl_id)
     {
+    	var obj = {};
         if(!(value.match(new RegExp(params.regex))))
         {
-            callback({ valid : false, messages : [params.regexMessage ? params.regexMessage : "The value you have entered is not in the right format."], name : 'regex', control_id : ctrl_id  });;
+            obj = { valid : false, messages : [params.regexMessage ? params.regexMessage : "The value you have entered is not in the right format."], name : 'regex', control_id : ctrl_id  };
         }
         else
         {
-            callback({ value : true, messages : [], name : 'regex', control_id : ctrl_id  });
+            obj = { valid : true, messages : [], name : 'regex', control_id : ctrl_id  };
+        }
+        
+        if ( callback ) 
+        {
+        	return callback(obj);
+        }
+        else 
+        {
+        	return obj;
         }
     },
     "max" : function(val, params, callback, ctrl_id)
     {
         var nval = Number(val);
-        
-        if(nval > params.max)
+        var obj = {};
+       
+        if(isNaN(nval))
         {
-            callback({ valid : false, messages : ['value must be less than ' + params.max] , name : 'max', control_id : ctrl_id  });
+        	obj = { valid : false, messages : ['value must be a number less than or equal to ' + params.max] , name : 'max', control_id : ctrl_id  };
+        }
+        else if(nval > Number(params.max))
+        {
+            obj = { valid : false, messages : ['value must be a number less than or equal to  ' + params.max] , name : 'max', control_id : ctrl_id  };
         }
         else
         {
-            callback({ valid : true, messages : [''], name : 'max', control_id : ctrl_id  });
+            obj = { valid : true, messages : [''], name : 'max', control_id : ctrl_id  };
+        }
+        
+        if ( callback ) 
+        {
+        	return callback(obj);
+        }
+        else 
+        {
+        	return obj;
         }
         
     },
     "min" : function(val, params, callback, ctrl_id)
     {
-        if(nval < params.min)
+    	var nval = Number(val);
+    	var obj = {};
+    	
+    	if(isNaN(nval))
         {
-            callback({ valid : false, messages : ['value must be greater than ' + params.min] , name : 'min', control_id : ctrl_id });
+        	obj = { valid : false, messages : ['value must be a number greater than or equal to  ' + params.max] , name : 'max', control_id : ctrl_id  };
+        }
+        else if(nval < Number(params.min))
+        {
+            obj = { valid : false, messages : ['value must be a number greater than or equal to  ' + params.min] , name : 'min', control_id : ctrl_id };
         }
         else
         {
-            callback({ valid : true, messages : [''], name : 'min' , control_id : ctrl_id });
+            obj = { valid : true, messages : [''], name : 'min' , control_id : ctrl_id };
+        }
+        
+        if ( callback ) 
+        {
+        	return callback(obj);
+        }
+        else 
+        {
+        	return obj;
         }
     },
     "match" : function(val, params, callback, ctrl_id)
     {
         var matchStr = params.parentValue.match(new RegExp(params.regex))[0];
         var valStr = value.match(new RegExp(params.regex))[0];
-		
+		var obj = {};
 		if(valStr !== matchStr)
         {
-            callback({ valid : false, messages : ["The value does not match the string from the parent field"], name : 'match', control_id : ctrl_id  });
+            obj = { valid : false, messages : ["The value does not match the string from the parent field"], name : 'match', control_id : ctrl_id  };
         }
         else
         {
-            callback({ valid : true, messages : [''], name : 'match', control_id : ctrl_id  });
+            obj = { valid : true, messages : [''], name : 'match', control_id : ctrl_id  };
+        }
+		
+		if ( callback ) 
+        {
+        	callback(obj);
+        }
+        else 
+        {
+        	return obj;
         }
     },
     "verify" : function(value, params, callback, ctrl_id)
     {
         $("#" + this.id).hide();
-        var ct = this;
+
+        var obj = {};
         EpiCollect.prompt({ content : "Please re-enter the value for " + this.text + " to confirm the value", callback : function(newvalue){
             if( newvalue !== value )
             {
@@ -263,7 +384,7 @@ EpiCollect.Validators = {
             }
             else
             {
-                callback({ valid : true, messages : [], name : 'verify', control_id : ctrl_id  });
+               callback({ valid : true, messages : [], name : 'verify', control_id : ctrl_id  });
             }
         }});
     },
@@ -730,7 +851,7 @@ EpiCollect.Project = function()
 	{
         
         
-        var name = field.id
+        var name = field.id;
         if(name === "") return 'The field ID cannot be blank';
 		if(form.fields[name] && form.fields[name] != field)  return '<em>' + name + '</em> is not a valid ID.  <br /> <br /> There is already a field called ' + name + ' in this form';
 		var kw = EpiCollect.KEYWORDS;
@@ -741,7 +862,7 @@ EpiCollect.Project = function()
 		}
         
         if(name === form.name) return '<em>' + name + '</em> is not a valid ID. <br /> <br /> The field name cannot be the same as the form name';
-		if(name.match(/\s/gi)) return '<em>' + name + '</em> is not a valid ID. <br /> <br />  The form name cannot contain spaces'
+		if(name.match(/\s/gi)) return '<em>' + name + '</em> is not a valid ID. <br /> <br />  The form name cannot contain spaces';
         if(name.match(/[^A-Z0-9_]/gi)) return '<em>' + name + '</em> is not a valid ID. <br /> <br />  The field ID can only contain letter, numbers and underscores';
                 
 		return true;
@@ -892,6 +1013,7 @@ EpiCollect.Form = function()
 		this.fields[this.fld.id] = this.fld;
 		this.cols.push("DeviceID");
 		
+		var f_idx = 0;
 		
 		for(var nd = 0; nd < xml.childNodes.length; nd++)
 		{
@@ -900,7 +1022,8 @@ EpiCollect.Form = function()
 				var field = new EpiCollect.Field();
 				field.parse(xml.childNodes[nd]);
 				field.form = this;
-		
+				field.index = f_idx++;
+				
 				this.fields[field.id] = field;
 				this.cols.push(field.id);
 				
@@ -1746,8 +1869,8 @@ EpiCollect.Field = function()
 		this.setTime = xml.getAttribute('settime');
 		
 		this.edit = Boolean(xml.getAttribute('edit'));
-		this.min = Number(xml.getAttribute('min'));
-		this.max = Number(xml.getAttribute('max'));
+		this.min = xml.getAttribute('min');
+		this.max = xml.getAttribute('max');
 		this.defaultValue = xml.getAttribute('default');
 		
 		this.jump = xml.getAttribute('jump');
@@ -1816,7 +1939,7 @@ EpiCollect.Field = function()
             
         }
         return suffix;
-    }
+    };
     
    this.getInput = function(val, debug)
    {
@@ -1836,7 +1959,7 @@ EpiCollect.Field = function()
 			   }
 			   else if(this.genkey || (this.isKey && this.hidden))
 			   {
-				   val = "web_" + new Date().getTime();
+				   val = generateUUID();
 			   }
 			   else if(this.defaultValue)
                {
@@ -2139,11 +2262,11 @@ EpiCollect.Field = function()
 		}
 	};
 	
-    this.getValidators = function(ignoreDouble) // ignoreDouble entry (verify)
+    this.getValidators = function(ignore) // ignoreDouble entry (verify)
     {
         var validators = [];
         
-         if( this.required )
+        if( this.required )
         {
             validators.push({ name : 'required', params : {} });
         }
@@ -2158,7 +2281,7 @@ EpiCollect.Field = function()
             validators.push({ name : 'double', params : {} });
         }
         
-        if( !ignoreDouble && this.verify )
+        if( this.verify )
         {
             validators.push({ name : 'verify', params : {} });
         }
@@ -2178,17 +2301,12 @@ EpiCollect.Field = function()
             validators.push({ name : 'regex', params : { regex : this.regex } });
         }
         
-        if( this.max )
+        if( this.max || this.max === '0' )
         {
             validators.push({ name : 'max', params : { max : this.max } });
         }
         
-        if( this.min )
-        {
-            validators.push({ name : 'min', params : { min : this.min } });
-        }
-        
-        if( this.min )
+        if( this.min || this.min === '0'  )
         {
             validators.push({ name : 'min', params : { min : this.min } });
         }
@@ -2207,24 +2325,54 @@ EpiCollect.Field = function()
         {
             validators.push({ name : 'fk' , params : { url : baseUrl + '/../' + this.fkTable + '/title' }});  
         }
+    	
+        for(var i = 0; ignore && i < ignore.length; i++)
+        {
+        	 for(var v = 0; v < validators.length; v++)
+        	 {
+        		if(validators[v].name == ignore[i])
+        		{ 
+        			validators.splice(v, 1);
+        		}
+        	 }
+        }
         
         return validators;
-    }
+    };
     
     
-	this.validate = function(value, ignoreDouble)
+	this.validate = function(value, ignore)
 	{
-        var validators = this.getValidators(ignoreDouble);
+        var validators = this.getValidators(ignore);
         var n_vals = validators.length;
 
         if(n_vals !== 0)
         {
-            $("#" + this.id, this.form.formElement).addClass('checking')
-                .removeClass('valid')
-                .removeClass('invalid');
-                
-            $("#" + this.id + '-messages').empty();
-
+        	var control = $("#" + this.id, this.form.formElement);
+        	// for validation of formbuilder controls where there
+        	if(control && control.hasClass('ecplus-input')) //is no actual field	so we can do min, max and default
+        	{
+	            control.addClass('checking')
+	                .removeClass('valid')
+	                .removeClass('invalid');
+	                
+	            $("#" + this.id + '-messages', this.form.formElement).empty();
+        	}
+        	
+        	// Set up the "voter" if we don't then setting up the voter and dispatching the validation method causes a race
+        	// condition that might cause an early "valid" to incorrectly fire the valid event
+        	for ( var v = n_vals; v--; )
+            {
+        		var voter = {};
+	        	if( control.prop('voter') )
+	            {
+	                voter = control.prop('voter');
+	            }
+	            
+	            voter[validators[v].name] = undefined;
+	            control.prop('voter', voter);
+            }
+        	
             for ( var v = n_vals; v--; )
             {
                 this.dispatchValidator(value, validators[v]);
@@ -2238,16 +2386,6 @@ EpiCollect.Field = function()
     
     this.dispatchValidator = function(value, validatorDescription)
     {
-        var control = $('#' + this.id, this.form.formElement);
-        var voter = {};
-        
-        if( control.prop('voter') )
-        {
-            voter = control.prop('voter');
-        }
-        
-        voter[validatorDescription.name] = undefined;
-        control.prop('voter', voter);
 
         EpiCollect.Validators[validatorDescription.name](value, validatorDescription.params, this.validatorCallback, this.id);
     };
@@ -2262,7 +2400,7 @@ EpiCollect.Field = function()
     {
         var mlen = messages.length;
 
-        var messageArea = $('#' +this.id + '-messages');
+        var messageArea = $('#' +this.id + '-messages', this.form.formElement);
         
         for ( var m = mlen; m--; )
         {
@@ -2279,40 +2417,59 @@ EpiCollect.Field = function()
         var voter = control.prop('voter');
         voter[result.name] = result.valid;
         control.prop('voter', voter);
-
+        
+        var is_input = control && control.hasClass('ecplus-input');
+        
         if( !result.valid )
         {
-            control.addClass('invalid');
+            if(is_input){
+            	
+            	control.addClass('invalid');
+            }
             
             field.addMessages(result.messages, 'err');
         }
         
         var complete = true;
+        var valid = true;
         
         for ( var v in voter )
         {
-            complete = complete && voter[v] !== undefined;
+        	if (voter[v] === undefined)
+        	{
+        		complete = false;
+        		break;
+        	}
+            
+        	valid = valid && voter[v];
+        	
         }
-
+        
+        console.debug(complete, valid, voter);
+        
         if(complete) 
         { 
-            control.removeClass('checking');
-            if(control.hasClass('invalid'))
-            {
-                control.trigger({ type : 'invalid', field : result.control_id });
+        	if(is_input)
+        	{
+	            control.removeClass('checking');
+	            if(!valid)
+	            {
+	            	control.removeClass('valid');
+	                control.trigger({ type : 'invalid', field : result.control_id });
+	            }
+	            else
+	            {
+	            	console.debug('fire valid');
+	                control.addClass('valid');
+	                control.trigger({ type : 'valid', field : result.control_id });
+	            }
             }
-            else
-            {
-                control.addClass('valid');
-                control.trigger({ type : 'valid', field : result.control_id });
-            }
-            
         }
-    }
+    };
 	
 	this.toXML = function()
 	{
-		if( !this.type ) return "";
+		if( !this.type ) { return ""; }
 		
 		var xml = "<" + this.type + " ref=\"" + this.id + "\"";
 		//TODO: Other settings
@@ -2330,8 +2487,8 @@ EpiCollect.Field = function()
 		if(this.time && this.time !== "") xml = xml + " time=\"" + this.time + "\"";
 		if(this.setDate && this.setDate !== "") xml = xml + " setdate=\"" + this.setDate + "\"";
 		if(this.setTime && this.setTime !== "") xml = xml + " settime=\"" + this.setTime + "\"";
-		if(this.min) xml = xml + " min=\"" + this.min + "\"";
-		if(this.max) xml = xml + " max=\"" + this.max + "\"";
+		if(this.min || this.min === 0) xml = xml + " min=\"" + this.min.toString() + "\"";
+		if(this.max || this.max === 0) xml = xml + " max=\"" + this.max.toString() + "\"";
 		if(this.defaultValue) xml = xml + " default=\"" + this.defaultValue + "\"";
 		if(this.match) xml = xml + " match=\"" + this.match + "\"";
 		if(this.crumb) xml = xml + " crumb=\"" + this.crumb + "\"";
@@ -2351,4 +2508,4 @@ EpiCollect.Field = function()
 		return xml;
 	};
 	
-}
+};

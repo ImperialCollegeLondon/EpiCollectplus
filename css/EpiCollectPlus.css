@@ -531,6 +531,11 @@ tr.alt
 	overflow : auto;
 }
 
+.ecplus-columns .last
+{
+	width : 20em;
+}
+
 .loading 
 {
 	-webkit-appearance: none;
@@ -543,13 +548,14 @@ tr.alt
 {
 	left : 0;
 	background-color : #FFEEEE;
-        max-height: 85%;
+    max-height: 85%;
+    padding : 0;
 }
 
 .ecplus-columns .second
 {
 	display:block;
-	margin : 0 21em 0 21em;
+	margin : 0 22em 0 20em;
 	height : 68em;
 	background-color : #EEFFEE;
         
@@ -1070,7 +1076,7 @@ tr.alt
 #toolbox-inner
 {	
 	top : 0px;
-	width: 90%;
+	width: 50%;
 	padding : 0.5em;
 	background-color : #FFFFFF;
 	z-index : 2;
