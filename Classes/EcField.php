@@ -114,9 +114,9 @@ class EcField{
 			if( $this->time ) $xml .= " time=\"{$this->time}\"";
 			if( $this->setDate ) $xml .= " setdate=\"{$this->setDate}\"";
 			if( $this->setTime ) $xml .= " settime=\"{$this->setTime}\"";
-			if( $this->min ) $xml .= " min=\"{$this->min}\"";
-			if( $this->max ) $xml .= " max=\"{$this->max}\"";
-			if( $this->defaultValue ) $xml .= " default=\"{$this->defaultValue}\"";
+			if( $this->min || $this->min == '0' ) $xml .= " min=\"{$this->min}\"";
+			if( $this->max || $this->max == '0'  ) $xml .= " max=\"{$this->max}\"";
+			if( $this->defaultValue  || $this->defaultValue == '0' ) $xml .= " default=\"{$this->defaultValue}\"";
 			if( $this->crumb ) $xml .= " crumb=\"{$this->crumb}\"";
 			if( $this->match ) $xml .= " match=\"{$this->match}\"";
 			
@@ -298,11 +298,11 @@ class EcField{
 			$qry .= ($this->time ? "'{$this->time}'," : "NULL,");
 			$qry .= ($this->setDate ? "'{$this->setDate}'," : "NULL,");
 			$qry .= ($this->setTime ? "'{$this->setTime}'," : "NULL,");
-			$qry .= ($this->min ? "{$this->min}," : "NULL,");
-			$qry .= ($this->max ? "{$this->max}," : "NULL,");
+			$qry .= ($this->min || $this->min === '0' ? "{$this->min}," : "NULL,");
+			$qry .= ($this->max || $this->max === '0'  ? "{$this->max}," : "NULL,");
 			$qry .= ($this->match ? $db->stringVal($this->match) . ',' : "NULL,");
 			$qry .= ($this->crumb ? "'{$this->crumb}'," : "NULL,");
-			$qry .= ($this->defaultValue ? $db->stringVal($this->defaultValue). "," : "NULL,");
+			$qry .= ($this->defaultValue || $this->defaultValue === '0'? $db->stringVal($this->defaultValue). "," : "NULL,");
 			$qry .= "{$this->position},";
 			$qry .= $db->stringVal(json_encode($this->otherAttributes)) . ")";
 			
@@ -508,12 +508,12 @@ class EcField{
 				throw new Exception ("Error with {$this->name}: the min and max attributes should only be set on integer or decimal fields");
 			}
 			
-			if($this->isInt && (!preg_match("/^[0-9]*$/", $this->min) || !preg_match("/^[0-9]*$/", $this->max)))
+			if($this->isInt && (!preg_match("/^-?[0-9]*$/", $this->min) || !preg_match("/^-?[0-9]*$/", $this->max)))
 			{
 				throw new Exception ("Error with {$this->name}: the field is set as an integer, therefore min and max must both be integers");
 			}
 			
-			if($this->isDouble && (!preg_match("/^[0-9]*$/", $this->min) || !preg_match("/^[0-9]*$/", $this->max)))
+			if($this->isDouble && (!preg_match("/^-?[0-9]*(\.\d*)?$/", $this->min) || !preg_match("/^-?[0-9]*(\.\d*)?$/", $this->max)))
 			{
 				throw new Exception ("Error with {$this->name}: the field is set as an decimal, therefore min and max must both be decimal numbers");
 			}

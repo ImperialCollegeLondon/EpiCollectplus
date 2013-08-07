@@ -9,8 +9,18 @@ var formName = '';
 
 if(!window['console'])
 {
-    window.console = {};
-    console.debug = function(msg){};
+    window.console = {};    
+}
+if(!console.debug)
+{
+	if( console.info )
+	{
+		console.debug = console.info;
+	}
+	else
+	{
+		console.debug = function(msg){};
+	}
 }
 
 checker.oncheck = function(evt)
@@ -288,14 +298,14 @@ EpiCollect.Validators = {
     {
         var nval = Number(val);
         var obj = {};
-        
+       
         if(isNaN(nval))
         {
-        	obj = { valid : false, messages : ['value must be a number less than ' + params.max] , name : 'max', control_id : ctrl_id  };
+        	obj = { valid : false, messages : ['value must be a number less than or equal to ' + params.max] , name : 'max', control_id : ctrl_id  };
         }
-        else if(nval > params.max)
+        else if(nval > Number(params.max))
         {
-            obj = { valid : false, messages : ['value must be a number less than ' + params.max] , name : 'max', control_id : ctrl_id  };
+            obj = { valid : false, messages : ['value must be a number less than or equal to  ' + params.max] , name : 'max', control_id : ctrl_id  };
         }
         else
         {
@@ -319,11 +329,11 @@ EpiCollect.Validators = {
     	
     	if(isNaN(nval))
         {
-        	obj = { valid : false, messages : ['value must be a number greater than ' + params.max] , name : 'max', control_id : ctrl_id  };
+        	obj = { valid : false, messages : ['value must be a number greater than or equal to  ' + params.max] , name : 'max', control_id : ctrl_id  };
         }
-        else if(nval < params.min)
+        else if(nval < Number(params.min))
         {
-            obj = { valid : false, messages : ['value must be a number greater than ' + params.min] , name : 'min', control_id : ctrl_id };
+            obj = { valid : false, messages : ['value must be a number greater than or equal to  ' + params.min] , name : 'min', control_id : ctrl_id };
         }
         else
         {
@@ -1859,8 +1869,8 @@ EpiCollect.Field = function()
 		this.setTime = xml.getAttribute('settime');
 		
 		this.edit = Boolean(xml.getAttribute('edit'));
-		this.min = Number(xml.getAttribute('min'));
-		this.max = Number(xml.getAttribute('max'));
+		this.min = xml.getAttribute('min');
+		this.max = xml.getAttribute('max');
 		this.defaultValue = xml.getAttribute('default');
 		
 		this.jump = xml.getAttribute('jump');
@@ -2291,12 +2301,12 @@ EpiCollect.Field = function()
             validators.push({ name : 'regex', params : { regex : this.regex } });
         }
         
-        if( this.max )
+        if( this.max || this.max === '0' )
         {
             validators.push({ name : 'max', params : { max : this.max } });
         }
         
-        if( this.min )
+        if( this.min || this.min === '0'  )
         {
             validators.push({ name : 'min', params : { min : this.min } });
         }
@@ -2477,8 +2487,8 @@ EpiCollect.Field = function()
 		if(this.time && this.time !== "") xml = xml + " time=\"" + this.time + "\"";
 		if(this.setDate && this.setDate !== "") xml = xml + " setdate=\"" + this.setDate + "\"";
 		if(this.setTime && this.setTime !== "") xml = xml + " settime=\"" + this.setTime + "\"";
-		if(this.min) xml = xml + " min=\"" + this.min + "\"";
-		if(this.max) xml = xml + " max=\"" + this.max + "\"";
+		if(this.min || this.min === 0) xml = xml + " min=\"" + this.min.toString() + "\"";
+		if(this.max || this.max === 0) xml = xml + " max=\"" + this.max.toString() + "\"";
 		if(this.defaultValue) xml = xml + " default=\"" + this.defaultValue + "\"";
 		if(this.match) xml = xml + " match=\"" + this.match + "\"";
 		if(this.crumb) xml = xml + " crumb=\"" + this.crumb + "\"";

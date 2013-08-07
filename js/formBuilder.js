@@ -697,7 +697,7 @@ function validateControl(ctrl, _type, callback)
     			}
     		}
         }
-        if(!!ctrl.min && !!ctrl.max && Number(ctrl.min) >= Number(ctrl.max))
+        if((!!ctrl.min || ctrl.min === 0) && (!!ctrl.max|| ctrl.max === 0)  && ctrl.min >= ctrl.max)
         {
         	messages.push({ control : ctrl.id, message : "<em>Minimum</em> must be smaller than the <em>Maximum</em>" });
         }
@@ -831,7 +831,7 @@ function updateSelected(is_silent)
 	{
 		cur[(notset ? "date": "setDate")] = $("#date").val();
 	}
-	
+
 	cur.min = $('#min').val();
 	cur.max = $('#max').val();
 	cur.isinteger = !!$("#rdo_integer").prop("checked");
@@ -957,8 +957,12 @@ function updateStructure()
 	for(var i = 0; i < elements.length && form; i++)
 	{
 		var id = elements[i].id;
-		fields[id] = form.fields[id]; 
-		form.fields[id].index = i;
+		
+		if(form.fields[id])
+		{
+			fields[id] = form.fields[id]; 
+			form.fields[id].index = i;
+		}
 		
 		if(fields[id].isKey) form.key = id;
 	}
@@ -1091,6 +1095,9 @@ function setSelected(jq)
 
         $('#date').val('');
         $('#time').val('');
+        $('#min').val('');
+        $('#max').val('');
+        $('#default').val('');
 
         if(currentForm.fields[jqEle.attr("id")])
         {	
@@ -1138,8 +1145,8 @@ function setSelected(jq)
         $("#key").prop("checked", (currentControl.isKey));
         $("#rdo_decimal").prop("checked", currentControl.isdouble);
         $("#rdo_integer").prop("checked", currentControl.isinteger);
-        $("#min").val(currentControl.min ? Number(currentControl.min) : '');
-        $("#max").val(currentControl.max ? Number(currentControl.max) : '');
+        $("#min").val((currentControl.min || currentControl.min === 0) ? currentControl.min : '');
+        $("#max").val((currentControl.max || currentControl.max === 0) ? currentControl.max : '');
 
         if(currentControl.date)$("#date").val(currentControl.date);
         if(!!currentControl.setDate)
