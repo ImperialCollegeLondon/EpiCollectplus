@@ -317,7 +317,7 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 	try{
 		if(isset($db) && $db->connected && $auth && $auth->isLoggedIn())
 		{
-	
+			//TODO : remove update user unless user is local
 			//if so put the user's name and a logout option in the login section
 			if($auth->isServerManager())
 			{
