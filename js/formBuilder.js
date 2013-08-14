@@ -248,7 +248,7 @@ FormList.prototype.resetValidation = function()
  */
 FormList.prototype.addNewButton = function()
 {
-	this.div.append('<div class="formctl add" title="Add a new form">Add a form</div>');
+	this.div.append('<div class="formctl add button" title="Add a new form">Add a form</div>');
 	
 	$('.add', this.div).click(function(evt){
 		newForm();
@@ -351,8 +351,8 @@ PropertiesForm.prototype.setValuesFor = function(ctrl)
 	$('.regex input', this.div).val(ctrl.regex);
 	$('.verify input', this.div).prop('checked', ctrl.verify);
 	$('.genkey input', this.div).prop('checked', ctrl.genkey);
-	$('.numeric input[value=integer]', this.div).prop('checked', ctrl.integer);
-	$('.numeric input[value=decimal]', this.div).prop('checked', ctrl.decimal);
+	$('.numeric #rdo_integer', this.div).prop('checked', ctrl.isinteger);
+	$('.numeric #rdo_decimal', this.div).prop('checked', ctrl.isdouble);
 	$('.min input', this.div).val(ctrl.min);
 	$('.max input', this.div).val(ctrl.max);
 	
@@ -460,7 +460,13 @@ PropertiesForm.prototype.addJump = function(destination, condition)
 {
 	var panel = $("#jumps", this.div);
 	
-	var sta = '<div class="jumpoption"><label>Jump when </label><select name="jumpType"><option value="">value is</option><option value="!">value is not</option><option value="NULL">field is blank</option><option value="ALL">always</option></select>';
+	if( ($('.selectOption', this.div).length + 1) <= $('.jumpoption', this.div).length )
+	{
+		EpiCollect.dialog({ content : 'You cannot have more jumps than options.' });
+		return;
+	}
+	
+	var sta = '<div class="jumpoption"><label>Jump when </label><select class="jumpType"><option value="">value is</option><option value="!">value is not</option><option value="NULL">field is blank</option><option value="ALL">always</option></select>';
 	
 	if(currentControl.type === 'input')
 	{
@@ -473,14 +479,14 @@ PropertiesForm.prototype.addJump = function(destination, condition)
 	
 	updateJumps();
 	
-	if(condition.match(/^!\d+$/))
+	if(condition.match(/^![0-9]+$/))
 	{
-		$('#jumps .jumpoption:last-child  .jumpType').val('!');
-		$('#jumps .jumpoption:last-child  .jumpvalues').val(condition.subtr(1));
+		$('#jumps .jumpoption:last-child .jumpType').val('!');
+		$('#jumps .jumpoption:last-child .jumpvalues').val(condition.substr(1));
 	}
 	else if(condition.match(/^all$/i))
 	{
-		$('#jumps .jumpoption:last-child t .jumpType').val('ALL');
+		$('#jumps .jumpoption:last-child .jumpType').val('ALL');
 	}
 	else if(condition.match(/^null$/i))
 	{
@@ -1045,6 +1051,51 @@ function validateControl(ctrl, _type, callback)
 	
 	//Validate Jumps?
 	
+	if(ctrl.jump && ctrl.jump !== '')
+	{
+		var jump_def = ctrl.jump.split(',');
+		
+		for( var i = 0; i < jump_def.length; i+=2)
+		{
+			var opt_len = ctrl.options.length;
+			var conditional = jump_def[i+1].replace(/!/, '');
+			//check that the condition is either between 1 and the number of options inclusive, the same with an exclamation mark
+
+			if(conditional !== 'ALL' && conditional !== 'NULL')//instant pass
+			{
+				var n = Number(conditional);
+				if(isNaN(n) || n < 1 || n > opt_len) messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> Jump condition is not valid, please make sure you have set the value the jump works on to a valid option' });
+			}
+			
+			//check the destination is at least one question after the jump
+			var des = jump_def[i];
+
+			if(des !== 'END')
+			{
+				if(des === '')
+				{
+					messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> Jump has no destination.' });
+				}
+				else
+				{
+		
+					var c_idx = ctrl.index;
+					var j_idx = ctrl.form.fields[des].index;
+					
+					if(j_idx < c_idx)
+					{
+						messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> Jump destination is earlier in the form then the field the jump is set on. You cannot jump backwards.' });
+					}
+					else if(j_idx == (c_idx + 1))
+					{
+						errorList.addWarning({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> the jump destination is the next question, the jump is redundant' });
+					}
+				}
+			}
+		}
+	}
+	
+	
 	// All that's left is to validate the default, to do this we need to store the current message array
 	// If we hit errors 
 	var df_val = ctrl.defaultValue;
@@ -1194,7 +1245,7 @@ function updateSelected(is_silent)
 	
 	for(var i = jn; i--;)
 	{
-		var jumpType = $('[name=jumpType]', jumpCtrls[i]).val();
+		var jumpType = $('.jumpType', jumpCtrls[i]).val();
 		var jval = (jumpType.length > 1 ? jumpType :  jumpType + (Number($(".jumpvalues", jumpCtrls[i]).val())));
 		
 		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + jval + (jump === "" ? "" : "," + jump);
@@ -1242,10 +1293,7 @@ function updateSelected(is_silent)
   
     if(!is_silent)
     {
-        //if(dirty) $('#' + cfrm.name).addClass('unsaved');
-        $('#destination .selected').removeClass('editing');
-        //$('.editmarker').hide();
-        $('#details').hide();
+    	unselect();
     }
     else
     {
@@ -1375,7 +1423,7 @@ function updateJumps()
              if(vals.length > idx) jq.val(vals[idx]);
         });
         
-        $('[name=jumpType] option[value=NULL]').toggle(!$('#required').prop('checked'));
+        $('.jumpType option[value=NULL]').toggle(!$('#required').prop('checked'));
         
 	}catch(err)
 	{
@@ -1672,14 +1720,21 @@ function removeSelected()
 	delete currentForm.fields[jq.prop("id")];
 	jq.remove();
 	
-	$("[allow]").hide();
-	$(".last input[type=text]").val("");
-	$(".last input[type=checkbox]").prop("checked", false);
-	$(".last").hide();
+
+	unselect();
 	
 	//TODO : Neaten? MAybe have validate project attached to a "changed" event on the form?
 	validateProject();
 	if( formList.forms.length==0 ){ newForm("You have deleted all of your forms, please choose a name for your new first form."); }
+}
+
+
+function unselect()
+{
+	propertiesForm.reset();
+	propertiesForm.hide();
+	
+	$('#destination .ecplus-form-element').removeClass("selected");
 }
 
 function renameForm(name)
@@ -1720,8 +1775,9 @@ function renameForm(name)
 function switchToBranch()
 {
 	//var ctrlname = $('destination .selected').attr('id')
-	$('.form').removeClass("selected");
+	
 	updateSelected();
+	unselect();
 	
 	var frm = currentControl.connectedForm;
 	//var par_frm = currentForm.name;

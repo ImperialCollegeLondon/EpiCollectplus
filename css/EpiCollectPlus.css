@@ -753,7 +753,7 @@ tr.alt
 	color: #444444;
 	display : inline-block;
 	font-size : 10pt;
-	margin : 0.25em 0.25em 0.25em 0.25em;
+	margin :2px;
 	padding : 0.25em 1.5em 0.25em 1.5em;
 	text-align : center;
 }
@@ -762,8 +762,8 @@ tr.alt
 {
 	color: #000000;
 	text-decoration : none;
-	border-color:black;
-	background-color: #DDDDDD;
+	border: 2px solid black;
+	margin : 0px;
 }
 
 .button.danger, .ui-widget-content.danger, .ui-button.danger
