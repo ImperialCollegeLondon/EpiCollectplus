@@ -1068,7 +1068,7 @@ function siteTest()
 
 function getClusterMarker()
 {
-	include '/utils/markers.php';
+	include './utils/markers.php';
 	$colours = getValIfExists($_GET, "colours");
 	$counts = getValIfExists($_GET, "counts");
 	

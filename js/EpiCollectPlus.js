@@ -859,6 +859,7 @@ EpiCollect.Project = function()
 	{
 		
         var name = newName ? newName : field.id; 
+ 
         if(name === "") return 'The field ID cannot be blank';
 		if(form.fields[field.id] && form.fields[name].index != field.index)
 		{

@@ -574,11 +574,18 @@ $(function()
 			else
 			{
 				var jq = $('#destination .end').remove();
-				$('#destination').append(jq[0]);
+				var new_jq = $(ui.item);
+				
+				if(!new_jq.prop('id'))
+				{
+					new_jq.prop('id', genID());
+				}
+				
 				dirty = true;
-                setSelected($(ui.item));
+				setSelected(new_jq);
                 updateStructure();
                 updateJumps();
+                
 			}
 		}
 	});
@@ -780,7 +787,7 @@ function addFormToList(name)
  * @param text the text for the element
  * @param type the css class of the template in the left bar
  */
-function addControlToForm(id, text, type)
+function addControlToForm(id, text, type, _jq)
 {
 	if(type.trimChars() === "") return; 
 
@@ -790,7 +797,11 @@ function addControlToForm(id, text, type)
 	}
 	
 	if( type[0] !== "." ) type = "." + type;
-	var jq = $(type, $(".first")).clone();
+	var jq
+	if(!_jq)
+		jq= $(type, $(".first")).clone();
+	else
+		jq = _jq;
 	
 	
 	$("p.title", jq).text(text.decodeXML());
@@ -808,7 +819,7 @@ function addControlToForm(id, text, type)
 		}
 	}
 	
-	$( "#destination" ).append(jq);
+	if(!_jq) $( "#destination" ).append(jq);
 }
 
 function addOption()
@@ -1047,6 +1058,16 @@ function validateControl(ctrl, _type, callback)
         {
         	messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "<em>Minimum</em> must be smaller than the <em>Maximum</em>" });
         }
+	}
+	
+	if(_type && _type.match(/^select1?|radio$/))
+	{
+		if(ctrl.options.lenghth == 0){ messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "Multiple choice question does not have any options" }); }
+		for (var  i = 0 ; i < ctrl.options.length; i++ )
+		{
+			if(ctrl.options[i].label == '') messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "Option "+i+" does not have a label" });
+			if(ctrl.options[i].value == '') messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "Option "+i+" does not have a value" });
+		}
 	}
 	
 	//Validate Jumps?
@@ -1471,13 +1492,16 @@ function setSelected(jq)
             //$(".last input[type=checkbox]").prop("checked", false);
         }
 
-        if(currentForm.fields[jqEle.attr("id")])
+        if(currentForm.fields[jqEle.prop("id")])
         {	
-            currentControl =  currentForm.fields[jqEle.attr("id")];
-        }
+            currentControl =  currentForm.fields[jqEle.prop("id")];
+        } 
         else
         {
             currentControl = new EpiCollect.Field(currentForm);
+            currentControl.form = currentForm;
+            currentControl.id = jqEle.prop("id");
+            currentForm.fields[jqEle.prop("id")] = currentControl;
         }
         
         $("#destination .ecplus-form-element").removeClass("selected");
@@ -1485,193 +1509,11 @@ function setSelected(jq)
         
         propertiesForm.show();
         
-//        $("#parent").val("");
-        
-//        
-//
-//        //updateEditMarker();
-//
-//        $('#date').val('');
-//        $('#time').val('');
-//        $('#min').val('');
-//        $('#max').val('');
-//        $('#default').val('');
-//
-//       
-//
-//        var type = jqEle.attr("type");
-//
-//        $("[allow]").hide();
-//        $("[notfor]").show();
-//
-//        $("[allow*=" + type + "]").show();
-//        $("[notfor*=" + type + "]").hide();
-//
-//
-//        if(currentControl.isKey)
-//        {
-//        	$("[allow*=key]").show();
-//            $("[notfor*=key]").hide();
-//            
-//            $('#inputId').prop('disabled', true);
-//            $('.removeControl').hide();
-//        }
-//        else
-//        {
-//        	$('#inputId').prop('disabled', false);
-//        	$('.removeControl').show();
-//        }
-//
-//        if(currentControl.genkey)
-//        {
-//                $("[allow*=gen]").show();
-//                $("[notfor*=gen]").hide();
-//        }
-//
-//        $('#inputLabel').val(currentControl.text);
-//        
-//        if(currentControl.id && currentControl.id !== '')
-//        {
-//                $('#inputId').val(currentControl.id);
-//        }
-//        else
-//        {
-//                $('#inputId').val(genID);
-//        }
-//        
-//        $("#required").prop("checked", (currentControl.required));
-//        $("#title").prop("checked", (currentControl.title));
-//        $("#key").prop("checked", (currentControl.isKey));
-//        $("#rdo_decimal").prop("checked", currentControl.isdouble);
-//        $("#rdo_integer").prop("checked", currentControl.isinteger);
-//        $("#min").val((currentControl.min || currentControl.min === 0) ? currentControl.min : '');
-//        $("#max").val((currentControl.max || currentControl.max === 0) ? currentControl.max : '');
-//
-//        if(currentControl.date)$("#date").val(currentControl.date);
-//        if(!!currentControl.setDate)
-//        {
-//            $("#date").val(currentControl.setDate);
-//            $("#set").prop("checked", true);
-//        }
-//        else
-//        {
-//            $("#set").prop("checked", false);
-//        }
-//
-//        if(currentControl.time) $("#time").val(currentControl.time);
-//        if(currentControl.setTime)
-//        {
-//            $("#time").val(currentControl.setTime);
-//            $("#set").prop("checked", true);
-//        }
-//        else
-//        {
-//            if(!currentControl.setDate) $("#set").prop("checked", false);
-//        }
-//
-//        $("#default").val(currentControl.defaultValue);
-//        $("#regex").val(currentControl.regex);
-//        $("#verify").prop("checked", currentControl.verify);
-//        $("#hidden").prop("checked", currentControl.hidden );
-//        $("#genkey").prop("checked", currentControl.genkey );
-//        $("#search").prop("checked", currentControl.search );
-//
-//        var opts = currentControl.options;
-//        var nOpts = currentControl.options.length;
-//
-//        $(".selectOption").remove();
-//
-//        while($(".selectOption").length < nOpts) addOption();
-//
-//        var optEles = $(".selectOption");
-//        for(var i = nOpts; i--;)
-//        {
-//            $("input[name=optLabel]", optEles[i]).val(opts[i].label);
-//            $("input[name=optValue]", optEles[i]).val(opts[i].value);
-//        }
-//
-//        var forms = project.forms;
-//
-//        if(jqEle.attr("type") === "fk")
-//        {	
-//            for(f in forms)
-//            {
-//                if(jqEle.prop("id") === forms[f].key){
-//                    $("#parent").val(f);
-//                }
-//            }
-//        }
-//
-//        $(".jumpoption").remove();
-//
-//        if(currentControl.jump)
-//        {
-//            var jumps =  currentControl.jump.split(",");
-//            var nJumps = jumps.length / 2;
-//
-//            while($(".jumpoption").length < nJumps) addJump();
-//
-//            updateJumps();
-//            
-//            $('.accoridan').accordion("refresh");
-//            $('.accoridan').accordion("option", "active", 0);
-//            $('.accoridan').accordion("option", "active", false);
-//            
-//            var jumpCtrls = $(".jumpoption");
-//            var n = jumps.length;
-//
-//            for( var i = 0; i < n; i += 2 )
-//            {
-//                if(jumps[i+1] === "NULL")
-//                {
-//                    $("[name=jumpType]", jumpCtrls[i/2]).val('NULL');
-//                    $(".jumpvalues", jumpCtrls[i/2]).val('');
-//                }
-//                else if(jumps[i+1] === "ALL")
-//                {
-//                    $("[name=jumpType]", jumpCtrls[i/2]).val('ALL');
-//                    $(".jumpvalues", jumpCtrls[i/2]).val('');
-//                }
-//                else if(jumps[i+1][0] === "!")
-//                {
-//                    $("[name=jumpType]", jumpCtrls[i/2]).val('!');
-//                    $(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1].substr(1));
-//                }
-//                else
-//                {
-//                    $("[name=jumpType]", jumpCtrls[i/2]).val('');
-//                    $(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1]);
-//                }
-//                $(".jumpdestination", jumpCtrls[i/2]).val(jumps[i]);
-//            }
-//
-//        }
-        
     }
     else
     {
     	throw "div is not a form Element!";
     }
-
-//    if(currentControl){ $(".last").show();}
-//    else {$(".last").hide();}
-//
-//    //set default as integer
-//    if(type === 'numeric' && !($('#rdo_integer').prop('checked') || $('#rdo_decimal').prop('checked')))
-//    {
-//           $('#rdo_integer').prop('checked', 'checked');
-//    }
-//
-//    if( currentControl.id === project.getPrevForm(currentForm.name).key || currentControl.isKey)
-//    {
-//            $(".removeControl").hide();
-//            $("#fkPanel").hide();	
-//    }
-//    else
-//    {
-//            $(".removeControl").show();
-//    }
-//    $('#jumps').css("display", "");
 }
 
 function previewForm(name)
