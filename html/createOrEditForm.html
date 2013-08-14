@@ -409,6 +409,11 @@
 	    <div id="details" class="column last">
 	        <h3 class="title">Field Properties</h3>	
 	       		<form id="props" autocomplete="off">
+	       			<div class="fk ctrl">
+	       				<p>
+	       					Most properties of a foreign key field are not editable.
+	       				</p>
+	       			</div>
 			   		<div class="label ctrl" notfor="fk">
 				        	<label for="inputLabel">
 				        		Label
@@ -463,9 +468,9 @@
 						</div>
 					    <h3><a href="#">Advanced</a></h3>
 	      				<div>
-						    <div id="fkPanel" class="fk ctrl" allow="fk">
+						   <!--  - <div id="fkPanel" class="fk ctrl" allow="fk">
 						    	<label for="parent">Use key from </label><select id="parent" name="parent"></select>
-						    </div>
+						    </div>-->
 						    <div id="branchButton" allow="branch" class="branch ctrl">
 						    	<a href="javascript:switchToBranch();" class="button">Edit branch form</a>
 						    </div>

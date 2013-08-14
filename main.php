@@ -10,7 +10,7 @@ $SITE_ROOT = '';
 $PUBLIC = false;
 $XML_VERSION = 1.0;
 $CODE_VERSION = "1.5";
-$BUILD = "17";
+$BUILD = "18";
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
@@ -64,8 +64,6 @@ $url = urldecode($url);
 include (sprintf('%s/Classes/PageSettings.php', $DIR));
 include (sprintf('%s/Classes/configManager.php', $DIR));
 include (sprintf('%s/Classes/Logger.php', $DIR));
-
-
 /*
  * Ec Class declatratioions
  */
@@ -319,13 +317,16 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array())
 		{
 			//TODO : remove update user unless user is local
 			//if so put the user's name and a logout option in the login section
+			$type = $auth->getProviderType();
+			
+			
 			if($auth->isServerManager())
 			{
-				$template = str_replace('{#loggedIn#}', 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ')  <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | <a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
+				$template = str_replace('{#loggedIn#}', 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() .  ')  <a href="{#SITE_ROOT#}/logout">Sign out</a> | ' . ($type=='LOCAL' ? '<a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | ' : '' ) . '<a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
 			}
 			else
 			{
-				$template = str_replace('{#loggedIn#}', sprintf('Logged in as %s (%s) <a href="{#SITE_ROOT#}/logout">Sign out</a> | <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>', $auth->getUserNickname(), $auth->getUserEmail()), $template);
+				$template = str_replace('{#loggedIn#}', sprintf('Logged in as %s (%s) <a href="{#SITE_ROOT#}/logout">Sign out</a> ' . ($type=='LOCAL' ? '| <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>' : ''), $auth->getUserNickname(), $auth->getUserEmail()), $template);
 			}
 			$templateVars['userEmail'] = $auth->getUserEmail();
 		}

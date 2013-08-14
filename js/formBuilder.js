@@ -272,7 +272,8 @@ function PropertiesForm(div_id)
 		"video" : ["label", "id", "required"],// Quality/format settings?
 		"audio" : ["label", "id", "required"], // Quality/format settings?
 		"barcode" : ["label", "id", "required", "title", "key", "searchable", "default", "regex", "verify"],
-		"branch" : ["label", "id", "branch"]
+		"branch" : ["label", "id", "branch"],
+		"fk" : ["fk", "hidden"]
 	};
 	
 	this.div = $('#' + div_id);
