@@ -259,21 +259,21 @@ FormList.prototype.addNewButton = function()
 function PropertiesForm(div_id)
 {
 	this.settings = {
-		"text" : ["label", "id", "required", "title", "key", "searchable", "default", "regex", "verify"],
-		"numeric" : ["label", "id", "required", "title", "key", "default", "regex", "verify", "numeric", "min", "max"],
-		"date" : ["label", "id", "required", "title", "verify", "date", "set"],
-		"time" : ["label", "id", "required", "title", "verify", "time", "set"],
-		"select1" : ["label", "id", "required", "title", "options", "jumps", "default"],
-		"radio" : ["label", "id", "required", "title", "options", "jumps", "default"],
-		"select" : ["label", "id", "required", "title", "options", "jumps", "default"],
-		"textarea" : ["label", "id", "required", "title", "key", "searchable", "default", "regex", "verify"],
-		"location" : ["label", "id", "required"],
-		"photo" : ["label", "id", "required"],
-		"video" : ["label", "id", "required"],// Quality/format settings?
-		"audio" : ["label", "id", "required"], // Quality/format settings?
-		"barcode" : ["label", "id", "required", "title", "key", "searchable", "default", "regex", "verify"],
-		"branch" : ["label", "id", "branch"],
-		"fk" : ["fk", "hidden"]
+		"text" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "searchable" : "", "default" : "", "regex" : "", "verify" : ""},
+		"numeric" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "default" : "", "regex" : "", "verify" : "", "integer" : true, "decimal" : "",  "min" : "", "max" : ""},
+		"date" : {"label" : "", "id" : "", "required" : "", "title" : "", "verify" : "", "date" : "", "set" : ""},
+		"time" : {"label" : "", "id" : "", "required" : "", "title" : "", "verify" : "", "time" : "", "set" : ""},
+		"select1" : {"label" : "", "id" : "", "required" : "", "title" : "", "options" : "", "jumps" : "", "default" : ""},
+		"radio" : {"label" : "", "id" : "", "required" : "", "title" : "", "options" : "", "jumps" : "", "default" : ""},
+		"select" : {"label" : "", "id" : "", "required" : "", "title" : "", "options" : "", "jumps" : "", "default" : ""},
+		"textarea" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "searchable" : "", "default" : "", "regex" : "", "verify" : ""},
+		"location" : {"label" : "", "id" : "", "required" : ""},
+		"photo" : {"label" : "", "id" : "", "required" : ""},
+		"video" : {"label" : "", "id" : "", "required" : ""},// Quality/format settings?
+		"audio" : {"label" : "", "id" : "", "required" : ""}, // Quality/format settings?
+		"barcode" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "searchable" : "", "default" : "", "regex" : "", "verify" : ""},
+		"branch" : {"label" : "", "id" : "", "branch" : ""},
+		"fk" : {"fk" : "", "hidden" : ""}
 	};
 	
 	this.div = $('#' + div_id);
@@ -330,13 +330,17 @@ PropertiesForm.prototype.setForCtrl = function(ctrl)
 	
 	var show_ctls = this.settings[_type];
 	
-	var show_ctrls_str = '.ctrl.' + show_ctls.join(', .ctrl.');
-	
-	$(show_ctrls_str).show();
+	for( var ctl in show_ctls)
+	{
+		$('.ctrl.' + ctl).show();
+		//set to default
+
+		
+	}
 	
 	this.setValuesFor(ctrl);
 	
-	if(show_ctrls_str.match(/\s?\.ctrl\.options\s?/)) $('.accordian', this.div).accordion('option', 'active', 0);
+	if(show_ctls['options']) $('.accordian', this.div).accordion('option', 'active', 0);
 };
 
 PropertiesForm.prototype.setValuesFor = function(ctrl)
@@ -352,8 +356,8 @@ PropertiesForm.prototype.setValuesFor = function(ctrl)
 	$('.regex input', this.div).val(ctrl.regex);
 	$('.verify input', this.div).prop('checked', ctrl.verify);
 	$('.genkey input', this.div).prop('checked', ctrl.genkey);
-	$('.numeric #rdo_integer', this.div).prop('checked', ctrl.isinteger);
-	$('.numeric #rdo_decimal', this.div).prop('checked', ctrl.isdouble);
+	$('.integer input', this.div).prop('checked', ctrl.isinteger);
+	$('.decimal input', this.div).prop('checked', ctrl.isdouble);
 	$('.min input', this.div).val(ctrl.min);
 	$('.max input', this.div).val(ctrl.max);
 	
@@ -798,7 +802,7 @@ function addControlToForm(id, text, type, _jq)
 	}
 	
 	if( type[0] !== "." ) type = "." + type;
-	var jq
+	var jq;
 	if(!_jq)
 		jq= $(type, $(".first")).clone();
 	else
@@ -821,6 +825,10 @@ function addControlToForm(id, text, type, _jq)
 	}
 	
 	if(!_jq) $( "#destination" ).append(jq);
+	if(currentForm.key == id)
+	{
+		jq.addClass('key');
+	}
 }
 
 function addOption()
@@ -1502,7 +1510,14 @@ function setSelected(jq)
             currentControl = new EpiCollect.Field(currentForm);
             currentControl.form = currentForm;
             currentControl.id = jqEle.prop("id");
+            if(jqEle.attr('type') == 'numeric')
+            {
+            	currentControl.isinteger = true;
+            }
+            
             currentForm.fields[jqEle.prop("id")] = currentControl;
+          
+            
         }
         
         $("#destination .ecplus-form-element").removeClass("selected");
@@ -1733,8 +1748,8 @@ function askForKey(keyDeleted)
             "<label for=\"key_no\"><b>No</b> I do not have a unique key question for this form, please generate one for me</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" />"+
 			"<label for=\"key_yes\"><b>Yes</b> I have a unique key question for this form.</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/></div>"+
 			"<div id=\"key_details\" style=\"display:none;\"><label for=\"key_type\">My key field is a </label><select id=\"key_type\" name=\"key_type\"><option value=\"text\">Text Field</option><option value=\"numeric\">Integer Field</option><option value=\"barcode\">Barcode Field</option></select><p id=\"key_type_err\" class=\"validation-msg\"></p>" + 
-            "<label for=\"key_label\">Label for the key field (the question a user is asked e.g. what colour are your eyes?)</label><input id=\"key_label\" name=\"key_label\" /><p id=\"key_label_err\" class=\"validation-msg\"></p>"+
-            "<label for=\"key_name\">ID for the key field (a name used to identify the question. e.g. colour)</label><input id=\"key_name\" name=\"key_name\" /><p id=\"key_name_err\" class=\"validation-msg\"></p>"+
+            "<label for=\"key_label\">Label for the key field (the question a user is asked e.g. what is your name?)</label><input id=\"key_label\" name=\"key_label\" /><p id=\"key_label_err\" class=\"validation-msg\"></p>"+
+            "<label for=\"key_name\">ID for the key field (a name used to identify the question. e.g. name)</label><input id=\"key_name\" name=\"key_name\" /><p id=\"key_name_err\" class=\"validation-msg\"></p>"+
 			"</div></form>" :"<form><div id=\"key_radios\" class=\"toggle choice\">"+ 
             "<label for=\"key_change\">I want to make another<br /> field the key<br />&nbsp;</label><input type=\"radio\" id=\"key_change\" name=\"key\" value = \"change\"/><label for=\"key_yes\"><b>Yes</b> I have a unique key question for this form.</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/>"+
 			"<label for=\"key_no\"><b>No</b> I do not have a unique key question for this form, please generate one for me</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" /></div>"+  

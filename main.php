@@ -803,7 +803,9 @@ function projectHome()
                     }
 
                     $imgName = $prj->image ? $prj->image : "images/projectPlaceholder.png";
-
+					
+                    
+                    
                     if( file_exists($imgName) )
                     {
                             $imgSize = getimagesize($imgName);

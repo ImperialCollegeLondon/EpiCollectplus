@@ -16,13 +16,18 @@
 				border : 1px solid #333333;
 			}*/
 			
+			#formList_wrapper
+			{
+				overflow-x : auto;
+				overflow-y : hidden;
+			}
+			
 			#formList
 			{
 				display : block;
 				height : 10em;
 				margin-right : 12em;
-				overflow-x : auto;
-				overflow-y : hidden;
+				
 			}
 			
 			#formList .form
@@ -304,6 +309,7 @@
 				margin : -0.5em -0.5em 0.5em -0.5em;
 			}
 			
+			
 		</style>
 {{/style}}
 {{script}}				
@@ -326,11 +332,11 @@
 			Error list
 		</div>
 		<div><a id="btn_save" href="javascript:saveProject()" class="button">Save Project</a></div>
-		
-		<div id="formList">
-
+		<div id="formList_wrapper">
+			<div id="formList">
+	
+			</div>
 		</div>
-		
 	</div>
 	<div class="ecplus-columns">
 		<div id="source" class="column first">
@@ -402,7 +408,7 @@
       		</div>
     	</div> <!--source-->
 	    <div id="middle" class="column second">
-	   		<h3>Drag elements from the red column on the left into this column</h3>
+	   		<h3>Form : <span class="sub">Drag fields from the column on the left into this column</span></h3>
 	        <div class="ui-sortable" id="destination"><div class="end">&nbsp;</div></div>
 
 	    </div>
@@ -475,16 +481,18 @@
 						    	<a href="javascript:switchToBranch();" class="button">Edit branch form</a>
 						    </div>
 
-						    <div id="keyCtrl" allow="text,numeric,barcode" class="key ctrl">
-						           	<label for="key">Key</label> 
-						           	<input type="checkbox" id="key" name="key" value="true" disabled="disabled" />
+						   <div id="keyCtrl" allow="text,numeric,barcode" class="key ctrl hidden">
+						           	<!--  <label for="key">Key</label> --> 
+						           	<input type="hidden" id="key" name="key" value="true" disabled="disabled" />
 						    </div>
 						    <div allow="text,numeric,select1,radio,barcode" class="search ctrl">
 						        	<label>Searchable</label> 
 						        	<input type="checkbox" id="search" name="search" value="true" />
 						    </div>
-						    <div allow="numeric" class="numeric ctrl">
+						    <div class="decimal ctrl">
 						        	<input type="radio" id="rdo_decimal" name="numeric" value="decimal" /><label for="numeric">Decimal</label> <br/>
+						     </div>
+						      <div class="integer ctrl">
 						        	<input type="radio" id="rdo_integer" name="numeric" value="integer" /><label for="numeric">Integer</label> <br/>
 						    </div>
 						    <div class="min ctrl">

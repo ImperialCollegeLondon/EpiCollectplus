@@ -92,7 +92,9 @@
 			var img = $('img', doc);
 			if(img.length > 0)
 			{
-				$('input[name=projectImage]').val(img.attr('src').replace('~tn', ''));
+				var str_img_name = img.attr('src').replace('~tn', '');
+				str_img_name = str_img_name.substr(str_img_name.indexOf('ec/'));
+				$('input[name=projectImage]').val(str_img_name);
 			}
 			else
 			{

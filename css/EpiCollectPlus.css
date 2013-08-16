@@ -38,6 +38,11 @@ h3
     line-height : 18px;
 }
 
+h3 .sub
+{
+	font-weight : normal;
+}
+
 h4
 {
     padding-bottom: 2px;
@@ -650,11 +655,17 @@ tr.alt
 	float:right;
 	color : #888;
 	content : "ID: " attr(id);
+	height:3em;
 }
 
 .second div.selected.ecplus-form-element:before
 {
 	color : #000;
+}
+
+.second .key.ecplus-form-element:before
+{
+	background : url("../images/glyphicons/glyphicons_044_keys.png") bottom right no-repeat;		
 }
 
 .ecplus-form-element
