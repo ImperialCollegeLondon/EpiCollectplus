@@ -5,9 +5,9 @@ var dirty = false;
 
 /**
  * A widget to display Errors and warnings
+ * @constructor
+ * @param id {String} The id of the element containing the error List
  * 
- * @param id The id of the element containing the error List
- * @returns
  */
 function ErrorList(id)
 {
@@ -18,7 +18,7 @@ function ErrorList(id)
 	
 	this.div.empty();
 	
-	this.div.append('<h3>Form Errors</h3><div class="body"></div><div class="footer"><span class="index"></span> of <span class="total"></span><a class="next">next</a><a class="prev">previous</a></div>');
+	this.div.append('<h3>Project Validation</h3><div class="body"></div><div class="footer"><span class="index"></span> of <span class="total"></span><a class="next">next</a><a class="prev">previous</a></div>');
 	
 	$('.next', this.div).bind('click',{ctx : this}, function(evt){
 		evt.data.ctx.next();
@@ -31,6 +31,10 @@ function ErrorList(id)
 	this.reset();
 }
 
+/**
+ * Add an error to the list
+ * @param error {Object} A dictionary containing the error Message, the form name and the control name
+ */
 ErrorList.prototype.addError = function(error){
 	this.errors.push(error);
 	
@@ -39,6 +43,10 @@ ErrorList.prototype.addError = function(error){
 	
 };
 
+/**
+ * Add a warning to the list
+ * @param warning {Object} A dictionary containing the warning Message, the form name and the control name
+ */
 ErrorList.prototype.addWarning = function(warning){
 	this.warnings.push(warning);
 	
@@ -59,6 +67,9 @@ ErrorList.prototype.addErrors = function(errors){
 	}
 };
 
+/**
+ * Update the total and either move to the first error or show the no error message
+ */
 ErrorList.prototype.setTotal = function()
 {
 	this.total = this.errors.length + this.warnings.length;
@@ -75,6 +86,11 @@ ErrorList.prototype.setTotal = function()
 	}
 };
 
+/**
+ * Show the error at idx. If idx is greater than the number of errors show the warning at (idx - errors.length)
+ * 
+ * @param idx
+ */
 ErrorList.prototype.showError = function(idx)
 {
 	var err = {};
@@ -93,25 +109,31 @@ ErrorList.prototype.showError = function(idx)
 		}
 		else
 		{
-			err = this.warnings[idx % this.errors.length];
+			err = this.warnings[idx - this.errors.length];
 		}
 		
 		cls = 'warning';
 	}
 	
-	$('.body', this.div).html('<h4>Component : ' + err.control + '</h4><p>' + err.message + '</p>');
+	$('.body', this.div).html('<h4>Form : ' + err.form + ', Component : ' + err.control + '</h4><p>' + err.message + '</p>');
 	$('.body', this.div).removeClass('error').removeClass('warning').addClass(cls);
 	
 	this.index = idx;
 	$('.index', this.div).text(idx + 1);
 };
 
+/**
+ * Display the no errors message
+ */
 ErrorList.prototype.noErrors = function()
 {
 	//show message saying there are no error and a save and preview button
-	$('.body', this.div).html('<h4>Form Valid</h4><p>This form has no errors.</p>');
+	$('.body', this.div).html('<h4>Project Valid</h4><p>This project has no errors.</p>');
 };
 
+/**
+ * remove all errors and warnings ready for the next validation run
+ */
 ErrorList.prototype.reset = function()
 {
 	this.errors = [];
@@ -122,6 +144,9 @@ ErrorList.prototype.reset = function()
 	this.setTotal();
 };
 
+/**
+ * show the next error if there are more to show
+ */
 ErrorList.prototype.next = function()
 {
 	if( this.index < (this.total - 1))
@@ -130,6 +155,9 @@ ErrorList.prototype.next = function()
 	}
 };
 
+/**
+ * Show the previous error
+ */
 ErrorList.prototype.previous = function()
 {
 	if( this.index > 0)
@@ -137,8 +165,375 @@ ErrorList.prototype.previous = function()
 		this.showError(this.index - 1);
 	}
 };
+//END OF ERROR LIST
+
+/**
+ * 
+ * FormList : Displays the list of forms and which one is currently display
+ */
+function FormList(div_id)
+{
+    this.forms = [];
+	
+	this.div = $('#' + div_id);
+	
+	this.div.empty();
+	
+	this.addNewButton();
+}
+
+/**
+ * Draw the div for the form.
+ * @param formName The name of the form
+ */
+FormList.prototype.drawForm = function(formName)
+{
+	$('.form', this.div).removeClass('last');
+	
+	$('.add', this.div).before('<span id="' + formName + '" class="form last">'+formName+'<div class="ctls"><span class="formctl preview" title="Preview form">&nbsp;</span>' +
+			'<span class="formctl rename" title="Rename form">R</span><span class="formctl delete" title="Delete Form">&nbsp;</span></div></span>');
+	
+	var fl = this;
+	
+	$('#' + formName, this.div).bind('click', function(evt){
+		fl.setSelected(this.id);
+	});
+	
+	$('#' + formName + ' .preview', this.div).bind('click', function(evt){
+		previewForm($(this).parents('.form').prop('id'));
+	});
+	
+	$('#' + formName + ' .delete', this.div).bind('click', function(evt){
+		removeForm($(this).parents('.form').prop('id'));
+	});
+	
+	$('#' + formName + ' .rename', this.div).bind('click', function(evt){
+		renameForm($(this).parents('.form').prop('id'));
+	});
+	
+};
+
+
+FormList.prototype.addForm = function(formName)
+{
+	this.forms.push(formName);
+	this.drawForm(formName);
+};
+
+FormList.prototype.setSelected = function(formName)
+{
+	$('.form', this.div).removeClass('selected');
+	$('#' + formName, this.div).addClass('selected');
+	switchToForm(formName);
+};
+
+FormList.prototype.setError = function(formName)
+{
+	$('#' + formName, this.div).addClass('error');
+};
+
+FormList.prototype.setWarning = function(formName)
+{
+	$('#' + formName, this.div).addClass('warning');
+};
+
+FormList.prototype.resetValidation = function()
+{
+	$('.form', this.div).removeClass('warning')
+		.removeClass('error');
+};
+
+/**
+ * draw the "Add Form Button"
+ */
+FormList.prototype.addNewButton = function()
+{
+	this.div.append('<div class="formctl add button" title="Add a new form">Add a form</div>');
+	
+	$('.add', this.div).click(function(evt){
+		newForm();
+	});
+};
+// END FORMLIST
+
+function PropertiesForm(div_id)
+{
+	this.settings = {
+		"text" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "searchable" : "", "default" : "", "regex" : "", "verify" : ""},
+		"numeric" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "default" : "", "regex" : "", "verify" : "", "integer" : true, "decimal" : "",  "min" : "", "max" : ""},
+		"date" : {"label" : "", "id" : "", "required" : "", "title" : "", "verify" : "", "date" : "", "set" : ""},
+		"time" : {"label" : "", "id" : "", "required" : "", "title" : "", "verify" : "", "time" : "", "set" : ""},
+		"select1" : {"label" : "", "id" : "", "required" : "", "title" : "", "options" : "", "jumps" : "", "default" : ""},
+		"radio" : {"label" : "", "id" : "", "required" : "", "title" : "", "options" : "", "jumps" : "", "default" : ""},
+		"select" : {"label" : "", "id" : "", "required" : "", "title" : "", "options" : "", "jumps" : "", "default" : ""},
+		"textarea" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "searchable" : "", "default" : "", "regex" : "", "verify" : ""},
+		"location" : {"label" : "", "id" : "", "required" : ""},
+		"photo" : {"label" : "", "id" : "", "required" : ""},
+		"video" : {"label" : "", "id" : "", "required" : ""},// Quality/format settings?
+		"audio" : {"label" : "", "id" : "", "required" : ""}, // Quality/format settings?
+		"barcode" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "searchable" : "", "default" : "", "regex" : "", "verify" : ""},
+		"branch" : {"label" : "", "id" : "", "branch" : ""},
+		"fk" : {"fk" : "", "hidden" : ""}
+	};
+	
+	this.div = $('#' + div_id);
+
+	
+	$('#addOption', this.div).click({ ctx : this }, function(evt){
+		evt.data.ctx.addOption();
+	});
+	
+	$('#addJump', this.div).click({ ctx : this }, function(evt){
+		evt.data.ctx.addJump();
+	});
+}
+
+/**
+ * Show the options for a field that is a key field
+ */
+PropertiesForm.prototype.setForKey = function()
+{
+	//show genkey
+	$('.genkey', this.div).show();
+	
+	//disable Id
+	$('.id input', this.div).prop('disabled', true);
+	
+	//check required and disable
+	$('.required input, .key input').prop('checked', true).prop('disabled', true);
+};
+
+/**
+ * Show the options for a field that is a foreign key field
+ */
+PropertiesForm.prototype.setForForeignKey = function()
+{
+	//disable ID
+	$('.id input', this.div).prop('disabled', true);
+	
+	//check required and disable
+	$('.required input').prop('checked', true).prop('disabled', true);
+};
+
+/**
+ * Show the options for a controls
+ * @param ctrl {EpiCollect.Field} The control being edited
+ */
+PropertiesForm.prototype.setForCtrl = function(ctrl)
+{
+	//get control type
+	var _type = $('#destination #' + ctrl.id).attr('type');
+	this.reset();
+	
+	//show relevant controls, hide others
+	$('.ctrl', this.div).hide();
+	
+	var show_ctls = this.settings[_type];
+	
+	for( var ctl in show_ctls)
+	{
+		$('.ctrl.' + ctl).show();
+		//set to default
+
+		
+	}
+	
+	this.setValuesFor(ctrl);
+	
+	if(show_ctls['options']) $('.accordian', this.div).accordion('option', 'active', 0);
+};
+
+PropertiesForm.prototype.setValuesFor = function(ctrl)
+{
+	$('.label input', this.div).val(ctrl.text);
+	$('.id input', this.div).val(ctrl.id);
+	$('.required input', this.div).prop('checked', ctrl.required);
+	$('.title input', this.div).prop('checked', ctrl.title);
+	$('.date select', this.div).val(ctrl.date || ctrl.setDate);
+	$('.time select', this.div).val(ctrl.time || ctrl.setTime);
+	$('.set input', this.div).prop('checked', ctrl.setDate || ctrl.setTime);
+	$('.default input', this.div).val(ctrl.defaultValue);
+	$('.regex input', this.div).val(ctrl.regex);
+	$('.verify input', this.div).prop('checked', ctrl.verify);
+	$('.genkey input', this.div).prop('checked', ctrl.genkey);
+	$('.integer input', this.div).prop('checked', ctrl.isinteger);
+	$('.decimal input', this.div).prop('checked', ctrl.isdouble);
+	$('.min input', this.div).val(ctrl.min);
+	$('.max input', this.div).val(ctrl.max);
+	
+	if(ctrl.isKey) this.setForKey();
+	
+
+	for ( var i = 0; i < ctrl.options.length; i++ )
+	{
+		this.addOption(ctrl.options[i].label, ctrl.options[i].value);
+	}
+
+	if(ctrl.jump)
+	{
+		var jump_def = ctrl.jump.split(',');
+		for ( var i = 0; i < jump_def.length; i+=2 )
+		{
+			this.addJump(jump_def[i], jump_def[i+1]);
+		}
+	}
+};
+
+PropertiesForm.prototype.reset = function()
+{
+	$('input', this.div).prop('disabled',  false);
+	$('input[type=checkbox], input[type=radio]', this.div).prop('checked', false);
+	$('input[type=text], input[type=number]').val('');
+	$('.accordian').accordion('option', 'active', false);
+	this.clearOptions();
+	this.clearJumps();
+};
+
+/**
+ * Hide the properties form
+ */
+PropertiesForm.prototype.hide = function(){
+	this.reset();
+	this.div.hide();
+};
+
+/**
+ * Hide the properties form
+ */
+PropertiesForm.prototype.show = function(){
+	this.setForCtrl(currentControl);
+	this.div.show();
+};
+
+PropertiesForm.prototype.clearOptions = function()
+{
+	$('.selectOption', this.div).remove();
+};
+
+PropertiesForm.prototype.clearJumps = function()
+{
+	$('#jumps .jumpoption', this.div).remove();
+};
+
+PropertiesForm.prototype.setHandlers = function()
+{
+	$('input, select', this.div).unbind('change').bind('change', function(){ dirty = true; });
+	
+	$("#options .removeOption", this.div).unbind('click').bind('click', this.removeOptionHandler);
+	$("#jumps .remove").unbind('click').bind('click', this.removeJumpHandler);
+	
+	$("#options input", this.div).unbind();
+	$("#options input", this.div).change(function()
+	{
+		updateSelected(true);
+		updateJumps();
+	});
+	
+	$('#inputId', this.div).bind('change', function(evt){
+    	if(currentControl)
+    	{
+    		var msg = project.validateFieldName(currentForm, currentControl, $(this).val());
+    		if(msg !== true)
+    		{
+    			EpiCollect.dialog({ content : msg });
+    			$(this).val(currentControl.id); //If the new name is not valid revert to the old one 
+    		}
+    	}
+    });
+};
+
+/**
+ * Add an options to the options pane
+ */
+PropertiesForm.prototype.addOption = function(label, value)
+{
+	if(!label) label = "";
+	if(!value) value = "";
+	
+	var panel = $('div#options', this.div);
+	panel.append('<div class="selectOption"><label title="The text displayed to the user">Label</label><input title="The text displayed to the user" name="optLabel" size="12" value="' + label + '" />'
+			+ '<label title="The value stored in the database"l>Value</label><input title="The value stored in the database" name="optValue" size="12" value="' + value + '" />'
+			+ '<a href="javascript:void(0);" title="Remove Option" class="button removeOption" >&nbsp;</a> </div>');
+
+    this.setHandlers();
+};
+
+/**
+ * Check the number of jumps and number of options and if there are still less jumps than options add another jump
+ */
+PropertiesForm.prototype.addJump = function(destination, condition)
+{
+	var panel = $("#jumps", this.div);
+	
+	if( ($('.selectOption', this.div).length + 1) <= $('.jumpoption', this.div).length )
+	{
+		EpiCollect.dialog({ content : 'You cannot have more jumps than options.' });
+		return;
+	}
+	
+	var sta = '<div class="jumpoption"><label>Jump when </label><select class="jumpType"><option value="">value is</option><option value="!">value is not</option><option value="NULL">field is blank</option><option value="ALL">always</option></select>';
+	
+	if(currentControl.type === 'input')
+	{
+		panel.append(sta + '<label>Value</label><input type="text" class="jumpvalues" /><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >&nbsp;</a></div>');
+	}
+	else
+	{
+		panel.append(sta + '<label>Value</label> <select class="jumpvalues"></select><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >&nbsp;</a></div>');
+	}
+	
+	updateJumps();
+	
+	if(condition.match(/^![0-9]+$/))
+	{
+		$('#jumps .jumpoption:last-child .jumpType').val('!');
+		$('#jumps .jumpoption:last-child .jumpvalues').val(condition.substr(1));
+	}
+	else if(condition.match(/^all$/i))
+	{
+		$('#jumps .jumpoption:last-child .jumpType').val('ALL');
+	}
+	else if(condition.match(/^null$/i))
+	{
+		$('#jumps .jumpoption:last-child  .jumpType').val('NULL');
+	}
+	else
+	{
+		$('#jumps .jumpoption:last-child .jumpType').val('');
+		$('#jumps .jumpoption:last-child .jumpvalues').val(condition);
+	}
+	
+	$('#jumps .jumpoption:last-child .jumpdestination').val(destination);
+	
+	
+	this.setHandlers();
+};
+
+/**
+ * Remove option from the options pane
+ * 
+ * @param idx {Integer} the index of the option to remove
+ */
+PropertiesForm.prototype.removeOptionHandler = function(evt)
+{
+	$(this).parents('.selectOption').remove();
+};
+
+/**
+ * Remove Jump from the Jumps Pane
+ * 
+ * @param idx {Integer} the index of the jump to remove
+ */
+PropertiesForm.prototype.removeJumpHandler = function(evt)
+{
+	$(this).parents('.jumpoption').remove();
+};
+
+
 
 var errorList;
+var formList;
+var propertiesForm;
 
 $(function()
 {
@@ -148,55 +543,8 @@ $(function()
 
 	var details_top = $("#details").offset().top;
 	
-	details_top = details_top - $("#toolbox").height();
-	        
-	$(window).scroll(function(evt){
-		if($(document.body).scrollTop() > $("#toolbox").offset().top) 
-		{  
-			$("#toolbox-inner").css({
-				"position":"fixed",
-				"top" : "0px"
-			}); 
-		}
-		else
-		{
-			$("#toolbox-inner").css({
-				"position":"relative"
-			}); 
-		}
-		if($(document.body).scrollTop() > details_top) 
-		{  
-            var dest = $('#destination');
-            
-			$("#details").css({
-				"position":"fixed",
-				"top" : $("#toolbox-inner").height() + 10 + "px",
-				"left" : (dest.offset().left + dest.width() + 20) + "px"
-			}); 
-			
-			$("#source").css({
-				"position":"fixed",
-				"top" : $("#toolbox-inner").height() + 10 + "px",
-				"left" : "auto"
-			}); 
-			
-		}
-		else
-		{
-			$("#details").css({
-				"position":"absolute",
-                                "top" : "0px",
-                                "left" : ''
-			}); 
-			$("#source").css({
-				"position":"absolute",
-				"top" : "0px",
-				"left" : "0px"
-			}); 
-		}	
-	});
-        
-    $(window).unload(function(){
+   
+    $(document.body).unload(function(){
         if($('.unsaved').length > 0)
         {
             localStorage.setItem(project.name + '_xml', project.toXML());
@@ -204,9 +552,13 @@ $(function()
     });
 	
 	$('.first').accordion({ collapsible : true });
+	$('.accordian').accordion({ collapsible : true, active : false });
 	
-	$("[allow]").hide();
-	$("[notfor]").show();
+	propertiesForm = new PropertiesForm('details');
+	propertiesForm.hide();
+	
+	//$("[allow]").hide();
+	//$("[notfor]").show();
 	
 	$('#destination').sortable({
 		revert : 50,
@@ -227,11 +579,18 @@ $(function()
 			else
 			{
 				var jq = $('#destination .end').remove();
-				$('#destination').append(jq[0]);
+				var new_jq = $(ui.item);
+				
+				if(!new_jq.prop('id'))
+				{
+					new_jq.prop('id', genID());
+				}
+				
 				dirty = true;
-                setSelected($(ui.item));
+				setSelected(new_jq);
                 updateStructure();
                 updateJumps();
+                
 			}
 		}
 	});
@@ -257,25 +616,7 @@ $(function()
 		}
 	});
 	
-	$('#formList').click(function(evt){
-		var sp = evt.target;
-		
-		if(sp.tagName === "SPAN")
-		{
-			sp = $(sp);
-			$('#formList span').removeClass('selected');
-			if(sp.hasClass("control"))
-			{
-				newForm();
-			}
-			else if(sp.hasClass("form"))
-			{
-				switchToForm(sp.text());
-			}
-		}
-	});
-	
-	$("#key").change(function(evt){
+	/*$("#key").change(function(evt){
 		if(evt.target.checked)
 		{
 			$("[allow*=key]").show();
@@ -298,24 +639,22 @@ $(function()
 			$("[allow*=gen]").hide();
 			$("[notfor*=gen]").show();
 		}
-	});
+	});*/
 	
 	
-	$("#options .removeOption").unbind('click').bind('click', removeOption);
+	/*$("#options .removeOption").unbind('click').bind('click', removeOption);
 	$("#jumps .remove").unbind('click').bind('click', removeOption);
-    $('#destination').append('<img src="../images/editmarker.png" class="editmarker">');
-    $('.editmarker').hide();
-    $('.last input, .last select').change(function(){ 
-    	$('#destination .selected').addClass('editing');
-    	dirty = true;
-    });
-    $('.last').hide();
-    $('#required').change(function(evt)
-    {
-        $('[name=jumpType] option[value=NULL]').toggle(!$( this ) .prop('checked'));
-    });
-
-    $('.last input, .last select').bind('change', function(){ dirty = true; });
+    //$('#destination').append('<img src="../images/editmarker.png" class="editmarker">');
+   // $('.editmarker').hide();*/
+//    $('.last input, .last select').change(function(){ 
+//    	//$('#destination .selected').addClass('editing');
+//    	dirty = true;
+//    });
+    //$('.last').hide();
+    //$('#required').change(function(evt)
+   // {
+    //    $('[name=jumpType] option[value=NULL]').toggle(!$( this ) .prop('checked'));
+    //});
     
     errorList = new ErrorList('errorList');
 });
@@ -337,7 +676,7 @@ function drawProject(prj)
         }
     }
     
-	$("#formList .form").remove();
+	/*$("#formList .form").remove();
 	
 	for(var frm in project.forms)
 	{
@@ -352,9 +691,23 @@ function drawProject(prj)
     else
     {
         switchToForm(Object.keys(project.forms)[0]);
-        validateCurrentForm();
-    }
+        validateProject();
+    }*/
+   formList = new FormList('formList');
+   for(var frm in project.forms)
+	{
+	   formList.addForm(frm);
+	}
    
+	   if(formList.forms.length === 0)
+	   {
+	       newForm('Please choose a name for your first form - this should only consist of letters, numbers and underscores.');
+	   }
+	   else
+	   {
+	       formList.setSelected(Object.keys(project.forms)[0]);
+	       validateProject();
+	   }
 }
 
 /**
@@ -383,7 +736,7 @@ function newForm(message, name, closeable)
                 frm.num = $('.form').length + 1;
                 project.forms[name] = frm;
 
-                addFormToList(name);
+                formList.addForm(name);
 
                 var par = project.getPrevForm(name);
 
@@ -439,7 +792,7 @@ function addFormToList(name)
  * @param text the text for the element
  * @param type the css class of the template in the left bar
  */
-function addControlToForm(id, text, type)
+function addControlToForm(id, text, type, _jq)
 {
 	if(type.trimChars() === "") return; 
 
@@ -449,7 +802,11 @@ function addControlToForm(id, text, type)
 	}
 	
 	if( type[0] !== "." ) type = "." + type;
-	var jq = $(type, $(".first")).clone();
+	var jq;
+	if(!_jq)
+		jq= $(type, $(".first")).clone();
+	else
+		jq = _jq;
 	
 	
 	$("p.title", jq).text(text.decodeXML());
@@ -467,7 +824,11 @@ function addControlToForm(id, text, type)
 		}
 	}
 	
-	$( "#destination" ).append(jq);
+	if(!_jq) $( "#destination" ).append(jq);
+	if(currentForm.key == id)
+	{
+		jq.addClass('key');
+	}
 }
 
 function addOption()
@@ -478,15 +839,7 @@ function addOption()
 			+ '<br /><label title="The value stored in the database"l>Value</label><input title="The value stored in the database" name="optValue" size="12" />'
 			+ '<div style="float:right; font-weight:bold;font-size:10pt;"></div><br /><a href="javascript:void(0);" class="button removeOption" >Remove Option</a> </div>');
 
-    $('.last input, .last select').unbind('change').bind('change', function(){ dirty = true; });
-	$("#options .removeOption").unbind('click').bind('click', removeOption);
-	
-	$("#options input").unbind();
-	$("#options input").change(function()
-	{
-		updateSelected(true);
-		updateJumps();
-	});
+    setHandlers();
 }
 
 function removeOption(evt)
@@ -498,7 +851,9 @@ function removeOption(evt)
 	updateJumps();
 }
 
-function addJump()
+
+
+/*function addJump()
 {
 	var panel = $("#jumps");
 	
@@ -514,18 +869,16 @@ function addJump()
 	}
 	
 	$("#jumps .remove").unbind('click').bind('click', removeJump);
-    $('.last input, .last select').unbind('change').bind('change', function(){ dirty = true; });
-}
-
-function removeJump(evt)
-{
-	var ele = evt.target;
-	while(ele.tagName !== "DIV") ele = ele.parentNode;
-	
-	$(ele).remove();
-}
-
-
+   
+	setHandlers();
+}*/
+//function removeJump(evt)
+//{
+//	var ele = evt.target;
+//	while(ele.tagName !== "DIV") ele = ele.parentNode;
+//	
+//	$(ele).remove();
+//}
 
 function drawFormControls(form)
 {	
@@ -581,6 +934,18 @@ function drawFormControls(form)
 	
 }
 
+function validateProject()
+{
+	errorList.reset();
+	formList.resetValidation();
+	$('.ecplus-form-element').removeClass('warning').removeClass('error');
+	
+	for(var frm in project.forms)
+	{
+		validateForm(project.forms[frm]);
+	}
+}
+
 function validateCurrentForm()
 {
 	errorList.reset();
@@ -613,7 +978,8 @@ function validateForm(v_form)
 	
 	if( titleFields.length === 0 )
 	{
-		errorList.addWarning({ control : 'form', message : "There is no title field selected, it is advisable to set a field as a title " +
+		formList.setWarning(v_form.name);
+		errorList.addWarning({ form: v_form.name, control : 'form', message : "There is no title field selected, it is advisable to set a field as a title " +
 				"to help users quickly distinguish between entries" });
 	}
 }
@@ -627,7 +993,7 @@ function validateForm(v_form)
 function validateControl(ctrl, _type, callback)
 {
 	//validate control name
-	 var nameValid = project.validateFieldName(currentForm, ctrl);
+	 var nameValid = project.validateFieldName(ctrl.form, ctrl);
 	 var messages = [];
 	 
 	ctrl.fb_voter = {};
@@ -635,19 +1001,19 @@ function validateControl(ctrl, _type, callback)
 	if( !ctrl.text )
 	{
 		console.debug('label fail');
-		messages.push({control : ctrl.id, message : "Every field must have a label"});
+		messages.push({ form: ctrl.form.name,control : ctrl.id, message : "Every field must have a label"});
 	}
 	
 	if( nameValid !== true )
 	{
-		messages.push({ control : ctrl.id, message: nameValid });
+		messages.push({ form: ctrl.form.name,  control : ctrl.id, message: nameValid });
 	}
 	
 	if(_type === 'date')
 	{	
 		if (!ctrl.date && !ctrl.setDate )
 		{
-			messages.push({control : ctrl.id,  message : "You must select a date format." });
+			messages.push({ form: ctrl.form.name, control : ctrl.id,  message : "You must select a date format." });
 			//throw "You must select a date format.";
 			success = false;
 		}
@@ -657,7 +1023,7 @@ function validateControl(ctrl, _type, callback)
 	{
         if( !ctrl.time && !ctrl.setTime )
         {
-        	messages.push({ control : ctrl.id, message : "You must select a time format." });
+        	messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "You must select a time format." });
             success = false; //throw "You must select a time format.";
         }
         
@@ -678,7 +1044,7 @@ function validateControl(ctrl, _type, callback)
     			
     			if ( !res.valid )
     			{
-    				messages.push({ control : ctrl.id, message : '<em>Maximum</em> ' + res.messages[0] });
+    				messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Minimum</em> ' + res.messages[0] });
     			}
     		}
         }
@@ -693,17 +1059,72 @@ function validateControl(ctrl, _type, callback)
     			
     			if ( !res.valid )
     			{
-    				messages.push({ control : ctrl.id, message : '<em>Maximum</em> ' + res.messages[0] });
+    				messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Maximum</em> ' + res.messages[0] });
     			}
     		}
         }
         if((!!ctrl.min || ctrl.min === 0) && (!!ctrl.max|| ctrl.max === 0)  && ctrl.min >= ctrl.max)
         {
-        	messages.push({ control : ctrl.id, message : "<em>Minimum</em> must be smaller than the <em>Maximum</em>" });
+        	messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "<em>Minimum</em> must be smaller than the <em>Maximum</em>" });
         }
 	}
 	
+	if(_type && _type.match(/^select1?|radio$/))
+	{
+		if(ctrl.options.lenghth == 0){ messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "Multiple choice question does not have any options" }); }
+		for (var  i = 0 ; i < ctrl.options.length; i++ )
+		{
+			if(ctrl.options[i].label == '') messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "Option "+i+" does not have a label" });
+			if(ctrl.options[i].value == '') messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "Option "+i+" does not have a value" });
+		}
+	}
+	
 	//Validate Jumps?
+	
+	if(ctrl.jump && ctrl.jump !== '')
+	{
+		var jump_def = ctrl.jump.split(',');
+		
+		for( var i = 0; i < jump_def.length; i+=2)
+		{
+			var opt_len = ctrl.options.length;
+			var conditional = jump_def[i+1].replace(/!/, '');
+			//check that the condition is either between 1 and the number of options inclusive, the same with an exclamation mark
+
+			if(conditional !== 'ALL' && conditional !== 'NULL')//instant pass
+			{
+				var n = Number(conditional);
+				if(isNaN(n) || n < 1 || n > opt_len) messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> Jump condition is not valid, please make sure you have set the value the jump works on to a valid option' });
+			}
+			
+			//check the destination is at least one question after the jump
+			var des = jump_def[i];
+
+			if(des !== 'END')
+			{
+				if(des === '')
+				{
+					messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> Jump has no destination.' });
+				}
+				else
+				{
+		
+					var c_idx = ctrl.index;
+					var j_idx = ctrl.form.fields[des].index;
+					
+					if(j_idx < c_idx)
+					{
+						messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> Jump destination is earlier in the form then the field the jump is set on. You cannot jump backwards.' });
+					}
+					else if(j_idx == (c_idx + 1))
+					{
+						errorList.addWarning({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> the jump destination is the next question, the jump is redundant' });
+					}
+				}
+			}
+		}
+	}
+	
 	
 	// All that's left is to validate the default, to do this we need to store the current message array
 	// If we hit errors 
@@ -720,7 +1141,7 @@ function validateControl(ctrl, _type, callback)
 
 			if ( !res.valid )
 			{
-				messages.push({ control : ctrl.id, message : '<em>Default</em> ' + res.messages[0] });
+				messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Default</em> ' + res.messages[0] });
 			}
 		}
 		
@@ -748,6 +1169,11 @@ function validateCallback(info, wait)
 		if(typeof info.messages[m] == 'object')
 		{
 			errorList.addError(info.messages[m]);
+			formList.setError(info.messages[m].form);
+			if( currentForm.name === info.messages[m].form )
+			{
+				$('#' + info.messages[m].control).addClass('error');
+			}
 		}
 		else
 		{
@@ -756,16 +1182,6 @@ function validateCallback(info, wait)
 	}
 	
 	if(wait) return;
-}
-
-function expandErrorList()
-{
-	
-}
-
-function collapseErrorList()
-{
-	//should leave one visible and the user should be able to change to one that they want to be able to seen and correct
 }
 
 /**
@@ -859,7 +1275,7 @@ function updateSelected(is_silent)
 	
 	for(var i = jn; i--;)
 	{
-		var jumpType = $('[name=jumpType]', jumpCtrls[i]).val();
+		var jumpType = $('.jumpType', jumpCtrls[i]).val();
 		var jval = (jumpType.length > 1 ? jumpType :  jumpType + (Number($(".jumpvalues", jumpCtrls[i]).val())));
 		
 		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + jval + (jump === "" ? "" : "," + jump);
@@ -907,20 +1323,17 @@ function updateSelected(is_silent)
   
     if(!is_silent)
     {
-        if(dirty) $('#' + cfrm.name).addClass('unsaved');
-        $('#destination .selected').removeClass('editing');
-        $('.editmarker').hide();
-        $('#details').hide();
+    	unselect();
     }
     else
     {
-        updateEditMarker();
+      //  updateEditMarker();
     }
    
     currentControl = cur;
     currentForm = cfrm; 
 	
-	validateCurrentForm();
+	validateProject();
     return true;
 }
 
@@ -941,7 +1354,7 @@ function updateForm()
 		return false;
 	}
 	
-    if(dirty) $('#' + currentForm.name).addClass('unsaved');
+    //if(dirty) $('#' + currentForm.name).addClass('unsaved');
         
 	updateStructure();
 
@@ -1016,6 +1429,7 @@ function updateJumps()
             if(lbl.length > 25) lbl = lbl.substr(0,22) + "...";
             if(field.type && !field.hidden) fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
         });
+        
         fieldCtls.append("<option value=\"END\">END OF FORM</option>");
         
         $(".jumpdestination").each(function(idx, ele){
@@ -1029,17 +1443,17 @@ function updateJumps()
              
              for(var i = 0; i < len; i++ )
              {
-                $(opts[i]).toggle(show);
+                $(opts[i]).prop('disabled', !show);
                 if( opts[i].value === cField ) {
-                    // hide the next + 1 element as there's no point jumping to the next question!
-                    $(opts[++i]).toggle(show);
+                    // hide the next + 1 element as there's no point jumping to the next question
+                    $(opts[++i]).prop('disabled', true);
                     show = true;
                 }
              }
              if(vals.length > idx) jq.val(vals[idx]);
         });
         
-        $('[name=jumpType] option[value=NULL]').toggle(!$('#required').prop('checked'));
+        $('.jumpType option[value=NULL]').toggle(!$('#required').prop('checked'));
         
 	}catch(err)
 	{
@@ -1058,7 +1472,7 @@ function genID()
 	return name;
 }
 
-function updateEditMarker()
+/*function updateEditMarker()
 {
     var jqEle = $('#destination .selected');
     var mkr = $('.editmarker');
@@ -1071,7 +1485,7 @@ function updateEditMarker()
     }, {
         duration : 100
     });
-}
+}*/
 
 function setSelected(jq)
 {
@@ -1083,189 +1497,44 @@ function setSelected(jq)
         if(window["currentControl"])
         {
             if(!updateSelected()) return;
-            $(".last input[type=text]").val("");
-            $(".last input[type=checkbox]").prop("checked", false);
+           // $(".last input[type=text]").val("");
+            //$(".last input[type=checkbox]").prop("checked", false);
         }
 
-        $("#parent").val("");
-        $("#destination .ecplus-form-element").removeClass("selected");
-        jqEle.addClass("selected");
-
-        updateEditMarker();
-
-        $('#date').val('');
-        $('#time').val('');
-        $('#min').val('');
-        $('#max').val('');
-        $('#default').val('');
-
-        if(currentForm.fields[jqEle.attr("id")])
+        if(currentForm.fields[jqEle.prop("id")])
         {	
-            currentControl =  currentForm.fields[jqEle.attr("id")];
-        }
+            currentControl =  currentForm.fields[jqEle.prop("id")];
+        } 
         else
         {
             currentControl = new EpiCollect.Field(currentForm);
-        }
-
-        var type = jqEle.attr("type");
-
-        $("[allow]").hide();
-        $("[notfor]").show();
-
-        $("[allow*=" + type + "]").show();
-        $("[notfor*=" + type + "]").hide();
-
-
-        if(currentControl.isKey)
-        {
-                $("[allow*=key]").show();
-                $("[notfor*=key]").hide();
-        }
-
-        if(currentControl.genkey)
-        {
-                $("[allow*=gen]").show();
-                $("[notfor*=gen]").hide();
-        }
-
-        $('#inputLabel').val(currentControl.text);
-        
-        if(currentControl.id && currentControl.id !== '')
-        {
-                $('#inputId').val(currentControl.id);
-        }
-        else
-        {
-                $('#inputId').val(genID);
+            currentControl.form = currentForm;
+            currentControl.id = jqEle.prop("id");
+            if(jqEle.attr('type') == 'numeric')
+            {
+            	currentControl.isinteger = true;
+            }
+            
+            currentForm.fields[jqEle.prop("id")] = currentControl;
+          
+            
         }
         
-        $("#required").prop("checked", (currentControl.required));
-        $("#title").prop("checked", (currentControl.title));
-        $("#key").prop("checked", (currentControl.isKey));
-        $("#rdo_decimal").prop("checked", currentControl.isdouble);
-        $("#rdo_integer").prop("checked", currentControl.isinteger);
-        $("#min").val((currentControl.min || currentControl.min === 0) ? currentControl.min : '');
-        $("#max").val((currentControl.max || currentControl.max === 0) ? currentControl.max : '');
-
-        if(currentControl.date)$("#date").val(currentControl.date);
-        if(!!currentControl.setDate)
-        {
-            $("#date").val(currentControl.setDate);
-            $("#set").prop("checked", true);
-        }
-        else
-        {
-            $("#set").prop("checked", false);
-        }
-
-        if(currentControl.time) $("#time").val(currentControl.time);
-        if(currentControl.setTime)
-        {
-            $("#time").val(currentControl.setTime);
-            $("#set").prop("checked", true);
-        }
-        else
-        {
-            if(!currentControl.setDate) $("#set").prop("checked", false);
-        }
-
-        $("#default").val(currentControl.defaultValue);
-        $("#regex").val(currentControl.regex);
-        $("#verify").prop("checked", currentControl.verify);
-        $("#hidden").prop("checked", currentControl.hidden );
-        $("#genkey").prop("checked", currentControl.genkey );
-        $("#search").prop("checked", currentControl.search );
-
-        var opts = currentControl.options;
-        var nOpts = currentControl.options.length;
-
-        $(".selectOption").remove();
-
-        while($(".selectOption").length < nOpts) addOption();
-
-        var optEles = $(".selectOption");
-        for(var i = nOpts; i--;)
-        {
-            $("input[name=optLabel]", optEles[i]).val(opts[i].label);
-            $("input[name=optValue]", optEles[i]).val(opts[i].value);
-        }
-
-        var forms = project.forms;
-
-        if(jqEle.attr("type") === "fk")
-        {	
-            for(f in forms)
-            {
-                if(jqEle.prop("id") === forms[f].key){
-                    $("#parent").val(f);
-                }
-            }
-        }
-
-        $(".jumpoption").remove();
-
-        if(currentControl.jump)
-        {
-            var jumps =  currentControl.jump.split(",");
-            var nJumps = jumps.length / 2;
-
-            while($(".jumpoption").length < nJumps) addJump();
-
-            updateJumps();
-            var jumpCtrls = $(".jumpoption");
-            var n = jumps.length;
-
-            for( var i = 0; i < n; i += 2 )
-            {
-                if(jumps[i+1] === "NULL")
-                {
-                    $("[name=jumpType]", jumpCtrls[i/2]).val('NULL');
-                    $(".jumpvalues", jumpCtrls[i/2]).val('');
-                }
-                else if(jumps[i+1] === "ALL")
-                {
-                    $("[name=jumpType]", jumpCtrls[i/2]).val('ALL');
-                    $(".jumpvalues", jumpCtrls[i/2]).val('');
-                }
-                else if(jumps[i+1][0] === "!")
-                {
-                    $("[name=jumpType]", jumpCtrls[i/2]).val('!');
-                    $(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1].substr(1));
-                }
-                else
-                {
-                    $("[name=jumpType]", jumpCtrls[i/2]).val('');
-                    $(".jumpvalues", jumpCtrls[i/2]).val(jumps[i+1]);
-                }
-                $(".jumpdestination", jumpCtrls[i/2]).val(jumps[i]);
-            }
-
-        }
+        $("#destination .ecplus-form-element").removeClass("selected");
+        jqEle.addClass("selected");
+        
+        propertiesForm.show();
+        
     }
     else
     {
     	throw "div is not a form Element!";
     }
+}
 
-    if(currentControl){ $(".last").show();}
-    else {$(".last").hide();}
-
-    //set default as integer
-    if(type === 'numeric' && !($('#rdo_integer').prop('checked') || $('#rdo_decimal').prop('checked')))
-    {
-           $('#rdo_integer').prop('checked', 'checked');
-    }
-
-    if( currentControl.id === project.getPrevForm(currentForm.name).key )
-    {
-            $(".removeControl").hide();
-            $("#fkPanel").hide();	
-    }
-    else
-    {
-            $(".removeControl").show();
-    }
+function previewForm(name)
+{
+	project.forms[name].displayForm({ debug : true });
 }
 
 function removeForm(name)
@@ -1294,6 +1563,9 @@ function removeForm(name)
 	}
 }
 
+/**
+ * Remove the currently selected form
+ */
 function removeSelected()
 {
 	var jq = $("#destination .selected");
@@ -1306,10 +1578,21 @@ function removeSelected()
 	delete currentForm.fields[jq.prop("id")];
 	jq.remove();
 	
-	$("[allow]").hide();
-	$(".last input[type=text]").val("");
-	$(".last input[type=checkbox]").prop("checked", false);
-        $('.editmarker').hide();
+
+	unselect();
+	
+	//TODO : Neaten? MAybe have validate project attached to a "changed" event on the form?
+	validateProject();
+	if( formList.forms.length==0 ){ newForm("You have deleted all of your forms, please choose a name for your new first form."); }
+}
+
+
+function unselect()
+{
+	propertiesForm.reset();
+	propertiesForm.hide();
+	
+	$('#destination .ecplus-form-element').removeClass("selected");
 }
 
 function renameForm(name)
@@ -1350,8 +1633,9 @@ function renameForm(name)
 function switchToBranch()
 {
 	//var ctrlname = $('destination .selected').attr('id')
-	$('.form').removeClass("selected");
+	
 	updateSelected();
+	unselect();
 	
 	var frm = currentControl.connectedForm;
 	//var par_frm = currentForm.name;
@@ -1403,16 +1687,11 @@ function switchToBranch()
 
 function switchToForm(name)
 {
-	$('.form').removeClass("selected");
 	
 	if(currentForm){
 		updateForm();
 		project.forms[currentForm.name] = currentForm;
 	}
-	
-	$('.form').each(function(idx,ele){
-		if($(ele).text() === name) $(ele).addClass("selected");
-	});
 	
 	$("#parent").empty();
 	for(frm in project.forms)
@@ -1469,8 +1748,8 @@ function askForKey(keyDeleted)
             "<label for=\"key_no\"><b>No</b> I do not have a unique key question for this form, please generate one for me</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" />"+
 			"<label for=\"key_yes\"><b>Yes</b> I have a unique key question for this form.</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/></div>"+
 			"<div id=\"key_details\" style=\"display:none;\"><label for=\"key_type\">My key field is a </label><select id=\"key_type\" name=\"key_type\"><option value=\"text\">Text Field</option><option value=\"numeric\">Integer Field</option><option value=\"barcode\">Barcode Field</option></select><p id=\"key_type_err\" class=\"validation-msg\"></p>" + 
-            "<label for=\"key_label\">Label for the key field (the question a user is asked e.g. what colour are your eyes?)</label><input id=\"key_label\" name=\"key_label\" /><p id=\"key_label_err\" class=\"validation-msg\"></p>"+
-            "<label for=\"key_name\">ID for the key field (a name used to identify the question. e.g. colour)</label><input id=\"key_name\" name=\"key_name\" /><p id=\"key_name_err\" class=\"validation-msg\"></p>"+
+            "<label for=\"key_label\">Label for the key field (the question a user is asked e.g. what is your name?)</label><input id=\"key_label\" name=\"key_label\" /><p id=\"key_label_err\" class=\"validation-msg\"></p>"+
+            "<label for=\"key_name\">ID for the key field (a name used to identify the question. e.g. name)</label><input id=\"key_name\" name=\"key_name\" /><p id=\"key_name_err\" class=\"validation-msg\"></p>"+
 			"</div></form>" :"<form><div id=\"key_radios\" class=\"toggle choice\">"+ 
             "<label for=\"key_change\">I want to make another<br /> field the key<br />&nbsp;</label><input type=\"radio\" id=\"key_change\" name=\"key\" value = \"change\"/><label for=\"key_yes\"><b>Yes</b> I have a unique key question for this form.</label><input type=\"radio\" id=\"key_yes\" name=\"key\" value = \"yes\"/>"+
 			"<label for=\"key_no\"><b>No</b> I do not have a unique key question for this form, please generate one for me</label><input type=\"radio\" id=\"key_no\" name=\"key\" value = \"no\" checked=\"checked\" /></div>"+  
@@ -1549,7 +1828,7 @@ function askForKey(keyDeleted)
     
 	$('#key_radios input[type=radio]').on('change', function(){
 		$('#key_details').toggle(this.id === "key_yes");
-                $('#select_key').toggle(this.id === "key_change");
+        $('#select_key').toggle(this.id === "key_change");
 	});
 }
 
@@ -1573,7 +1852,7 @@ function saveProject()
         
         // remove the local temporary version
         localStorage.removeItem(project.name + '_xml');
-        $('.unsaved').removeClass('unsaved');
+        //$('.unsaved').removeClass('unsaved');
 }
 
 function saveProjectCallback(data, status, xhr)

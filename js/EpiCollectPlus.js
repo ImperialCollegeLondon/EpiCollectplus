@@ -11,6 +11,7 @@ if(!window['console'])
 {
     window.console = {};    
 }
+
 if(!console.debug)
 {
 	if( console.info )
@@ -847,23 +848,34 @@ EpiCollect.Project = function()
         return true;
 	};
 	
-	this.validateFieldName = function(form, field)
+	/**
+	 * 
+	 * @param form {EpiCollect.Form} The form the field belongs to
+ 	 * @param field {EpiCollect.Field} The field having it's name validated 
+	 * @param newName {String} Optional, if the field name hasn't been assigned to the field yet, then use this parameter to check it 
+	 * @returns true or a message describing an error
+	 */
+	this.validateFieldName = function(form, field, newName)
 	{
-        
-        
-        var name = field.id;
+		
+        var name = newName ? newName : field.id; 
+ 
         if(name === "") return 'The field ID cannot be blank';
-		if(form.fields[name] && form.fields[name] != field)  return '<em>' + name + '</em> is not a valid ID.  <br /> <br /> There is already a field called ' + name + ' in this form';
+		if(form.fields[field.id] && form.fields[name].index != field.index)
+		{
+			return '<em>' + name + '</em> is not a valid ID. There is already a field called ' + name + ' in this form';
+		}
+		
 		var kw = EpiCollect.KEYWORDS;
 		
 		for(var i = kw.length; kw--;)
 		{
-			if (name === kw[i]) return name + " cannot be user as a field ID.  <br /> <br /> Other words that cannot be used are : " + EpiCollect.KEYWORDS.join(', ');
+			if (name === kw[i]) return name + " cannot be user as a field ID. Other words that cannot be used are : " + EpiCollect.KEYWORDS.join(', ');
 		}
         
-        if(name === form.name) return '<em>' + name + '</em> is not a valid ID. <br /> <br /> The field name cannot be the same as the form name';
-		if(name.match(/\s/gi)) return '<em>' + name + '</em> is not a valid ID. <br /> <br />  The form name cannot contain spaces';
-        if(name.match(/[^A-Z0-9_]/gi)) return '<em>' + name + '</em> is not a valid ID. <br /> <br />  The field ID can only contain letter, numbers and underscores';
+        if(name === form.name) return '<em>' + name + '</em> is not a valid ID. The field name cannot be the same as the form name';
+		if(name.match(/\s/gi)) return '<em>' + name + '</em> is not a valid ID. The form name cannot contain spaces';
+        if(name.match(/[^A-Z0-9_]/gi)) return '<em>' + name + '</em> is not a valid ID. The field ID can only contain letter, numbers and underscores';
                 
 		return true;
 	};
@@ -1202,8 +1214,6 @@ EpiCollect.Form = function()
 			}
 		});
 
-
-		
 		this.formElement
 			.dialog("option", "title", "Add " + this.name)
 			.empty()
@@ -1214,7 +1224,7 @@ EpiCollect.Form = function()
 			.append("<div class=\"ecplus-form-previous\"><a href=\"#\" onclick=\"project.forms['"+ this.name +"'].movePrevious();\">Previous</a></div>")
 			.append("<div class=\"ecplus-form-pane\"><form name=\"" + this.name + "\"></form></div>");
 		
-		
+		if(cnf.debug) { this.formElement.addClass('debug'); }
 		
 		if(editMode) { this.formElement.addClass('editing'); } else { this.formElement.removeClass('editing'); }
 		
@@ -1298,7 +1308,7 @@ EpiCollect.Form = function()
 
         $("input.ecplus-timepicker", this.formElement).each(function(idx, ele) {
             var fmt = project.forms[formName].fields[ele.name].time;
-            var jq = $(ele)
+            var jq = $(ele);
 
             if(project.forms[formName].fields[ele.name].setTime)
             {
@@ -1386,31 +1396,36 @@ EpiCollect.Form = function()
     
     this.getCurrentControl = function()
     {
-        var ctrlindex = this.formIndex
+        var ctrlindex = this.formIndex;
         
         var field_id = $('.ecplus-input', $('.ecplus-question')[ctrlindex]).attr('id');
         
         return this.fields[field_id];
-    }
+    };
     
     this.checkAndAdvance = function()
     {
         var field = this.getCurrentControl();
-       
-        var control =  $('#' + field.id, this.formElement);
-   
-        control.off('valid'); //clear any handlers already present
-        
-        control.one('valid', {form : this}, function(evt) {
-            evt.data.form.moveNext();
-        });
-
-        field.validate(control.val());
-    }
+        if(field)
+    	{
+	        var control =  $('#' + field.id, this.formElement);
+	   
+	        control.off('valid'); //clear any handlers already present
+	        
+	        control.one('valid', {form : this}, function(evt) {
+	            evt.data.form.moveNext();
+	        });
+	
+	        field.validate(control.val(), (this.formElement.hasClass('debug') ? ['fk'] : undefined));
+    	}
+        else
+        {
+        	this.moveNext();
+        }
+    };
 	
 	this.doJump = function(fieldName, startField)
 	{
-		console.debug("Jump to : " + fieldName)
             
 		var start = this.formIndex;
 		var done = false;
@@ -1777,24 +1792,7 @@ EpiCollect.Form = function()
 		xml = xml + "</form>";
 		return xml;
 	};
-	
-	this.validateFieldName = function(name, oldname)
-	{
-		if(!name.match(/^[0-9A-Z-_]+$/i))
-		{
-			EpiCollect.dialog({ content : "Field names must only contain letter, numbers, _ or -" });
-			return false;
-		}
-		
-		if(this.fields[name] && name !== oldname)
-		{
-			EpiCollect.dialog({content : "Field names must be unique" });
-			return false;
-		}
-		
-		
-		return true;
-	};
+
 };
 
 EpiCollect.Field = function()
