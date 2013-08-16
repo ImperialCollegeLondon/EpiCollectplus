@@ -907,15 +907,21 @@
              
             function setLocationField(name)
             {
-                var len = mapData.length;
-				
+                var len = markers.length;
+				geoField = name;
                 
 				for(var i = len; i--;)
 				{
-					var d = mapData[i];
 					var mkr = markers[i];
+                    var pos = getPositionFor(i);
                     
-                    mkr.setPosition(new google.maps.LatLng(d[name].latitude, d[name].longitude))
+                    if(mkr && pos){
+                    	mkr.setPosition(pos);
+                    	mkr.setMap(map);
+                    }
+                    else{
+                    	mkr.setMap(null);
+                    }
 
                 }
                 
@@ -959,7 +965,7 @@
                 
 				for(var i = 0; i < data.length; i++)
 				{
-                    
+           
                     var ttl = data[i][ttl_fld];
                     if(!ttl || ttl.trimChars(' ') === ''){
                         if(ttl_fld != key_fld)
@@ -972,10 +978,8 @@
                         }
                     }
                     
-                
-					if(!data[i][geoField]) continue;
-					if(!data[i][geoField].accuracy) data[i][geoField].accuracy = (data[i][geoField].latitude !== 0 && data[i][geoField].longitude !==0) ? 100 : -1;
-					if(data[i][geoField].latitude >= -90 && data[i][geoField].latitude <= 90 && data[i][geoField].longitude >= -180 && data[i][geoField].longitude <= 180 && data[i][geoField].accuracy > 0
+					if(data[i][geoField] && !data[i][geoField].accuracy) data[i][geoField].accuracy = (data[i][geoField].latitude !== 0 && data[i][geoField].longitude !==0) ? 100 : -1;
+					if(data[i][geoField] && data[i][geoField].latitude >= -90 && data[i][geoField].latitude <= 90 && data[i][geoField].longitude >= -180 && data[i][geoField].longitude <= 180 && data[i][geoField].accuracy > 0
                         && data[i][geoField].longitude != null && data[i][geoField].longitude != null) 
 					{
 						var mkr = new google.maps.Marker({
@@ -998,13 +1002,20 @@
                         
 						markers.push(mkr);
                         addToSidebar(i, ttl);
+					
+                    
 					}
 					else
 					{
-						markers.push(null);
+						markers.push(new google.maps.Marker({
+							id : data[i][keyField],
+							position : new google.maps.LatLng(0,0),
+							icon :  new google.maps.MarkerImage("{#SITE_ROOT#}/markers/point"),
+							index : i
+						}));
                         addToSidebar(i, ttl, false);
 					}
-                    
+
 					var _cre = EpiCollect.toJSTimestamp(data[i]["created"]);
                     
 					mincreated = Math.min(mincreated, _cre);
@@ -1018,7 +1029,7 @@
                         if(map_lastupdated < updated) map_lastupdated = updated;
                     }
                                         
-					
+              	
 				}
 				
                 
@@ -1149,11 +1160,12 @@
 			{
 				if(bubble) closeBubble();
 				
-                if(markers[mkrIdx])
+				var pos =  getPositionFor(mkrIdx);
+                if(pos)
                 {
                     bubble = new google.maps.InfoWindow({
                         content : getContentFor(mkrIdx),
-                        position : getPositionFor(mkrIdx)
+                        position : pos
                     });
                     
                     bubble.open(map);
@@ -1193,7 +1205,14 @@
 			
 			function getPositionFor(mkrIdx)
 			{
-				return new google.maps.LatLng(mapData[mkrIdx][geoField].latitude, mapData[mkrIdx][geoField].longitude);
+				if(mapData[mkrIdx][geoField])
+				{
+					return new google.maps.LatLng(mapData[mkrIdx][geoField].latitude, mapData[mkrIdx][geoField].longitude);
+				}
+				else
+				{
+					return false;
+				}
 			}
 			
 			function getContentFor(mkrIdx)

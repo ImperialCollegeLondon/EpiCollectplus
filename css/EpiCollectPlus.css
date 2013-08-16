@@ -38,6 +38,11 @@ h3
     line-height : 18px;
 }
 
+h3 .sub
+{
+	font-weight : normal;
+}
+
 h4
 {
     padding-bottom: 2px;
@@ -512,6 +517,7 @@ tr.alt
 .ecplus-columns
 {
 	position: relative;
+	margin-top : 1em;
 }
 
 .ecplus-columns .column
@@ -521,6 +527,7 @@ tr.alt
 	padding: 0.5em;
 	display: inline-block;
 	vertical-align:top;
+	border : 1px solid #CCCCCC;
 }
 
 .ecplus-columns .first, .ecplus-columns .last
@@ -550,6 +557,7 @@ tr.alt
 	background-color : #FFEEEE;
     max-height: 85%;
     padding : 0;
+    border : none;
 }
 
 .ecplus-columns .second
@@ -558,7 +566,7 @@ tr.alt
 	margin : 0 22em 0 20em;
 	height : 68em;
 	background-color : #EEFFEE;
-        
+    padding : 0;
 }
 
 .ecplus-columns .last
@@ -637,12 +645,32 @@ tr.alt
 
 .second div.ecplus-form-element.selected
 {
-	
+	background-color : rgb(238,238,255);
+	border : 2px solid rgba(188, 188, 205, 1); 
+	border-radius : 5px;
+}
+
+.second div.ecplus-form-element:before
+{
+	float:right;
+	color : #888;
+	content : "ID: " attr(id);
+	height:3em;
+}
+
+.second div.selected.ecplus-form-element:before
+{
+	color : #000;
+}
+
+.second .key.ecplus-form-element:before
+{
+	background : url("../images/glyphicons/glyphicons_044_keys.png") bottom right no-repeat;		
 }
 
 .ecplus-form-element
 {
-	padding: 0.5em 0.25em 0.5em 0.25em;
+	padding: 0.5em 1em 0.5em 1em;
 }
 
 .ecplus-form-element p.title
@@ -736,7 +764,7 @@ tr.alt
 	color: #444444;
 	display : inline-block;
 	font-size : 10pt;
-	margin : 0.25em 0.25em 0.25em 0.25em;
+	margin :2px;
 	padding : 0.25em 1.5em 0.25em 1.5em;
 	text-align : center;
 }
@@ -745,8 +773,8 @@ tr.alt
 {
 	color: #000000;
 	text-decoration : none;
-	border-color:black;
-	background-color: #DDDDDD;
+	border: 2px solid black;
+	margin : 0px;
 }
 
 .button.danger, .ui-widget-content.danger, .ui-button.danger
@@ -889,31 +917,31 @@ tr.alt
 .ecplus-text-element
 {
 
-	background : url("../images/textinput.png") 2px 100% no-repeat;	
+	background : url("../images/textinput.png") 1em 100% no-repeat;	
 }
 
 .ecplus-fk-element
 {
 
-	background : url("../images/fk.png") 2px 100% no-repeat;	
+	background : url("../images/fk.png") 1em 100% no-repeat;	
 }
 
 .ecplus-numeric-element
 {
 
-	background : url("../images/numbericinput.png") 2px 100% no-repeat;	
+	background : url("../images/numbericinput.png") 1em 100% no-repeat;	
 }
 
 .ecplus-date-element
 {
 
-	background : url("../images/dateinput.png") 2px 100% no-repeat;	
+	background : url("../images/dateinput.png") 1em 100% no-repeat;	
 }
 
 .ecplus-time-element
 {
 
-	background : url("../images/timeinput.png") 2px 100% no-repeat;	
+	background : url("../images/timeinput.png") 1em 100% no-repeat;	
 }
 
 .ecplus-select1-element .title
