@@ -1558,7 +1558,7 @@ function removeForm(name)
             break;
 		}   
         
-        delete project.forms[frm];
+        delete project.forms[name];
         
 	}
 }
