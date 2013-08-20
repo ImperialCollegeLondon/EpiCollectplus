@@ -45,3 +45,4 @@ instructions*
 .htaccess
 /node_modules
 /.idea
+/docs

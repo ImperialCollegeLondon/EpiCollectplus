@@ -88,8 +88,8 @@
 					var curpage = location.href.trimChars('/');
 					$("#menu p").remove();
 					$("#menu").append("<p>This project's homepage is <a href=\"" + curpage + "\">" + curpage + "</a></p>");
-					$("#menu").append('<p>Now that you have created this project you can <a href="' + curpage + '/formBuilder">create the project forms</a> and <a href="' + curpage + '/manage">update the project\'s settings</a> to change who can access the project and add an image or desctription to the project</p>');
-					$("#menu").append('<p>Once you have created your forms you can update the forms using the <a href="' + curpage + '/formBuilder">Edit Forms</a> option and manager the other project settings using <a href="' + curpage + '/manage">Manage</a> option above this message.</p>');
+					$("#menu").append('<p>Congratulations, you have now created your project wesbite. Before submitting data you must create a Form - to do this click the <a href="' + curpage + '/formBuilder">Edit Forms</a> and <a href="' + curpage + '/manage"> button above. For instructions please click the link at the top left of this page.</p>');
+					$("#menu").append('<p>You can also add some explanatory text and upload an image which will appear here by clicking the  <a href="' + curpage + '/manage">Manage Project</a> button near the top of the page. You can also update user premissions and other project settings from this page.</p>');
 				}
 				
 				$("select").change(function(evt)
