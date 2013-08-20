@@ -802,17 +802,14 @@ function projectHome()
                             $tblList .= "<div class=\"tblDiv\"><a class=\"tblName\" href=\"{$prj->name}/{$tbl->name}\">{$tbl->name}</a><a href=\"{$prj->name}/{$tbl->name}\">View All Data</a> | <form name=\"{$tbl->name}SearchForm\" action=\"./{$prj->name}/{$tbl->name}\" method=\"GET\"> Search for {$tbl->key} <input type=\"text\" name=\"{$tbl->key}\" /> <a href=\"javascript:document.{$tbl->name}SearchForm.submit();\">Search</a></form></div>";
                     }
 
-                    $imgName = $prj->image ? $prj->image : "images/projectPlaceholder.png";
+                    $imgName = $prj->image;
 					
-                    
+                    $image = '';
                     
                     if( file_exists($imgName) )
                     {
-                            $imgSize = getimagesize($imgName);
-                    }
-                    else
-                    {
-                            $imgSize = array(0,0);
+                           $imgSize = getimagesize($imgName);
+                           $image = sprintf('<img class="projectImage" src="%s" alt="Project Image" />', $imgName);#, $imgSize[0], $imgSize[1]);
                     }
 
                     $adminMenu = '';
@@ -821,15 +818,15 @@ function projectHome()
 
                     if( $role == 3 )
                     {
-                            $adminMenu = "<span class=\"button-set\"><a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Edit Forms</a></span>";
+                            $adminMenu = "<span class=\"button-set\"><a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Create or Edit Forms</a></span>";
                     }
+                    
+                   
 
                     $vals =  array(
                             'projectName' => $prj->name,
-                            'projectDescription' => $prj->description && $prj->description != "" ? $prj->description : "Project homepage for {$prj->name}",
-                            'projectImage' => str_replace($prj->name, $imgName, $curpage),
-                            'imageWidth' => $imgSize[0],
-                            'imageHeight' =>$imgSize[1],
+                            'projectDescription' => $prj->description,
+                            'projectImage' => $image,
                             'tables' => $tblList,
                             'adminMenu' => $adminMenu,
                             'userMenu' => ''

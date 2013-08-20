@@ -815,17 +815,6 @@ tr.alt
 	color : #00AA00;
 }
 
-.projectImage
-{
-	float:right;
-    height : 150px;
-}
-
-#projectDescription
-{
-    min-height: 150px;
-}
-
 .hMenu
 {
 	width : 75%;

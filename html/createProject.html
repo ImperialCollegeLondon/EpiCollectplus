@@ -1,5 +1,10 @@
 {{style}}	
 	<style type="text/css">
+		h4
+		{
+			margin : 1.2em 0 0.7 !important;
+		}
+	
 		#uploadxml
 		{
 			border: 0;
@@ -31,8 +36,7 @@
 		.section
 		{
 			display: inline-block;
-			width : 50em;
-			height: 50em;
+			width : 60%;
 		}
 		
 		.panelSwitcher 
@@ -44,6 +48,18 @@
 		.remove
 		{
 			width : 6.5em;		
+		}
+		
+		.right-panel
+		{
+			float:right;
+			width:37%;
+			padding : 0 1em;
+		}
+		
+		.right-panel ul
+		{
+			margin : 1.3em 0 2em;
 		}
 	</style>
 {{/style}}
@@ -241,10 +257,9 @@
   &gt; <a href="createProject.html">Create Project</a>
 {{/breadcrumbs}}
 {{main}}
-	  <h1 id="title">Create a Project - <span class="section_title"></span></h1>
+	  <h1 id="title"><span class="section_title"></span></h1>
 	  <div id="message" class="flashes"></div>
-	  <div style="float:right">
-	  	<h3>GETTING STARTED:</h3>
+	  <div class="right-panel">
          <ul>
            <li><a href="http://www.epicollect.net/plus_instructions/">Read the Instructions</a></li>
            <li><a href="http://www.plosone.org/article/info:doi/10.1371/journal.pone.0006968" target="_blank"><img src="images/pdf.gif" alt="brochure" height="16" width="16"> Read
@@ -252,9 +267,9 @@
            <li><a href="javascript:void(0)" onclick="contactForm('NULL','NULL')">Leave
                feedback</a></li>
        </ul>
-       <p>&nbsp;</p>
-            <h3>Epicollect is provided free of charge with funding
-              provided by: </h3>
+    
+            <h4>Epicollect is provided free of charge with funding
+              provided by: </h4>
            <p><img src="images/wtlogo.gif" alt="wt_logo" align="bottom" height="27" width="171"></p>
 	  </div> 
 	  <form id="projectOptions" action="create" method="POST">
@@ -265,7 +280,6 @@
 				<p>Once you have created a project you can then design a form for data collection. You can also amend the look and feel of your homepage by adding some explanatory text about your project and upload an image.</p>
 
 				<p>Please read the instructions prior to proceeding.</p> 
-			
 			  	<h4>Choose a name for the project; project names must only contain letters, numbers and underscores.</h4>
 			  	<input name="name" />
 			  	<div id="projectNameMsg" class="msg"></div>
@@ -294,7 +308,7 @@
 				<a class="panelSwitcher prev" href="javascript:goTo('projectDef');"> Back </a>
 				
 			</div>
-			<div id="listing" class="section" title="Listing of homepage">
+			<div id="listing" class="section" title="Listing on homepage">
 				<!-- <h2>3. Project Listing on the Homepage</h2> -->
 				<p>Here you can choose whether you would like your project to appear in a list of projects available for anyone to browse.  This will encourage users to add data to your project. If you choose to do this then consider adding a description and project image through the 'Manage Project' page.</p>
 				<div id="listed" class="choice">

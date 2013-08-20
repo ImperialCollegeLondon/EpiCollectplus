@@ -32,6 +32,24 @@
 		{
 			width : 15em;
 		}
+		
+		#projectDescription
+		{
+			position: relative;
+			display : inline-block;
+			width: 70%;
+		}
+		
+		.projectImage
+		{
+			max-height : 400px;
+			max-width : 27%;
+			display:inline-block;
+			vertical-align : top;
+			margin : 0.75em;
+		
+		}
+		
 	</style>
 {{/style}}
 
@@ -86,9 +104,9 @@
 				if(frmCount == 0)
 				{
 					var curpage = location.href.trimChars('/');
-					$("#menu p").remove();
+					$("#menu p, #menu h1").remove();
 					$("#menu").append("<p>This project's homepage is <a href=\"" + curpage + "\">" + curpage + "</a></p>");
-					$("#menu").append('<p>Congratulations, you have now created your project wesbite. Before submitting data you must create a Form - to do this click the <a href="' + curpage + '/formBuilder">Edit Forms</a> and <a href="' + curpage + '/manage"> button above. For instructions please click the link at the top left of this page.</p>');
+					$("#menu").append('<p>Congratulations, you have now created your project website. Before submitting data you must create (a) form(s). To do this click the <a href="' + curpage + '/formBuilder">Create or Edit Forms</a> and <a href="' + curpage + '/manage"> button above. For instructions please click the link at the top left of this page.</p>');
 					$("#menu").append('<p>You can also add some explanatory text and upload an image which will appear here by clicking the  <a href="' + curpage + '/manage">Manage Project</a> button near the top of the page. You can also update user premissions and other project settings from this page.</p>');
 				}
 				
@@ -108,9 +126,8 @@
 {{main}}
 	<h1>{#projectName#}</h1>
 	<div id="projectPanel">{#adminMenu#} <a href="{#projectName#}.xml" class="button" target="_blank">Show XML</a></div>
-	<p id="projectDescription">
-		<img class="projectImage" src="{#projectImage#}" alt="Project Image" width="{#imgWidth#}" height="{#imgHeight#}" />{#projectDescription#}</p>
-	<p>To view all data from a particular table click the relevant button, or to search, enter an ID in the text box and then click the button</p>
-	<div id="menu"></div>
+	<p id="projectDescription">{#projectDescription#}</p>{#projectImage#}
+	
+	<div id="menu"><h1>&nbsp;</h1><p>To view all data from a particular table click the relevant button, or to search, enter an ID in the text box and then click the button</p></div>
 	
 {{/main}}
