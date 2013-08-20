@@ -821,8 +821,6 @@ function projectHome()
                             $adminMenu = "<span class=\"button-set\"><a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Create or Edit Forms</a></span>";
                     }
                     
-                   
-
                     $vals =  array(
                             'projectName' => $prj->name,
                             'projectDescription' => $prj->description,
