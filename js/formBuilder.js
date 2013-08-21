@@ -403,6 +403,7 @@ PropertiesForm.prototype.hide = function(){
 PropertiesForm.prototype.show = function(){
 	this.setForCtrl(currentControl);
 	this.div.show();
+	this.setHandlers();
 };
 
 PropertiesForm.prototype.clearOptions = function()
@@ -428,11 +429,13 @@ PropertiesForm.prototype.setHandlers = function()
 		updateSelected(true);
 		updateJumps();
 	});
-	
+
 	$('#inputId', this.div).bind('change', function(evt){
+
     	if(currentControl)
     	{
     		var msg = project.validateFieldName(currentForm, currentControl, $(this).val());
+    	
     		if(msg !== true)
     		{
     			EpiCollect.dialog({ content : msg });
@@ -557,9 +560,6 @@ $(function()
 	propertiesForm = new PropertiesForm('details');
 	propertiesForm.hide();
 	
-	//$("[allow]").hide();
-	//$("[notfor]").show();
-	
 	$('#destination').sortable({
 		revert : 50,
 		tolerance : 'pointer',
@@ -615,46 +615,6 @@ $(function()
 			setSelected(jq);
 		}
 	});
-	
-	/*$("#key").change(function(evt){
-		if(evt.target.checked)
-		{
-			$("[allow*=key]").show();
-			$("[notfor*=key]").hide();
-		}
-		else
-		{
-			$("[allow*=key]").hide();
-			$("[notfor*=key]").show();
-		}
-	});
-	$('#genkey').change(function(evt){
-		if(evt.target.checked)
-		{
-			$("[allow*=gen]").show();
-			$("[notfor*=gen]").hide();
-		}
-		else
-		{
-			$("[allow*=gen]").hide();
-			$("[notfor*=gen]").show();
-		}
-	});*/
-	
-	
-	/*$("#options .removeOption").unbind('click').bind('click', removeOption);
-	$("#jumps .remove").unbind('click').bind('click', removeOption);
-    //$('#destination').append('<img src="../images/editmarker.png" class="editmarker">');
-   // $('.editmarker').hide();*/
-//    $('.last input, .last select').change(function(){ 
-//    	//$('#destination .selected').addClass('editing');
-//    	dirty = true;
-//    });
-    //$('.last').hide();
-    //$('#required').change(function(evt)
-   // {
-    //    $('[name=jumpType] option[value=NULL]').toggle(!$( this ) .prop('checked'));
-    //});
     
     errorList = new ErrorList('errorList');
 });
@@ -830,55 +790,6 @@ function addControlToForm(id, text, type, _jq)
 		jq.addClass('key');
 	}
 }
-
-function addOption()
-{
-	var panel = $("#options");
-	panel.append('<div class="selectOption"><hr /><label title="The text displayed to the user">Label</label><input title="The text displayed to the user" name="optLabel" size="12" />'
-			+ '<div style="float:right; font-weight:bold;font-size:10pt;"></div>'
-			+ '<br /><label title="The value stored in the database"l>Value</label><input title="The value stored in the database" name="optValue" size="12" />'
-			+ '<div style="float:right; font-weight:bold;font-size:10pt;"></div><br /><a href="javascript:void(0);" class="button removeOption" >Remove Option</a> </div>');
-
-    setHandlers();
-}
-
-function removeOption(evt)
-{
-	var ele = evt.target;
-	while(ele.tagName !== "DIV") ele = ele.parentNode;
-	
-	$(ele).remove();
-	updateJumps();
-}
-
-
-
-/*function addJump()
-{
-	var panel = $("#jumps");
-	
-	var sta = '<div class="jumpoption"><hr /><label>Jump when </label><select name="jumpType"><option value="">value is</option><option value="!">value is not</option><option value="NULL">field is blank</option><option value="ALL">field has any value</option></select>';
-	
-	if(currentControl.type === 'input')
-	{
-		panel.append(sta + '<label>Value</label><input type="text" class="jumpvalues" /><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >Remove Jump</a></div>');
-	}
-	else
-	{
-		panel.append(sta + '<label>Value</label> <select class="jumpvalues"></select><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >Remove Jump</a></div>');
-	}
-	
-	$("#jumps .remove").unbind('click').bind('click', removeJump);
-   
-	setHandlers();
-}*/
-//function removeJump(evt)
-//{
-//	var ele = evt.target;
-//	while(ele.tagName !== "DIV") ele = ele.parentNode;
-//	
-//	$(ele).remove();
-//}
 
 function drawFormControls(form)
 {	
@@ -1072,14 +983,29 @@ function validateControl(ctrl, _type, callback)
 	if(_type && _type.match(/^select1?|radio$/))
 	{
 		if(ctrl.options.lenghth == 0){ messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "Multiple choice question does not have any options" }); }
+		
+		var optvals = [];
+		
 		for (var  i = 0 ; i < ctrl.options.length; i++ )
 		{
 			if(ctrl.options[i].label == '') messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "Option "+i+" does not have a label" });
 			if(ctrl.options[i].value == '') messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "Option "+i+" does not have a value" });
+			
+			for (var j = 0 ; j < optvals.length ; j++)
+			{
+				console.debug(ctrl.options[i].value, optvals[j], ctrl.options[i].value == optvals[j]);
+				if(ctrl.options[i].value == optvals[j])
+				{
+					messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "More thant one option with the value " + optvals[j] + " each value must be unique." });
+				}
+			}
+			optvals.push(ctrl.options[i].value);
 		}
 	}
 	
-	//Validate Jumps?
+	//Validate Options
+	
+	
 	
 	if(ctrl.jump && ctrl.jump !== '')
 	{
@@ -1577,8 +1503,6 @@ function removeSelected()
 	
 	delete currentForm.fields[jq.prop("id")];
 	jq.remove();
-	
-
 	unselect();
 	
 	//TODO : Neaten? MAybe have validate project attached to a "changed" event on the form?
