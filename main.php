@@ -823,7 +823,7 @@ function projectHome()
                     
                     $vals =  array(
                             'projectName' => $prj->name,
-                            'projectDescription' => $prj->description,
+                            'projectDescription' => preg_replace('/\<\/?(p|h[\dr]|div|section|img)\s?[a-z0-9\=\"\/\~\.\s]*\>/', '', $prj->description),
                             'projectImage' => $image,
                             'tables' => $tblList,
                             'adminMenu' => $adminMenu,
