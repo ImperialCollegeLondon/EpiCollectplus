@@ -946,7 +946,7 @@ function validateControl(ctrl, _type, callback)
 
         if(ctrl.min !== '')
         {
-        	var validators = ctrl.getValidators(['key','fk', 'min', 'max', 'required']);
+        	var validators = ctrl.getValidators(['key','fk', 'min', 'max', 'required', 'verify']);
     		for( var v = 0; v < validators.length; v++ )
     		{
     			var vali = validators[v];
@@ -961,7 +961,7 @@ function validateControl(ctrl, _type, callback)
         }
         if(ctrl.max !== '')
         {
-        	var validators = ctrl.getValidators(['key','fk', 'max', 'min', 'required']);
+        	var validators = ctrl.getValidators(['key','fk', 'max', 'min', 'required', 'verify']);
     		for( var v = 0; v < validators.length; v++ )
     		{
     			var vali = validators[v];
@@ -1058,7 +1058,7 @@ function validateControl(ctrl, _type, callback)
 	
 	if( !!df_val )
 	{
-		var validators = ctrl.getValidators(['key','fk', 'required']);
+		var validators = ctrl.getValidators(['key','fk', 'verify', 'required']);
 		for( var v = 0; v < validators.length; v++ )
 		{
 			var vali = validators[v];
