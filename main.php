@@ -9,8 +9,8 @@ $dat = new DateTime('now');
 $SITE_ROOT = '';
 $PUBLIC = false;
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.5";
-$BUILD = "18";
+$CODE_VERSION = "1.5a";
+$BUILD = "19";
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
