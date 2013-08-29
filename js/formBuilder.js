@@ -301,6 +301,8 @@ PropertiesForm.prototype.setForKey = function()
 	
 	//check required and disable
 	$('.required input, .key input').prop('checked', true).prop('disabled', true);
+	
+	$('.hidden', this.div).show()
 };
 
 /**
@@ -334,8 +336,15 @@ PropertiesForm.prototype.setForCtrl = function(ctrl)
 	{
 		$('.ctrl.' + ctl).show();
 		//set to default
-
-		
+		if(ctl == 'time')
+		{
+			var timectl = $('.time select', this.div);
+			timectl.val(timectl[0].options[0].value);
+		}else if(ctl == 'time')
+		{
+			var timectl = $('.date select', this.div);
+			timectl.val(timectl[0].options[0].value);
+		}
 	}
 	
 	this.setValuesFor(ctrl);
@@ -349,8 +358,8 @@ PropertiesForm.prototype.setValuesFor = function(ctrl)
 	$('.id input', this.div).val(ctrl.id);
 	$('.required input', this.div).prop('checked', ctrl.required);
 	$('.title input', this.div).prop('checked', ctrl.title);
-	$('.date select', this.div).val(ctrl.date || ctrl.setDate);
-	$('.time select', this.div).val(ctrl.time || ctrl.setTime);
+	if( ctrl.date || ctrl.setDate ) $('.date select', this.div).val(ctrl.date || ctrl.setDate);
+	if( ctrl.time || ctrl.setTime ) $('.time select', this.div).val(ctrl.time || ctrl.setTime);
 	$('.set input', this.div).prop('checked', ctrl.setDate || ctrl.setTime);
 	$('.default input', this.div).val(ctrl.defaultValue);
 	$('.regex input', this.div).val(ctrl.regex);
@@ -362,7 +371,6 @@ PropertiesForm.prototype.setValuesFor = function(ctrl)
 	$('.max input', this.div).val(ctrl.max);
 	
 	if(ctrl.isKey) this.setForKey();
-	
 
 	for ( var i = 0; i < ctrl.options.length; i++ )
 	{
@@ -946,7 +954,7 @@ function validateControl(ctrl, _type, callback)
 
         if(ctrl.min !== '')
         {
-        	var validators = ctrl.getValidators(['key','fk', 'min', 'max', 'required']);
+        	var validators = ctrl.getValidators(['key','fk', 'min', 'max', 'required', 'verify']);
     		for( var v = 0; v < validators.length; v++ )
     		{
     			var vali = validators[v];
@@ -961,7 +969,7 @@ function validateControl(ctrl, _type, callback)
         }
         if(ctrl.max !== '')
         {
-        	var validators = ctrl.getValidators(['key','fk', 'max', 'min', 'required']);
+        	var validators = ctrl.getValidators(['key','fk', 'max', 'min', 'required', 'verify']);
     		for( var v = 0; v < validators.length; v++ )
     		{
     			var vali = validators[v];
@@ -993,7 +1001,6 @@ function validateControl(ctrl, _type, callback)
 			
 			for (var j = 0 ; j < optvals.length ; j++)
 			{
-				console.debug(ctrl.options[i].value, optvals[j], ctrl.options[i].value == optvals[j]);
 				if(ctrl.options[i].value == optvals[j])
 				{
 					messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "More thant one option with the value " + optvals[j] + " each value must be unique." });
@@ -1058,7 +1065,7 @@ function validateControl(ctrl, _type, callback)
 	
 	if( !!df_val )
 	{
-		var validators = ctrl.getValidators(['key','fk', 'required']);
+		var validators = ctrl.getValidators(['key','fk', 'verify', 'required']);
 		for( var v = 0; v < validators.length; v++ )
 		{
 			var vali = validators[v];
