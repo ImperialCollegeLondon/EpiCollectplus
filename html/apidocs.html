@@ -6,7 +6,6 @@
 {{main}}
     <header>
         <h1>API Documentation</h1>
-        <p class="info">The current version of the API is read-only, and is only available for Public projects.</p>
         <p>All of the calls below are URLS and described relative to the homepage of the server. So if your server is the webroot of your site, the url for the project list (<code>/projects</code>) will be <code> http://www.example.com/projects </code> and if it 
         was in the sub folder <i>epicollect</i> the url would be <code> http://www.example.com/epicollect/projects </code> </p>
     </header>
@@ -14,7 +13,8 @@
         <h1>General Functions</h1>
         <section class="function">  
             <h2>List Projects</h2>
-            <p><strong>URL : <code>/projects</code></p>
+            <h3>Login : optional, if logged in the user's private projects are listed too</h3>
+            <p><strong>URL</strong> : <code>/projects</code></p>
             <h3>Return <span class="formats">JSON - array of dictionaries/objects</span></h3>
             
             <h3>Ouput properties<h3>
@@ -43,13 +43,15 @@
         
          <section class="function">  
             <h2>Project XML Description</h2>
-            <p><strong>URL : <code>/&lt;projectname&gt;.xml</code></p>
+            <h3>Login : required</h3>
+            <p><strong>URL </strong>: <code>/&lt;projectname&gt;.xml</code></p>
             <h3>Return <span class="formats">XML - ECML project description</span></h3>
          </section>
          
          <section class="function">  
             <h2>Project Usage</h2>
-            <p><strong>URL : <code>/&lt;projectname&gt;/usage</code></p>
+            <h3>Login : required for private projects</h3>
+            <p><strong>URL</strong> : <code>/&lt;projectname&gt;/usage</code></p>
             <h3>Return <span class="formats">JSON - Array of objects</span></h3>
              <h3>Ouput properties<h3>
             <table>
@@ -71,6 +73,80 @@
                 </tbody>
             </table>
          </section>
+         <section class="function">  
+            <h2>Upload data</h2>
+            <h3>Login : not required</h3>
+            <p><strong>URL</strong> : <code>/&lt;projectname&gt;/upload</code></p>
+            <p>Upload a record or file (Image/Video/Sound) to the server. For files, the file should be uploaded seperately, and it's 
+            filename submitted as the value for the field when the data is uploaded.</p>
+            <h3>Params</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th> <th>Type</th> <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                	<tr>
+                		<td>table</td><td>String</td><td>the name of the form to upload data to</td>
+                	</tr>
+                	<tr>
+                		<td>&lt;fieldname&gt;</td><td>String</td><td>Key-value pairs define the data to be sent.</td>
+                	</tr><tr>
+                		<td>&lt;fieldname&gt;_&lt;component&gt;</td><td>String</td><td>Key-value pairs define the data to be sent. For multi-component fields such as Locations each compnenent should be sent seperately.
+                		</td>
+                	</tr>
+                </tbody>
+            </table>
+             <h3>Return</h3>
+             <p>"1" for success and "0" for failure in the response body.</p>
+         </section>
+                  <section class="function">  
+            <h2>Upload data</h2>
+            <h3>Login : required</h3>
+            <p><strong>URL</strong> : <code>/&lt;projectname&gt;&lt;form_name&gt;</code></p>
+            <p>Upload a record or file (Image/Video/Sound) to the server. For files, the file should be uploaded seperately, and it's 
+            filename submitted as the value for the field when the data is uploaded.</p>
+            <h3>Params</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th> <th>Type</th> <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                	<tr>
+                		<td>&lt;fieldname&gt;</td><td>String</td><td>Key-value pairs define the data to be sent.</td>
+                	</tr><tr>
+                		<td>&lt;fieldname&gt;_&lt;component&gt;</td><td>String</td><td>Key-value pairs define the data to be sent. For multi-component fields such as Locations each compnenent should be sent seperately.
+                		</td>
+                	</tr>
+                </tbody>
+            </table>
+             <h3>Return</h3>
+             <p>"1" for success and "0" for failure in the response body.</p>
+         </section>
+           <section class="function">  
+            <h2>Project Data</h2>
+            <p><strong>URL</strong> : <code>/&lt;projectname&gt;/&lt;form_name&gt;.json</code></p>
+            <h3>Return <span class="formats">JSON - Array of entries as dictionaries</span></h3>
+          
+            </table>
+         </section>
+         
+         
+    </section>
+    <section>
+    	<h1>Data Type compnents</h1>
+    	<h2>Location</h2>
+    	
+    	<dl>
+    		<dt>lat</dt><dd>The latitude of a location</dd>
+    		<dt>lon</dt><dd>Longitude</dd>
+    		<dt>alt</dt><dd>Altitude (Elevation)</dd>
+    		<dt>provider</dt><dd>Where did the coordinate come from</dd>
+    		<dt>bearing</dt><dd>The bearing the device was pointing in when the reading was taken</dd>
+    	</dl>
     </section>
     
 {{/main}}
