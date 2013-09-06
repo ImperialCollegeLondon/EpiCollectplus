@@ -844,7 +844,7 @@ EpiCollect.Project = function()
 		}
                     
         if(name.match(/\s/gi)) return "The form name cannot contain spaces";
-        if(name.match(/[^A-Z0-9_-]/gi)) return "The form name can only contain letter, numbers and _ or -";
+        if(name.match(/[^A-Z0-9_]/gi)) return "The form name can only contain letter, numbers and underscores";
         return true;
 	};
 	
