@@ -259,21 +259,21 @@ FormList.prototype.addNewButton = function()
 function PropertiesForm(div_id)
 {
 	this.settings = {
-		"text" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "searchable" : "", "default" : "", "regex" : "", "verify" : ""},
-		"numeric" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "default" : "", "regex" : "", "verify" : "", "integer" : true, "decimal" : "",  "min" : "", "max" : ""},
-		"date" : {"label" : "", "id" : "", "required" : "", "title" : "", "verify" : "", "date" : "", "set" : ""},
-		"time" : {"label" : "", "id" : "", "required" : "", "title" : "", "verify" : "", "time" : "", "set" : ""},
+		"text" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "searchable" : "", "default" : "", "regex" : "", "verify" : "", "jumps" : ""},
+		"numeric" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "jumps" : "", "default" : "", "regex" : "", "verify" : "", "integer" : true, "decimal" : "",  "min" : "", "max" : ""},
+		"date" : {"label" : "", "id" : "", "required" : "", "title" : "", "verify" : "", "jumps" : "", "date" : "", "set" : ""},
+		"time" : {"label" : "", "id" : "", "required" : "", "title" : "", "verify" : "","jumps" : "", "time" : "", "set" : ""},
 		"select1" : {"label" : "", "id" : "", "required" : "", "title" : "", "options" : "", "jumps" : "", "default" : ""},
 		"radio" : {"label" : "", "id" : "", "required" : "", "title" : "", "options" : "", "jumps" : "", "default" : ""},
 		"select" : {"label" : "", "id" : "", "required" : "", "title" : "", "options" : "", "jumps" : "", "default" : ""},
-		"textarea" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "searchable" : "", "default" : "", "regex" : "", "verify" : ""},
-		"location" : {"label" : "", "id" : "", "required" : ""},
-		"photo" : {"label" : "", "id" : "", "required" : ""},
-		"video" : {"label" : "", "id" : "", "required" : ""},// Quality/format settings?
-		"audio" : {"label" : "", "id" : "", "required" : ""}, // Quality/format settings?
-		"barcode" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "searchable" : "", "default" : "", "regex" : "", "verify" : ""},
-		"branch" : {"label" : "", "id" : "", "branch" : ""},
-		"fk" : {"fk" : "", "hidden" : ""}
+		"textarea" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "","jumps" : "", "searchable" : "", "default" : "", "regex" : "", "verify" : ""},
+		"location" : {"label" : "", "id" : "", "required" : "", "jumps" : ""},
+		"photo" : {"label" : "", "id" : "", "required" : "", "jumps" : ""},
+		"video" : {"label" : "", "id" : "", "required" : "", "jumps" : ""},// Quality/format settings?
+		"audio" : {"label" : "", "id" : "", "required" : "", "jumps" : ""}, // Quality/format settings?
+		"barcode" : {"label" : "", "id" : "", "required" : "", "title" : "", "key" : "", "searchable" : "", "jumps" : "", "default" : "", "regex" : "", "verify" : ""},
+		"branch" : {"label" : "", "id" : "", "branch" : "", "jumps" : ""},
+		"fk" : {"fk" : "", "hidden" : "", "jumps" : ""}
 	};
 	
 	this.div = $('#' + div_id);
@@ -438,6 +438,10 @@ PropertiesForm.prototype.setHandlers = function()
 		updateJumps();
 	});
 
+	$('#jumps .jumpType').bind('change', function(evt){
+		$('.jumpvalues', $(this).parents('.jumpoption')).toggle(!$(this).val().match(/^(NU|A)LL$/));
+	});
+	
 	$('#inputId', this.div).bind('change', function(evt){
 
     	if(currentControl)
@@ -482,36 +486,46 @@ PropertiesForm.prototype.addJump = function(destination, condition)
 		return;
 	}
 	
-	var sta = '<div class="jumpoption"><label>Jump when </label><select class="jumpType"><option value="">value is</option><option value="!">value is not</option><option value="NULL">field is blank</option><option value="ALL">always</option></select>';
+	var sta = '<div class="jumpoption"><label>When</label><select class="jumpType"><option value="">value is</option><option value="!">value is not</option><option value="NULL">field is blank</option><option value="ALL">always</option></select>';
 	
 	if(currentControl.type === 'input')
 	{
-		panel.append(sta + '<label>Value</label><input type="text" class="jumpvalues" /><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >&nbsp;</a></div>');
+		panel.append(sta + '<label class="jumpvalues">Value</label><input type="text" class="jumpvalues" /><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >&nbsp;</a></div>');
 	}
 	else
 	{
-		panel.append(sta + '<label>Value</label> <select class="jumpvalues"></select><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >&nbsp;</a></div>');
+		panel.append(sta + '<label class="jumpvalues">Value</label> <select class="jumpvalues"></select><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >&nbsp;</a></div>');
 	}
 	
 	updateJumps();
+	console.debug(currentControl.type);
+	if(!currentControl.type.match(/^(select1?|radio)$/i))
+	{
+		$('.jumpoption .jumpType').val('ALL');
+		$('.jumpoption .jumpType').prop('disabled', true);
+		$('.jumpoption .jumpvalues').hide();
+	}
 	
-	if(condition.match(/^![0-9]+$/))
+	if(condition)
 	{
-		$('#jumps .jumpoption:last-child .jumpType').val('!');
-		$('#jumps .jumpoption:last-child .jumpvalues').val(condition.substr(1));
-	}
-	else if(condition.match(/^all$/i))
-	{
-		$('#jumps .jumpoption:last-child .jumpType').val('ALL');
-	}
-	else if(condition.match(/^null$/i))
-	{
-		$('#jumps .jumpoption:last-child  .jumpType').val('NULL');
-	}
-	else
-	{
-		$('#jumps .jumpoption:last-child .jumpType').val('');
-		$('#jumps .jumpoption:last-child .jumpvalues').val(condition);
+		if(condition.match(/^![0-9]+$/))
+		{
+			$('#jumps .jumpoption:last-child .jumpType').val('!');
+			$('#jumps .jumpoption:last-child .jumpvalues').val(condition.substr(1));
+		}
+		else if(condition.match(/^all$/i))
+		{
+			$('#jumps .jumpoption:last-child .jumpType').val('ALL');
+		}
+		else if(condition.match(/^null$/i))
+		{
+			$('#jumps .jumpoption:last-child  .jumpType').val('NULL');
+		}
+		else
+		{
+			$('#jumps .jumpoption:last-child .jumpType').val('');
+			$('#jumps .jumpoption:last-child .jumpvalues').val(condition);
+		}
 	}
 	
 	$('#jumps .jumpoption:last-child .jumpdestination').val(destination);
@@ -982,7 +996,7 @@ function validateControl(ctrl, _type, callback)
     			}
     		}
         }
-        if((!!ctrl.min || ctrl.min === 0) && (!!ctrl.max|| ctrl.max === 0)  && ctrl.min >= ctrl.max)
+        if((!!ctrl.min || ctrl.min === 0) && (!!ctrl.max|| ctrl.max === 0)  && Number(ctrl.min) >= Number(ctrl.max))
         {
         	messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "<em>Minimum</em> must be smaller than the <em>Maximum</em>" });
         }
@@ -1035,13 +1049,12 @@ function validateControl(ctrl, _type, callback)
 
 			if(des !== 'END')
 			{
-				if(des === '')
+				if( !des || des === 'null' )
 				{
 					messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> Jump has no destination.' });
 				}
 				else
 				{
-		
 					var c_idx = ctrl.index;
 					var j_idx = ctrl.form.fields[des].index;
 					
@@ -1209,7 +1222,7 @@ function updateSelected(is_silent)
 	for(var i = jn; i--;)
 	{
 		var jumpType = $('.jumpType', jumpCtrls[i]).val();
-		var jval = (jumpType.length > 1 ? jumpType :  jumpType + (Number($(".jumpvalues", jumpCtrls[i]).val())));
+		var jval = (jumpType.length > 1 ? jumpType :  jumpType + (Number($("select.jumpvalues", jumpCtrls[i]).val())));
 		
 		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + jval + (jump === "" ? "" : "," + jump);
 	}
@@ -1322,7 +1335,7 @@ function updateJumps()
             
         var opts = currentControl.options;
         
-        var fieldCtls = $(".jumpvalues");
+        var fieldCtls = $("select.jumpvalues");
         
         var vals = [];
         
@@ -1337,7 +1350,7 @@ function updateJumps()
             fieldCtls.append("<option value=\"" + (i + 1) + "\" >" + opts[i].label + "</option>");
         }
         
-        $(".jumpvalues").each(function(idx, ele){
+        $("select.jumpvalues").each(function(idx, ele){
              $(ele).val(vals[idx]);
         });
         
@@ -1379,7 +1392,7 @@ function updateJumps()
                 $(opts[i]).prop('disabled', !show);
                 if( opts[i].value === cField ) {
                     // hide the next + 1 element as there's no point jumping to the next question
-                    $(opts[++i]).prop('disabled', true);
+                    if( i < len - 2 ) $(opts[++i]).prop('disabled', true); // but don't disable the END OF FORM option 
                     show = true;
                 }
              }
