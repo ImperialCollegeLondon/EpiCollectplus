@@ -2174,6 +2174,7 @@ EpiCollect.Field = function()
 			return ret;
 		}
 		else if(this.type === "photo"){
+			console.debug(value);
 			if(value && !value.match(/^null$/i) && value !== "-1")
 			{
 				if(value.match(/^http:\/\//))
@@ -2182,7 +2183,7 @@ EpiCollect.Field = function()
 				}
 				else
 				{
-					return  "<a href=\"./" +formName+"/__getImage?img="+value+"\" target=\"__blank\"><img src=\"./" +formName+"/__getImage?img="+value+"&thumbnail=true\" alt=\""+value+"\" height=\"125\"/></a>";	
+					return  "<a href=\"" + location.href.toString().trimChars('/')  + "/__getImage?img="+value+"\" target=\"__blank\"><img src=\"" + location.href.toString().trimChars('/')  + "/__getImage?img="+value+"&thumbnail=true\" alt=\""+value+"\" height=\"125\"/></a>";	
 				}
 				
 			}
@@ -2204,7 +2205,7 @@ EpiCollect.Field = function()
                 else
                 {
 				    valUrl = "ec/uploads/" + project.name + "~" +value;
-				    checkurl = (location.href.replace(new RegExp(project.name + '/' + formName, 'i'), '') + valUrl).trimChars('/');
+				    checkurl = (location.href.replace(new RegExp(project.name + '/' + formName +'', 'i'), '').trimChars('/') + valUrl).trimChars('/');
                 }
 
                 checking[checkurl] = checkid;
