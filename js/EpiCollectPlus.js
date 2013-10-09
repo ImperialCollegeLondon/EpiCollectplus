@@ -855,12 +855,25 @@ EpiCollect.Project = function()
 	 * @param newName {String} Optional, if the field name hasn't been assigned to the field yet, then use this parameter to check it 
 	 * @returns true or a message describing an error
 	 */
-	this.validateFieldName = function(form, field, newName)
+	this.validateFieldName = function(form, field, newName, check_fk)
 	{
 		
         var name = newName ? newName : field.id; 
  
         if(name === "") return 'The field ID cannot be blank';
+        if(check_fk)
+        {
+        	for (var frm in this.forms)
+	        {
+	        	if(frm == form.name) continue;
+	        	console.debug(frm, this.forms[frm].key, name);
+	        	if(this.forms[frm].key.match(new RegExp(name, 'i')))
+	        	{
+	        		return '<em>' + name + '</em> is not a valid ID. The form ' + frm  +' has a key called ' + name;
+	        	}
+	        }
+        }
+        
 		if(form.fields[field.id] && form.fields[name] && form.fields[name].index != field.index)
 		{
 			return '<em>' + name + '</em> is not a valid ID. There is already a field called ' + name + ' in this form';

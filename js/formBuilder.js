@@ -1506,6 +1506,7 @@ function removeForm(name)
         
         delete project.forms[name];
         
+        $('.form:last').addClass('last');
 	}
 }
 
@@ -1728,7 +1729,7 @@ function askForKey(keyDeleted)
                     new_field.text =  vals.key_label;
                     new_field.type = vals.key_type === 'barcode' ? 'barcode' : 'input';
                     new_field.form = frm;
-                    new_field.isInt = (vals.key_type === 'numeric');
+                    new_field.isinteger = (vals.key_type === 'numeric');
                     new_field.genkey = false;
                     
                 }
@@ -1739,7 +1740,7 @@ function askForKey(keyDeleted)
                     new_field.text = 'Unique ID';
                     new_field.type = 'input';
                     new_field.form = currentForm;
-                    new_field.isInt = false;
+                    new_field.isinteger = false;
                     new_field.genkey = true;
                     vals.key_type = 'text';
                 }
@@ -1751,7 +1752,7 @@ function askForKey(keyDeleted)
                 
                 currentForm.fields[key_id] = new_field;
                 
-                var fieldNameValid = project.validateFieldName(frm, new_field);
+                var fieldNameValid = project.validateFieldName(frm, new_field, undefined, true);
                 
                 if(vals.key !== "yes" || (fieldNameValid === true && vals.key_label !== '' && vals.key_type !== ''))
                 {
