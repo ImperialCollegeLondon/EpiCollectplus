@@ -2218,7 +2218,7 @@ EpiCollect.Field = function()
                 else
                 {
 				    valUrl = "ec/uploads/" + project.name + "~" +value;
-				    checkurl = (location.href.replace(new RegExp(project.name + '/' + formName +'', 'i'), '').trimChars('/') + valUrl).trimChars('/');
+				    checkurl = (location.href.trimChars('/').replace(new RegExp(project.name + '/' + formName +'', 'i'), '') + valUrl).trimChars('/');
                 }
 
                 checking[checkurl] = checkid;
