@@ -1373,13 +1373,13 @@ EpiCollect.Form = function()
         });
 		
 		
-	
+        var ctx = this;
 		$('.ecplus-ac').each(function(idx, ele)
 		{
 			var jq = $(ele);
 			var pform = jq.attr('pform');
 			jq.autocomplete({
-				source : baseUrl+ "/../" + pform + "/title",
+				source : baseUrl+ "/../" + pform + "/" + ele.id,
 				minLength : 2,
 				open : function(evt, ui)
 				{
@@ -2016,8 +2016,6 @@ EpiCollect.Field = function()
 					   }
 					   
 					   this.required = true;
-					  // ctrl = "<select name=\""  + this.id + "\" id=\""  + this.id + "\"" + (fkfld ? " childcontrol=\"" + fkfld + "\"" : "") + " class=\"ecplus-input loading\" >";
-					   //get options;
 					   var cname = this.id;
 					   var key = frm.key;
 					   var title = frm.titleFields;
@@ -2030,11 +2028,10 @@ EpiCollect.Field = function()
 							   url : baseUrl + '/../' + this.fkTable + '/title?term=' + val + '&key_from=true',
 							   success : function(data, status, xhr)
 							   {
-								   //console.debug(data);
 								   if(data.trimChars() !== "")
 								   {
 									   $('#' + this.id)
-								   			.val(data)
+								   			//.val(data)
 								   			.removeClass('loading');
 									   
 								   }
@@ -2454,10 +2451,7 @@ EpiCollect.Field = function()
         	}
             
         	valid = valid && voter[v];
-        	
         }
-        
-        console.debug(complete, valid, voter);
         
         if(complete) 
         { 
@@ -2471,7 +2465,6 @@ EpiCollect.Field = function()
 	            }
 	            else
 	            {
-	            	console.debug('fire valid');
 	                control.addClass('valid');
 	                control.trigger({ type : 'valid', field : result.control_id });
 	            }

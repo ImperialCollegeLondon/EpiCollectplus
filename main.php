@@ -2501,7 +2501,7 @@ function entryHandler()
 		$secondary_field = getValIfExists($_GET, 'secondary_field');
 		$secondary_value = getValIfExists($_GET, 'secondary_value');
 		ini_set('max_execution_time', 60);
-		if($entId == 'title')
+		/*if($entId == 'title')
 		{
 			if($do)
 			{
@@ -2518,7 +2518,7 @@ function entryHandler()
 				echo $prj->tables[$frmName]->autoCompleteTitle($val, $secondary_field, $secondary_value);
 			}
 		}
-		elseif($do)
+		else*/if($do)
 		{
 			echo $prj->tables[$frmName]->validate($entId, $val);
 		}
