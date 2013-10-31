@@ -1176,7 +1176,7 @@
 		 * 
 		 * Altered, to account for the fact that commas break it!
 		 */
-		public function validateTitle($val, $secondaryField = Null, $secondaryValue = Null)
+		public function validateTitle($field,$val)
 		{			
 			$output = array('valid' => false);
 			
@@ -1184,7 +1184,7 @@
 			
 			$ents = '';
 			
-			if($secondaryField && $secondaryValue)
+			/*if($secondaryField && $secondaryValue)
 			{
 				$select = sprintf('SELECT entry from entryValue WHERE projectname = \'%s\' AND formName = \'%s\' AND fieldName=\'%s\' AND value=\'%s\' ', $this->projectName, $this->name, $secondaryField, $secondaryValue);
 				$res = $db->do_query($select);
@@ -1201,21 +1201,20 @@
 			}
 			
 			if($ents == '')
-			{
-				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') GROUP BY entry) a where title like \'%s\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $db->escapeArg($val) );
-			}
+			{*/
+				$select = sprintf('SELECT value FROM entryValue WHERE projectname = \'%s\' AND formName = \'%s\' and fieldName = \'%s\' and value = \'%s\'' , $this->projectName, $this->name, $this->key, $db->escapeArg($val) );
+			/*}
 			else
 			{
 				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title = \'%s\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $db->escapeArg($val) );
-			}
-			
+			}*/
+
 			$res = $db->do_query($select);
 			if($res === true)
 			{
 				while($row = $db->get_row_array())
-				{
-					
-					if($row['title'] == $val)
+				{	
+					if($row['value'] == $val)
 					{
 						$output = array('valid' => true);
 						break;

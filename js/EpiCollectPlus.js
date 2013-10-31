@@ -2025,7 +2025,7 @@ EpiCollect.Field = function()
 					   {
 						   ctrl.replace('ecplus-ac"', 'ecplus-ac loading"');
 						   this.form.pendingReqs.push($.ajax({
-							   url : baseUrl + '/../' + this.fkTable + '/title?term=' + val + '&key_from=true',
+							   url : baseUrl + '/../' + this.fkTable + '/' + this.fkField + '?term=' + val + '&key_from=true',
 							   success : function(data, status, xhr)
 							   {
 								   if(data.trimChars() !== "")
@@ -2332,7 +2332,7 @@ EpiCollect.Field = function()
         
         if( this.fkField && this.fkTable )
         {
-            validators.push({ name : 'fk' , params : { url : baseUrl + '/../' + this.fkTable + '/title' }});  
+            validators.push({ name : 'fk' , params : { url : baseUrl + '/../' + this.fkTable + '/' + this.id }});  
         }
     	
         for(var i = 0; ignore && i < ignore.length; i++)

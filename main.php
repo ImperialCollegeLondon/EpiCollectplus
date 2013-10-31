@@ -2501,26 +2501,9 @@ function entryHandler()
 		$secondary_field = getValIfExists($_GET, 'secondary_field');
 		$secondary_value = getValIfExists($_GET, 'secondary_value');
 		ini_set('max_execution_time', 60);
-		/*if($entId == 'title')
+		if($do)
 		{
-			if($do)
-			{
-				echo json_encode($prj->tables[$frmName]->validateTitle($val, $secondary_field, $secondary_value));				
-			}
-			elseif($key_from)
-			{
-
-				echo $prj->tables[$frmName]->getTitleFromKey($val);
-			}
-			else
-			{
-				
-				echo $prj->tables[$frmName]->autoCompleteTitle($val, $secondary_field, $secondary_value);
-			}
-		}
-		else*/if($do)
-		{
-			echo $prj->tables[$frmName]->validate($entId, $val);
+			echo json_encode($prj->tables[$frmName]->validateTitle($entId, $val));
 		}
 		else
 		{
