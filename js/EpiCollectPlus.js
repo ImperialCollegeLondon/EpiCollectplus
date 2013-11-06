@@ -1373,13 +1373,13 @@ EpiCollect.Form = function()
         });
 		
 		
-	
+        var ctx = this;
 		$('.ecplus-ac').each(function(idx, ele)
 		{
 			var jq = $(ele);
 			var pform = jq.attr('pform');
 			jq.autocomplete({
-				source : baseUrl+ "/../" + pform + "/title",
+				source : baseUrl+ "/../" + pform + "/" + ele.id,
 				minLength : 2,
 				open : function(evt, ui)
 				{
@@ -1453,36 +1453,40 @@ EpiCollect.Form = function()
 		var _frm = this;
 		
 		$(".ecplus-question, .ecplus-question-jumped").each(function(idx, ele){
-			var fld = ele.id.replace("ecplus-question-", "");
+			var jq = $(ele);
 			
+			if(jq.hasClass('')) return;
+			
+			var fld = ele.id.replace("ecplus-question-", "");
+
 			//console.debug(idx + ' :: ' + start)
 			
-			if( !startField && $(ele).hasClass('ecplus-question-jumped') && idx < start ) start++;
+			if( !startField && jq.hasClass('ecplus-question-jumped') && idx < start ) start++;
 			
 			if( idx <= start || !_frm.fields[fld] ) return;
 			if( fld === fieldName ) done = true;
 			
 			if( !fieldName || done )
 			{
-			//	console.debug("show " + fld);
-				$(ele).show();
-				$(ele).addClass('ecplus-question');
-				$(ele).removeClass('ecplus-question-jumped');
+				//	console.debug("show " + fld);
+				jq.show();
+				jq.addClass('ecplus-question');
+				jq.removeClass('ecplus-question-jumped');
 			}
 			else if( !done )
 			{
 				//console.debug("hide " + fld);
-				$(ele).val('');
-				$(ele).hide();
-				$(ele).removeClass('ecplus-question');
-				$(ele).addClass('ecplus-question-jumped');
+				jq.val('');
+				jq.hide();
+				jq.removeClass('ecplus-question');
+				jq.addClass('ecplus-question-jumped');
 			}
 			else
 			{
 				//console.debug("show " + fld);
-				$(ele).show();
-				$(ele).addClass('ecplus-question');
-				$(ele).removeClass('ecplus-question-jumped');
+				jq.show();
+				jq.addClass('ecplus-question');
+				jq.removeClass('ecplus-question-jumped');
 			}
 		});
 		
@@ -1582,14 +1586,7 @@ EpiCollect.Form = function()
 		var vals = {};
 		for(fld in this.fields)
 		{
-			if( $("#" + fld).parent().hasClass('ecplus-question-jumped') )
-			{
-				vals[fld] = '';
-			}
-			else
-			{
-				vals[fld] = $("#" + fld).val();
-			}
+			vals[fld] = $("#" + fld).val();
 		}
 		return vals;
 	};
@@ -2016,8 +2013,6 @@ EpiCollect.Field = function()
 					   }
 					   
 					   this.required = true;
-					  // ctrl = "<select name=\""  + this.id + "\" id=\""  + this.id + "\"" + (fkfld ? " childcontrol=\"" + fkfld + "\"" : "") + " class=\"ecplus-input loading\" >";
-					   //get options;
 					   var cname = this.id;
 					   var key = frm.key;
 					   var title = frm.titleFields;
@@ -2027,14 +2022,13 @@ EpiCollect.Field = function()
 					   {
 						   ctrl.replace('ecplus-ac"', 'ecplus-ac loading"');
 						   this.form.pendingReqs.push($.ajax({
-							   url : baseUrl + '/../' + this.fkTable + '/title?term=' + val + '&key_from=true',
+							   url : baseUrl + '/../' + this.fkTable + '/' + this.fkField + '?term=' + val + '&key_from=true',
 							   success : function(data, status, xhr)
 							   {
-								   //console.debug(data);
 								   if(data.trimChars() !== "")
 								   {
 									   $('#' + this.id)
-								   			.val(data)
+								   			//.val(data)
 								   			.removeClass('loading');
 									   
 								   }
@@ -2335,7 +2329,7 @@ EpiCollect.Field = function()
         
         if( this.fkField && this.fkTable )
         {
-            validators.push({ name : 'fk' , params : { url : baseUrl + '/../' + this.fkTable + '/title' }});  
+            validators.push({ name : 'fk' , params : { url : baseUrl + '/../' + this.fkTable + '/' + this.id }});  
         }
     	
         for(var i = 0; ignore && i < ignore.length; i++)
@@ -2454,10 +2448,7 @@ EpiCollect.Field = function()
         	}
             
         	valid = valid && voter[v];
-        	
         }
-        
-        console.debug(complete, valid, voter);
         
         if(complete) 
         { 
@@ -2471,7 +2462,6 @@ EpiCollect.Field = function()
 	            }
 	            else
 	            {
-	            	console.debug('fire valid');
 	                control.addClass('valid');
 	                control.trigger({ type : 'valid', field : result.control_id });
 	            }
