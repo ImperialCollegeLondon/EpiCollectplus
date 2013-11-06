@@ -2003,7 +2003,8 @@ function formHandler()
 				//
 				if( !file_exists('ec/uploads')) mkdir('ec/uploads');
 				$filename = sprintf('ec/uploads/%s_%s_%s%s.csv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
-				if(!file_exists($filename))
+	
+				if(!file_exists($filename) || getValIfExists($_GET, 'bypass_cache') === 'true')
 				{
 					//ob_implicit_flush(false);
 					$fp = fopen($filename, 'w+');
@@ -2019,6 +2020,7 @@ function formHandler()
 					if($nxt) array_push($headers, sprintf('%s_entries', $nxt->name));
 					
 					$real_flds = $headers;
+					
 					for( $i = 0; $i < $num_h; $i++ )
 					{
 						$fld = $prj->tables[$frmName]->fields[$headers[$i + $_off]];
@@ -2038,11 +2040,13 @@ function formHandler()
 							{
 								$val = sprintf('%s%s', $name, $val);
 							}
+							
+							
 							array_splice($headers, $i + $_off, 1, $gps_flds);
 							$i = $i + 5;
 						}
 					}
-					
+
 					fwrite($fp, sprintf("\"%s\"\n", implode('","', $headers)));
 					$res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET,"sort"), getValIfExists($_GET,"dir"), false, "object", true);
 					if($res !== true) die($res);
@@ -2063,7 +2067,7 @@ function formHandler()
 							
 							if (array_key_exists($real_flds[$i], $xml))
 							{
-								if($i > $_off && ($i != $count_h - 1) && ($prj->tables[$frmName]->fields[$real_flds[$i]]->type == "gps" || $prj->tables[$frmName]->fields[$real_flds[$i]]->type == "location"))
+								if($i >= $_off && ($i != $count_h - 1) && ($prj->tables[$frmName]->fields[$real_flds[$i]]->type == "gps" || $prj->tables[$frmName]->fields[$real_flds[$i]]->type == "location"))
 								{
 									try{
 										
