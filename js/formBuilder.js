@@ -498,7 +498,7 @@ PropertiesForm.prototype.addJump = function(destination, condition)
 	}
 	
 	updateJumps();
-	console.debug(currentControl.type);
+	
 	if(!currentControl.type.match(/^(select1?|radio)$/i))
 	{
 		$('.jumpoption .jumpType').val('ALL');
@@ -532,6 +532,8 @@ PropertiesForm.prototype.addJump = function(destination, condition)
 	
 	
 	this.setHandlers();
+    $('.jumpoption .jumpType').change();
+    
 };
 
 /**
