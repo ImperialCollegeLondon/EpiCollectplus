@@ -3072,7 +3072,7 @@ function createUser()
 	{
 		flash("This server is not configured to user Local Accounts", "err");
 	}
-	elseif($auth->createUser($_POST["username"], $_POST["password"], $_POST["email"], $_POST["fname"], $_POST["lname"],"en"))
+	elseif($auth->createUser('', $_POST["password"], $_POST["email"], $_POST["fname"], $_POST["lname"],"en"))
 	{
 		flash("User Added");
 	}
