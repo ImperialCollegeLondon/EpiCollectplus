@@ -2919,15 +2919,23 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
 							array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid jump statement the field {$jBits[$i]} that is the target when the value is {$jBits[$i+1]} does not exist in this form");
 						}
 						//check that the jump value exists in the form
-						if( $fld->type == "select1" || $fld->type == "radio")
+						if( ($fld->type == "select1" || $fld->type == "radio") && !preg_match('/^(all|null)$/i',$jBits[$i + 1]) )
 						{
-							$tval = $jBits[$i + 1]; //preg_replace('/^\!/', '',$jBits[$i + 1]);
+							$tval = preg_replace('/^\!/', '',$jBits[$i + 1]);
                             $ival = intval($tval);
+                            /**
+                             * This if is a total pain.
+                             * Long story short, it's supposed to check if the jump condition is valid, so is and integer between 1 
+                             * and the number of options, ALL or NULL /i is 'cause I'm not sure if everythings coded as all upper
+                             * case. 
+                             *  13/11/2013 - all and null now handled in the top bit, and only enter this clause if the vaue isn't all or null
+                             *      intval turns non-numbers to 0 and will hence fail the test.
+                             */
                             
-							if(!(preg_match('/^(!?[0-9]+|all|null)$/i',$tval) && ($ival <= count($fld->options)) && $ival > 0))
+							if( $ival > count($fld->options) || $ival <= 0)
 							{
 								$isValid = false;
-								array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid jump statement the jump to {$jBits[$i]} is set to happen when {$jBits[$i+1]}. If the field type is {$fld->type} the target must be between 1 and " . (count($fld->options)) . " for this field options the criteria must be a valid index of an element or 'all'");
+								array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid jump statement. The jump to {$jBits[$i]} is set to happen when {$jBits[$i+1]} is selected. The Jump condition must be between 1 and " . (count($fld->options)) . " 'NULL' or 'ALL'");
 							}
 						}
 						elseif($fld->type == "select")
