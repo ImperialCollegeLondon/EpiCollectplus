@@ -2887,10 +2887,10 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
 			//array_push($msgs, "<b>$tbl->name</b>");
 			foreach($tbl->fields as $fld)
 			{
-				if(preg_match("/^[0-9]/", $fld->name) || $fld->name == '')
+				if(!preg_match("/^[a-z][a-z0-9_]*$/i", $fld->name) || $fld->name == '')
 				{
 					$isValid = false;
-					array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid name, field names cannot start with a number");
+					array_push($msgs, "The field {$fld->name} in the form {$tbl->name} has an invalid name the field name must : <ul><li>Start with a letter</li><li> Contain only letters, numbers and underscores (_)</li></ul>");
 				}
 				if(!$fld->label || $fld->label == '')
 				{
@@ -3021,7 +3021,7 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
 	}
 	elseif( getValIfExists($_REQUEST, "json") )
 	{
-		echo "{\"valid\" : " . (count($msgs) == 0 ? "true" : "false") . ", \"msgs\" : [ \"" . str_replace('"', '\"', implode("\",\"", $msgs))  . "\" ], \"name\" : \"$name\", \"file\" :\"$fn\" }";
+		echo "{\"valid\" : " . (count($msgs) == 0 ? "true" : "false") . ", \"msgs\" : [ \"" . implode("\",\"", $msgs)  . "\" ], \"name\" : \"$name\", \"file\" :\"$fn\" }";
 	}
 	else
 	{
