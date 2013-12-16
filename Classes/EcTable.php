@@ -192,6 +192,9 @@
 					
 					$fld->form = $this;
 					$fld->fromArray($arr);
+                    
+                    $fld->name = preg_replace('/[^0-9a-z]/i', '_', $fld->name);
+                    
 					$fld->otherAttributes = json_decode($arr['otherFieldProperties']);
 					$this->fields[$fld->name] = $fld;
 					if($fld->key) $this->key = $fld->name;

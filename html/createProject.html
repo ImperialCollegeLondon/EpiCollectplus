@@ -175,7 +175,8 @@
 	  				//show error messages
 	  				$('#uploadStatus').addClass("err");
 	  				$('#uploadStatus').removeClass("go");
-	  				$('#uploadStatus').append("<p>" + obj.msgs.join("</p><p>") + "</p>");
+                    alert(obj.msgs);
+	  				$('#uploadStatus').html("<p>" + obj.msgs.join("</p><p>") + "</p>");
 	  				if(!$('input[name=name]').val()) $('#pdNext').button("disable");
 	  			}
 	  			else
