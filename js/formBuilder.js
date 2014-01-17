@@ -367,6 +367,7 @@ PropertiesForm.prototype.setValuesFor = function(ctrl)
 	$('.genkey input', this.div).prop('checked', ctrl.genkey);
 	$('.integer input', this.div).prop('checked', ctrl.isinteger);
 	$('.decimal input', this.div).prop('checked', ctrl.isdouble);
+	$('.hidden input', this.div).prop('checked', ctrl.hidden);
 	$('.min input', this.div).val(ctrl.min);
 	$('.max input', this.div).val(ctrl.max);
 	
