@@ -1010,7 +1010,7 @@
 					$entry->created = $date->getTimestamp();
 				}
 				
-				$entry->deviceId = 'web upload';
+				$entry->deviceId = 'web upload'; 
 				array_push($ents, $entry);	
 				
 				if(++$x % 100 == 0)
