@@ -35,6 +35,7 @@ If you're using Apache as your webserver then add a .htaccess file to your EpiCo
     RewriteRule .* main.php
 
 If you're using IIS then you'll need to configure URLRewrite.
+
 1. in _Features View_ open URLRewrite
 1. _Add Rule(s)..._ (top of the right hand panel)
 1. Choose _Blank Rule_ and _OK_
