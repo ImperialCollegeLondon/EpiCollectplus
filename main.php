@@ -9,8 +9,8 @@ $dat = new DateTime('now');
 $SITE_ROOT = '';
 $PUBLIC = false;
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.5e";
-$BUILD = "23";
+$CODE_VERSION = "1.5f";
+$BUILD = "24";
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
@@ -2067,7 +2067,7 @@ function formHandler()
 							
 							if (array_key_exists($real_flds[$i], $xml))
 							{
-								if($i >= $_off && ($i != $count_h - 1) && ($prj->tables[$frmName]->fields[$real_flds[$i]]->type == "gps" || $prj->tables[$frmName]->fields[$real_flds[$i]]->type == "location"))
+								if($i >= $_off && array_key_exists($real_flds[$i], $prj->tables[$frmName]->fields)  && ($prj->tables[$frmName]->fields[$real_flds[$i]]->type == "gps" || $prj->tables[$frmName]->fields[$real_flds[$i]]->type == "location"))
 								{
 									try{
 										

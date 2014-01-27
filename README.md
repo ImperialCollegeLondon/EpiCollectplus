@@ -16,17 +16,17 @@ To get the server running on your own server you need the following pre-requisit
 - PHP 5.3+ with mysqli extension enabled
 - MySQL 5.1+
 
+[XAMPP](http://www.apachefriends.org/en/xampp.html) provides a usefull method of getting all of these in one easy-to-install package.
+
 ##Step 1 : Download or clone the repo
 
-A zip of the current code is available to download, but we reccommend using git to clone the repository as it's easier to keep up to date with the latest version changes.
+A zip of the current code is available to download, but we recommend using git to clone the repository; It's easier to keep up to date with the latest updates.
 
     git clone http://github.com/ImperialCollegeLondon/EpiCollectplus.git
 
 ##Step 2 : URL Redirection
 
-EpiCollect makes nice, friendly URLS for all your projects by redirecting requests through a routing PHP script. 
-
-If you're using Apache as your webserver then add a .htaccess file to your EpiCollect directory
+EpiCollect makes nice, friendly URLS for all your projects by redirecting requests through a routing PHP script. This does mean we need to configure your webserver to send these requests to the correct place. If you're using Apache as your webserver then add a .htaccess file to your EpiCollect directory
 
     AddDefaultCharset utf-8
 
