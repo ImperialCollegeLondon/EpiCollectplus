@@ -646,7 +646,10 @@ function projectList()
 	 */
 	global $auth;
 
-	$prjs = EcProject::getPublicProjects();
+    $qry = getValIfExists($_GET, "q");
+    $lmt = getValIfExists($_GET, "limit", false);
+    
+	$prjs = EcProject::getPublicProjects($qry, $lmt);
 	$usr_prjs = array();
 	if($auth->isLoggedIn())
 	{  
