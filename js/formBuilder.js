@@ -1020,7 +1020,7 @@ function validateControl(ctrl, _type, callback)
 			{
 				if(ctrl.options[i].value == optvals[j])
 				{
-					messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "More thant one option with the value " + optvals[j] + " each value must be unique." });
+					messages.push({ form: ctrl.form.name,  control : ctrl.id, message : "More than one option with the value " + optvals[j] + " each value must be unique." });
 				}
 			}
 			optvals.push(ctrl.options[i].value);
@@ -1041,10 +1041,30 @@ function validateControl(ctrl, _type, callback)
 			var conditional = jump_def[i+1].replace(/!/, '');
 			//check that the condition is either between 1 and the number of options inclusive, the same with an exclamation mark
 
-			if(conditional !== 'ALL' && conditional !== 'NULL')//instant pass
+			if( conditional !== 'ALL' && conditional !== 'NULL' )//instant pass
 			{
 				var n = Number(conditional);
-				if(isNaN(n) || n < 1 || n > opt_len) messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> Jump condition is not valid, please make sure you have set the value the jump works on to a valid option' });
+                if( ctrl.type == 'select')
+                {
+                    var j_valid = false;
+                    for( var i = ctrl.options.length; i-- ; )
+                    {
+                        if( ctrl.options[i].value == conditional )
+                        {
+                            j_valid = true;
+                            break;
+                        }
+                    }
+                    if(!j_valid) messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> Jump condition is not valid, please make sure you have set the value the jump works on to a valid option' });
+                }
+                else
+                {
+                    if(isNaN(n) || n < 1 || n > opt_len )
+                    {
+                        messages.push({ form: ctrl.form.name,  control : ctrl.id, message : '<em>Jump ' + (i/2)+ '</em> Jump condition is not valid, please make sure you have set the value the jump works on to a valid option' });
+                    }
+                }
+
 			}
 			
 			//check the destination is at least one question after the jump
@@ -1225,7 +1245,7 @@ function updateSelected(is_silent)
 	for(var i = jn; i--;)
 	{
 		var jumpType = $('.jumpType', jumpCtrls[i]).val();
-		var jval = (jumpType.length > 1 ? jumpType :  jumpType + (Number($("select.jumpvalues", jumpCtrls[i]).val())));
+		var jval = (jumpType.length > 1 ? jumpType :  (jumpType + $("select.jumpvalues", jumpCtrls[i]).val()));
 		
 		jump = $(".jumpdestination", jumpCtrls[i]).val() + ","  + jval + (jump === "" ? "" : "," + jump);
 	}
@@ -1348,9 +1368,18 @@ function updateJumps()
         });
         
         fieldCtls.empty();
+
+        var get_val = function(i){ return i + 1; };
+
+        if( currentControl.type == 'select' )
+        {
+            get_val = function(i){ return this.options[i].value; }.bind(currentControl);
+        }
+
+
         for(var i = 0; i < opts.length; i++)
         {
-            fieldCtls.append("<option value=\"" + (i + 1) + "\" >" + opts[i].label + "</option>");
+            fieldCtls.append("<option value=\"" + get_val(i) + "\" >" + opts[i].label + "</option>");
         }
         
         $("select.jumpvalues").each(function(idx, ele){

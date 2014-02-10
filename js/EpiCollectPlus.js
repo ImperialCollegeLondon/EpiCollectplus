@@ -1442,40 +1442,38 @@ EpiCollect.Form = function()
             
 		var start = this.formIndex;
 		var done = false;
-		
+
 		if(startField)
 		{
 			start = $('#ecplus-question-' + startField).index();
 		}
-
-		//console.debug('start at : ' + start + ' -- ' + startField);
 		
-		var _frm = this;
+		//var _frm = this;
 		
-		$(".ecplus-question, .ecplus-question-jumped").each(function(idx, ele){
+		$(".ecplus-question-hidden, .ecplus-question, .ecplus-question-jumped").each(function(idx, ele){
 			var jq = $(ele);
-			
+
 			if(jq.hasClass('')) return;
 			
 			var fld = ele.id.replace("ecplus-question-", "");
-
-			//console.debug(idx + ' :: ' + start)
 			
 			if( !startField && jq.hasClass('ecplus-question-jumped') && idx < start ) start++;
 			
-			if( idx <= start || !_frm.fields[fld] ) return;
+			if( idx <= start || !this.fields[fld] ) return;
 			if( fld === fieldName ) done = true;
 			
+            if( jq.hasClass('ecplus-question-hidden') ) return;
+
 			if( !fieldName || done )
 			{
-				//	console.debug("show " + fld);
+				//console.debug("show " + fld);
 				jq.show();
 				jq.addClass('ecplus-question');
 				jq.removeClass('ecplus-question-jumped');
 			}
 			else if( !done )
 			{
-				//console.debug("hide " + fld);
+
 				jq.val('');
 				jq.hide();
 				jq.removeClass('ecplus-question');
@@ -1488,9 +1486,7 @@ EpiCollect.Form = function()
 				jq.addClass('ecplus-question');
 				jq.removeClass('ecplus-question-jumped');
 			}
-		});
-		
-		
+		}.bind(this));
 	};
 	
 	this.jumpFormTo = function(idx)
@@ -1539,40 +1535,65 @@ EpiCollect.Form = function()
 	
 	this.moveNext = function(preventBlur)
 	{
-		try{
-			if(this.formIndex === $('.ecplus-question').length - 1) return;
-			//validate answer to previous question
-			var fldName = $('.ecplus-question')[this.formIndex].id.replace("ecplus-question-", "");
+        if(this.formIndex === $('.ecplus-question').length - 1) return;
+        //validate answer to previous question
+        var fldName = $('.ecplus-question')[this.formIndex].id.replace("ecplus-question-", "");
+        var field = this.fields[fldName]
 
-            if(this.fields[fldName].jump)
+        if(field.jump)
+        {
+            var jumped = false; // is a jump required
+            jbits = field.jump.split(",");
+
+            for(var j = 0; j < jbits.length; j+=2)
             {
-                var jumped = false; // is a jump required
-                jbits = this.fields[fldName].jump.split(",");
+                var condition = jbits[j+1];
+                var target =jbits[j]
+                var selected = $("#" + field.id, this.formElement).idx(); // selected index of the value... first selected value for checkboxes
                 
-                  console.debug(jbits);
-                    
-                for(var j = 0; j < jbits.length; j+=2)
+                if( condition.toLowerCase().trimChars() === 'all' )    // 'all' jump
                 {
-                    
-                    if(Number(jbits[j+1]) === $("#" + this.fields[fldName].id, this.formElement).idx() || jbits[j+1].toLowerCase().trimChars() === 'all')
+                    this.doJump(jbits[j], field.id); // only execute the first jump that matches
+                    jumped = true;
+                    break;
+                }
+                else if( field.type == 'select' )
+                {
+                    selected =  $("#" + field.id, this.formElement).val().split(',');
+                    //selected elements starts at 0 not 1 as it does for select1
+                    if( selected.indexOf(condition) >= 0              // 'value is' jump
+                        ||  (condition.match(/!\w+/) && (selected.indexOf(condition.substr(1)) == -1)) ) // 'value is not' jump
                     {
-                        this.doJump(jbits[j]);
+                        this.doJump(jbits[j], field.id); // only execute the first jump that matches
+                        jumped = true;
+                        break;
+                    }
+                } // selects use the value not the index
+
+                else
+                {
+                    if( field.type == 'radio' ) selected += 1; // for radio the index of the
+                    //selected elements starts at 0 not 1 as it does for select1
+                    if( condition == selected                // 'value is' jump
+                        || ( condition.match(/!\d+/) && condition.substr(1) != selected) ) // 'value is not' jump
+                    {
+                        this.doJump(jbits[j], field.id); // only execute the first jump that matches
                         jumped = true;
                         break;
                     }
                 }
-                
-                if(!jumped)
-                {
-                    this.doJump(false);
-                }
             }
             
-            this.formIndex++;
-            this.moveFormTo(this.formIndex);
-            return true;
-			
-		}catch(err){/*alert(err);*/}
+            if(!jumped)
+            {
+                this.doJump(false, field.id);
+            }
+        }
+
+        this.formIndex++;
+        this.moveFormTo(this.formIndex);
+        return true;
+
 	};
 	
 	this.movePrevious = function()
