@@ -24,7 +24,7 @@
 
 		if(this.hasClass("ecplus-control-group") && this[0].tagName != "SELECT")
 		{
-			retval = "";
+			retval = [];
 			$('input', this).each(function (idx, ele)
 			{
 				if(value)
@@ -59,10 +59,17 @@
 					else if(ele.type == "checkbox")
 					{
 						if(ele.checked)
-							retval += (retval == "" ? "," : "") + ele.value;
+                        {
+							retval.push(ele.value);
+                        }
 					}				
 				}
 			});
+
+            if( typeof retval == 'object' )
+            {
+                retval = retval.join(',');
+            }
 			return retval;
 		}
 		else if(value)

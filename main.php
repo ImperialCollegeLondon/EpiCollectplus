@@ -9,8 +9,8 @@ $dat = new DateTime('now');
 $SITE_ROOT = '';
 $PUBLIC = false;
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.5f";
-$BUILD = "24";
+$CODE_VERSION = "1.5g";
+$BUILD = "25";
 
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
@@ -101,6 +101,7 @@ include (sprintf('%s/Classes/EcEntry.php', $DIR));
             $cfg->writeConfig();
         }
         
+
         $PUBLIC = $cfg->settings['misc']['public_server'];
         
     }
@@ -2946,7 +2947,7 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
 							$found = false;
 							for($o = 0; $o < count($fld->options); $o++)
 							{
-								if(preg_match("/^!?" . $fld->options[$o]->value."$/", $jBits[$i +1 ]))
+								if(preg_match("/^!?" . $fld->options[$o]->value."$/", $jBits[$i +1]))
 								{
 									$found = true;
 									break;
