@@ -26,15 +26,23 @@ A zip of the current code is available to download, but we recommend using git t
 
 ##Step 2 : URL Redirection
 
-EpiCollect makes nice, friendly URLS for all your projects by redirecting requests through a routing PHP script. This does mean we need to configure your webserver to send these requests to the correct place. If you're using Apache as your webserver then add a .htaccess file to your EpiCollect directory
+EpiCollect makes nice, friendly URLS for all your projects by redirecting requests through a routing PHP script. This does mean we need to configure your webserver to send these requests to the correct place. If you're using Apache as your webserver then add a .htaccess file to your EpiCollect directory.
+
+Let's say you install epicollect on http://localhost/dev/epicollectplus
 
     AddDefaultCharset utf-8
-
     RewriteEngine On
-    RewriteBase / #if not using the root directory for the website then change this accordingly
+    RewriteCond %{REQUEST_URI} !^/dev/epicollectplus/(ec\/uploads|images|js|css)
     RewriteRule .* main.php
+    
+Or if you install in the server root:   
 
-If you're using IIS then you'll need to configure URLRewrite.
+     AddDefaultCharset utf-8
+     RewriteEngine on
+     RewriteCond %{REQUEST_URI} !^/(ec\/uploads|images|js|css)
+     RewriteRule .* main.php
+
+If you're using IIS (tip: just don't) then you'll need to configure URLRewrite.
 
 1. in _Features View_ open URLRewrite
 1. _Add Rule(s)..._ (top of the right hand panel)
