@@ -1,85 +1,138 @@
-<?php 
-	require "./Auth/openid.php";
-	require_once "./Auth/ProviderTemplate.php";
-	
-	class OpenIDProvider extends AuthProvider
-	{
-	
-		public $data = array();
-		
-		public function __construct($url)
-		{
-			global $SITE_ROOT;
-			
-			$this->openid = new LightOpenID("$SITE_ROOT/loginCallback");
-			$this->openid->identity = array_key_exists("openid", $_SESSION) ? $_SESSION["openid"] : "";
-			$this->openid->required = array('namePerson/first', 'namePerson/last', 'contact/email', 'contact/country/home', 'pref/language');
-		}
-		
-		function getType(){
-			return "OPEN_ID";
-		}
-		
-		public function requestLogin($callbackUrl, $firstLogin = false)
-		{
-			/*if(!$this->openid->mode)
-			{*/
-				if(!$this->openid->identity)$this->openid->identity = 'https://www.google.com/accounts/o8/id';
-				
-				header('Location: ' . $this->openid->authUrl());
-				return false;
-			/*}
-			else if ($this->openid->mode === "cancel")
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}*/
-		}
-		
-		public function callback()
-		{
-			if($this->openid->validate())
-			{
-				$this->data = array();
-				$arr = $this->openid->getAttributes();
-				
-				$this->data["openid"] = $this->openid->identity;
-				$this->firstName = $arr["namePerson/first"];
-				$this->lastName = $arr["namePerson/last"];
-				$this->email = $arr["contact/email"];
-				$this->language = $arr["pref/language"];
-// 				$_SESSION["openid"] = $this->openid->identity;
-// 				$this->populateSesssionInfo();
-                                
-// 				if(!isset($_SESSION["Email"]) || $_SESSION["Email"] == "")
-// 				{
-// 					$arr = $this->openid->getAttributes();
-// 					$db2 = new dbConnection();
-// 					$qry = "INSERT INTO user (FirstName, LastName, Email, openId, language) VALUES ('{$arr["namePerson/first"]}','{$arr["namePerson/last"]}','{$arr["contact/email"]}','{$_SESSION["openid"]}','{$arr['pref/language']}') " .
-// 				   "ON DUPLICATE KEY UPDATE FirstName = '{$arr["namePerson/first"]}', LastName = '{$arr["namePerson/last"]}', openId = '{$_SESSION["openid"]}', language = '{$arr['pref/language']}'";
-// 					$res = $db2->do_query($qry);
-// 					if($res !== true) echo $res;
-// 					//$db2->__destruct();
-// 					$this->populateSesssionInfo();
-// 				}
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		
-		public function logout(){}
-		public function setCredentialString($str){}
-		public function getDetails(){}
-		
-		public function getUserName(){
-			return '';
-		}
-		
-	}
+<?php
+require_once "openid.php";
+require_once "ProviderTemplate.php";
+//include google api files
+require_once 'GooglePHPLibrary/Google_Client.php';
+require_once 'GooglePHPLibrary/contrib/Google_Oauth2Service.php';
+
+//log tool, Chrome Logger for PHP
+require_once __DIR__ . "/../utils/ChromePhp.php";
+
+class OpenIDProvider extends AuthProvider {
+
+    public $data = array();
+
+    /* Google Settings... Client ID, Client Secret from https://console.developers.google.com
+     * They should be placed in a safer place, with the database details for example.
+     * They are for Epicollect+
+     */
+    private $google_client_id = '142072958244-tm8amvbof6mt97lqfgg9su7lje096069.apps.googleusercontent.com';
+    private $google_client_secret = '0MALtGhfzselyEgFtYjdbF2d';
+    private $google_redirect_url = 'http://localhost/dev/epicollectplus-fork/loginCallback/'; //path to your script
+    // private $google_developer_key = 'AIzaSyCRtixmvrz33mX4s21j7YPnsVo1i8tEILk';
+
+    //google objects
+    public $gClient;
+    public $google_oauthV2;
+    public $authUrl;
+
+    public function __construct($url) {
+        global $SITE_ROOT;
+
+        if (isset($_SESSION["token"])) {
+            ChromePhp::log($_SESSION["token"]);
+        }
+
+        $this->openid = new LightOpenID("$SITE_ROOT/loginCallback");
+        $this->openid->identity = array_key_exists("openid", $_SESSION) ? $_SESSION["openid"] : "";
+        $this->openid->required = array('namePerson/first', 'namePerson/last', 'contact/email', 'contact/country/home', 'pref/language');
+
+        $this->gClient = new Google_Client();
+        $this->gClient->setApplicationName('Login to Epicollect+');
+        $this->gClient->setClientId($this->google_client_id);
+        $this->gClient->setClientSecret($this->google_client_secret);
+        $this->gClient->setRedirectUri($this->google_redirect_url);
+
+        //auto or force: use force during development to always show the prompt
+        //@see https://developers.google.com/accounts/docs/OAuth2WebServer
+        $this->gClient->setApprovalPrompt("force");
+
+        //Create a state token to prevent request forgery.
+        // Store it in the session for later validation.
+        if (!isset($_SESSION["state"])) {
+            $state = md5(rand());
+            $_SESSION["state"] = $state;
+        }
+
+        $this->gClient->setState($_SESSION["state"]);
+
+        //$this->gClient->setDeveloperKey($this->google_developer_key);
+
+        $this->google_oauthV2 = new Google_Oauth2Service($this->gClient);
+
+        //For not logged in user, get google login url
+        $this->authUrl = $this->gClient->createAuthUrl();
+
+        if (!isset($_SESSION["Google_OAuth2_URL"])) {
+            $_SESSION["Google_OAuth2_URL"] = $this->authUrl;
+        }
+    }
+
+    function getType() {
+        return "OPEN_ID";
+    }
+
+    //redirect user to Google for authentication
+    public function requestLogin($callbackUrl, $firstLogin = false) {
+
+        //use OpenID Connect (Google OAuth 2)
+        header('Location: ' . $_SESSION["Google_OAuth2_URL"]);
+        return false;
+    }
+
+    public function callback() {
+
+        //With new OAuth2 we have a code sent from Google to access Google APIs
+        if (isset($_GET['code']) && isset($_GET['state'])) {
+
+            //check if "state" value is the same the server started the request with.
+            //If it is, the request is legit, otherwise exit as someone is try to hack the authentication
+            if ($_GET['state'] == $_SESSION['state']) {
+
+                //exchange the code with a token and authenticate user with Google
+                $this->gClient->authenticate($_GET['code']);
+                $_SESSION['token'] = $this->gClient->getAccessToken();
+                $this->gClient->setAccessToken($_SESSION['token']);
+
+                //we have to populate the data array (Open ID) for backward compatibility
+                //Get details from Google
+                $this->user = $this->google_oauthV2->userinfo->get();
+                $this->data = array();
+
+                // we should be able to get the old openid_id from Google, but it is not working on the dev server?
+                // @see https://developers.google.com/accounts/docs/OpenID#openid-connect
+                $this->data["openid"] = $this->user['id'];
+                $this->firstName = filter_var($this->user['given_name'], FILTER_SANITIZE_SPECIAL_CHARS);
+                $this->lastName = filter_var($this->user['family_name'], FILTER_SANITIZE_SPECIAL_CHARS);
+                $this->email = filter_var($this->user['email'], FILTER_SANITIZE_EMAIL);
+                $this->language = filter_var($this->user['locale'], FILTER_SANITIZE_SPECIAL_CHARS);
+
+                unset($_SESSION['state']);
+
+                return true;
+            } else {
+
+                //state does not match, request was not from this server
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    public function logout() {
+    }
+
+    public function setCredentialString($str) {
+    }
+
+    public function getDetails() {
+    }
+
+    public function getUserName() {
+        return '';
+    }
+
+}
+
 ?>

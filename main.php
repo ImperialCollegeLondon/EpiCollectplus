@@ -15,6 +15,7 @@ $BUILD = "25";
 if( !isset($PHP_UNIT) ) { $PHP_UNIT = false; }
 if( !$PHP_UNIT ){ @session_start(); }
 
+//probably the most useless function ever
 function getValIfExists($array, $key, $default = null)
 {
 	if(array_key_exists($key, $array))
@@ -64,18 +65,11 @@ $url = urldecode($url);
 include (sprintf('%s/Classes/PageSettings.php', $DIR));
 include (sprintf('%s/Classes/configManager.php', $DIR));
 include (sprintf('%s/Classes/Logger.php', $DIR));
-/*
- * Ec Class declatratioions
- */
-
 include(sprintf('%s/Classes/EcProject.php', $DIR));
 include(sprintf('%s/Classes/EcTable.php', $DIR));
 include(sprintf('%s/Classes/EcField.php', $DIR));
 include (sprintf('%s/Classes/EcOption.php', $DIR));
 include (sprintf('%s/Classes/EcEntry.php', $DIR));
-/*
- * End of Ec Class definitions
- */
 
  function openCfg()
  {
@@ -176,14 +170,7 @@ $log = new Logger('Ec2');
 global $db, $auth;
 $db = false;
 $auth = new AuthManager();
-
-
-//try{
-	$db = new dbConnection();
-//}catch(Exception $err){
-	
-//}
-/* class and function definitions */
+$db = new dbConnection();
 
 function escapeTSV($string)
 {
@@ -3717,6 +3704,8 @@ function userHandler()
 
 	//$db = new dbConnection();
 	global $db;
+
+    //details column was storing open ids, now we do not have that anymore...
 	$sql = "Select details from user where Email = '$qry'";
 
 	$res = $db->do_query($sql);
