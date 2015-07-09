@@ -7,11 +7,13 @@ EpiCollect+ uses [Glyphicons](http://glyphicons.com/), [jQuery](http://jquery.co
 
 #Server Installation
 
+Update notice: please clone/download the `development`branch as it is the more up to date and maintained
+
 The following instructions will assume that EpiCollect is being installed in the root directory of a website (e.g. http://plus.epicollect.net). Where the instructions will differ if 
 
 To get the server running on your own server you need the following pre-requisites.
 
-- Apahce 2 with mod_rewrite or IIS with [URLRewrite](http://www.iis.net/downloads/microsoft/url-rewrite)
+- Apache 2 with mod_rewrite or IIS with [URLRewrite](http://www.iis.net/downloads/microsoft/url-rewrite)
 - HTTPS support is strongly recommended
 - PHP 5.3+ with mysqli extension enabled
 - MySQL 5.1+
