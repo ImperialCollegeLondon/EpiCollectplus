@@ -72,3 +72,14 @@ You'll need 2 accounts for the setup an admin account with full access and anoth
 ##Step 5 : Open your EpiCollect site
 
 You will be asked for the details of your MySQL installation. Once these are entered EpiCollect will then ask you for an admin username and password to set up the database. When all the tests are passing open the site again and create the first user account, login and you're ready to [create your first project](http://www.epicollect.net/plus_Instructions/creating/default.html)
+
+
+##Step 6: Add your Google API keys to use Google+ Sign-In
+
+To use the Google Login, you need to open the file ec/epicollect.ini and add the following properties under `[security]`
+`google_client_id = <your google client id>`
+`google_client_secret = <your google client secret>`
+`google_redirect_url = <your.domain.com>/loginCallback/`
+
+replacing the placeholders with your Google API details https://developers.google.com/+/web/api/rest/oauth
+
