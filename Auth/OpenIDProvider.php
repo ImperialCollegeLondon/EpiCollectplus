@@ -12,22 +12,14 @@ class OpenIDProvider extends AuthProvider {
 
     public $data = array();
 
-    /* Google Settings... Client ID, Client Secret from https://console.developers.google.com
-     * They should be placed in a safer place, with the database details for example.
-     * They are for Epicollect+
-     */
-    private $google_client_id = '142072958244-tm8amvbof6mt97lqfgg9su7lje096069.apps.googleusercontent.com';
-    private $google_client_secret = '0MALtGhfzselyEgFtYjdbF2d';
-    private $google_redirect_url = 'http://localhost/dev/epicollectplus-fork/loginCallback/'; //path to your script
-    // private $google_developer_key = 'AIzaSyCRtixmvrz33mX4s21j7YPnsVo1i8tEILk';
-
     //google objects
     public $gClient;
     public $google_oauthV2;
     public $authUrl;
 
     public function __construct($url) {
-        global $SITE_ROOT;
+
+        global $SITE_ROOT, $cfg;
 
         if (isset($_SESSION["token"])) {
             ChromePhp::log($_SESSION["token"]);
@@ -39,9 +31,9 @@ class OpenIDProvider extends AuthProvider {
 
         $this->gClient = new Google_Client();
         $this->gClient->setApplicationName('Login to Epicollect+');
-        $this->gClient->setClientId($this->google_client_id);
-        $this->gClient->setClientSecret($this->google_client_secret);
-        $this->gClient->setRedirectUri($this->google_redirect_url);
+        $this->gClient->setClientId($cfg->settings['security']['google_client_id']);
+        $this->gClient->setClientSecret($cfg->settings['security']['google_client_secret']);
+        $this->gClient->setRedirectUri($cfg->settings['security']['google_redirect_url']);
 
         //auto or force: use force during development to always show the prompt
         //@see https://developers.google.com/accounts/docs/OAuth2WebServer

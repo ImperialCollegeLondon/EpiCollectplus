@@ -36,8 +36,6 @@ class AuthManager {
         if ($this->openIdEnabled) {
             try {
                 //let's try to replace OpenIDProvider with a Google implementation and make it compatible with current Epicollect+ implementation
-
-                //nb: sometimes
                 $this->providers["OPENID"] = new OpenIDProvider("");
             } catch (Exception $err) {
                 $err = null;
