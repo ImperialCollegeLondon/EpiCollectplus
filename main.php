@@ -2048,6 +2048,7 @@ function formHandler()
 							
 							array_splice($headers, $i + $_off, 1, $gps_flds);
 							$i = $i + 5;
+							$num_h += 5;
 						}
 					}
 
