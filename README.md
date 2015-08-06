@@ -83,6 +83,8 @@ If it is a fresh new install, usually you can use `root` as both your user name 
 
 Once these are entered EpiCollect will then ask you for an admin username and password to set up the database. Again, you could use `root`for the installation, but it is advised for security to create an user yourself. When all the tests are passing open the site again and create the first user account, login and you're ready to [create your first project](http://www.epicollect.net/plus_Instructions/creating/default.html)
 
+More about MySQL securityy can be found at http://goo.gl/ExTaym
+
 
 ##Step 6: Add your Google API keys to use Google+ Sign-In
 
