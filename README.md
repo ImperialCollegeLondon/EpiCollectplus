@@ -77,7 +77,11 @@ You'll need 2 accounts for the setup an admin account with full access and anoth
 
 ##Step 5 : Open your EpiCollect site
 
-You will be asked for the details of your MySQL installation. Once these are entered EpiCollect will then ask you for an admin username and password to set up the database. When all the tests are passing open the site again and create the first user account, login and you're ready to [create your first project](http://www.epicollect.net/plus_Instructions/creating/default.html)
+You will be asked for the details of your MySQL installation.
+
+If it is a fresh new install, usually you can use `root` as both your user name and password. You could use `root`for the installation, but it is advised for security purposes to create an admin user yourself and delete the root user. The server is where you installed MySQL (if it is locally on your machine, just enter localhost) and set the port accordingly 
+
+Once these are entered EpiCollect will then ask you for an admin username and password to set up the database. Again, you could use `root`for the installation, but it is advised for security to create an user yourself. When all the tests are passing open the site again and create the first user account, login and you're ready to [create your first project](http://www.epicollect.net/plus_Instructions/creating/default.html)
 
 
 ##Step 6: Add your Google API keys to use Google+ Sign-In
