@@ -70,9 +70,9 @@ On windows you'll need to right-click on the folder in Explorer then open _Prope
 You'll need 2 accounts for the setup an admin account with full access and another user account. To assigne the correct permissions epicollect user account you will need to use the following. If you have only just set up MySQL you may well need to follow [these instructions](http://dev.mysql.com/doc/refman/5.0/en/default-privileges.html). 
     
     #assuming you've used
-    CREATE DATABASE epicollect
+    CREATE DATABASE epicollectplus
     
-    GRANT SELECT, INSERT, UPDATE, DELETE, CREATE TEMPORARY TABLES ON epicollect.* TO <epicollect_user>
+    GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE, CREATE TEMPORARY TABLES ON epicollectplus.* TO '<user_goes_here>'
 
 
 ##Step 5 : Open your EpiCollect site
