@@ -1,6 +1,10 @@
 <?php
 
-if (isset($_REQUEST['_SESSION'])) throw new Exception('Bad client request');
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+if (isset($_REQUEST['_SESSION']))
+    throw new Exception('Bad client request');
 
 date_default_timezone_set('UTC');
 $dat = new DateTime('now');
@@ -52,8 +56,10 @@ include(sprintf('%s/db/dbConnection.php', $DIR));
 include(sprintf('%s/utils/Encoding.php', $DIR));
 
 $url = (array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : $_SERVER["HTTP_X_ORIGINAL_URL"]); //strip off site root and GET query
-if ($SITE_ROOT != '') $url = str_replace($SITE_ROOT, '', $url);
-if (strpos($url, '?')) $url = substr($url, 0, strpos($url, '?'));
+if ($SITE_ROOT != '')
+    $url = str_replace($SITE_ROOT, '', $url);
+if (strpos($url, '?'))
+    $url = substr($url, 0, strpos($url, '?'));
 $url = trim($url, '/');
 $url = urldecode($url);
 
@@ -113,7 +119,8 @@ function makedirs() {
     global $DIR;
 
     $updir = sprintf('%s/ec/uploads', rtrim($DIR, '/'));
-    if (!file_exists($updir)) mkdir($updir);
+    if (!file_exists($updir))
+        mkdir($updir);
 }
 
 function genStr() {
@@ -169,7 +176,8 @@ function flash($msg, $type = "msg") {
     $nflash = array("msg" => $msg, "type" => $type);
 
     foreach ($_SESSION["flashes"] as $flash) {
-        if ($flash == $nflash) return;
+        if ($flash == $nflash)
+            return;
     }
     array_push($_SESSION["flashes"], $nflash);
 
@@ -233,7 +241,8 @@ function assocToDelimStr($arr, $delim) {
 
 function getTimestamp($fmt = false) {
     $date = new DateTime("now", new DateTimeZone("UTC"));
-    if (!$fmt) return $date->getTimestamp() * 1000;
+    if (!$fmt)
+        return $date->getTimestamp() * 1000;
     else return $date->format($fmt);
 }
 
@@ -308,7 +317,8 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
                 // find {{
                 $iStart = strpos($data, '{{', $fPos);
 
-                if ($iStart === false || $iStart < $fPos) break;
+                if ($iStart === false || $iStart < $fPos)
+                    break;
                 //echo $iStart;
                 //get identifier (to }})
                 $iEnd = strpos($data, '}}', $iStart);
@@ -337,7 +347,15 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
     if ($templateVars) {
         foreach ($templateVars as $sec => $cts) {
             // do processing
-            $template = str_replace(sprintf('{#%s#}', $sec), $cts, $template);
+            try {
+                $template = str_replace(sprintf('{#%s#}', $sec), $cts, $template);
+            }
+            catch(Exception $e) {
+                echo 'Please grant privileges to admin user and refresh once done (see <a href="https://github.com/ImperialCollegeLondon/EpiCollectplus#step-4--set-up-mysql">installation instruction</a>) like so:';
+                echo '<br/><br/>';
+                echo "<i>GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE, CREATE TEMPORARY TABLES ON your_db_name_here.* TO 'user_goes_here';</i>";
+                exit();
+            }
         }
     }
 
@@ -367,7 +385,8 @@ function formDataLastUpdated() {
     $permissionLevel = 0;
     $loggedIn = $auth->isLoggedIn();
 
-    if ($loggedIn) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
+    if ($loggedIn)
+        $permissionLevel = $prj->checkPermission($auth->getEcUserId());
 
     if (!$prj->isPublic && !$loggedIn) {
         loginHandler($url);
@@ -456,7 +475,8 @@ function loginHandler() {
         $cb_url = $url;
     }
 
-    if (!$auth) $auth = new AuthManager();
+    if (!$auth)
+        $auth = new AuthManager();
 
     if (array_key_exists('provider', $_GET)) {
         $_SESSION['provider'] = $_GET['provider'];
@@ -483,7 +503,8 @@ function loginCallback() {
     }
 
     $db = new dbConnection();
-    if (!$auth) $auth = new AuthManager();
+    if (!$auth)
+        $auth = new AuthManager();
     $auth->callback($provider);
 }
 
@@ -514,7 +535,8 @@ function uploadHandlerFromExt() {
                     $log->write("error", $key . " error : " . $_FILES[$key]['error']);
                 } else {
                     if (preg_match("/.(png|gif|rtf|docx?|pdf|jpg|jpeg|txt|avi|mpeg|mpg|mov|mp3|wav)$/i", $_FILES[$key]['name'])) {
-                        if (!file_exists("ec/uploads/")) mkdir("ec/uploads/");
+                        if (!file_exists("ec/uploads/"))
+                            mkdir("ec/uploads/");
                         move_uploaded_file($_FILES[$key]['tmp_name'], "ec/uploads/{$_FILES[$key]['name']}");
                         echo "{\"success\" : true , \"msg\":\"ec/uploads/{$_FILES[$key]['name']}\"}";
                     } else {
@@ -645,7 +667,8 @@ function projectHome() {
 
     } elseif ($reqType == 'GET') {
 
-        if (array_key_exists('HTTP_ACCEPT', $_SERVER)) $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "$SITE_ROOT/") + 1);
+        if (array_key_exists('HTTP_ACCEPT', $_SERVER))
+            $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "$SITE_ROOT/") + 1);
         $ext = substr($url, strrpos($url, '.') + 1);
         $format = $ext != '' ? $ext : $format;
         if ($format == 'xml') {
@@ -730,10 +753,13 @@ function siteTest() {
     }
 
     if ($doit && !(array_key_exists("edit", $_GET) && $_GET["edit"] === "true")) {
-        if (array_key_exists("redir", $_GET) && $_GET["redir"] === "true") $res["redirMsg"] = "	<p class=\"message\">You have been brought to this page because of a fatal error opening the home page</p>";
-        if (array_key_exists("redir", $_GET) && $_GET["redir"] === "pwd") $res["redirMsg"] = "	<p class=\"message\">The username and password you entered were incorrect, please try again.</p>";
+        if (array_key_exists("redir", $_GET) && $_GET["redir"] === "true")
+            $res["redirMsg"] = "	<p class=\"message\">You have been brought to this page because of a fatal error opening the home page</p>";
+        if (array_key_exists("redir", $_GET) && $_GET["redir"] === "pwd")
+            $res["redirMsg"] = "	<p class=\"message\">The username and password you entered were incorrect, please try again.</p>";
 
-        if (!$db) $db = new dbConnection();
+        if (!$db)
+            $db = new dbConnection();
 
 
         if ($db->connected) {
@@ -913,7 +939,8 @@ function getPointMarker() {
     $colour = getValIfExists($_GET, "colour");
     $shape = getValIfExists($_GET, "shape");
 
-    if (!$colour) $colour = "FF0000";
+    if (!$colour)
+        $colour = "FF0000";
     header("Content-type: image/svg+xml");
     echo getMapMaker($colour, $shape);
 }
@@ -1171,7 +1198,8 @@ function downloadData() {
     $end = $endTbl ? $survey->tables[$endTbl]->number : count($survey->tables);
 
     // if we're doing a select_table query we don't want the data from the first table, as we already have that entry.
-    if (array_key_exists('select_table', $_GET) && $entry) $n++;
+    if (array_key_exists('select_table', $_GET) && $entry)
+        $n++;
 
     //for each table between startTbl and end Tbl (or that is a branch of a table we want)
     //we'll loop through the table array to establish which tables we need
@@ -1196,7 +1224,8 @@ function downloadData() {
         }
     }
 
-    if ($dataType == 'group') $dataType = 'data';
+    if ($dataType == 'group')
+        $dataType = 'data';
 
     //criteria
     $cField = false;
@@ -1245,7 +1274,8 @@ function downloadData() {
 
         $arc = new ZipArchive;
         $x = $arc->open($zfn, ZipArchive::CREATE);
-        if (!$x) die("Could not create the zip file.");
+        if (!$x)
+            die("Could not create the zip file.");
     }
 
 
@@ -1261,14 +1291,17 @@ function downloadData() {
 
             $res = false;
 
-            if ($entry && count($cVals) == 0) break;
+            if ($entry && count($cVals) == 0)
+                break;
             $args = array();
 
-            if ($entry) $args[$cField] = $cVals[$c];
+            if ($entry)
+                $args[$cField] = $cVals[$c];
 
             $res = $survey->tables[$tbls[$t]]->ask($args, 0, 0, 'created', 'asc', true, 'object', false);
 
-            if ($res !== true) echo $res;
+            if ($res !== true)
+                echo $res;
 
             while ($ent = $survey->tables[$tbls[$t]]->recieve(1)) {
                 $ent = $ent[0];
@@ -1278,16 +1311,20 @@ function downloadData() {
                     if ($xml) {
                         fwrite($fxml, "\t\t<entry>\n");
                         foreach (array_keys($ent) as $fld) {
-                            if ($fld == "childEntries") continue;
+                            if ($fld == "childEntries")
+                                continue;
                             if (array_key_exists($fld, $survey->tables[$tbls[$t]]->fields) && preg_match("/^(gps|location)$/i", $survey->tables[$tbls[$t]]->fields[$fld]->type)) {
                                 $gpsObj = $ent[$fld];
                                 try {
                                     fwrite($fxml, "\t\t\t<{$fld}_lat>{$gpsObj['latitude']}</{$fld}_lat>\n");
                                     fwrite($fxml, "\t\t\t<{$fld}_lon>{$gpsObj['longitude']}</{$fld}_lon>\n");
                                     fwrite($fxml, "\t\t\t<{$fld}_acc>{$gpsObj['accuracy']}</{$fld}_acc>\n");
-                                    if (array_key_exists('provider', $gpsObj)) fwrite($fxml, "\t\t\t<{$fld}_provider>{$gpsObj['provider']}</{$fld}_provider>\n");
-                                    if (array_key_exists('altitude', $gpsObj)) fwrite($fxml, "\t\t\t<{$fld}_alt>{$gpsObj['altitude']}</{$fld}_alt>\n");
-                                    if (array_key_exists('bearing', $gpsObj)) fwrite($fxml, "\t\t\t<{$fld}_bearing>{$gpsObj['bearing']}</{$fld}_bearing>\n");
+                                    if (array_key_exists('provider', $gpsObj))
+                                        fwrite($fxml, "\t\t\t<{$fld}_provider>{$gpsObj['provider']}</{$fld}_provider>\n");
+                                    if (array_key_exists('altitude', $gpsObj))
+                                        fwrite($fxml, "\t\t\t<{$fld}_alt>{$gpsObj['altitude']}</{$fld}_alt>\n");
+                                    if (array_key_exists('bearing', $gpsObj))
+                                        fwrite($fxml, "\t\t\t<{$fld}_bearing>{$gpsObj['bearing']}</{$fld}_bearing>\n");
                                 } catch (ErrorException $e) {
                                     fwrite($fxml, "\t\t\t<{$fld}_lat>0</{$fld}_lat>\n");
                                     fwrite($fxml, "\t\t\t<{$fld}_lon>0</{$fld}_lon>\n");
@@ -1313,7 +1350,8 @@ function downloadData() {
                                 fwrite($tsv, "{$fld}_acc{$delim}{$gpsObj['accuracy']}{$delim}");
                                 fwrite($tsv, "{$fld}_provider{$delim}{$gpsObj['provider']}{$delim}");
                                 fwrite($tsv, "{$fld}_alt{$delim}{$gpsObj['altitude']}{$delim}");
-                                if (array_key_exists('bearing', $gpsObj)) fwrite($tsv, "{$fld}_bearing{$delim}{$gpsObj['bearing']}{$delim}");
+                                if (array_key_exists('bearing', $gpsObj))
+                                    fwrite($tsv, "{$fld}_bearing{$delim}{$gpsObj['bearing']}{$delim}");
 
                             } else {
                                 fwrite($tsv, "$fld$delim" . escapeTSV($ent[$fld]) . $delim);
@@ -1326,7 +1364,8 @@ function downloadData() {
 
                 } elseif (strtolower($_GET["type"]) == "thumbnail") {
                     foreach (array_keys($ent) as $fld) {
-                        if ($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields)) continue;
+                        if ($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields))
+                            continue;
                         if ($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $ent[$fld] != "")// && file_exists("$root\\ec\\uploads\\tn_".$ent[$fld]))
                         {
                             $fn = "$root\\ec\\uploads\\";
@@ -1343,17 +1382,20 @@ function downloadData() {
                             }
 
                             if (file_exists($fn)) {
-                                if (!$arc->addFile($fn, $ent[$fld])) die("fail -- " . $fn);
+                                if (!$arc->addFile($fn, $ent[$fld]))
+                                    die("fail -- " . $fn);
                                 $files_added++;
                             } elseif (file_exists($bfn)) {
-                                if (!$arc->addFile($bfn, $ent[$fld])) die("fail -- " . $bfn);
+                                if (!$arc->addFile($bfn, $ent[$fld]))
+                                    die("fail -- " . $bfn);
                                 $files_added++;
                             }
                         }
                     }
                 } elseif (strtolower($_GET["type"]) == "full_image") {
                     foreach (array_keys($ent) as $fld) {
-                        if ($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields)) continue;
+                        if ($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields))
+                            continue;
                         if ($survey->tables[$tbls[$t]]->fields[$fld]->type == "photo" && $ent[$fld] != "")// && file_exists("$root\\ec\\uploads\\".$ent[$fld]))
                         {
                             $fn = "$root\\ec\\uploads\\";
@@ -1370,19 +1412,23 @@ function downloadData() {
                             }
 
                             if (file_exists($fn)) {
-                                if (!$arc->addFile($fn, $ent[$fld])) die("fail -- " . $fn);
+                                if (!$arc->addFile($fn, $ent[$fld]))
+                                    die("fail -- " . $fn);
                                 $files_added++;
                             } elseif (file_exists($bfn)) {
-                                if (!$arc->addFile($bfn, $ent[$fld])) die("fail -- " . $bfn);
+                                if (!$arc->addFile($bfn, $ent[$fld]))
+                                    die("fail -- " . $bfn);
                                 $files_added++;
                             }
                         }
                     }
                 } else {
                     foreach (array_keys($ent) as $fld) {
-                        if ($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields)) continue;
+                        if ($fld == "childEntries" || !array_key_exists($fld, $survey->tables[$tbls[$t]]->fields))
+                            continue;
                         if ($survey->tables[$tbls[$t]]->fields[$fld]->type == $_GET["type"] && $ent[$fld] != "" && file_exists("$root\\ec\\uploads\\" . $ent[$fld])) {
-                            if (!$arc->addFile("$root\\ec\\uploads\\" . $ent[$fld], $ent[$fld])) die("fail -- \\ec\\uploads\\" . $ent[$fld]);
+                            if (!$arc->addFile("$root\\ec\\uploads\\" . $ent[$fld], $ent[$fld]))
+                                die("fail -- \\ec\\uploads\\" . $ent[$fld]);
                             $files_added++;
                         }
                     }
@@ -1456,7 +1502,8 @@ function formHandler() {
     $permissionLevel = 0;
     $loggedIn = $auth->isLoggedIn();
 
-    if ($loggedIn) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
+    if ($loggedIn)
+        $permissionLevel = $prj->checkPermission($auth->getEcUserId());
 
     if (!$prj->isPublic && !$loggedIn) {
         loginHandler($url);
@@ -1514,7 +1561,8 @@ function formHandler() {
             $ent->user = 0;
 
             foreach (array_keys($ent->values) as $key) {
-                if (!$prj->tables[$frmName]->fields[$key]->active) continue;
+                if (!$prj->tables[$frmName]->fields[$key]->active)
+                    continue;
                 if (array_key_exists($key, $_POST)) {
                     $ent->values[$key] = $_POST[$key];
                 } elseif (!$prj->tables[$frmName]->fields[$key]->required && !$prj->tables[$frmName]->fields[$key]->key) {
@@ -1557,7 +1605,8 @@ function formHandler() {
                 header('Content-Type: application/json');
 
                 $res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET, "sort"), getValIfExists($_GET, "dir"), false, "object");
-                if ($res !== true) die($res);
+                if ($res !== true)
+                    die($res);
 
                 $i = 0;
 
@@ -1578,7 +1627,8 @@ function formHandler() {
                 if (array_key_exists("mode", $_GET) && $_GET["mode"] == "list") {
                     echo "<entries>";
                     $res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET, "sort"), getValIfExists($_GET, "dir"), false, "object");
-                    if ($res !== true) die($res);
+                    if ($res !== true)
+                        die($res);
                     while ($ent = $prj->tables[$frmName]->recieve(1, true)) {
                         echo "<entry>";
                         foreach ($ent[0] as $key => $val) {
@@ -1612,7 +1662,8 @@ function formHandler() {
                     $desc = "";
                     $title = "";
                     foreach ($prj->tables[$frmName]->fields as $name => $fld) {
-                        if (!$fld->active) continue;
+                        if (!$fld->active)
+                            continue;
                         if ($fld->type == "location" || $fld->type == "gps") {
                             $loc = json_decode($ent[0][$name]);
                             echo "<Point><coordinates>{$loc->longitude},{$loc->latitude}</coordinates></Point>";
@@ -1622,7 +1673,8 @@ function formHandler() {
                             $desc = "$name : {$ent[0][$name]}";
                         }
                     }
-                    if ($title == "") $title = $arr[$prj->tables[$frmName]->key];
+                    if ($title == "")
+                        $title = $arr[$prj->tables[$frmName]->key];
 
                     echo "<name>$title</name>";
                     echo "<description><![CDATA[$desc]]></description>";
@@ -1636,7 +1688,8 @@ function formHandler() {
             case "csv":
 
                 //
-                if (!file_exists('ec/uploads')) mkdir('ec/uploads');
+                if (!file_exists('ec/uploads'))
+                    mkdir('ec/uploads');
                 $filename = sprintf('ec/uploads/%s_%s_%s%s.csv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
 
                 if (!file_exists($filename) || getValIfExists($_GET, 'bypass_cache') === 'true') {
@@ -1651,7 +1704,8 @@ function formHandler() {
                     $num_h = count($headers) - $_off;
 
                     $nxt = $prj->getNextTable($frmName, true);
-                    if ($nxt) array_push($headers, sprintf('%s_entries', $nxt->name));
+                    if ($nxt)
+                        array_push($headers, sprintf('%s_entries', $nxt->name));
 
                     $real_flds = $headers;
 
@@ -1678,18 +1732,20 @@ function formHandler() {
 
                     fwrite($fp, sprintf("\"%s\"\n", implode('","', $headers)));
                     $res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET, "sort"), getValIfExists($_GET, "dir"), false, "object", true);
-                    if ($res !== true) die($res);
+                    if ($res !== true)
+                        die($res);
 
                     $count_h = count($real_flds);
 
                     while ($xml = $prj->tables[$frmName]->recieve(1, true)) {
                         $xml = $xml[0];
-//						fwrite($fp, sprintf('"%s"
-//', $xml));	
+                        //						fwrite($fp, sprintf('"%s"
+                        //', $xml));
                         ///print_r($xml); 
                         for ($i = 0; $i < $count_h; $i++) {
 
-                            if ($i > 0) fwrite($fp, ',');
+                            if ($i > 0)
+                                fwrite($fp, ',');
                             fwrite($fp, '"');
 
                             if (array_key_exists($real_flds[$i], $xml)) {
@@ -1705,7 +1761,8 @@ function formHandler() {
                                         if (is_array($arr)) {
                                             $x = 0;
                                             foreach (array_keys(EcTable::$GPS_FIELDS) as $k) {
-                                                if ($x > 0) fwrite($fp, '","');
+                                                if ($x > 0)
+                                                    fwrite($fp, '","');
 
                                                 if (array_key_exists($k, $arr)) {
                                                     fwrite($fp, $arr[$k]);
@@ -1742,7 +1799,8 @@ function formHandler() {
             case "tsv":
 
 
-                if (!file_exists('ec/uploads')) mkdir('ec/uploads');
+                if (!file_exists('ec/uploads'))
+                    mkdir('ec/uploads');
                 $filename = sprintf('ec/uploads/%s_%s_%s%s.tsv', $prj->name, $frmName, $prj->getLastUpdated(), md5(http_build_query($_GET)));
 
                 if (!file_exists($filename)) {
@@ -1757,7 +1815,8 @@ function formHandler() {
                     $num_h = count($headers) - $_off;
 
                     $nxt = $prj->getNextTable($frmName, true);
-                    if ($nxt) array_push($headers, sprintf('%s_entries', $nxt->name));
+                    if ($nxt)
+                        array_push($headers, sprintf('%s_entries', $nxt->name));
 
                     $real_flds = $headers;
                     for ($i = 0; $i < $num_h; $i++) {
@@ -1780,18 +1839,20 @@ function formHandler() {
 
                     fwrite($fp, sprintf("\"%s\"\n", implode("\"\t\"", $headers)));
                     $res = $prj->tables[$frmName]->ask($_GET, $offset, $limit, getValIfExists($_GET, "sort"), getValIfExists($_GET, "dir"), false, "object", true);
-                    if ($res !== true) die($res);
+                    if ($res !== true)
+                        die($res);
 
                     $count_h = count($real_flds);
 
                     while ($xml = $prj->tables[$frmName]->recieve(1, true)) {
                         $xml = $xml[0];
-//						fwrite($fp, sprintf('"%s"
-//', $xml));	
+                        //						fwrite($fp, sprintf('"%s"
+                        //', $xml));
                         ///print_r($xml); 
                         for ($i = 0; $i < $count_h; $i++) {
 
-                            if ($i > 0) fwrite($fp, ',');
+                            if ($i > 0)
+                                fwrite($fp, ',');
                             fwrite($fp, '"');
 
                             if (array_key_exists($real_flds[$i], $xml)) {
@@ -1807,7 +1868,8 @@ function formHandler() {
                                         if (is_array($arr)) {
                                             $x = 0;
                                             foreach (array_keys(EcTable::$GPS_FIELDS) as $k) {
-                                                if ($x > 0) fwrite($fp, "\"\t\"");
+                                                if ($x > 0)
+                                                    fwrite($fp, "\"\t\"");
 
                                                 if (array_key_exists($k, $arr)) {
                                                     fwrite($fp, $arr[$k]);
@@ -2006,7 +2068,8 @@ function entryHandler() {
     $permissionLevel = 0;
     $loggedIn = $auth->isLoggedIn();
 
-    if ($loggedIn) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
+    if ($loggedIn)
+        $permissionLevel = $prj->checkPermission($auth->getEcUserId());
 
     $ent = new EcEntry($prj->tables[$frmName]);
     $ent->key = $entId;
@@ -2118,7 +2181,8 @@ function updateUser() {
     $username = $auth->getUserName();
     $is_not_local = $_SESSION['provider'] != 'LOCAL';
 
-    if ($is_not_local) flash('You cannot update user information for Open ID or LDAP users unless you do it throught your Open ID or LDAP provider', 'err');
+    if ($is_not_local)
+        flash('You cannot update user information for Open ID or LDAP users unless you do it throught your Open ID or LDAP provider', 'err');
 
     echo applyTemplate("base.html", "./updateUser.html", array(
         "firstName" => $name[0],
@@ -2146,7 +2210,8 @@ function uploadProjectXML() {
 
     $prj = new EcProject();
 
-    if (!file_exists("ec/xml")) mkdir("ec/xml");
+    if (!file_exists("ec/xml"))
+        mkdir("ec/xml");
 
     $newfn = "ec/xml/" . $_FILES["projectXML"]["name"];
     move_uploaded_file($_FILES["projectXML"]["tmp_name"], $newfn);
@@ -2189,12 +2254,15 @@ function createFromXml() {
     $prj->isPublic = $_REQUEST["public"] == "true";
     $prj->publicSubmission = true;
     $res = $prj->post();
-    if ($res !== true) die($res);
+    if ($res !== true)
+        die($res);
 
     $res = $prj->setManagers($_POST["managers"]);
-    if ($res !== true) die($res);
+    if ($res !== true)
+        die($res);
     $res = $prj->setCurators($_POST["curators"]);
-    if ($res !== true) die($res);
+    if ($res !== true)
+        die($res);
     // TODO : add submitter $prj->setProjectPermissions($submitters,1);
 
     if ($res === true) {
@@ -2254,12 +2322,17 @@ function updateXML() {
         $prj->image = getValIfExists($_POST, "projectImage");
     }
 
-    if (array_key_exists("listed", $_REQUEST)) $prj->isListed = $_REQUEST["listed"] == "true";
-    if (array_key_exists("public", $_REQUEST)) $prj->isPublic = $_REQUEST["public"] == "true";
+    if (array_key_exists("listed", $_REQUEST))
+        $prj->isListed = $_REQUEST["listed"] == "true";
+    if (array_key_exists("public", $_REQUEST))
+        $prj->isPublic = $_REQUEST["public"] == "true";
     $res = $prj->put($prj->name);
-    if ($res !== true) die($res);
-    if (array_key_exists("managers", $_POST)) $prj->setManagers($_POST["managers"]);
-    if (array_key_exists("curators", $_POST)) $prj->setCurators($_POST["curators"]);
+    if ($res !== true)
+        die($res);
+    if (array_key_exists("managers", $_POST))
+        $prj->setManagers($_POST["managers"]);
+    if (array_key_exists("curators", $_POST))
+        $prj->setCurators($_POST["curators"]);
     // TODO : add submitter $prj->setProjectPermissions($submitters,1);
 
     if ($res === true) {
@@ -2290,7 +2363,8 @@ function tableStats() {
 
 function listXml() {
     //List XML files
-    if (!file_exists("ec/xml")) mkdir("ec/xml");
+    if (!file_exists("ec/xml"))
+        mkdir("ec/xml");
     $h = opendir("ec/xml");
     $tbl = "<table id=\"projectTable\"><tr><th>File</th><th>Validation Result</th><th>Create</th><td>&nbsp;</td></tr>";
     $n = "";
@@ -2302,7 +2376,8 @@ function listXml() {
                 $p = new EcProject;
                 $p->name = $n;
                 $res = $p->fetch();
-                if ($res !== true) echo $res;
+                if ($res !== true)
+                    echo $res;
                 $e = count($p->tables) > 0;
             }
 
@@ -2315,7 +2390,8 @@ function listXml() {
 }
 
 function projectCreator() {
-    if (!file_exists("ec/xml")) mkdir("ec/xml");
+    if (!file_exists("ec/xml"))
+        mkdir("ec/xml");
 
     if (array_key_exists("xml", $_FILES)) {
         move_uploaded_file($_FILES["xml"]["tmp_name"], "ec/xml/{$_FILES["xml"]["name"]}");
@@ -2337,7 +2413,8 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
     $isValid = true;
     $msgs = array();
 
-    if (!$fn) $fn = getValIfExists($_GET, "filename");
+    if (!$fn)
+        $fn = getValIfExists($_GET, "filename");
 
     if ($fn && !$xml) {
 
@@ -2366,11 +2443,14 @@ function validate($fn = NULL, $xml = NULL, &$name = NULL, $update = false, $retu
             array_push($msgs, "Projects must specify a version");
         }
 
-        if (count($prj->tables) == 0) array_push($msgs, "A project must contain at least one table.");
+        if (count($prj->tables) == 0)
+            array_push($msgs, "A project must contain at least one table.");
 
         foreach ($prj->tables as $tbl) {
-            if ($tbl->number <= 0) continue;
-            if (!$tbl->name || $tbl->name == "") array_push($msgs, "Each form must have a name.");
+            if ($tbl->number <= 0)
+                continue;
+            if (!$tbl->name || $tbl->name == "")
+                array_push($msgs, "Each form must have a name.");
             if (!$tbl->key || $tbl->key == "") {
                 array_push($msgs, "Each form must have a unique key field.");
             } elseif (!$tbl->fields[$tbl->key]) {
@@ -2637,8 +2717,10 @@ function updateProject() {
                 $prj->publicSubmission = true;
                 $prj->put($oldName);
             }
-            if ($curators) $prj->setCurators($curators);
-            if ($managers) $prj->setManagers($managers);
+            if ($curators)
+                $prj->setCurators($curators);
+            if ($managers)
+                $prj->setManagers($managers);
 
         } else {
             $managers = $prj->getManagers();
@@ -2706,11 +2788,13 @@ function uploadMedia() {
     $fNameEnd = strpos($url, "/", $pNameEnd + 1);
     $frmName = rtrim(substr($url, $pNameEnd + 1, $fNameEnd - $pNameEnd), "/");
 
-    if ($frmName == 'uploadMedia') $frmName = false;
+    if ($frmName == 'uploadMedia')
+        $frmName = false;
 
     $tvals = array("project" => $pname, "form" => $frmName);
 
-    if (!file_exists('ec/uploads')) mkdir('ec/uploads');
+    if (!file_exists('ec/uploads'))
+        mkdir('ec/uploads');
 
     if (array_key_exists("newfile", $_FILES) && $_FILES["newfile"]["error"] == 0) {
         if (preg_match("/\.(png|gif|jpe?g|bmp|tiff?)$/", $_FILES["newfile"]["name"])) {
@@ -2819,7 +2903,8 @@ function getImage() {
     $permissionLevel = 0;
     $loggedIn = $auth->isLoggedIn();
 
-    if ($loggedIn) $permissionLevel = $prj->checkPermission($auth->getEcUserId());
+    if ($loggedIn)
+        $permissionLevel = $prj->checkPermission($auth->getEcUserId());
 
     if (!$prj->isPublic && !$loggedIn) {
         loginHandler($url);
@@ -2893,7 +2978,8 @@ function projectUsage() {
     $prj->name = substr($url, 0, strpos($url, "/"));
     $prj->fetch();
 
-    if (!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2) return "access denied";
+    if (!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2)
+        return "access denied";
 
     $sum = $prj->getUsage();
     header("Content-type: text/plain");
@@ -2931,7 +3017,8 @@ function writeSettings() {
 }
 
 function packFiles($files) {
-    if (!is_array($files)) throw new Exception("files to be packed must be an array");
+    if (!is_array($files))
+        throw new Exception("files to be packed must be an array");
 
     $str = "";
 
@@ -2954,7 +3041,8 @@ function listUsers() {
             echo "{\"users\":[";
             $usrs = $auth->getUsers();
             for ($i = 0; $i < count($usrs); $i++) {
-                if ($i > 0) echo ",";
+                if ($i > 0)
+                    echo ",";
                 echo "{
 					\"userId\" : \"{$usrs[$i]["userId"]}\",
 					\"firstName\" : \"{$usrs[$i]["FirstName"]}\",
@@ -3079,7 +3167,7 @@ $pageRules = array(
 
     'markers/point' => new PageRule(null, 'getPointMarker'),
     'markers/cluster' => new PageRule(null, 'getClusterMarker'),
-//static file handlers
+    //static file handlers
     '' => new PageRule('index.html', 'siteHome'),
     'index.html?' => new PageRule('index.html', 'siteHome'),
     'privacy.html' => new PageRule('privacy.html', 'defaultHandler'),
@@ -3092,7 +3180,7 @@ $pageRules = array(
     'html/projectIFrame.html' => new PageRule(),
     'api' => new PageRule('apidocs.html', 'defaultHandler'),
 
-//project handlers
+    //project handlers
     'pc' => new PageRule(null, 'projectCreator', true),
     'create' => new PageRule(null, 'createFromXml', true),
     'createProject.html' => new PageRule(null, 'createProject', true),
@@ -3101,15 +3189,15 @@ $pageRules = array(
     'uploadProject' => new PageRule(null, 'uploadProjectXML', true),
     'getForm' => new PageRule(null, 'getXML', true),
     'validate' => new PageRule(null, 'validate', false),
-//'listXML' => new PageRule(null, 'listXML',false),
-//login handlers
-//'Auth/loginCallback.php' => new PageRule(null,'loginCallbackHandler'),
+    //'listXML' => new PageRule(null, 'listXML',false),
+    //login handlers
+    //'Auth/loginCallback.php' => new PageRule(null,'loginCallbackHandler'),
     'login.php' => new PageRule(null, 'loginHandler', false, true),
     'loginCallback' => new PageRule(null, 'loginCallback', false, true),
     'logout' => new PageRule(null, 'logoutHandler'),
     'chooseProvider.html' => new PageRule(null, 'chooseProvider'),
 
-//user handlers
+    //user handlers
     'updateUser.html' => new PageRule(null, 'updateUser', true),
     'saveUser' => new PageRule(null, 'saveUser', true),
     'user/manager/?' => new PageRule(null, 'managerHandler', true),
@@ -3121,7 +3209,7 @@ $pageRules = array(
     'resetPassword' => new PageRule(null, 'resetPassword', true),
     'register' => new PageRule(null, 'createAccount', false),
 
-//generic, dynamic handlers
+    //generic, dynamic handlers
     'getControls' => new PageRule(null, 'getControlTypes'),
     'uploadFile.php' => new PageRule(null, 'uploadHandlerFromExt'),
     'ec/uploads/.+\.(jpe?g|mp4)$' => new PageRule(null, 'getMedia'),
@@ -3133,7 +3221,7 @@ $pageRules = array(
     'createDB' => new PageRule(null, 'setupDB', $hasManagers),
     'writeSettings' => new PageRule(null, 'writeSettings', $hasManagers),
 
-//to API
+    //to API
     'projects' => new PageRule(null, 'projectList'),
     '[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|/)?' => new PageRule(null, 'projectHome'),
     '[a-zA-Z0-9_-]+/upload' => new PageRule(null, 'uploadData'),
@@ -3153,10 +3241,10 @@ $pageRules = array(
 
     '[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.kml|\.js|\.css|/)?' => new PageRule(null, 'formHandler'),
 
-//'[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage' => new  => new PageRule(null, formUsage),
+    //'[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage' => new  => new PageRule(null, formUsage),
     '[^/\.]*/[^/\.]+/[^/\.]*(\.xml|\.json|/)?' => new PageRule(null, 'entryHandler')
 
-//forTesting
+    //forTesting
 
 );
 
