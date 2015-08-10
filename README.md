@@ -98,3 +98,5 @@ To use the Google Login, you need to open the file ec/epicollect.ini and add the
 
 replacing the placeholders with your Google API details https://developers.google.com/+/web/api/rest/oauth
 
+If you do not add these parameters, the option to login using Google Plus Sign will not be shown
+
