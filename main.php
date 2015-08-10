@@ -1,7 +1,10 @@
 <?php
 
+//phpinfo();
+//exit();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+ini_set('memory_limit', -1);
 
 if (isset($_REQUEST['_SESSION']))
     throw new Exception('Bad client request');
@@ -13,8 +16,8 @@ $dat = new DateTime('now');
 $SITE_ROOT = '';
 $PUBLIC = false;
 $XML_VERSION = 1.0;
-$CODE_VERSION = "1.5g";
-$BUILD = "25";
+$CODE_VERSION = "1.6g";
+$BUILD = "26";
 
 if (!isset($PHP_UNIT)) {
     $PHP_UNIT = false;
@@ -22,20 +25,6 @@ if (!isset($PHP_UNIT)) {
 if (!$PHP_UNIT) {
     @session_start();
 }
-
-//probably the most useless function ever
-function getValIfExists($array, $key, $default = null) {
-    if (array_key_exists($key, $array)) {
-        return $array[$key];
-    } else {
-        return $default;
-    }
-}
-
-function escape_xml($str) {
-    return str_replace('>', '&gt;', str_replace('<', '&lt;', str_replace('&', '&amp;', $str)));
-}
-
 $DIR = str_replace('main.php', '', $_SERVER['SCRIPT_FILENAME']);
 
 if ($PHP_UNIT) {
@@ -50,19 +39,16 @@ if (strpos($_SERVER['SCRIPT_NAME'], 'main.php')) {
     $SITE_ROOT = str_replace(array($_SERVER['DOCUMENT_ROOT'], '/main.php'), '', $_SERVER['SCRIPT_FILENAME']);
 }
 
+include(sprintf('%s/utils/helpers.php', $DIR));
+include(sprintf('%s/utils/ui/applyTemplate.php', $DIR));
+include(sprintf('%s/utils/user/createAccount.php', $DIR));
+include(sprintf('%s/utils/login/login.php', $DIR));
+include(sprintf('%s/utils/project/project.php', $DIR));
+include(sprintf('%s/utils/config/sitetest.php', $DIR));
 include(sprintf('%s/utils/HttpUtils.php', $DIR));
 include(sprintf('%s/Auth/AuthManager.php', $DIR));
 include(sprintf('%s/db/dbConnection.php', $DIR));
 include(sprintf('%s/utils/Encoding.php', $DIR));
-
-$url = (array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : $_SERVER["HTTP_X_ORIGINAL_URL"]); //strip off site root and GET query
-if ($SITE_ROOT != '')
-    $url = str_replace($SITE_ROOT, '', $url);
-if (strpos($url, '?'))
-    $url = substr($url, 0, strpos($url, '?'));
-$url = trim($url, '/');
-$url = urldecode($url);
-
 include(sprintf('%s/Classes/PageSettings.php', $DIR));
 include(sprintf('%s/Classes/configManager.php', $DIR));
 include(sprintf('%s/Classes/Logger.php', $DIR));
@@ -72,85 +58,14 @@ include(sprintf('%s/Classes/EcField.php', $DIR));
 include(sprintf('%s/Classes/EcOption.php', $DIR));
 include(sprintf('%s/Classes/EcEntry.php', $DIR));
 
-function openCfg() {
-    global $cfg, $DIR, $PUBLIC;
 
-    //OPEN CONFIGURATION OPTIONS 
-    $cfg_fn = sprintf('%s/ec/epicollect.ini', rtrim($DIR, '/'));
-
-    if (!file_exists($cfg_fn)) {
-        makeCfg();
-    }
-    makedirs();
-    try {
-        $cfg = new ConfigManager($cfg_fn);
-
-        if ($cfg->settings['security']['use_ldap'] && !function_exists('ldap_connect')) {
-            $cfg->settings['security']['use_ldap'] = false;
-            $cfg->writeConfig();
-        }
-
-        if (!array_key_exists('salt', $cfg->settings['security']) || trim($cfg->settings['security']['salt']) == '') {
-            $str = genStr();
-            $cfg->settings['security']['salt'] = $str;
-            $cfg->writeConfig();
-        }
-
-
-        $PUBLIC = $cfg->settings['misc']['public_server'];
-
-    } catch (Exception $err) {
-        die ('could not load configuration');
-    }
-}
-
-function makeCfg() {
-    global $DIR;
-
-    $cfg_tpl_fn = sprintf('%s/ec/epicollect-blank.ini', rtrim($DIR, '/'));
-    $cfg_fn = sprintf('%s/ec/epicollect.ini', rtrim($DIR, '/'));
-
-    copy($cfg_tpl_fn, $cfg_fn);
-    makedirs();
-
-}
-
-function makedirs() {
-    global $DIR;
-
-    $updir = sprintf('%s/ec/uploads', rtrim($DIR, '/'));
-    if (!file_exists($updir))
-        mkdir($updir);
-}
-
-function genStr() {
-    $source_str = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    $rand_str = str_shuffle($source_str);
-    $str = substr($rand_str, -22);
-
-    unset($source_str, $rand_str);
-
-    return $str;
-}
-
-function makeUrl($fn) {
-    global $SITE_ROOT;
-    $root = trim($SITE_ROOT, '/');
-    if ($root !== '') {
-        return sprintf('http://%s/%s/ec/uploads/%s', $_SERVER['HTTP_HOST'], $root, $fn);
-    } else {
-        return sprintf('http://%s/ec/uploads/%s', $_SERVER['HTTP_HOST'], $fn);
-    }
-}
-
-function handleError($errno, $errstr, $errfile, $errline, array $errcontext) {
-    // error was suppressed with the @-operator
-    if (0 === error_reporting()) {
-        return false;
-    }
-
-    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
-}
+$url = (array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : $_SERVER["HTTP_X_ORIGINAL_URL"]); //strip off site root and GET query
+if ($SITE_ROOT != '')
+    $url = str_replace($SITE_ROOT, '', $url);
+if (strpos($url, '?'))
+    $url = substr($url, 0, strpos($url, '?'));
+$url = trim($url, '/');
+$url = urldecode($url);
 
 
 set_error_handler('handleError', E_ALL);
@@ -162,206 +77,7 @@ $db = false;
 $auth = new AuthManager();
 $db = new dbConnection();
 
-function escapeTSV($string) {
-    $string = str_replace("\n", "\\n", $string);
-    $string = str_replace("\r", "\\r", $string);
-    $string = str_replace("\t", "\\t", $string);
-    return $string;
-}
 
-function flash($msg, $type = "msg") {
-    if (!array_key_exists("flashes", $_SESSION) || !is_array($_SESSION["flashes"])) {
-        $_SESSION["flashes"] = array();
-    }
-    $nflash = array("msg" => $msg, "type" => $type);
-
-    foreach ($_SESSION["flashes"] as $flash) {
-        if ($flash == $nflash)
-            return;
-    }
-    array_push($_SESSION["flashes"], $nflash);
-
-}
-
-function redirectTo($url) {
-    global $SITE_ROOT;
-    $server = $_SERVER['HTTP_HOST'];
-    $root = trim($SITE_ROOT, '/');
-    header(sprintf('location: http://%s%s/', $server, $root != '' ? ('/' . $root) : ''));
-}
-
-function accessDenied($location) {
-    flash(sprintf('You do not have access to %s', $location));
-    echo redirectTo("");
-}
-
-function setupDB() {
-    global $cfg, $auth, $SITE_ROOT;
-
-    try {
-        $db = new dbConnection($_POST["un"], $_POST["pwd"]);
-
-    } catch (Exception $e) {
-        $_GET["redir"] = "pwd";
-        siteTest();
-        return;
-    }
-    if (!$db) {
-        echo "DB not connected";
-        return;
-    }
-
-    $sql = file_get_contents("./db/epicollect2.sql");
-
-    $qrys = explode("~", $sql);
-
-    for ($i = 0; $i < count($qrys); $i++) {
-        if ($qrys[$i] != "") {
-
-            $res = $db->do_multi_query($qrys[$i]);
-            if ($res !== true && !preg_match("/already exists|Duplicate entry .* for key/", $res)) {
-                siteHome();
-                return;
-            }
-        }
-    }
-
-    flash('Please sign in to register as the first administartor of this server.');
-    header(sprintf('location: http://%s%s/login.php', $_SERVER['HTTP_HOST'], $SITE_ROOT));
-    return;
-}
-
-function assocToDelimStr($arr, $delim) {
-    $str = implode($delim, array_keys($arr[0])) . "\r\n";
-    for ($i = 0; $i < count($arr); $i++) {
-        $str .= implode($delim, array_values($arr[$i])) . "\r\n";
-    }
-    return $str;
-}
-
-function getTimestamp($fmt = false) {
-    $date = new DateTime("now", new DateTimeZone("UTC"));
-    if (!$fmt)
-        return $date->getTimestamp() * 1000;
-    else return $date->format($fmt);
-}
-
-function regexEscape($s) {
-    $s = str_replace("/", "\/", $s);
-    return $s;
-}
-
-function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
-    global $db, $SITE_ROOT, $DIR, $auth, $CODE_VERSION, $BUILD, $cfg;
-
-    $template = file_get_contents(sprintf('%shtml/%s', $DIR, trim($baseUri, '.')));
-    $templateVars['SITE_ROOT'] = ltrim($SITE_ROOT, '\\');
-    $templateVars['uid'] = md5($_SERVER['HTTP_HOST']);
-    $templateVars['codeVersion'] = $CODE_VERSION;
-    $templateVars['build'] = $BUILD;
-    $templateVars['protocol'] = (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] == 'on' ? 'https' : 'http');
-    $templateVars['GA_ACCOUNT'] = $cfg->settings['misc']['ga_account'];
-    // Is there a user logged in?
-
-    $flashes = '';
-
-
-    if (array_key_exists('flashes', $_SESSION) && is_array($_SESSION['flashes'])) {
-        while ($flash = array_pop($_SESSION['flashes'])) {
-            $flashes .= sprintf('<p class="flash %s">%s</p>', $flash["type"], $flash["msg"]);
-        }
-    }
-
-
-    try {
-        if (isset($db) && $db->connected && $auth && $auth->isLoggedIn()) {
-            //TODO : remove update user unless user is local
-            //if so put the user's name and a logout option in the login section
-            $type = $auth->getProviderType();
-
-
-            if ($auth->isServerManager()) {
-                $template = str_replace('{#loggedIn#}', 'Logged in as ' . $auth->getUserNickname() . ' (' . $auth->getUserEmail() . ')  <a href="{#SITE_ROOT#}/logout">Sign out</a> | ' . ($type == 'LOCAL' ? '<a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | ' : '') . '<a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
-            } else {
-                $template = str_replace('{#loggedIn#}', sprintf('Logged in as %s (%s) <a href="{#SITE_ROOT#}/logout">Sign out</a> ' . ($type == 'LOCAL' ? '| <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>' : ''), $auth->getUserNickname(), $auth->getUserEmail()), $template);
-            }
-            $templateVars['userEmail'] = $auth->getUserEmail();
-        } // else show the login link
-        else {
-            global $PUBLIC;
-            $template = str_replace('{#loggedIn#}', '<a href="{#SITE_ROOT#}/login.php">Log in</a>'/* . ($PUBLIC ? ' or <a href="{#SITE_ROOT#}/register">register</a>' : '')*/, $template);
-        }
-        // work out breadcrumbs
-        //$template = str_replace("{#breadcrumbs#}", '', $template);
-    } catch (Exception $err) {
-        unset($db);
-        siteTest();
-    }
-
-    $script = "";
-    $sections = array();
-    if ($targetUri) {
-
-        $fname = sprintf('%shtml/%s', $DIR, trim($targetUri, './'));
-        if (file_exists($fname)) {
-            $data = file_get_contents($fname);
-
-            $fPos = 0;
-            $iStart = 0;
-            $iEnd = 0;
-            $sEnd = 0;
-            $id = '';
-
-            while ($fPos <= strlen($data) && $fPos >= 0) {
-                //echo "--";
-                // find {{
-                $iStart = strpos($data, '{{', $fPos);
-
-                if ($iStart === false || $iStart < $fPos)
-                    break;
-                //echo $iStart;
-                //get identifier (to }})
-                $iEnd = strpos($data, '}}', $iStart);
-
-                //echo $iEnd;
-                $id = substr($data, $iStart + 2, ($iEnd - 2) - ($iStart));
-                //find matching end {{/}}
-                $sEnd = strpos($data, sprintf('{{/%s}}', $id), $iEnd);
-                $sections[$id] = substr($data, $iEnd + 2, $sEnd - ($iEnd + 2));
-
-                $fPos = $sEnd + strlen($id) + 3;
-                //echo ("$fPos --- " . strlen($data) . " $id :: ");
-            }
-        } else {
-            $sections['script'] = '';
-            $sections['main'] = '<h1>404 - page not found</h1>
-				<p>Sorry, the page you were looking for could not be found.</p>';
-            header('HTTP/1.1 404 Page not found');
-        }
-        foreach (array_keys($sections) as $sec) {
-            // do processing
-            $template = str_replace(sprintf('{#%s#}', $sec), $sections[$sec], $template);
-        }
-        $template = str_replace('{#flashes#}', $flashes, $template);
-    }
-    if ($templateVars) {
-        foreach ($templateVars as $sec => $cts) {
-            // do processing
-            try {
-                $template = str_replace(sprintf('{#%s#}', $sec), $cts, $template);
-            }
-            catch(Exception $e) {
-                echo 'Please grant privileges to admin user and refresh once done (see <a href="https://github.com/ImperialCollegeLondon/EpiCollectplus#step-4--set-up-mysql">installation instruction</a>) like so:';
-                echo '<br/><br/>';
-                echo "<i>GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE, CREATE TEMPORARY TABLES ON your_db_name_here.* TO 'user_goes_here';</i>";
-                exit();
-            }
-        }
-    }
-
-    $template = preg_replace('/\{#[a-z0-9_]+#\}/i', '', $template);
-    return $template;
-}
 
 function formDataLastUpdated() {
     global $url, $log, $auth;
@@ -409,120 +125,6 @@ function formDataLastUpdated() {
     return;
 }
 
-function mimeType($f) {
-    $mimeTypes = array(
-        'ico' => 'image/x-icon',
-        'png' => 'image/png',
-        'gif' => 'image/gif',
-        'jpg' => 'image/jpeg',
-        'css' => 'text/css',
-        'html' => 'text/html',
-        'js' => 'text/javascript',
-        'json' => 'text/javascript',
-        'xml' => 'text/xml',
-        'php' => 'text/html',
-        'mp4' => 'video/mp4',
-        'csv' => 'text/csv'
-    );
-
-    $f = preg_replace('/\?.*$/', '', $f);
-    $ext = substr($f, strrpos($f, '.') + 1);
-    if (array_key_exists($ext, $mimeTypes)) {
-        return $mimeTypes[$ext];
-    } else {
-        return 'text/plain';
-    }
-}
-
-/* end of class and function definitions */
-
-/* handlers	*/
-
-function defaultHandler() {
-    global $url;
-    header(sprintf('Content-type: $s', mimeType($url)));
-    echo applyTemplate('base.html', "./" . $url);
-}
-
-function createAccount() {
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        global $cfg;
-        if ($cfg->settings['misc']['public_server'] === "true") {
-            createUser();
-            flash("Account created, please log in.");
-            header(sprintf('location: http://%s/%s/login.php', $server, $root));
-        } else {
-            flash("This server is not public", "err");
-            header(sprintf('location: http://%s/%s/', $server, $root));
-        }
-    } else {
-        global $auth;
-        echo applyTemplate('./base.html', './loginbase.html', array('form' => $auth->requestSignup()));
-    }
-
-}
-
-/**
- * Called when the page requires a log in
- */
-function loginHandler() {
-    $cb_url = '';
-    header('Cache-Control: no-cache, must-revalidate');
-
-    global $auth, $url, $db;
-
-    if (!preg_match('/login.php/', $url)) {
-        $cb_url = $url;
-    }
-
-    if (!$auth)
-        $auth = new AuthManager();
-
-    if (array_key_exists('provider', $_GET)) {
-        $_SESSION['provider'] = $_GET['provider'];
-        $frm = $auth->requestlogin($cb_url, $_SESSION['provider']);
-    } elseif (array_key_exists('provider', $_SESSION)) {
-        $frm = $auth->requestlogin($cb_url, $_SESSION['provider']);
-    } else {
-        $frm = $auth->requestlogin($cb_url);
-    }
-
-
-    echo applyTemplate('./base.html', './loginbase.html', array('form' => $frm));
-}
-
-function loginCallback() {
-    header('Cache-Control: no-cache, must-revalidate');
-
-    global $auth, $cfg, $db;
-    $provider = getValIfExists($_POST, 'provider');
-    if (!$provider)
-        $provider = getValIfExists($_SESSION, 'provider');
-    else {
-        $_SESSION['provider'] = $provider;
-    }
-
-    $db = new dbConnection();
-    if (!$auth)
-        $auth = new AuthManager();
-    $auth->callback($provider);
-}
-
-function logoutHandler() {
-    header('Cache-Control: no-cache, must-revalidate');
-
-    global $auth, $SITE_ROOT;
-    $server = trim($_SERVER['HTTP_HOST'], '/');
-    $root = trim($SITE_ROOT, '/');
-    if ($auth) {
-        $auth->logout();
-        header(sprintf('location: http://%s/%s/', $server, $root));
-        return;
-    } else {
-        echo 'No Auth';
-    }
-}
-
 function uploadHandlerFromExt() {
     global $log;
     //$flog = fopen('fileUploadLog.log', 'w');
@@ -554,358 +156,7 @@ function uploadHandlerFromExt() {
     fclose($flog);
 }
 
-function projectList() {
-    /**
-     * Produce a list of all the projects on this server that are
-     *    - publically listed
-     *  - if a user is logged in, owned, curated or managed by the user
-     */
-    global $auth;
 
-    $qry = getValIfExists($_GET, "q");
-    $lmt = getValIfExists($_GET, "limit", false);
-
-    $prjs = EcProject::getPublicProjects($qry, $lmt);
-    $usr_prjs = array();
-    if ($auth->isLoggedIn()) {
-        $usr_prjs = EcProject::getUserProjects($auth->getEcUserId(), true);
-        $up_l = count($usr_prjs);
-        for ($p = 0; $p < $up_l; $p++) {
-            if ($usr_prjs[$p]["listed"] === 0) {
-                array_push($prjs, $usr_prjs[$p]);
-            }
-        }
-    }
-
-    echo json_encode($prjs);
-}
-
-
-function projectHome() {
-    global $url, $SITE_ROOT, $auth;
-
-    $eou = strlen($url) - 1;
-    if ($url{$eou} == '/') {
-        $url{$eou} = '';
-    }
-    $url = ltrim($url, '/');
-
-    $prj = new EcProject();
-    if (array_key_exists('name', $_GET)) {
-        $prj->name = $_GET['name'];
-    } else {
-        $prj->name = preg_replace('/\.(xml|json)$/', '', $url);
-    }
-
-    $prj->fetch();
-
-    if (!$prj->id) {
-        $vals = array('error' => 'Project could not be found');
-        echo applyTemplate('base.html', './404.html', $vals);
-        die;
-    }
-
-
-    $loggedIn = $auth->isLoggedIn();
-    $role = $prj->checkPermission($auth->getEcUserId());
-
-    if (!$prj->isPublic && !$loggedIn && !preg_match('/\.xml$/', $url)) {
-        flash('This is a private project, please log in to view the project.');
-        loginHandler($url);
-        return;
-    } else if (!$prj->isPublic && $role < 2 && !preg_match('/\.xml$/', $url)) {
-        flash(sprintf('You do not have permission to view %s.', $prj->name));
-        header(sprintf('location: http://%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT));
-        return;
-    }
-
-
-    //echo strtoupper($_SERVER["REQUEST_METHOD"]);
-    $reqType = strtoupper($_SERVER['REQUEST_METHOD']);
-    if ($reqType == 'POST') //
-    {
-        //echo 'POST';
-        // update project
-        $prj->description = $_POST['description'];
-        $prj->image = $_POST['image'];
-        $prj->isPublic = array_key_exists('isPublic', $_POST) && $_POST['isPublic'] == 'on' ? 1 : 0;
-        $prj->isListed = array_key_exists('isListed', $_POST) && $_POST['isListed'] == 'on' ? 1 : 0;
-        $prj->publicSubmission = array_key_exists('publicSubmission', $_POST) && $_POST['publicSubmission'] == 'on' ? 1 : 0;
-
-        $res = $prj->id ? $prj->push() : $prj->post();
-        if ($res !== true) {
-            echo $res;
-        }
-
-        if ($_POST['admins'] && $res === true) {
-            $res = $prj->setAdmins($_POST["admins"]);
-        }
-
-        if ($_POST['users'] && $res === true) {
-            $res = $prj->setUsers($_POST["users"]);
-        }
-
-        if ($_POST['submitters'] && $res === true) {
-            $res = $prj->setSubmitters($_POST['submitters']);
-        }
-        echo $res;
-    } elseif ($reqType == 'DELETE') {
-        if ($role == 3) {
-            $res = $prj->deleteProject();
-            if ($res === true) {
-                header('HTTP/1.1 200 OK', true, 200);
-                echo '{ "success": true }';
-                return;
-            } else {
-                header('HTTP/1.1 500 Error', true, 500);
-                echo ' {"success" : false, "message" : "Could not delete project" }';
-            }
-        } else {
-            header('HTTP/1.1 403 Forbidden', true, 403);
-            echo ' {"success" : false, "message" : "You do not have permission to delete this project" }';
-        }
-
-    } elseif ($reqType == 'GET') {
-
-        if (array_key_exists('HTTP_ACCEPT', $_SERVER))
-            $format = substr($_SERVER["HTTP_ACCEPT"], strpos($_SERVER["HTTP_ACCEPT"], "$SITE_ROOT/") + 1);
-        $ext = substr($url, strrpos($url, '.') + 1);
-        $format = $ext != '' ? $ext : $format;
-        if ($format == 'xml') {
-            header('Cache-Control: no-cache, must-revalidate');
-            header('Content-type: text/xml; charset=utf-8;');
-            echo $prj->toXML();
-        } elseif ($format == 'json') {
-            header('Cache-Control: no-cache, must-revalidate');
-            header('Content-type: application/json; charset=utf-8;');
-            echo $prj->toJSON();
-        } else {
-
-
-            header('Cache-Control: no-cache, must-revalidate');
-            header('Content-type: text/html;');
-
-            try {
-                //$userMenu = '<h2>View Data</h2><span class="menuItem"><img src="images/map.png" alt="Map" /><br />View Map</span><span class="menuItem"><img src="images/form_view.png" alt="List" /><br />List Data</span>';
-                //$adminMenu = '<h2>Project Administration</h2><span class="menuItem"><a href="./' . $prj->name . '/formBuilder.html"><img src="'.$SITE_ROOT.'/images/form_small.png" alt="Form" /><br />Create or Edit Form(s)</a></span><span class="menuItem"><a href="editProject.html?name='.$prj->name.'"><img src="'.$SITE_ROOT.'/images/homepage_update.png" alt="Home" /><br />Update Project</a></span>';
-                $tblList = '';
-                foreach ($prj->tables as $tbl) {
-                    $tblList .= "<div class=\"tblDiv\"><a class=\"tblName\" href=\"{$prj->name}/{$tbl->name}\">{$tbl->name}</a><a href=\"{$prj->name}/{$tbl->name}\">View All Data</a> | <form name=\"{$tbl->name}SearchForm\" action=\"./{$prj->name}/{$tbl->name}\" method=\"GET\"> Search for {$tbl->key} <input type=\"text\" name=\"{$tbl->key}\" /> <a href=\"javascript:document.{$tbl->name}SearchForm.submit();\">Search</a></form></div>";
-                }
-
-                $imgName = $prj->image;
-
-                $image = '';
-
-                if (file_exists($imgName)) {
-                    $imgSize = getimagesize($imgName);
-                    $image = sprintf('<img class="projectImage" src="%s" alt="Project Image" />', $imgName);#, $imgSize[0], $imgSize[1]);
-                }
-
-                $adminMenu = '';
-                $curpage = trim($url, '/');
-                $curpage = sprintf('http://%s%s/%s', $_SERVER['HTTP_HOST'], $SITE_ROOT, $curpage);
-
-                if ($role == 3) {
-                    $adminMenu = "<span class=\"button-set\"><a href=\"{$curpage}/manage\" class=\"button\">Manage Project</a> <a href=\"{$curpage}/formBuilder\" class=\"button\">Create or Edit Forms</a></span>";
-                }
-
-                $vals = array(
-                    'projectName' => $prj->name,
-                    'projectDescription' => preg_replace('/\<\/?(p|h[\dr]|div|section|img)\s?[a-z0-9\=\"\/\~\.\s]*\>/', '', $prj->description),
-                    'projectImage' => $image,
-                    'tables' => $tblList,
-                    'adminMenu' => $adminMenu,
-                    'userMenu' => ''
-                );
-
-
-                echo applyTemplate('base.html', 'projectHome.html', $vals);
-                return;
-            } catch (Exception $e) {
-
-                $vals = array('error' => $e->getMessage());
-                echo applyTemplate('base.html', 'error.html', $vals);
-            }
-        }
-    }
-}
-
-function siteTest() {
-    $res = array();
-    global $cfg, $db;
-
-    $template = 'testResults.html';
-
-    $doit = true;
-    if (!array_key_exists("database", $cfg->settings) || !array_key_exists("server", $cfg->settings["database"]) || trim($cfg->settings["database"]["server"]) == "") {
-        $res["dbStatus"] = "fail";
-        $res["dbResult"] = "No database server specified, please amend the file ec/settings.php and so that \$DBSERVER equals the name of the MySQL server";
-        $doit = false;
-    } else if (!array_key_exists("user", $cfg->settings["database"]) || trim($cfg->settings["database"]["user"]) == "") {
-        $res["dbStatus"] = "fail";
-        $res["dbResult"] = "No database user specified, please amend the file ec/settings.php so that \$DBUSER and \$DBPASS equal the credentials for MySQL server";
-        $doit = false;
-    } else if (!array_key_exists("database", $cfg->settings["database"]) || trim($cfg->settings["database"]["database"]) == "") {
-        $res["dbStatus"] = "fail";
-        $res["dbResult"] = "No database name specified, please amend the file ec/settings.php so that \$DBNAME equals the name of the MySQL database";
-        $doit = false;
-    }
-
-    if ($doit && !(array_key_exists("edit", $_GET) && $_GET["edit"] === "true")) {
-        if (array_key_exists("redir", $_GET) && $_GET["redir"] === "true")
-            $res["redirMsg"] = "	<p class=\"message\">You have been brought to this page because of a fatal error opening the home page</p>";
-        if (array_key_exists("redir", $_GET) && $_GET["redir"] === "pwd")
-            $res["redirMsg"] = "	<p class=\"message\">The username and password you entered were incorrect, please try again.</p>";
-
-        if (!$db)
-            $db = new dbConnection();
-
-
-        if ($db->connected) {
-            $res["dbStatus"] = "succeed";
-            $res["dbResult"] = "Connected";
-        } else {
-            $ex = $db->errorCode;
-            if ($ex == 1045) {
-                $res["dbStatus"] = "fail";
-                $res["dbResult"] = "DB Server found, but the combination of the username and password invalid. <a href=\"./test?edit=true\">Edit Settings</a>";
-            } elseif ($ex == 1044) {
-                $res["dbStatus"] = "fail";
-                $res["dbResult"] = "DB Server found, but the database specified does not exist or the user specified does not have access to the database. <a href=\"./test?edit=true\">Edit Settings</a>";
-            } else {
-                $res["dbStatus"] = "fail";
-                $res["dbResult"] = "Could not find the DB Server ";
-            }
-        }
-
-        if ($db->connected) {
-            $dbNameRes = $db->do_query("SHOW DATABASES");
-            if ($dbNameRes !== true) {
-                echo $dbNameRes;
-                return;
-            }
-            while ($arr = $db->get_row_array()) {
-
-                if ($arr['Database'] == $cfg->settings["database"]["database"]) {
-                    $res["dbStatus"] = "succeed";
-                    $res["dbResult"] = "";
-                    break;
-                } else {
-                    $res["dbStatus"] = "fail";
-                    $res["dbResult"] = "DB Server found, but the database '{$cfg->settings["database"]["database"]}' does not exist.<br />";
-                }
-            }
-
-            $res["dbPermStatus"] = "fail";
-            $res["dbPermResults"] = "";
-            $res["dbTableStatus"] = "fail";
-
-            if ($res["dbStatus"] == "succeed") {
-                $dbres = $db->do_query("SHOW GRANTS FOR {$cfg->settings["database"]["user"]};");
-                if ($dbres !== true) {
-                    $res["dbPermResults"] = $res;
-                } else {
-                    $perms = array("SELECT", "INSERT", "UPDATE", "DELETE", "EXECUTE");
-                    $res ["dbPermResults"] = "Permssions not set, the user {$cfg->settings["database"]["user"]} requires SELECT, UPDATE, INSERT, DELETE and EXECUTE permissions on the database {$cfg->settings["database"]["database"]}";
-                    while ($arr = $db->get_row_array()) {
-                        $_g = implode(" -- ", $arr) . "<br />";
-                        if (preg_match("/ON (`?{$cfg->settings["database"]["database"]}`?|\*\.\*)/", $_g)) {
-                            if (preg_match("/ALL PERMISSIONS/i", $_g)) {
-                                $res["dbPermStatus"] = "fail";
-                                $res["dbPermResults"] = "The user account {$cfg->settings["database"]["user"]} by the website should only have SELECT, INSERT, UPDATE, DELETE and EXECUTE priviliges on {$cfg->settings["database"]["database"]}";
-                                break;
-                            }
-                            for ($_p = 0; $_p < count($perms); $_p++) {
-                                if (preg_match("/{$perms[$_p]}/i", $_g)) // &&  preg_match("/INSERT/", $_g) &&  preg_match("/UPDATE/", $_g) &&  preg_match("/DELETE/", $_g) &&  preg_match("/EXECUTE/", $_g))
-                                {
-                                    unset($perms[$_p]);
-                                    $perms = array_values($perms);
-                                    $_p--;
-                                }
-                            }
-                        }
-                    }
-                    if (count($perms) == 0) {
-                        $res["dbPermStatus"] = "succeed";
-                        $res["dbPermResults"] = "Permssions Correct";
-                    } else {
-                        $res ["dbPermResults"] = "Permssions not set, the user {$cfg->settings["database"]["user"]} is missing " . implode(", ", $perms) . " permissions on the database {$cfg->settings["database"]["database"]}";
-                    }
-                }
-            }
-        }
-
-        if ($db->connected && $res["dbPermStatus"] == "succeed") {
-
-            $tblTemplate = array(
-                "device" => false,
-                "deviceuser" => false,
-                "enterprise" => false,
-                "entry" => false,
-                "entryvalue" => false,
-                "entryvaluehistory" => false,
-                "field" => false,
-                "fieldtype" => false,
-                "form" => false,
-                "option" => false,
-                "project" => false,
-                "role" => false,
-                "user" => false,
-                "userprojectpermission" => false
-            );
-
-            $dres = $db->do_query("SHOW TABLES");
-            if ($dres !== true) {
-                $res["dbTableStatus"] = "fail";
-                $res["dbTableResult"] = "EpiCollect Database is not set up correctly";
-            } else {
-                $i = 0;
-                while ($arr = $db->get_row_array()) {
-                    $tblTemplate[$arr["Tables_in_{$cfg->settings["database"]["database"]}"]] = true;
-                    $i++;
-                }
-                if ($i == 0) {
-                    $template = 'dbSetup.html';
-                    $res["dbTableStatus"] = "fail";
-                    $res["dbTableResult"] = "<p>Database is blank,  enter an <b>administrator</b> username and password for the database to create the database tables.</p>
-				<form method=\"post\" action=\"createDB\">
-					<b>Username : </b><input name=\"un\" type=\"text\" /> <b>Password : </b><input name=\"pwd\" type=\"password\" /> <input type=\"hidden\" name=\"create\" value=\"true\" /><input type=\"submit\" value=\"Create Database\" name=\"Submit\" />
-				</form>";
-                } else {
-                    $done = true;
-                    foreach ($tblTemplate as $key => $val) {
-                        $done &= $val;
-                    }
-
-                    if ($done) {
-                        $res["dbTableStatus"] = "succeed";
-                        $res["dbTableResult"] = "EpiCollect Database ready";
-                    } else {
-                        $res["dbTableStatus"] = "fail";
-                        $res["dbTableResult"] = "EpiCollect Database is not set up correctly";
-                    }
-                }
-            }
-
-        }
-
-        $res["endStatus"] = array_key_exists("dbTableStatus", $res) ? ($res["dbTableStatus"] == "fail" ? "fail" : "") : "fail";
-        $res["endMsg"] = ($res["endStatus"] == "fail" ? "The MySQL database is not ready, please correct the errors in red above and refresh this page. <a href = \"./test?edit=true\">Configuration tool</a>" : "You are now ready to create EpiCollect projects, place xml project definitions in {$_SERVER["PHP_SELF"]}/xml and visit the <a href=\"createProject.html\">create project</a> page");
-        echo applyTemplate("base.html", $template, $res);
-    } else {
-        $arr = "{";
-        foreach ($cfg->settings as $k => $v) {
-            foreach ($v as $sk => $sv) {
-                $arr .= "\"{$k}\\\\{$sk}\" : \"$sv\",";
-            }
-        }
-        $arr = trim($arr, ",") . "}";
-
-        echo applyTemplate("base.html", "setup.html", array("vals" => $arr));
-    }
-
-}
 
 
 function getClusterMarker() {
@@ -964,18 +215,51 @@ function siteHome() {
     $res = $db->do_query("SELECT name, ttl, ttl24 FROM (SELECT name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name) a order by ttl desc LIMIT 10");
     if ($res !== true) {
 
-        //$vals["projects"] = "<p class=\"error\">Database is not set up correctly, go to the <a href=\"test\">test page</a> to establish the problem.</p>";
-        //echo applyTemplate("base.html","./index.html",$vals);
         $rurl = "http://$server/$root/test?redir=true";
         header("location: $rurl");
         return;
     }
-    $vals["projects"] = "<div class=\"ecplus-projectlist\"><h1>Most popular projects on this server</h1>";
+    $vals["projects"] = "<div class=\"ecplus-projectlist\"><h3>Popular projects</h3>";
+
+    $vals["featured"] = '<div class="featured-projects" data-example-id="thumbnails-with-custom-content">
+    <div class="row">
+      <div class="col-sm-12 col-md-4">
+        <div class="thumbnail">
+          <img class="img-rounded" src="http://lorempixel.com/output/nature-q-c-200-150-7.jpg" alt="Generic placeholder thumbnail">
+          <div class="caption">
+            <h3>Thumbnail label</h3>
+            <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+            <p><a href="#" class="btn btn-primary pull-right" role="button">View data</a></p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-4">
+        <div class="thumbnail">
+          <img class="img-rounded" src="http://lorempixel.com/output/transport-q-c-200-150-1.jpg" alt="Generic placeholder thumbnail">
+          <div class="caption">
+            <h3>Thumbnail label</h3>
+            <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+             <p><a href="#" class="btn btn-primary pull-right" role="button">View data</a></p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-4">
+        <div class="thumbnail">
+          <img class="img-rounded" src="http://lorempixel.com/output/animals-q-c-200-150-7.jpg" alt="Generic placeholder thumbnail">
+          <div class="caption">
+            <h3>Thumbnail label</h3>
+            <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+            <p><a href="#" class="btn btn-primary pull-right" role="button">View data</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /.bs-example -->';
 
     $i = 0;
 
     while ($row = $db->get_row_array()) {
-        $vals["projects"] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$row["name"]}\">{$row["name"]}</a><div class=\"total\">{$row["ttl"]} entries with <b>" . ($row["ttl24"] ? $row["ttl24"] : "0") . "</b> in the last 24 hours </div></div>";
+        $vals["projects"] .= "<div class=\"project\"><i class=\"fa fa-file-text-o fa-2x project-icon\"></i><a href=\"{#SITE_ROOT#}/{$row["name"]}\">{$row["name"]}</a><div class=\"total\">{$row["ttl"]} entries with <b>" . ($row["ttl24"] ? $row["ttl24"] : "0") . "</b> in the last 24 hours </div></div>";
         $i++;
     }
 
@@ -986,16 +270,22 @@ function siteHome() {
     }
 
     if ($auth->isLoggedIn()) {
-        $vals['userprojects'] = '<div class="ecplus-userprojects"><h1>My Projects</h1>';
+        $vals['userprojects'] = '<div class="ecplus-userprojects"><h3>My projects</h3>';
 
         $prjs = EcProject::getUserProjects($auth->getEcUserId());
         $count = count($prjs);
 
         for ($i = 0; $i < $count; $i++) {
-            $vals['userprojects'] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$prjs[$i]["name"]}\">{$prjs[$i]["name"]}</a><div class=\"total\">{$prjs[$i]["ttl"]} entries with <b>" . ($prjs[$i]["ttl24"] ? $prjs[$i]["ttl24"] : "0") . "</b> in the last 24 hours </div></div>";
+            $vals['userprojects'] .= "<div class=\"project\"><i class=\"fa fa-file-text-o fa-2x project-icon\"></i><a href=\"{#SITE_ROOT#}/{$prjs[$i]["name"]}\">{$prjs[$i]["name"]}</a><div class=\"total\">{$prjs[$i]["ttl"]} entries with <b>" . ($prjs[$i]["ttl24"] ? $prjs[$i]["ttl24"] : "0") . "</b> in the last 24 hours </div></div>";
         }
 
         $vals['userprojects'] .= '</div>';
+    }
+    else {
+
+//        $vals['userprojects'] = '<a class="twitter-timeline" href="https://twitter.com/EpiCollect" data-widget-id="630833052789395456">Tweets by @EpiCollect</a>
+//<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?"http":"https";if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>';
+
     }
 
     echo applyTemplate("base.html", "index.html", $vals);
