@@ -17,8 +17,8 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="{#SITE_ROOT#}/css/redesign2015.css">
     {#script#}
-    <link rel="icon" href="favicon.ico" type="image/x-icon"/>
-    <link rel="shortcut icon" href="favicon.png" type="image/png"/>
+    <link rel="icon" href="{#SITE_ROOT#}/images/favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="{#SITE_ROOT#}/images/favicon.png" type="image/png"/>
 
 
     <title>EpiCollect+</title>
@@ -31,7 +31,6 @@
             <a class="branding" href="{#SITE_ROOT#}/"><img alt="EpiCollect+" src="{#SITE_ROOT#}/images/logo_new_plus_thin.png" width="242" height="50"/></a>
 
             <div id="nav">
-                <!-- <a href="{#SITE_ROOT#}/index.html">Home</a> -->
                 <a href="{#SITE_ROOT#}/createProject.html">Create Project</a>
                 <a href="{#SITE_ROOT#}/my-projects.html">My Projects</a>
 
@@ -42,25 +41,13 @@
         </div>
     </nav>
 
-    <div id="breadcrumbs"><a href="{#SITE_ROOT#}/">Home</a>{#breadcrumbs#}</div>
+    <div id="breadcrumbs"><a href="{#SITE_ROOT#}/">Home</a> &gt; <a href="{#SITE_ROOT#}/my-projects">My Projects</a></div>
 
+    <!--Show user projects-->
     <div id="main">
-        {#featured#}
-
         {#main#}
     </div>
-
-
-    <!--<footer id="foot" class="footer">-->
-    <!--<div class="container-fluid">-->
-    <!--<span class="leftie">Version {#codeVersion#} build {#build#} - EpiCollect+ is developed at <a href="http://www.imperial.ac.uk" target="_blank">Imperial College London</a> | <a-->
-    <!--href="mailto:d.aanensen@imperial.ac.uk">Contact us </a></span>-->
-    <!--</div>-->
-
-
-    <!--</footer>-->
-
-
+    <!--Footer-->
     <div class="container-fluid">
         <footer id="foot" class="footer"><!--FOOOTER-->
             <div class="row">

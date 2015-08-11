@@ -208,3 +208,106 @@ function defaultHandler() {
     header(sprintf('Content-type: $s', mimeType($url)));
     echo applyTemplate('base.html', "./" . $url);
 }
+function uploadHandlerFromExt() {
+    global $log;
+    //$flog = fopen('fileUploadLog.log', 'w');
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (count($_FILES) > 0) {
+            $keys = array_keys($_FILES);
+            foreach ($keys as $key) {
+                if ($_FILES[$key]['error'] > 0) {
+                    //fwrite($flog, $key . " error : " .$_FILES[$key]['error']);
+                    $log->write("error", $key . " error : " . $_FILES[$key]['error']);
+                } else {
+                    if (preg_match("/.(png|gif|rtf|docx?|pdf|jpg|jpeg|txt|avi|mpeg|mpg|mov|mp3|wav)$/i", $_FILES[$key]['name'])) {
+                        if (!file_exists("ec/uploads/"))
+                            mkdir("ec/uploads/");
+                        move_uploaded_file($_FILES[$key]['tmp_name'], "ec/uploads/{$_FILES[$key]['name']}");
+                        echo "{\"success\" : true , \"msg\":\"ec/uploads/{$_FILES[$key]['name']}\"}";
+                    } else {
+                        echo " error : file type not allowed";
+
+                    }
+                }
+            }
+        } else {
+            echo "No file submitted";
+        }
+    } else {
+        echo "Incorrect method";
+    }
+    fclose($flog);
+}
+
+function formBuilder() {
+    global $url, $auth;
+    $prj_name = str_replace('/formBuilder', '', $url);
+
+    $prj = new EcProject();
+    $prj->name = $prj_name;
+    $prj->fetch();
+
+    $uid = $auth->getEcUserId();
+
+    if ($prj->checkPermission($uid)) {
+        echo applyTemplate('./base.html', './createOrEditForm.html', array('projectName' => $prj_name));
+    } else {
+        accessDenied(sprintf(' Project %s', $prj_name));
+    }
+}
+
+function getControlTypes() {
+    global $db;
+    //$db = new dbConnection();
+    $res = $db->do_query('SELECT * FROM FieldType');
+
+    if ($res === true) {
+        $arr = array();
+        while ($a = $db->get_row_array()) {
+            array_push($arr, $a);
+        }
+
+        header("Content-type: application/json");
+        echo json_encode(array("controlTypes" => $arr));
+    }
+}
+
+
+
+function writeSettings() {
+    global $cfg, $SITE_ROOT;
+    foreach ($_POST as $k => $v) {
+        $kp = explode("\\", $k);
+        if (count($kp) > 1)
+            $cfg->settings[$kp[0]][$kp[1]] = $v;
+    }
+
+    if (!array_key_exists("salt", $cfg->settings["security"]) || $cfg->settings["security"]["salt"] == "") {
+        $str = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        $str = str_shuffle($str);
+        $str = substr($str, -22);
+        $cfg->settings["security"]["salt"] = $str;
+    }
+
+    $cfg->writeConfig();
+    header("Cache-Control: no-cache, must-revalidate");
+    if (getValIfExists($_POST, "edit")) {
+        header("location: $SITE_ROOT/admin");
+    } else {
+        header("location: $SITE_ROOT/test");
+    }
+}
+
+function packFiles($files) {
+    if (!is_array($files))
+        throw new Exception("files to be packed must be an array");
+
+    $str = "";
+
+    foreach ($files as $k => $f) {
+        $str .= file_get_contents($f);
+        $str .= "\r\n";
+    }
+
+    return $str;
+}

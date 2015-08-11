@@ -4,6 +4,7 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
     global $db, $SITE_ROOT, $DIR, $auth, $CODE_VERSION, $BUILD, $cfg;
 
     $template = file_get_contents(sprintf('%shtml/%s', $DIR, trim($baseUri, '.')));
+
     $templateVars['SITE_ROOT'] = ltrim($SITE_ROOT, '\\');
     $templateVars['uid'] = md5($_SERVER['HTTP_HOST']);
     $templateVars['codeVersion'] = $CODE_VERSION;
@@ -14,13 +15,11 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
 
     $flashes = '';
 
-
     if (array_key_exists('flashes', $_SESSION) && is_array($_SESSION['flashes'])) {
         while ($flash = array_pop($_SESSION['flashes'])) {
             $flashes .= sprintf('<p class="flash %s">%s</p>', $flash["type"], $flash["msg"]);
         }
     }
-
 
     try {
         if (isset($db) && $db->connected && $auth && $auth->isLoggedIn()) {
@@ -79,7 +78,7 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
                 $sections[$id] = substr($data, $iEnd + 2, $sEnd - ($iEnd + 2));
 
                 $fPos = $sEnd + strlen($id) + 3;
-                //echo ("$fPos --- " . strlen($data) . " $id :: ");
+
             }
         } else {
             $sections['script'] = '';

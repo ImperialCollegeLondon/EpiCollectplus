@@ -1,5 +1,23 @@
 <?php
 
+function projectCreator() {
+    if (!file_exists("ec/xml"))
+        mkdir("ec/xml");
+
+    if (array_key_exists("xml", $_FILES)) {
+        move_uploaded_file($_FILES["xml"]["tmp_name"], "ec/xml/{$_FILES["xml"]["name"]}");
+    }
+    if (getValIfExists($_REQUEST, "json")) {
+        $n = '';
+        echo validate("{$_FILES["xml"]["name"]}", NULL, $n, getValIfExists($_POST, 'update'));
+    } else {
+        $vals = array();
+        $vals["xmlFolder"] = getcwd() . "/xml";
+        $vals["projects"] = listXML();
+        echo applyTemplate("base.html", "create.html", $vals);
+    }
+}
+
 function projectList() {
     /**
      * Produce a list of all the projects on this server that are
@@ -174,4 +192,129 @@ function projectHome() {
             }
         }
     }
+}
+
+function createProject() {
+    global $url;
+
+    header("Cache-Control: no-cache, must-revalidate");
+
+    $vals = array();
+
+    echo applyTemplate("./base.html", "./createProject.html", $vals);
+
+}
+
+function updateProject() {
+    global $url, $auth, $db;
+
+    $pNameEnd = strrpos($url, "/");
+    $oldName = substr($url, 0, $pNameEnd);
+    $prj = new EcProject();
+    $prj->name = $oldName;
+    $prj->fetch();
+
+    $role = intVal($prj->checkPermission($auth->getEcUserId()));
+
+    if ($role != 3) {
+
+        header("Cache-Control: no-cache; must-revalidate;");
+        flash("You do not have permission to manage this project", "err");
+        $url = str_replace("update", "", $url);
+        header("location: {$SITE_ROOT}/$url");
+    } else {
+        header("Cache-Control: no-cache; must-revalidate;");
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $xml = getValIfExists($_POST, "xml");
+            $managers = getValIfExists($_POST, "managers");
+            $curators = getValIfExists($_POST, "curators");
+            $public = getValIfExists($_POST, "public");
+            $listed = getValIfExists($_POST, "listed");
+
+
+            $drty = false;
+            if ($xml && $xml != "") {
+                $prj->parse($xml);
+                if ($prj->name != oldName) {
+                    header("HTTP/1.1 400 CANNOT CHANGE NAME", 400);
+                    return false;
+                }
+                $drty = true;
+            }
+
+            echo 'description ' . $prj->description . ' ' . getValIfExists($_POST, "description");
+            if ($prj->description != getValIfExists($_POST, "description")) {
+
+                $prj->description = getValIfExists($_POST, "description");
+                $drty = true;
+            }
+            if ($prj->image != getValIfExists($_POST, "projectImage")) {
+                $prj->image = getValIfExists($_POST, "projectImage");
+                $drty = true;
+            }
+
+            if ($public !== false) {
+                $prj->isPublic = $public === "true";
+                $drty = true;
+            }
+            if ($listed !== false) {
+                $prj->isListed = $listed === "true";
+                $drty = true;
+            }
+            if ($drty) {
+                $prj->publicSubmission = true;
+                $prj->put($oldName);
+            }
+            if ($curators)
+                $prj->setCurators($curators);
+            if ($managers)
+                $prj->setManagers($managers);
+
+        } else {
+            $managers = $prj->getManagers();
+            if (is_array($managers)) {
+                $managers = '"' . implode(",", $managers) . '"';
+            } else {
+                $curators = '""';
+            }
+
+            $curators = $prj->getCurators();
+            if (is_array($curators)) {
+                $curators = '"' . implode(",", $curators) . '"';
+            } else {
+                $curators = '""';
+            }
+
+            $img = $prj->image;
+            $img = substr($img, strpos($img, '~') + 1);
+
+            echo applyTemplate("./base.html", "./updateProject.html", array("projectName" => $prj->name, "description" => $prj->description, "image" => $img, "managers" => $managers, "curators" => $curators, "public" => $prj->isPublic, "listed" => $prj->isListed));
+            return;
+        }
+    }
+}
+function projectSummary() {
+    global $url;
+
+    $prj = new EcProject();
+    $prj->name = substr($url, 0, strpos($url, "/"));
+    $prj->fetch();
+    $sum = $prj->getSummary();
+
+    echo "{\"forms\" : " . json_encode($sum) . "}";
+}
+
+function projectUsage() {
+    global $url, $auth;
+
+    $prj = new EcProject();
+    $prj->name = substr($url, 0, strpos($url, "/"));
+    $prj->fetch();
+
+    if (!$prj->isPublic && $prj->checkPermission($auth->getEcUserId()) < 2)
+        return "access denied";
+
+    $sum = $prj->getUsage();
+    header("Content-type: text/plain");
+    echo $sum; //"{\"forms\" : ". json_encode($sum) . "}";
 }
