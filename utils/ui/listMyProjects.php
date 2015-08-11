@@ -20,41 +20,6 @@ function listMyProjects() {
         return;
     }
 
-    $vals["featured"] = '<div class="featured-projects" data-example-id="thumbnails-with-custom-content">
-        <div class="row">
-            <div class="col-sm-12 col-md-4">
-                <div class="thumbnail">
-                    <img class="img-rounded" src="http://lorempixel.com/output/nature-q-c-200-150-7.jpg" alt="Generic placeholder thumbnail">
-                    <div class="caption">
-                        <h3>Thumbnail label</h3>
-                        <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-                        <p><a href="#" class="btn btn-primary pull-right" role="button">View data</a></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-12 col-md-4">
-                <div class="thumbnail">
-                    <img class="img-rounded" src="http://lorempixel.com/output/transport-q-c-200-150-1.jpg" alt="Generic placeholder thumbnail">
-                    <div class="caption">
-                        <h3>Thumbnail label</h3>
-                        <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-                        <p><a href="#" class="btn btn-primary pull-right" role="button">View data</a></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-12 col-md-4">
-                <div class="thumbnail">
-                    <img class="img-rounded" src="http://lorempixel.com/output/animals-q-c-200-150-7.jpg" alt="Generic placeholder thumbnail">
-                    <div class="caption">
-                        <h3>Thumbnail label</h3>
-                        <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-                        <p><a href="#" class="btn btn-primary pull-right" role="button">View data</a></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div><!-- /.bs-example -->';
-
     if ($auth->isLoggedIn()) {
         $vals['userprojects'] = '<div class="ecplus-userprojects"><h3>My projects</h3>';
 
@@ -62,7 +27,7 @@ function listMyProjects() {
         $count = count($prjs);
 
         //create dom for list of user projects
-        $html = '<div class="list-group">';
+        $html = '<h3>My Projects</h3><div class="list-group">';
         for ($i = 0; $i < $count; $i++) {
 
             //project metadata
@@ -95,7 +60,6 @@ function listMyProjects() {
             $html .= '<em><span class="project-description">'.$project_desc.'</span></em>';
             $html .= '<span class="badge">' . $total_entries . ' total entries</span>';
             $html .= '<span class="badge">' . $total_entries_24 . ' entries in the last 24 hours </span>';
-
             $html .= '</a>';
 
 

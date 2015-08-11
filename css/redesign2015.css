@@ -9,22 +9,23 @@ html {
 }
 body {
     /* Margin bottom by footer height */
-    margin-bottom: 110px;
+    margin-bottom: 170px;
 }
 .footer {
     position: absolute;
     bottom: 0;
     width: 100%;
     /* Set the fixed height of the footer here */
-    height: 110px;
+    height: 150px;
     background-color: #d2a9fd;
     padding:0 50px;
 }
 .footer ul li {
     list-style: none;
 }
-
-
+li.ios-app {
+    margin-top: 10px;
+}
 
 
 /* Custom page CSS

@@ -16,6 +16,9 @@ function siteHome() {
         return;
     }
 
+
+
+
     $res = $db->do_query("SELECT name, ttl, ttl24, description, image FROM (SELECT name, project.description as description , project.image as image, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name) a order by ttl desc LIMIT 10");
     if ($res !== true) {
 
@@ -69,7 +72,7 @@ function siteHome() {
         $href = $SITE_ROOT . '/' . $row["name"];
         $project_name = $row["name"];
         $total_entries = $row["ttl"];
-        $total_entries_24 = $row["ttl24"];
+        $total_entries_24 = ($row["ttl24"] == null ? 0 : $row["ttl24"]);
         $project_image = $row["image"];
         $project_desc = $row["description"];
 
