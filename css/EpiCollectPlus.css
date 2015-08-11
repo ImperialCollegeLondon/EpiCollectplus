@@ -17,7 +17,7 @@ body {
     font-family: "Arial";
     font-size: 14px;
     margin: 2em auto 10px auto;
-    min-width: 760px;
+    /*min-width: 760px;*/
     /*max-width: 1280px;       */
 }
 
@@ -702,7 +702,7 @@ submit
 }
 
 .msg {
-    background-color: #EEEEEE;
+    /*background-color: #EEEEEE;*/
     color: #000000;
     padding: 0.5em 0.25em 0.5em 0.25em;
 }
@@ -897,13 +897,13 @@ submit
 .choice.ui-buttonset .ui-state-active {
     border: 3px solid #a54df9;
     font-weight: normal;
-    max-width: 20em;
+    /*max-width: 20em;*/
     background: url('../images/glyphicons/glyphicons_206_ok_2.png') 6px 45% no-repeat;
 }
 
 .choice.ui-buttonset .ui-state-default {
     padding: .6em 1.5em;
-    max-width: 20em;
+    /*max-width: 20em;*/
 }
 
 #ec_dialog p {

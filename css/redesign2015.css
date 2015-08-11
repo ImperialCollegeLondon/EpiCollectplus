@@ -116,3 +116,30 @@ h4.login {
 .provider.google.panel-body {
     text-align: center;
 }
+
+/* Create project*/
+.more-info.panel, .project-setup.panel {
+    min-height: 400px;
+}
+label.ui-state-active.ui-button.ui-widget.ui-state-default.ui-button-text-only.ui-corner-left {
+    width: 100%;
+}
+label.ui-button.ui-widget.ui-state-default.ui-button-text-only.ui-corner-right {
+    width: 100%;
+}
+a.panelSwitcher.next.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only {
+    position: absolute;
+    bottom: 2em;
+    right: 2em;
+    width:100px;
+}
+a.panelSwitcher.prev.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only {
+    position: absolute;
+    left: 2em;
+    bottom: 2em;
+    width: 100px;
+}
+p.epicollect-info-sidebar.bg-info {
+    padding: 12px;
+    margin: 0;
+}
