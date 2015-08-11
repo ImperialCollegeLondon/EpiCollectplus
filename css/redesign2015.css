@@ -102,3 +102,16 @@ i.project-icon {
     position:absolute;
     display:block;
 }
+
+/* Social links*/
+.social {
+    margin-right:50px;
+}
+
+/* Login Screen*/
+h4.login {
+    text-align: center;
+}
+.provider.google.panel-body {
+    text-align: center;
+}

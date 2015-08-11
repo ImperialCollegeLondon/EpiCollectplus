@@ -187,8 +187,8 @@ label {
 }
 
 .provider {
-    padding: 0.75em 0.25em 0.75em 0.25em;
-    margin: 0.75em 0.25em 0.75em 0.25em;
+    /*padding: 0.75em 0.25em 0.75em 0.25em;*/
+    /*margin: 0.75em 0.25em 0.75em 0.25em;*/
 }
 
 tr.alt {

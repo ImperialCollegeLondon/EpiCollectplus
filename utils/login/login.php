@@ -22,7 +22,7 @@ function loginHandler() {
     }
 
 
-    echo applyTemplate('./base.html', './loginbase.html', array('form' => $frm));
+    echo applyTemplate('./base.html', './loginbase.html', array('form' => $frm, 'breadcrumbs' => ' > Login '));
 }
 
 function loginCallback() {

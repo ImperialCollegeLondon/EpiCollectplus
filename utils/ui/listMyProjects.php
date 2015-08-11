@@ -99,7 +99,7 @@ function listMyProjects() {
             $html .= '</a>';
 
 
-            //$vals['userprojects'] .= '<div class="project"><i class="fa fa-file-text-o fa-2x project-icon"></i><a href="{#SITE_ROOT#}/{$prjs[$i]["name"]}">{$prjs[$i]["name"]}</a><div class="total">{$prjs[$i]["ttl"]} entries with <b>" . ($prjs[$i]["ttl24"] ? $prjs[$i]["ttl24"] : "0") . "</b> in the last 24 hours </div></div>';
+
         }
         $html .= '</div>';
 
