@@ -29,9 +29,9 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
 
 
             if ($auth->isServerManager()) {
-                $template = str_replace('{#loggedIn#}', 'Hi, ' . $auth->getUserNickname() . '<a href="{#SITE_ROOT#}/logout">Sign out</a> | ' . ($type == 'LOCAL' ? '<a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | ' : '') . '<a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
+                $template = str_replace('{#loggedIn#}', 'Hi, ' . $auth->getUserNickname() . ' | <a href="{#SITE_ROOT#}/createProject.html">Create Project</a> | <a href="{#SITE_ROOT#}/my-projects.html">My Projects</a> | <a href="{#SITE_ROOT#}/logout">Sign out</a> | ' . ($type == 'LOCAL' ? '<a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | ' : '') . '<a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
             } else {
-                $template = str_replace('{#loggedIn#}', sprintf('Hi, %s (%s) <a href="{#SITE_ROOT#}/logout">Sign out</a> ' . ($type == 'LOCAL' ? '| <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>' : ''), $auth->getUserNickname(), $auth->getUserEmail()), $template);
+                $template = str_replace('{#loggedIn#}', sprintf('Hi, %s (%s) | <a href="{#SITE_ROOT#}/createProject.html">Create Project</a> | <a href="{#SITE_ROOT#}/my-projects.html">My Projects</a> | <a href="{#SITE_ROOT#}/logout">Sign out</a>   ' . ($type == 'LOCAL' ? '| <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>' : ''), $auth->getUserNickname(), $auth->getUserEmail()), $template);
             }
             $templateVars['userEmail'] = $auth->getUserEmail();
         } // else show the login link

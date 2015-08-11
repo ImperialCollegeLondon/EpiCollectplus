@@ -25,6 +25,8 @@ body {
 }
 
 
+
+
 /* Custom page CSS
 -------------------------------------------------- */
 /* Not required for template or sticky footer method. */
@@ -74,4 +76,29 @@ i.project-icon {
 }
 .featured-projects a {
     color:#fff;
+}
+/********* Project list **************/
+/* Crop images as square using css background http://goo.gl/1Jyxyv or https://goo.gl/yu5nsT*/
+.project-thumbnail {
+    position:absolute;
+    width: 100px;
+    height: 100px;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+.project-list-item {
+    height:120px;
+}
+.project-list-item .project-name, .project-list-item .project-description {
+    padding-left:120px;
+}
+.project-list-item .project-name {
+    color: #a64dfb;
+    font-weight:bold;
+    font-size: 16px;
+}
+.project-list-item .project-description {
+    position:absolute;
+    display:block;
 }
