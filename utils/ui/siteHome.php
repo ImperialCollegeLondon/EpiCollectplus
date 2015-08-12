@@ -17,9 +17,8 @@ function siteHome() {
     }
 
 
-
-    //get popular projects with a limit of 8
-    $res = $db->do_query("SELECT name, ttl, ttl24, description, image FROM (SELECT name, project.description as description , project.image as image, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name) a order by ttl desc LIMIT 8");
+    //get popular projects with a limit of 12
+    $res = $db->do_query("SELECT name, ttl, ttl24, description, image FROM (SELECT name, project.description as description , project.image as image, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name) a order by ttl desc LIMIT 12");
     if ($res !== true) {
 
         $rurl = "http://$server/$root/test?redir=true";
@@ -80,38 +79,48 @@ function siteHome() {
             $project_image = $SITE_ROOT . '/images/project-image-placeholder-100x100.png';
         }
         if ($project_desc == null) {
-            $project_desc = 'No description available yet';
-            $project_desc = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.';
-            $project_desc = substr($project_desc, 0, 300) . '...';
-
+            $project_desc = 'Description not available yet';
         } else {
             //truncate description to 300 chars for display purposes on long text
-            if (strlen($project_desc) >= 300) {
-                $project_desc = substr($project_desc, 0, 300) . '...';
+            if (strlen($project_desc) >= 200) {
+                $project_desc = substr($project_desc, 0, 200) . '...';
             }
         }
 
         $html .= '<a href="' . $href . '" class="project-list-item list-group-item">';
-        $html .= "<div class='project-thumbnail' style='background-image: url(" . $project_image . "');'>";
-        //$html .= '<img class="project-image img-rounded ' . $orientation . ' " src="' . $project_image . '" alt="Project image"/>';
-        $html .= '</div>';
-        // $html .= '<i class="fa fa-file-text-o fa-2x project-icon"></i>';
+        //$html .= "<div class='project-thumbnail' style='background-image: url(" . $project_image . "');'>";
+        //$html .= '</div>';
+        $html .= '<div class="project-metadata">';
         $html .= '<span class="project-name">' . $project_name . '</span>';
         $html .= '<em><span class="project-description">' . $project_desc . '</span></em>';
-        $html .= '<div class="clearfix"></div>';
+        $html .= '</div>';
+        //$html .= '<div class="clearfix"></div>';
         $html .= '<div class="project-badge-counters">';
         $html .= '<span class="badge">' . $total_entries . ' total entries</span>';
         $html .= '<span class="badge">' . $total_entries_24 . ' entries in the last 24 hours </span>';
         $html .= '</div>';
         $html .= '</a>';
 
+        //$html .= '<a href="#" class="media"><div class="media-left">';
+        //$html .= "<div class='project-thumbnail' style='background-image: url(" . $project_image . "');">
+        //$html .='</div>
+        //            <div class="media-body">
+        //<h4 class="media-heading">Media heading</h4>
+        //         '. $project_desc.'
+        //         </div>';
+        //$html .= '<div class="project-badge-counters">';
+        //$html .= '<span class="badge">' . $total_entries . ' total entries</span>';
+        //$html .= '<span class="badge">' . $total_entries_24 . ' entries in the last 24 hours </span>';
+        //$html .= '</div>';
+        //$html .=  '</a>';
+
         $i++;
 
         //add new row every 2 projects, at project 8 just wrap it up
-        if($i % 2 == 0) {
-            $html.='</div>';
-            if($i != 8) {
-                $html.='<div class="col-md-6">';
+        if ($i % 2 == 0) {
+            $html .= '</div>';
+            if ($i != 12) {
+                $html .= '<div class="col-md-6">';
             }
         }
 

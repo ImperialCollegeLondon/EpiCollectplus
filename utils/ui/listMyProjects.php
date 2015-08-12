@@ -27,7 +27,7 @@ function listMyProjects() {
         $count = count($prjs);
 
         //create dom for list of user projects
-        $html = '<h3>My Projects</h3><div class="list-group">';
+        $html = '<h3>My Projects</h3><div class="my-projects-list list-group ">';
         for ($i = 0; $i < $count; $i++) {
 
             //project metadata
@@ -52,14 +52,17 @@ function listMyProjects() {
             }
 
             $html .= '<a href="' . $href . '" class="project-list-item list-group-item">';
-            $html .= "<div class='project-thumbnail' style='background-image: url(".$project_image."');'>";
+            $html .= "<div class='project-thumbnail' style='background-image: url(" . $project_image . "');'>";
             //$html .= '<img class="project-image img-rounded ' . $orientation . ' " src="' . $project_image . '" alt="Project image"/>';
             $html .= '</div>';
             // $html .= '<i class="fa fa-file-text-o fa-2x project-icon"></i>';
-            $html .= '<span class="project-name">'.$project_name.'</span>';
-            $html .= '<em><span class="project-description">'.$project_desc.'</span></em>';
+            $html .= '<span class="project-name">' . $project_name . '</span>';
+            $html .= '<em><span class="project-description">' . $project_desc . '</span></em>';
+            $html .= '<div class="clearfix"></div>';
+            $html .= '<div class="project-badge-counters">';
             $html .= '<span class="badge">' . $total_entries . ' total entries</span>';
             $html .= '<span class="badge">' . $total_entries_24 . ' entries in the last 24 hours </span>';
+            $html .= '</div>';
             $html .= '</a>';
 
 

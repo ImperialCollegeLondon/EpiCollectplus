@@ -1,10 +1,17 @@
 /* Hack to have footer color expanding when viewing on ipad*/
 body {
-    background-color: #d2a9fd;
+    /*background-color: #d2a9fd;*/
 }
 
 .container-fluid {
     background-color: #fff;
+}
+.clearfix {
+    clear:both;
+}
+.flash {
+  background-color: #FFEEEE;
+    text-align:center;
 }
 
 /* Sticky footer styles
@@ -116,12 +123,14 @@ i.project-icon {
 /********* Project list **************/
 /* Crop images as square using css background http://goo.gl/1Jyxyv or https://goo.gl/yu5nsT*/
 .project-thumbnail {
-    position: absolute;
+    /*position: absolute;*/
     width: 100px;
     height: 100px;
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
+    float:left;
+
 }
 
 .project-list-item {
@@ -129,7 +138,12 @@ i.project-icon {
 }
 
 .project-list-item .project-name, .project-list-item .project-description {
-    padding-left: 120px;
+    /*padding-left: 120px;*/
+}
+.project-metadata {
+    /*float:left;*/
+    margin-left:10px;
+    width:85%;
 }
 
 .project-list-item .project-name {
@@ -148,11 +162,22 @@ a.project-list-item.list-group-item {
 }
 
 .project-badge-counters {
-    float: right;
+    /*float: left;*/
 }
 
 a.project-list-item.list-group-item {
     margin-bottom: 10px;
+}
+
+/* User projects list*/
+.my-projects-list .project-name{
+    margin-left:10px;
+}
+.my-projects-list .project-description {
+    padding-left:110px;
+}
+.my-projects-list .project-badge-counters {
+    margin-top:10px;
 }
 
 /* Social links*/
@@ -163,6 +188,10 @@ a.project-list-item.list-group-item {
 /* Login Screen*/
 h4.login {
     text-align: center;
+}
+.login-panel {
+    width:50%;
+    margin:20px auto;
 }
 
 .provider.google.panel-body {
