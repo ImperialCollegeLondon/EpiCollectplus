@@ -21,9 +21,9 @@ class OpenIDProvider extends AuthProvider {
 
         global $SITE_ROOT, $cfg;
 
-        if (isset($_SESSION["token"])) {
-            ChromePhp::log($_SESSION["token"]);
-        }
+        //if (isset($_SESSION["token"])) {
+        //    ChromePhp::log($_SESSION["token"]);
+        //}
 
         $this->openid = new LightOpenID("$SITE_ROOT/loginCallback");
         $this->openid->identity = array_key_exists("openid", $_SESSION) ? $_SESSION["openid"] : "";

@@ -1,4 +1,10 @@
+/* Hack to have footer color expanding when viewing on ipad*/
 body {
+    background-color: #d2a9fd;
+}
+
+.container-fluid {
+    background-color: #fff;
 }
 
 /* Sticky footer styles
@@ -7,10 +13,12 @@ html {
     position: relative;
     min-height: 100%;
 }
+
 body {
     /* Margin bottom by footer height */
     margin-bottom: 170px;
 }
+
 .footer {
     position: absolute;
     bottom: 0;
@@ -18,15 +26,16 @@ body {
     /* Set the fixed height of the footer here */
     height: 150px;
     background-color: #d2a9fd;
-    padding:0 50px;
+    padding: 0 50px;
 }
+
 .footer ul li {
     list-style: none;
 }
+
 li.ios-app {
     margin-top: 10px;
 }
-
 
 /* Custom page CSS
 -------------------------------------------------- */
@@ -35,6 +44,7 @@ li.ios-app {
 body > .container {
     padding: 60px 15px 0;
 }
+
 .container .text-muted {
     margin: 20px 0;
 }
@@ -50,69 +60,111 @@ code {
 
 /* Custom css*/
 h3 {
-    margin-top:0;
+    margin-top: 0;
 }
+
+.page-header {
+    margin:0;
+}
+.container-fluid.top-nav, .navbar-default {
+    background-color: #cccccc;
+}
+
 .thumbnail {
-    overflow:hidden;
+    overflow: hidden;
 }
+
 .container-fluid {
-    padding:0;
+    padding: 0;
 }
+
 a.branding img {
-    padding-top:10px;
+    padding-top: 10px;
 }
+
 div.project {
-    margin:.5em;
+    margin: .5em;
     border-bottom: 1px solid #ccc;
 }
+
 i.project-icon {
-    margin-right:10px;
+    margin-right: 10px;
 }
+
 .featured-projects {
-    margin-top:10px;
+    margin-top: 10px;
 }
+
 .featured-projects img {
-    float:left;
-    margin:10px;
+    margin-top: 10px;
 }
+
+.thumbnail h3 {
+    margin:5px 10px;
+}
+
+.thumbnail p {
+    margin:5px 10px;
+}
+
 .featured-projects a {
-    color:#fff;
+    color: #333;
+    padding: 10px;
+    text-decoration: none;
 }
+
 /********* Project list **************/
 /* Crop images as square using css background http://goo.gl/1Jyxyv or https://goo.gl/yu5nsT*/
 .project-thumbnail {
-    position:absolute;
+    position: absolute;
     width: 100px;
     height: 100px;
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
 }
+
 .project-list-item {
-    height:120px;
+    /*height:120px;*/
 }
+
 .project-list-item .project-name, .project-list-item .project-description {
-    padding-left:120px;
+    padding-left: 120px;
 }
+
 .project-list-item .project-name {
     color: #a64dfb;
-    font-weight:bold;
+    font-weight: bold;
     font-size: 16px;
 }
+
 .project-list-item .project-description {
-    position:absolute;
-    display:block;
+    margin-bottom: 5px;
+    display: block;
+}
+
+a.project-list-item.list-group-item {
+    overflow: hidden;
+}
+
+.project-badge-counters {
+    float: right;
+}
+
+a.project-list-item.list-group-item {
+    margin-bottom: 10px;
 }
 
 /* Social links*/
 .social {
-    margin-right:50px;
+    margin-right: 50px;
 }
 
 /* Login Screen*/
 h4.login {
     text-align: center;
 }
+
 .provider.google.panel-body {
     text-align: center;
 }
@@ -121,24 +173,29 @@ h4.login {
 .more-info.panel, .project-setup.panel {
     min-height: 400px;
 }
+
 label.ui-state-active.ui-button.ui-widget.ui-state-default.ui-button-text-only.ui-corner-left {
     width: 100%;
 }
+
 label.ui-button.ui-widget.ui-state-default.ui-button-text-only.ui-corner-right {
     width: 100%;
 }
+
 a.panelSwitcher.next.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only {
     position: absolute;
     bottom: 2em;
     right: 2em;
-    width:100px;
+    width: 100px;
 }
+
 a.panelSwitcher.prev.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only {
     position: absolute;
     left: 2em;
     bottom: 2em;
     width: 100px;
 }
+
 p.epicollect-info-sidebar.bg-info {
     padding: 12px;
     margin: 0;

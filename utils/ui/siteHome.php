@@ -18,8 +18,8 @@ function siteHome() {
 
 
 
-    //get popular projects with a limit of 6
-    $res = $db->do_query("SELECT name, ttl, ttl24, description, image FROM (SELECT name, project.description as description , project.image as image, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name) a order by ttl desc LIMIT 6");
+    //get popular projects with a limit of 8
+    $res = $db->do_query("SELECT name, ttl, ttl24, description, image FROM (SELECT name, project.description as description , project.image as image, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name) a order by ttl desc LIMIT 8");
     if ($res !== true) {
 
         $rurl = "http://$server/$root/test?redir=true";
@@ -31,41 +31,41 @@ function siteHome() {
     $vals["featured"] = '<div class="featured-projects" data-example-id="thumbnails-with-custom-content">
         <h3>Featured Projects</h3>
         <div class="row">
-            <div class="col-sm-12 col-md-4">
+            <a href="#" class="col-sm-6 col-md-3">
                 <div class="thumbnail">
-                    <img class="img-rounded" src="http://lorempixel.com/output/nature-q-c-200-150-7.jpg" alt="Generic placeholder thumbnail">
-                    <div class="caption">
-                        <h3>Schools</h3>
-                        <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-                        <p><a href="#" class="btn btn-primary pull-right" role="button">View data</a></p>
-                    </div>
+                    <img class="img-responsive img-rounded" src="http://lorempixel.com/output/nature-q-c-400-225-7.jpg" alt="Generic placeholder thumbnail">
+                    <h3>Thumbnail label</h3>
+                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
                 </div>
-            </div>
-            <div class="col-sm-12 col-md-4">
+            </a>
+             <a href="#" class="col-sm-6 col-md-3">
                 <div class="thumbnail">
-                    <img class="img-rounded" src="http://lorempixel.com/output/transport-q-c-200-150-1.jpg" alt="Generic placeholder thumbnail">
-                    <div class="caption">
-                        <h3>Thumbnail label</h3>
-                        <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-                        <p><a href="#" class="btn btn-primary pull-right" role="button">View data</a></p>
-                    </div>
+                    <img class="img-responsive img-rounded" src="http://lorempixel.com/output/nature-q-c-400-225-3.jpg" alt="Generic placeholder thumbnail">
+                    <h3>Thumbnail label</h3>
+                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
                 </div>
-            </div>
-            <div class="col-sm-12 col-md-4">
+            </a>
+             <a href="#" class="col-sm-6 col-md-3">
                 <div class="thumbnail">
-                    <img class="img-rounded" src="http://lorempixel.com/output/animals-q-c-200-150-7.jpg" alt="Generic placeholder thumbnail">
-                    <div class="caption">
-                        <h3>Thumbnail label</h3>
-                        <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-                        <p><a href="#" class="btn btn-primary pull-right" role="button">View data</a></p>
-                    </div>
+                    <img class="img-responsive img-rounded" src="http://lorempixel.com/output/technics-q-c-400-225-4.jpg" alt="Generic placeholder thumbnail">
+                    <h3>Thumbnail label</h3>
+                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
                 </div>
-            </div>
+            </a>
+              <a href="#" class="col-sm-6 col-md-3">
+                <div class="thumbnail">
+                    <img class="img-responsive img-rounded" src="http://lorempixel.com/output/animals-q-c-400-225-4.jpg" alt="Generic placeholder thumbnail">
+                    <h3>Thumbnail label</h3>
+                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+                </div>
+            </a>
         </div>
     </div><!-- /.bs-example -->';
 
     $i = 0;
     $html = '<h3>Popular projects</h3>';
+    $html .= '<div class="row">';
+    $html .= '<div class="col-md-6">';
     while ($row = $db->get_row_array()) {
 
         //project metadata
@@ -81,6 +81,9 @@ function siteHome() {
         }
         if ($project_desc == null) {
             $project_desc = 'No description available yet';
+            $project_desc = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.';
+            $project_desc = substr($project_desc, 0, 300) . '...';
+
         } else {
             //truncate description to 300 chars for display purposes on long text
             if (strlen($project_desc) >= 300) {
@@ -95,14 +98,24 @@ function siteHome() {
         // $html .= '<i class="fa fa-file-text-o fa-2x project-icon"></i>';
         $html .= '<span class="project-name">' . $project_name . '</span>';
         $html .= '<em><span class="project-description">' . $project_desc . '</span></em>';
+        $html .= '<div class="clearfix"></div>';
+        $html .= '<div class="project-badge-counters">';
         $html .= '<span class="badge">' . $total_entries . ' total entries</span>';
         $html .= '<span class="badge">' . $total_entries_24 . ' entries in the last 24 hours </span>';
+        $html .= '</div>';
         $html .= '</a>';
 
-
-        //$vals["projects"] .= "<div class=\"project\"><i class=\"fa fa-file-text-o fa-2x project-icon\"></i><a href=\"{#SITE_ROOT#}/{$row["name"]}\">{$row["name"]}</a><div class=\"total\">{$row["ttl"]} entries with <b>" . ($row["ttl24"] ? $row["ttl24"] : "0") . "</b> in the last 24 hours </div></div>";
         $i++;
-    }
+
+        //add new row every 2 projects, at project 8 just wrap it up
+        if($i % 2 == 0) {
+            $html.='</div>';
+            if($i != 8) {
+                $html.='<div class="col-md-6">';
+            }
+        }
+
+    }//while
     $html .= '</div>';
 
 
