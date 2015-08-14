@@ -461,6 +461,10 @@ div.sidebar-list .panel .panel-body div#sidebar {
     /*max-height:400px;*/
 }
 
+.ecplus-settingspanel label {
+    margin:0 10px;
+}
+
 div#map {
     /*width:100%!important;*/
     vh:100%!important;

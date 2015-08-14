@@ -72,10 +72,17 @@ $(function () {
 
     loader = new EpiCollect.LoadingOverlay();
 
-    $(".graphPanel").graphPanel(
+
+    //var form = '<fieldSet><label for="field">Field Name</label><select name="field" class="colourFieldList"></select><h4>Chart Type</h4><div class="toggle">';
+    //form += '<label for="piech">Pie</label><input id="piech" type="radio" name="chartType" value="pie" checked="checked" />';
+    //form += '<label for="barch">Bar</label><input type="radio" id="barch" name="chartType" value="bar" /></div> </fieldSet>';
+
+    var form = '<div class="form-inline"> <div class="form-group"><label for="field">Field Name</label><select name="field" class="colourFieldList form-control"></select></div></div>';
+
+    $('.graphPanel').graphPanel(
         {
-            form: "<fieldSet><label for=\"field\">Field Name</label><select name=\"field\" class=\"colourFieldList\"></select><h4>Chart Type</h4><div class=\"toggle\">"
-            + "<label for=\"piech\">Pie</label><input id=\"piech\" type=\"radio\" name=\"chartType\" value=\"pie\" checked=\"checked\" /><label for=\"barch\">Bar</label><input type=\"radio\" id=\"barch\" name=\"chartType\" value=\"bar\" /></div> </fieldSet>"
+            form: form
+
         });
 
 
@@ -83,7 +90,9 @@ $(function () {
         activate: function (evt, ui) {
             if (ui.newPanel.attr('id') === "mapTab") {
                 google.maps.event.trigger(map, 'resize');
-                if (mapBounds) map.fitBounds(mapBounds);
+                if (mapBounds) {
+                    map.fitBounds(mapBounds)
+                }
                 drawGraph($('#graphOne .ecplus-pane'), $('#mapColourField').val(), 'pie');
 
             }
