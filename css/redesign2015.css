@@ -460,6 +460,10 @@ div.sidebar-list .panel .panel-body div#sidebar {
 #map-container .panel {
     /*max-height:400px;*/
 }
+#graphOne {
+    top: -1px;
+    right: 14px;
+}
 
 .ecplus-settingspanel label {
     margin:0 10px;
