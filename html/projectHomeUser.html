@@ -179,7 +179,9 @@
 {{/breadcrumbs}}
 {{main}}
 	<h1>{#projectName#}</h1><div id="projectPanel"></div>
-	<div id="projectDescription" style="display:none"><img class="projectImage" src="{#projectImage#}" alt="Project Image" width="{#imgWidth#}" height="{#imgHeight#}" />{#projectDescription#}</div>
+	<div id="projectDescription" style="display:none">
+        <img class="projectImage img-responsive" src="{#projectImage#}" alt="Project Image" width="{#imgWidth#}" height="{#imgHeight#}" />
+        {#projectDescription#}</div>
 	<div id="vSearch"></div>
 	<div id="adminMenu" class="hMenu">{#adminMenu#}</div>
 {{/main}}

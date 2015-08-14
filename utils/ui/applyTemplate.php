@@ -29,7 +29,20 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
 
 
             if ($auth->isServerManager()) {
-                $template = str_replace('{#loggedIn#}', 'Hi, ' . $auth->getUserNickname() . ' | <a href="{#SITE_ROOT#}/createProject.html">Create Project</a> | <a href="{#SITE_ROOT#}/my-projects.html">My Projects</a> | <a href="{#SITE_ROOT#}/logout">Sign out</a> | ' . ($type == 'LOCAL' ? '<a href="{#SITE_ROOT#}/updateUser.html">Update User</a> | ' : '') . '<a href="{#SITE_ROOT#}/admin">Manage Server</a>', $template);
+                $logged_in_tmpl = '<li class="ecplus-username">Hi, ' . $auth->getUserNickname().':</li>';
+                $logged_in_tmpl .= '<li><a href="{#SITE_ROOT#}/createProject.html">Create Project</a></li>';
+                $logged_in_tmpl .= '<li><a href="{#SITE_ROOT#}/my-projects.html">My Projects</a></li>';
+                $logged_in_tmpl .= '<li><a href="{#SITE_ROOT#}/logout">Sign out</a></li>';
+
+                if($type == 'LOCAL') {
+                    $logged_in_tmpl .= '<li><a href="{#SITE_ROOT#}/updateUser.html">Update User</a></li>';
+                }
+                else {
+                    $logged_in_tmpl .= '<li><a href="{#SITE_ROOT#}/admin">Manage Server</a></li>';
+                }
+
+                $template = str_replace('{#loggedIn#}', $logged_in_tmpl , $template);
+
             } else {
                 $template = str_replace('{#loggedIn#}', sprintf('Hi, %s (%s) | <a href="{#SITE_ROOT#}/createProject.html">Create Project</a> | <a href="{#SITE_ROOT#}/my-projects.html">My Projects</a> | <a href="{#SITE_ROOT#}/logout">Sign out</a>   ' . ($type == 'LOCAL' ? '| <a href="{#SITE_ROOT#}/updateUser.html">Update User</a>' : ''), $auth->getUserNickname(), $auth->getUserEmail()), $template);
             }

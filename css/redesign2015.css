@@ -1,17 +1,24 @@
 /* Hack to have footer color expanding when viewing on ipad*/
 body {
     /*background-color: #d2a9fd;*/
+    min-width: 768px!important;
 }
 
 .container-fluid {
     background-color: #fff;
 }
-.clearfix {
-    clear:both;
+
+#main {
+
 }
+
+.clearfix {
+    clear: both;
+}
+
 .flash {
-  background-color: #FFEEEE;
-    text-align:center;
+    background-color: #FFEEEE;
+    text-align: center;
 }
 
 /* Sticky footer styles
@@ -71,8 +78,9 @@ h3 {
 }
 
 .page-header {
-    margin:0;
+    margin: 0;
 }
+
 .container-fluid.top-nav, .navbar-default {
     background-color: #cccccc;
 }
@@ -88,6 +96,36 @@ h3 {
 a.branding img {
     padding-top: 10px;
 }
+ul.nav.navbar-nav li a {
+    padding-top: 21px;
+    padding-bottom: 21px;
+    color: #2a5db1;
+}
+li.ecplus-username {
+    padding-top: 21px;
+    padding-bottom: 21px;
+}
+.nav>li>a {
+    position: relative;
+    display: block;
+    padding: 10px;
+}
+.navbar-toggle {
+    margin-top: 14px;
+}
+.navbar-default .navbar-collapse, .navbar-default .navbar-form {
+    border:none!important;
+}
+
+
+
+/*Navbar collapsed*/
+@media (max-width: 992px){
+    div#navbar {
+        margin-right: 10px;
+    }
+}
+
 
 div.project {
     margin: .5em;
@@ -103,15 +141,16 @@ i.project-icon {
 }
 
 .featured-projects img {
-    margin-top: 10px;
+    /*margin-top: 10px;*/
+    width: 100%;
 }
 
 .thumbnail h3 {
-    margin:5px 10px;
+    margin: 5px 10px;
 }
 
 .thumbnail p {
-    margin:5px 10px;
+    margin: 5px 10px;
 }
 
 .featured-projects a {
@@ -120,16 +159,22 @@ i.project-icon {
     text-decoration: none;
 }
 
+.featured-projects .thumbnail {
+    padding: 0;
+    background-color: #eeeeee;
+}
+
 /********* Project list **************/
 /* Crop images as square using css background http://goo.gl/1Jyxyv or https://goo.gl/yu5nsT*/
 .project-thumbnail {
     /*position: absolute;*/
+
     width: 100px;
     height: 100px;
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-    float:left;
+    float: left;
 
 }
 
@@ -140,10 +185,11 @@ i.project-icon {
 .project-list-item .project-name, .project-list-item .project-description {
     /*padding-left: 120px;*/
 }
+
 .project-metadata {
     /*float:left;*/
-    margin-left:10px;
-    width:85%;
+    margin-left: 10px;
+    width: 85%;
 }
 
 .project-list-item .project-name {
@@ -170,14 +216,16 @@ a.project-list-item.list-group-item {
 }
 
 /* User projects list*/
-.my-projects-list .project-name{
-    margin-left:10px;
+.my-projects-list .project-name {
+    margin-left: 10px;
 }
+
 .my-projects-list .project-description {
-    padding-left:110px;
+    padding-left: 110px;
 }
+
 .my-projects-list .project-badge-counters {
-    margin-top:10px;
+    margin-top: 10px;
 }
 
 /* Social links*/
@@ -189,9 +237,10 @@ a.project-list-item.list-group-item {
 h4.login {
     text-align: center;
 }
+
 .login-panel {
-    width:50%;
-    margin:20px auto;
+   min-height:300px;
+    margin: 20px auto;
 }
 
 .provider.google.panel-body {
@@ -228,4 +277,170 @@ a.panelSwitcher.prev.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-butto
 p.epicollect-info-sidebar.bg-info {
     padding: 12px;
     margin: 0;
+}
+
+/******** Project home *************/
+p.view-data-instructions.well {
+    margin-top: 10px;
+}
+
+img.projectImage {
+    width: 100%;
+    max-width: 300px;
+}
+
+.project-thumbnail-big {
+    width: 200px;
+    height: 200px;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    float: left;
+}
+
+p#projectDescription {
+    width: 100%
+}
+
+.project-home-panel {
+    min-height: 400px;
+}
+
+.project-data-view-control form {
+    overflow: hidden;
+
+}
+
+.project-data-view-control a {
+    color: #333 !important;
+}
+
+.project-data-view-control select {
+    margin-bottom: 10px;
+}
+
+.project-data-view-control input {
+    margin-bottom: 20px;
+}
+
+.isloading-wrapper.isloading-right {
+    margin-left: 10px;
+}
+
+.isloading-overlay {
+    position: relative;
+    text-align: center;
+}
+
+.isloading-overlay .isloading-wrapper {
+    background: #FFFFFF;
+    -webkit-border-radius: 7px;
+    -webkit-background-clip: padding-box;
+    -moz-border-radius: 7px;
+    -moz-background-clip: padding;
+    border-radius: 7px;
+    background-clip: padding-box;
+    display: inline-block;
+    margin: 0 auto;
+    padding: 10px 20px;
+    top: 10%;
+    z-index: 9000;
+}
+
+div#tabs {
+    display: none;
+}
+
+.data-spinning-loader {
+    text-align: center;
+    z-index: 9999;
+    margin-top: 100px;
+    /*display: none;*/
+}
+
+.ecplus-data th {
+    background-color: #838383;
+    color: #ffffff;
+}
+
+.ecplus-data th, .ecplus-data td {
+    white-space: nowrap;
+    /* width: 100%; */
+
+}
+
+table.ecplus-data img {
+    width: 75px !important;
+    height: auto !important;
+}
+
+li.ui-state-default.ui-corner-top.ui-tabs-active.ui-state-active {
+    padding: 10px;
+}
+
+li.ui-state-default.ui-corner-top {
+    padding: 10px;
+}
+
+#showHideFields .ui-button-text-icon-secondary .ui-button-text, .ui-button-text-icons .ui-button-text {
+    padding: 4px 15px;
+}
+
+/*************** Map view ****************/
+#map .gm-style div[title] {
+    width: 50px !important;
+    height: 50px !important;
+}
+
+div#mapTab, div#tableTab {
+    padding: 10px 0;
+    overflow:hidden;
+}
+
+div#mapTab #sidebar a.list-group-item {
+    padding: 5px 2px;
+    overflow-y: auto;
+    position: relative;
+}
+
+h4#fieldSelectorLabel, #fieldSelector {
+    visibility: hidden;
+}
+
+#map-container .panel div.sidebar-list {
+    height: 100% position : relative;
+    overflow: hidden;
+}
+
+div.sidebar-list .panel {
+    position: relative;
+    height: 100%
+}
+
+div.sidebar-list .panel .panel-body {
+    position: relative;
+    height: 100%
+
+}
+
+div.sidebar-list .panel .panel-body div#sidebar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    overflow-y: scroll;
+}
+
+#map-container {
+    position: relative;
+    overflow: hidden;
+    height: 100%
+}
+
+#map-container .panel {
+    /*max-height:400px;*/
+}
+
+div#map {
+    /*width:100%!important;*/
+    /*vh:100%!important;*/
 }

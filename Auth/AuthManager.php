@@ -87,36 +87,62 @@ class AuthManager {
             $root = trim($SITE_ROOT, "/");
             $frm = '<h4 class="login">Please Choose a Method to login</h4>';
 
+            $frm .= '<div class="row">';
+
+            $col_counter = 0;
+            $col_counter = $this->localEnabled ? 1 : $col_counter;
+            $col_counter = $this->openIdEnabled ? 2 : $col_counter;
+            $col_counter = ($this->ldapEnabled && array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "") ? 3 : $col_counter;
+
+            $bootstrap_cols = 12 / $col_counter;
+
 
             if ($this->localEnabled) {
+                $frm .= '<div class="col-md-' . $bootstrap_cols . '">';
 
                 $frm .= '<div class="login-panel panel panel-default"><div class="panel-heading">Epicollect Account</div><div class=" provider epicollect panel-body">';
                 $frm .= $this->providers["LOCAL"]->requestLogin("http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}/" . trim($requestedUrl, '/'), !$hasManagers);
                 $frm .= '</div></div>';
 
+                $frm .= '</div>';
+
                 //$frm .= "<div class=\"provider epicollect\"><h3>EpiCollect Account</h3>" .$this->providers["LOCAL"]->requestLogin("http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}/" . trim($requestedUrl, '/'), !$hasManagers) . "</div>";
             }
 
             if ($this->openIdEnabled) {
+
                 $this->providers["OPENID"]->authUrl;
 
+                $frm .= '<div class="col-md-' . $bootstrap_cols . '">';
+
                 $frm .= '<div class="login-panel panel panel-default"><div class="panel-heading">Google (former Gmail/OpenID)</div><div class="provider google panel-body">';
-                $frm .= '<a class="btn" href="http://'.$server.'/'.$root.'/'.$url.'?provider=OPENID"><img src="' . $SITE_ROOT . '/images/gplus-signin.png" width="300"></a>';
+                $frm .= '<a class="btn" href="http://' . $server . '/' . $root . '/' . $url . '?provider=OPENID"><img class="img-responsive" src="' . $SITE_ROOT . '/images/gplus-signin.png" width="300"></a>';
                 $frm .= '</div></div>';
+
+                $frm .= '</div>';
 
                 //$frm .= '<div class="provider google"><a class="btn" href="http://$server/$root/$url?provider=OPENID"><img src="' . $SITE_ROOT . '/images/gplus-signin.png" width="300"></a></div>';
 
 
             }
 
-            if ($this->ldapEnabled && array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "") {
+
+
+           if ($this->ldapEnabled && array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "") {
+                $frm .= '<div class="col-md-' . $bootstrap_cols . '">';
 
                 $frm .= '<div class="login-panel panel panel-default"><div class="panel-heading">Windows Account</div><div class="provider  panel-body">';
-                $frm .= '<a class="provider" href="http://$server/$root/$url?provider=LDAP">'.$cfg->settings["security"]["ldap_domain"].'</a>';
+                $frm .= '<a class="provider" href="http://'.$server.'/'.$root.'/'.$url.'?provider=LDAP">' . $cfg->settings["security"]["ldap_domain"] . '</a>';
                 $frm .= '</div></div>';
+
+                $frm .= '</div';
 
                 //$frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=LDAP\">Windows Account ({$cfg->settings["security"]["ldap_domain"]})</a>";
             }
+
+            $frm .= '</div>';
+
+
             return $frm;
         }
 

@@ -161,8 +161,13 @@ function projectHome() {
                 $image = '';
 
                 if (file_exists($imgName)) {
-                    $imgSize = getimagesize($imgName);
-                    $image = sprintf('<img class="projectImage" src="%s" alt="Project Image" />', $imgName);#, $imgSize[0], $imgSize[1]);
+                    $image = "<div class='project-thumbnail-big' style='background-image: url(" . $imgName . "');'></div>";
+                } else {
+                    //show placeholder
+
+                    $imgName = $SITE_ROOT . '/images/project-image-placeholder-100x100.png';
+
+                    $image = "<div class='project-thumbnail-big' style='background-image: url(" . $imgName . "');'></div>";
                 }
 
                 $adminMenu = '';
@@ -182,6 +187,11 @@ function projectHome() {
                     'userMenu' => ''
                 );
 
+
+
+                if($vals['projectDescription'] == '') {
+                    $vals['projectDescription'] = 'No project description set yet';
+                }
 
                 echo applyTemplate('base.html', 'projectHome.html', $vals);
                 return;
@@ -293,6 +303,7 @@ function updateProject() {
         }
     }
 }
+
 function projectSummary() {
     global $url;
 
