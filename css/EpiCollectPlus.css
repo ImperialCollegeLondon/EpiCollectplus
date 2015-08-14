@@ -179,7 +179,7 @@ textarea {
 label {
     display: inline-block;
     font-weight: bold;
-    min-width: 15em;
+    /*min-width: 15em;*/
 }
 
 

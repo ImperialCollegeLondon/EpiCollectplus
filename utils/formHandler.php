@@ -554,16 +554,17 @@ function formHandler() {
         "formName" => $frmName,
         "curate" => $permissionLevel > 1 ? "true" : "false",
         "mapScript" => $mapScript,
-        "curationbuttons" => $permissionLevel > 1 ? sprintf('<span class="button-set"><a href="javascript:project.forms[formName].displayForm({ vertical : false });"><i class="fa fa-plus fa-2x"></i></a>
-				<a href="javascript:editSelected();"><i class="fa fa-pencil fa-2x"></i></a>
-				<a href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()][project.forms[formName].key]);"><i class="fa fa-trash-o fa-2x"></i></a></span>',
+        "curationbuttons" => $permissionLevel > 1 ? sprintf('<span class="button-set"><a class="btn btn-default" href="javascript:project.forms[formName].displayForm({ vertical : false });"><i class="fa fa-plus fa-2x"></i></a>
+				<a class="btn btn-default" href="javascript:editSelected();"><i class="fa fa-pencil fa-2x"></i></a>
+				<a class="btn btn-default" href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()][project.forms[formName].key]);"><i class="fa fa-trash-o fa-2x"></i></a></span>',
             $SITE_ROOT, $SITE_ROOT, $SITE_ROOT) : '',
         "csvform" => $permissionLevel > 1 ? $csvform = '<div id="csvform">
 				<h3><a href="#">Upload data from a CSV file</a></h3>
 				<div>
-					<form method="POST" enctype="multipart/form-data" >
-						<label for="upload">File to upload : </label><input type="file" name="upload" /><br />
-						<input type="submit" name="submit" value="Upload File" />
+					<form method="POST" enctype="multipart/form-data" class="form-inline">
+						<label for="upload">File to upload</label>
+						<input class="upload-csv" type="file" name="upload" />
+						<input class="form-control" type="submit" name="submit" value="Upload File" />
 					</form>
 				</div>
 			</div>' : '');

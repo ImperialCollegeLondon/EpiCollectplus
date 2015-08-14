@@ -50,7 +50,7 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
         } // else show the login link
         else {
             global $PUBLIC;
-            $template = str_replace('{#loggedIn#}', '<a href="{#SITE_ROOT#}/login.php">Log in</a>'/* . ($PUBLIC ? ' or <a href="{#SITE_ROOT#}/register">register</a>' : '')*/, $template);
+            $template = str_replace('{#loggedIn#}', '<li><a href="{#SITE_ROOT#}/login.php">Log in</a></li>'/* . ($PUBLIC ? ' or <a href="{#SITE_ROOT#}/register">register</a>' : '')*/, $template);
         }
         // work out breadcrumbs
         //$template = str_replace("{#breadcrumbs#}", '', $template);

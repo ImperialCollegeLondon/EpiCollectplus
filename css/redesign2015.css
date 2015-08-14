@@ -20,6 +20,10 @@ body {
     background-color: #FFEEEE;
     text-align: center;
 }
+#breadcrumbs {
+    font-size:16px;
+    font-weight: bold;
+}
 
 /* Sticky footer styles
 -------------------------------------------------- */
@@ -280,6 +284,8 @@ p.epicollect-info-sidebar.bg-info {
 }
 
 /******** Project home *************/
+
+
 p.view-data-instructions.well {
     margin-top: 10px;
 }
@@ -369,6 +375,15 @@ div#tabs {
 
 }
 
+table.ecplus-infowindow {
+    max-width:400px;
+    max-height:300px;
+    overflow:auto;
+}
+table.ecplus-infowindow th, table.ecplus-infowindow td{
+   font-size:12px!important
+}
+
 table.ecplus-data img {
     width: 75px !important;
     height: auto !important;
@@ -387,10 +402,16 @@ li.ui-state-default.ui-corner-top {
 }
 
 /*************** Map view ****************/
-#map .gm-style div[title] {
+
+/* super hack to avoid bootstrap to cut clusters*/
+#map .gm-style div[title=""] {
     width: 50px !important;
     height: 50px !important;
 }
+.gm-style img { max-width: none; }
+.gm-style label { width: auto; display: inline; }
+
+#map img { max-width: none!important; }
 
 div#mapTab, div#tableTab {
     padding: 10px 0;
@@ -404,36 +425,36 @@ div#mapTab #sidebar a.list-group-item {
 }
 
 h4#fieldSelectorLabel, #fieldSelector {
-    visibility: hidden;
+    /*visibility: hidden;*/
 }
 
 #map-container .panel div.sidebar-list {
-    height: 100% position : relative;
-    overflow: hidden;
+    /*height: 100% position : relative;*/
+    /*overflow: hidden;*/
 }
 
 div.sidebar-list .panel {
-    position: relative;
-    height: 100%
+    /*position: relative;*/
+    /*height: 100%*/
 }
 
 div.sidebar-list .panel .panel-body {
-    position: relative;
-    height: 100%
+    /*position: relative;*/
+    /*height: 100%*/
 
 }
 
 div.sidebar-list .panel .panel-body div#sidebar {
     position: absolute;
-    top: 0;
-    bottom: 0;
+    top: 70px;
+    bottom: 20px;
     overflow-y: scroll;
 }
 
 #map-container {
-    position: relative;
-    overflow: hidden;
-    height: 100%
+    /*position: relative;*/
+    /*overflow: hidden;*/
+    /*height: 100%*/
 }
 
 #map-container .panel {
@@ -442,5 +463,12 @@ div.sidebar-list .panel .panel-body div#sidebar {
 
 div#map {
     /*width:100%!important;*/
-    /*vh:100%!important;*/
+    vh:100%!important;
+    margin-left:200px;
+}
+#tableTab div#ui-accordion-csvform-panel-0 {
+    height: 120px!important;
+}
+input.upload-csv {
+    padding: 10px 0;
 }

@@ -106,6 +106,10 @@ function getMedia() {
 }
 
 function getImage() {
+
+
+
+
     global $url, $auth;
 
     $prj = new EcProject();
@@ -141,7 +145,11 @@ function getImage() {
 
     header('Content-type: image/jpeg');
 
+
     if ($picName) {
+
+
+
         $tn = sprintf('./ec/uploads/%s~tn~%s', $prj->name, $picName);
         $full = sprintf('./ec/uploads/%s~%s', $prj->name, $picName);
 
