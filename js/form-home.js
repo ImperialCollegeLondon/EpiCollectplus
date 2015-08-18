@@ -56,10 +56,59 @@ var _graphdiv;
 var _graphfield;
 var _graphtype;
 var mapFilterFunction;
+var maximised_map_height;
 
 if (localStorage && localStorage.getItem('num_entries')) numEnts = localStorage.getItem('num_entries');
 
 var IE8 = false; //annoying, but we need the SVG to work... or the workaround to work in IE8
+
+$(document).ready(function () {
+    //immersive mode
+    var fullscreen = false;
+
+    $('.immersive-mode-btn a').on('click', function () {
+        if (fullscreen) {
+            $('#pageHead').fadeIn();
+            $('#breadcrumbs').fadeIn();
+            $('.social').fadeIn();
+            $('footer').fadeIn();
+
+        }
+        else {
+            $('#pageHead').fadeOut();
+            $('#breadcrumbs').fadeOut();
+            $('.social').fadeOut();
+            $('footer').fadeOut();
+            $('#sidebar').css({'margin-top': '0px'});
+
+            $('#map-container .panel.panel-default').resizable({
+
+                handles: {s: '.map-resize-handle'},
+
+
+                resize: function () {
+                    $('#map-container .panel').css({'padding-bottom': '0px'});
+
+                    $('#map').height($('#map-container .panel.panel-default').height() - 100);
+
+                    console.log($('#map').height());
+                    console.log($('#map-container .panel.panel-default').height());
+
+                    google.maps.event.trigger(map, 'resize');
+                    // map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+
+                },
+
+                start: function () {
+                    google.maps.event.trigger(map, 'resize');
+
+                }
+            });
+        }
+        fullscreen = !fullscreen;
+    });
+});
+
 
 $(function () {
     var ele = document.createElement('img');
@@ -133,7 +182,11 @@ $(function () {
     };
 
     $(window).resize(function () {
+
+
         mapHeight = $(window).height() - 470;
+
+
         if ($('#graphOne').hasClass('minimised')) {
             $('#map').height(mapHeight);
             //$('#map').width($('#graphOne').offset().left - $('#map').offset().left - 14)
@@ -773,11 +826,14 @@ function mapDataCallback(data, status, xhr) {
                 var par = $(this).parent();
                 var img = this;
 
+
                 div.fadeOut(50);
 
                 if (par.hasClass('minimised')) {
 
                     //maximising graph
+
+                    maximised_map_height = $('#map-container .panel').height();
 
                     var mapWidth = $('#map').width();
                     $('#legend').hide();
@@ -796,16 +852,22 @@ function mapDataCallback(data, status, xhr) {
 //							$('#map').switchClass('', 'minimised', 900, 'swing');
                     $('#map').animate({height: 210, width: 210}, animate_duration, 'swing', function () {
                         google.maps.event.trigger(map, 'resize');
-                        map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+                        //map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
                     });
 
-                    $('div#bottombar').animate({marginTop: 240}, animate_duration, 'swing', null);
+                    $('div#bottombar').animate({marginTop: 20}, animate_duration, 'swing', null);
+                    $('.map-resize-handle').hide();
+                    $('#map-container .panel.panel-default').resizable('disable');
                 }
 
                 else {
                     //when minimise graph
 
                     $('#legend').show();
+
+                    $('.map-resize-handle').show();
+
+                    $('#map-container .panel.panel-default').resizable('enable');
 
 
                     var mapWidth = $('#graphOne').width();
@@ -818,13 +880,14 @@ function mapDataCallback(data, status, xhr) {
 
                         div.fadeIn();
                     });
-                    //$('#map').switchClass('minimised', '',900,'swing');
-                    $('#map').animate({height: mapHeight, width: mapWidth}, animate_duration, 'swing', function () {
+                    
+
+                    $('#map').animate({height: maximised_map_height - 100, width: mapWidth}, animate_duration, 'swing', function () {
 
                         $('div#bottombar').animate({marginTop: 20}, 100, 'swing', null);
 
                         google.maps.event.trigger(map, 'resize');
-                        map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+                        //map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
                     });
                 }
             }
@@ -1051,7 +1114,6 @@ function drawBar(jq, data, field) {
     }
 
 
-
 }
 
 
@@ -1174,6 +1236,8 @@ function showGPS(gps) {
     content += '</table>';
     new EpiCollect.dialog({content: content});
 }
+
+
 
 
 

@@ -277,12 +277,13 @@
 <div id="tabs">
 
     <ul>
-        <li><a href="#tableTab">Table View</a>
-        <li><a href="#mapTab">Map</a>
+        <li><a href="#tableTab"><i class="fa fa-table"></i> Table</a>
+        <li><a href="#mapTab"><i class="fa fa-map-marker"></i> Map</a>
     </ul>
     <div id="tableTab">
         <p class="ecplus-toolbar form-inline">
             {#curationbuttons#}
+            <span class="immersive-mode-btn"><a class="btn btn-default" href="#"><i class="fa fa-arrows-alt fa-2x"></i></a></span>
             <span class="ecplus-toolbar-divider">&nbsp;</span>
             <label for="filter_fields">Filter List By</label><select id="filter_fields" class="fieldList form-control"></select> <input class="form-control" id="filter_value"/>
                                 <span id="filterControls" class="button-set">
@@ -291,7 +292,6 @@
                                         </a>
                                         <a href="javascript:doFilter('','');" class="btn btn-default">Clear Filter</a>
                                 </span>
-            <!--<span class="ecplus-toolbar-divider">&nbsp;</span>-->
             <span id="showHideFields" class="ecplus-dropdown"></span>
             <span class="ecplus-toolbar-divider">&nbsp;</span>
             <span id="download-buttons" class="button-set pull-right">
@@ -351,7 +351,6 @@
 
                 <div class="panel panel-default ">
                     <div class="panel-heading">
-                        <!--<h3 class="panel-title">Locations list:</h3>-->
                         <div class="form-inline">
                             <label for="fieldSelector" id="fieldSelectorLabel">Mapping locations: </label>
                             <select id="fieldSelector" class="form-control"></select>
@@ -369,23 +368,16 @@
                         </div>
 
                     </div>
+                    <div class="map-resize-handle ui-resizable-handle ui-resizable-s"><i class="fa fa-ellipsis-h"></i></div>
                 </div>
+
             </div>
 
-            <!--<div class="col-md-2">-->
-            <!--<div class="panel panel-default">-->
-            <!--<div class="panel-heading">-->
-            <!--<h3 class="panel-title">Chart:</h3>-->
-            <!--</div>-->
-            <!--<div class="panel-body">-->
-            <!---->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
 
 
         </div>
         <div class="clearfix"></div>
+
         <div id="bottombar" class="row">
             <div class="col-md-4">
                 <div id="timeFilter" class=" panel panel-default">
