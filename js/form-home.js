@@ -1,19 +1,20 @@
-var formName = "";
+//'use strict';
+var formName = '';
 var map = null;
 
 var mapData = [];
 var markers = [];
 
-var qry = location.search.trimChars("?");
-var sortCol = "created";
-var sortDir = "asc";
+var qry = location.search.trimChars('?');
+var sortCol = 'created';
+var sortDir = 'asc';
 var pageNo = 0;
 var numEnts = 25;
 
-var filterField = "";
-var filterValue = "";
+var filterField = '';
+var filterValue = '';
 
-var nextFormName = "";
+var nextFormName = '';
 
 var markerClusterer = null;
 
@@ -22,7 +23,8 @@ var bubble = null;
 var geoField = null;
 var defaultColourField = null;
 
-var dateFormat = " dd MM yyyy hh:mm:ss";
+//var dateFormat = ' dd MM yyyy hh:mm:ss';
+var dateFormat = ' dd MM yyyy';
 
 var hiddenColumns = {created: false, uploaded: true, lastEdited: true, DeviceID: true};
 
@@ -30,24 +32,24 @@ var totalents = 0;
 var mapChunkSize = 1000;
 var map_lastupdated = new Date(0);
 var mapBounds = null;
-
+var animate_duration = 500;
 var mapHeight = 0;
 var mapchecker = null;
 
 var colours = [
-    "#FF0000",
-    "#008000",
-    "#C0C0C0",
-    "#FFFF00",
-    "#FFFFFF",
-    "#800080",
-    "#808080",
-    "#800000",
-    "#0000CC",
-    "#9FFF9F",
-    "#FF9FCC",
-    "#B366FF",
-    "#784421"
+    '#FF0000',
+    '#008000',
+    '#C0C0C0',
+    '#FFFF00',
+    '#FFFFFF',
+    '#800080',
+    '#808080',
+    '#800000',
+    '#0000CC',
+    '#9FFF9F',
+    '#FF9FCC',
+    '#B366FF',
+    '#784421'
 ];
 
 var _graphdiv;
@@ -61,21 +63,17 @@ var IE8 = false; //annoying, but we need the SVG to work... or the workaround to
 
 $(function () {
     var ele = document.createElement('img');
-    ele.src = "../images/loading.gif";
+    ele.src = '../images/loading.gif';
 
     IE8 = $.browser.msie && (parseInt($.browser.version, 10) < 9);
 
-    url = location.href.trimChars("/");
-    if (url.indexOf("?") > 0)url = url.substr(0, url.indexOf("?"));
-    formName = url.substr(url.lastIndexOf("/") + 1).replace(/#.*$/, "");
-    url = url.substr(0, url.lastIndexOf("/"));
+    url = location.href.trimChars('/');
+    if (url.indexOf('?') > 0)url = url.substr(0, url.indexOf('?'));
+    formName = url.substr(url.lastIndexOf('/') + 1).replace(/#.*$/, '');
+    url = url.substr(0, url.lastIndexOf('/'));
 
     loader = new EpiCollect.LoadingOverlay();
 
-
-    //var form = '<fieldSet><label for="field">Field Name</label><select name="field" class="colourFieldList"></select><h4>Chart Type</h4><div class="toggle">';
-    //form += '<label for="piech">Pie</label><input id="piech" type="radio" name="chartType" value="pie" checked="checked" />';
-    //form += '<label for="barch">Bar</label><input type="radio" id="barch" name="chartType" value="bar" /></div> </fieldSet>';
 
     var form = '<div class="form-inline"> <div class="form-group"><label for="field">Field Name</label><select name="field" class="colourFieldList form-control"></select></div></div>';
 
@@ -86,9 +84,9 @@ $(function () {
         });
 
 
-    $("#tabs").tabs({
+    $('#tabs').tabs({
         activate: function (evt, ui) {
-            if (ui.newPanel.attr('id') === "mapTab") {
+            if (ui.newPanel.attr('id') === 'mapTab') {
                 google.maps.event.trigger(map, 'resize');
                 if (mapBounds) {
                     map.fitBounds(mapBounds)
@@ -111,9 +109,11 @@ $(function () {
         getData();
     });
 
-    $("#showHideFields").append("<a class=\"btn btn-default\" href=\"javascript:toggleMenu('#showHideFields')\">Show/Hide Fields</a><div class=\"ecplus-dropdown-menu\" style=\"display:none;\"></div>");
+    var toggle_fields = '"#showHideFields"';
 
-    EpiCollect.loadProject(url.trimChars('/') + ".xml", loadCallback);
+    $('#showHideFields').append('<a class="btn btn-default" href="javascript:toggleMenu(' + toggle_fields + ')">Show/Hide Fields</a><div class="ecplus-dropdown-menu" style="display:none;"></div>');
+
+    EpiCollect.loadProject(url.trimChars('/') + '.xml', loadCallback);
 
     $.fn.disableSelection = function () {
         return this.each(function () {
@@ -164,24 +164,24 @@ function setProgressMessage(msg) {
 
 function setProgress(n) {
     if (n < totalents) {
-        setProgressMessage("loading... " + n + "/" + totalents);
+        setProgressMessage('loading... ' + n + '/' + totalents);
     }
     else {
-        setProgressMessage("Loaded");
+        setProgressMessage('Loaded');
         setTimeout(function () {
             $('#progressbar').hide();
         }, 2000);
     }
-    $('#progressbar').progressbar("option", "max", totalents);
-    $('#progressbar').progressbar("value", n);
+    $('#progressbar').progressbar('option', 'max', totalents);
+    $('#progressbar').progressbar('value', n);
 
 
 }
 
 function toggleMenu(selector) {
 
-    var jq = $(selector + " .ecplus-dropdown-menu");
-    var visible = jq.css("display") !== "none";
+    var jq = $(selector + ' .ecplus-dropdown-menu');
+    var visible = jq.css('display') !== 'none';
 
     if (visible) jq.hide();
     else {
@@ -267,7 +267,7 @@ function loadCallback(prj) {
         }
     });
 
-    ecplus_table_header.append("<img src=\"../images/uparrow.png\" class=\"asc\" width=\"12\" /><img src=\"../images/downarrow.png\" class=\"desc\" width=\"12\" />");
+    ecplus_table_header.append('<img src="../images/uparrow.png" class="asc data-table-arrow-images" width="12" /><img src="../images/downarrow.png" class="desc data-table-arrow-images" width="12" />');
     ecplus_table_header.click(function (evt) {
         var newSortCol = evt.target.className;
         newSortCol = newSortCol.substr(0, newSortCol.indexOf(' '));
@@ -359,8 +359,8 @@ function loadCallback(prj) {
                 var _created = EpiCollect.toJSTimestamp(data["created"]);
                 return _created >= ui.values[0] && _created <= ui.values[1];
             });
-            $("#timeFrom").text(new Date(ui.values[0]).format(dateFormat));
-            $("#timeTo").text(new Date(ui.values[1]).format(dateFormat));
+            $("#timeFrom").val(new Date(ui.values[0]).format(dateFormat));
+            $("#timeTo").val(new Date(ui.values[1]).format(dateFormat));
 
             $(".filterControl").removeClass("active");
             $("#timeFilter").addClass("active");
@@ -710,8 +710,8 @@ function mapDataCallback(data, status, xhr) {
         $("#slider-range").slider("option", "min", mincreated);
         $("#slider-range").slider("option", "max", maxcreated);
 
-        $("#timeFrom").text(new Date(mincreated).format(dateFormat));
-        $("#timeTo").text(new Date(maxcreated).format(dateFormat));
+        $("#timeFrom").val(new Date(mincreated).format(dateFormat));
+        $("#timeTo").val(new Date(maxcreated).format(dateFormat));
 
         colourMarkersBy($('#mapColourField').val());
 
@@ -769,44 +769,66 @@ function mapDataCallback(data, status, xhr) {
         window.mapBounds = new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon));
 
         $('.minmax', $('#graphOne')).bind('click', function () {
-            var div = $('.ecplus-pane', $(this).parent());
-            var par = $(this).parent();
-            var img = this;
+                var div = $('.ecplus-pane', $(this).parent());
+                var par = $(this).parent();
+                var img = this;
 
-            if (par.hasClass('minimised')) {
-                //par.switchClass('minimised', '',1000,'swing',function(){
-                var mapWidth = $('#map').width();
-                $('#legend').hide();
-                par.animate({height: mapHeight, width: mapWidth}, 1000, 'swing', function () {
-                    par.removeClass('minimised');
+                div.fadeOut(50);
 
-                    drawGraph(div, div.attr('graph-field'), div.attr('graph-type'));
-                    $(img).attr('src', $(img).attr('src').replace('5_resize_fu', '4_resize_sma'));
+                if (par.hasClass('minimised')) {
 
-                });
+                    //maximising graph
+
+                    var mapWidth = $('#map').width();
+                    $('#legend').hide();
+
+
+                    par.animate({height: mapHeight, width: mapWidth}, animate_duration, 'swing', function () {
+                        par.removeClass('minimised');
+
+                        drawGraph(div, div.attr('graph-field'), div.attr('graph-type'));
+
+                        $(img).attr('src', $(img).attr('src').replace('5_resize_fu', '4_resize_sma'));
+
+                        div.fadeIn();
+
+                    });
 //							$('#map').switchClass('', 'minimised', 900, 'swing');
-                $('#map').animate({height: 210, width: 210}, 900, 'swing', function () {
-                    google.maps.event.trigger(map, 'resize');
-                    map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
-                });
-            }
-            else {
-                $('#legend').show();
-                var mapWidth = $('#graphOne').width();
-                //par.switchClass('', 'minimised',1000,'swing',function(){
-                par.animate({height: 210, width: 210}, 1000, 'swing', function () {
-                    par.addClass('minimised');
+                    $('#map').animate({height: 210, width: 210}, animate_duration, 'swing', function () {
+                        google.maps.event.trigger(map, 'resize');
+                        map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+                    });
 
-                    drawGraph(div, div.attr('graph-field'), div.attr('graph-type'));
-                    $(img).attr('src', $(img).attr('src').replace('4_resize_sma', '5_resize_fu'));
-                });
-                //$('#map').switchClass('minimised', '',900,'swing');
-                $('#map').animate({height: mapHeight, width: mapWidth}, 900, 'swing', function () {
-                    google.maps.event.trigger(map, 'resize');
-                    map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
-                });
+                    $('div#bottombar').animate({marginTop: 240}, animate_duration, 'swing', null);
+                }
+
+                else {
+                    //when minimise graph
+
+                    $('#legend').show();
+
+
+                    var mapWidth = $('#graphOne').width();
+                    //par.switchClass('', 'minimised',1000,'swing',function(){
+                    par.animate({height: 210, width: 210}, animate_duration, 'swing', function () {
+                        par.addClass('minimised');
+
+                        drawGraph(div, div.attr('graph-field'), div.attr('graph-type'));
+                        $(img).attr('src', $(img).attr('src').replace('4_resize_sma', '5_resize_fu'));
+
+                        div.fadeIn();
+                    });
+                    //$('#map').switchClass('minimised', '',900,'swing');
+                    $('#map').animate({height: mapHeight, width: mapWidth}, animate_duration, 'swing', function () {
+
+                        $('div#bottombar').animate({marginTop: 20}, 100, 'swing', null);
+
+                        google.maps.event.trigger(map, 'resize');
+                        map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+                    });
+                }
             }
-        });
+        );
 
 
         $('[href=#mapTab]').removeClass('ec-loading');
@@ -1029,38 +1051,7 @@ function drawBar(jq, data, field) {
     }
 
 
-    /*$.plot(jq , ser, {
-     xaxis: {
-     mode: "categories",
-     tickLength: 0,
-     labelWidth: 50
 
-     },
-     grid: {
-     hoverable: true,
-     clickable: true
-     },
-     legend : {
-     show : false
-     }
-     });
-
-     jq.bind('plothover', function(event, pos, obj)
-     {
-
-     if(!obj)
-     {
-     $('#tooltip').hide();
-     }
-     else
-     {
-     $('#tooltip').text(obj.series.data[0].join(','));
-     $('#tooltip').css('top', (pos.pageY - $('#tooltip').height() - 25)+ 'px');
-     $('#tooltip').css('left', (pos.pageX - $('#tooltip').width() - 25)+ 'px');
-     $('#tooltip').show();
-     }
-
-     });*/
 }
 
 
@@ -1092,43 +1083,6 @@ function drawPie(jq, data, field) {
     jq.attr('id', jq.parent().attr('id') + '_canvas');
 
     gfx.drawPie(jq.attr('id'), formatedDate, (Math.min(jq.width(), jq.height()) / 2));
-
-    /*$.plot(jq , s, {
-     series: {
-     pie: {
-     show : true,
-     label : {
-     show: !jq.parent().hasClass('minimised')
-     },
-     radius : 0.8
-     }
-     },
-     legend : {
-     show : false
-     },
-     grid: {
-     hoverable: true,
-     clickable: true
-     }
-     });
-
-     jq.bind('plothover', function(event, pos, obj)
-     {
-
-     if(!obj)
-     {
-     $('#tooltip').hide();
-     }
-     else
-     {
-     $('#tooltip').text(obj.series.label + ',' + obj.series.data[0][1]);
-     $('#tooltip').css('top', (pos.pageY - $('#tooltip').height() - 25)+ 'px');
-     $('#tooltip').css('left', (pos.pageX - $('#tooltip').width() - 25)+ 'px');
-
-     $('#tooltip').show();
-     }
-
-     });*/
 
 
 }

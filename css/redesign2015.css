@@ -1,7 +1,7 @@
 /* Hack to have footer color expanding when viewing on ipad*/
 body {
     /*background-color: #d2a9fd;*/
-    min-width: 768px!important;
+    min-width: 992px!important;
 }
 
 .container-fluid {
@@ -388,6 +388,9 @@ table.ecplus-data img {
     width: 75px !important;
     height: auto !important;
 }
+table.ecplus-data img.data-table-arrow-images {
+    width:12px!important;
+}
 
 li.ui-state-default.ui-corner-top.ui-tabs-active.ui-state-active {
     padding: 10px;
@@ -452,13 +455,15 @@ div.sidebar-list .panel .panel-body div#sidebar {
 }
 
 #map-container {
-    /*position: relative;*/
+    position: relative;
     /*overflow: hidden;*/
     /*height: 100%*/
+    max-height:400px!important;
+    /*height:80%;*/
 }
 
 #map-container .panel {
-    /*max-height:400px;*/
+    /*max-height:400px!important;*/
 }
 #graphOne {
     top: -1px;
@@ -473,10 +478,36 @@ div#map {
     /*width:100%!important;*/
     vh:100%!important;
     margin-left:200px;
+    max-height: 400px;
 }
 #tableTab div#ui-accordion-csvform-panel-0 {
     height: 120px!important;
 }
 input.upload-csv {
     padding: 10px 0;
+}
+div#bottombar.row {
+    margin-top:20px;
+}
+div#bottombar.row .panel {
+    min-height:270px;
+}
+div#fieldFilter .field-filter-controls {
+    margin-top: 20px;
+    margin-bottom: 0!important;
+}
+div#fieldColour .field-filter-controls {
+    margin-top: 95px;
+    margin-bottom: 0!important;
+}
+.time-range.form-inline {
+    margin: 20px 0;
+}
+.field-filter-controls.pull-right {
+    /*position: absolute;*/
+    /*bottom: 30px;*/
+    /*right: 30px;*/
+}
+div#slider-range {
+    margin-bottom: 10px;
 }
