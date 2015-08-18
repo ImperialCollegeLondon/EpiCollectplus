@@ -4,9 +4,8 @@ EpiCollect+ is licenced under a [AGPLv3 Licence](http://opensource.org/licenses/
 
 # Mobile Apps
 
-Android: https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollectplus.html5&hl=en_GB
-
-iOS: https://itunes.apple.com/us/app/epicollect+/id999309173?ls=1&mt=8
+<a href="https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollectplus.html5&hl=en_GB">Android</a>
+<a href="https://itunes.apple.com/us/app/epicollect+/id999309173?ls=1&mt=8">iOS</a>
 
 # Acknowledgements
 EpiCollect+ uses [Glyphicons](http://glyphicons.com/), [jQuery](http://jquery.com), [jQuery UI](http://jqueryui.com) and [Raphael](http://raphaeljs.com/)
