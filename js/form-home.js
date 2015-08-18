@@ -880,7 +880,7 @@ function mapDataCallback(data, status, xhr) {
 
                         div.fadeIn();
                     });
-                    
+
 
                     $('#map').animate({height: maximised_map_height - 100, width: mapWidth}, animate_duration, 'swing', function () {
 

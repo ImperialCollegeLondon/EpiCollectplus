@@ -497,6 +497,8 @@ div#map {
     margin-left: 200px;
     opacity: 1!important;
     /*max-height: 400px;*/
+    /* position relative is really important for Firefox!!!!!*/
+    position: relative;
 }
 
 #tableTab div#ui-accordion-csvform-panel-0 {
