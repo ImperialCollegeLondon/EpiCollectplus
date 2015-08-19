@@ -1,305 +1,277 @@
-{{style}}	
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/jquery-ui-1.8.17.custom.css" />
-	<style type="text/css">
-		#uploadxml
-		{
-			border: 0;
-			width: 50em;
-			height : 4em;
-			overflow: visible;
-		}
-		
-		table
-		{ 
-			width: 50em;
-			margin-bottom: 1em;
-		}
-		
-		th
-		{
-			text-align : left;
-		}
-		
-		div.section
-		{
-			display: inline-block;
-			width : 50em;
-			height: 50em;
-		}
-		
-		.panelSwitcher 
-		{
-			float : right;
-			margin : 0.5em 0.25em 0.2em 0.25em;
-		}
-		
-		.remove
-		{
-			width : 6.5em;		
-		}
-	</style>
+{{style}}
+<!--<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />-->
+<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/jquery-ui-1.8.17.custom.css"/>
 {{/style}}
 
 {{script}}
-  <!--<script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollect2.js"></script>-->
-  <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-1.7.1.min.js"></script>
-  <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui-1.8.17.custom.min.js"></script>
-  <script type="text/javascript">
-  	var obj;
-  	var publicOpts;
-  	var listOpts;
-  	var curEmail = "{#userEmail#}";
-  	
-  	var curators = {#curators#}.split(",");
-  	var managers = {#managers#}.split(",");
-  	var projectName = "{#projectName#}"
-  	var isPublic = {#public#} == 1;
-  	var isListed = {#listed#} == 1;
-  	
-  	$(function(){
-  		$(".projectName").text(projectName);
-  		
-  		$('#isPublic')[0].checked = isPublic;
-  		$('#isPrivate')[0].checked =  !isPublic;
-  		$('#isListed')[0].checked =  isListed;
- 		$('#notListed')[0].checked = !isListed;
- 		
-  		publicOpts = $('#public').buttonset();
-  		listOpts = $('#listed').buttonset();
-  		
-  		$('input[type=radio]').button("refresh");
-  		
-  		$('.panelSwitcher, .button').button()
-  		
-  		for(var i = 0; i < curators.length; i++)
-  		{
-  			if( curators[i] != "" )
-  				addUser("curators", curators[i]);
-  		}
-  		
-  		for(var i = 0; i < managers.length; i++)
-  		{
-  			if( managers[i] != "" )
-  				addUser("managers", managers[i]);
-  		}
- 		
-		$('form').tabs();
-		
-		$('#uploadimage').load(function(evt){
-			var ele = evt.target;
-			var doc = ele.contentDocument;
-			var img = $('img', doc);
-			if(img.length > 0)
-			{
-				var str_img_name = img.attr('src').replace('~tn', '');
-				str_img_name = str_img_name.substr(str_img_name.indexOf('ec/'));
-				$('input[name=projectImage]').val(str_img_name);
-			}
-			else
-			{
-				$('input[name=projectImage]').val('');
-			}
-		});
-  		
-  	});
-  	
-  	function goTo(sectionId)
-  	{
-  		$('div.section').hide();
-  		$('#' + sectionId).show();
-  	}
-  	
-  	function addUser(uType, email)
-  	{
-  		if(email.match(/^[A-Z0-9\._%+-]+@[A-Z0-9\.-]+\.[A-Z]{2,4}$/i))
-  		{
-  			var rm = "";
-  			
-  			if(!$("#s_" + uType).val().match(new RegExp(email, "i")))
-  			{
-  				if(email !== curEmail)
-                {
+
+<script type="text/javascript">
+    var obj;
+    var publicOpts;
+    var listOpts;
+    var curEmail = "{#userEmail#}";
+
+    var curators = {#curators#}.split(",");
+    var managers = {#managers#}.split(",");
+    var projectName = "{#projectName#}";
+    var isPublic = {#public#} == 1;
+    var isListed = {#listed#} == 1;
+
+    $(function () {
+        $(".projectName").text(projectName);
+
+        $('#isPublic')[0].checked = isPublic;
+        $('#isPrivate')[0].checked = !isPublic;
+        $('#isListed')[0].checked = isListed;
+        $('#notListed')[0].checked = !isListed;
+
+        publicOpts = $('#public').buttonset();
+        listOpts = $('#listed').buttonset();
+
+        $('input[type=radio]').button("refresh");
+
+        $('.panelSwitcher, .button').button();
+
+        for (var i = 0; i < curators.length; i++) {
+            if (curators[i] != "")
+                addUser("curators", curators[i]);
+        }
+
+        for (var i = 0; i < managers.length; i++) {
+            if (managers[i] != "")
+                addUser("managers", managers[i]);
+        }
+
+        $('form').tabs();
+
+        $('#uploadimage').load(function (evt) {
+            var ele = evt.target;
+            var doc = ele.contentDocument;
+            var img = $('img', doc);
+            if (img.length > 0) {
+                var str_img_name = img.attr('src').replace('~tn', '');
+                str_img_name = str_img_name.substr(str_img_name.indexOf('ec/'));
+                $('input[name=projectImage]').val(str_img_name);
+            }
+            else {
+                $('input[name=projectImage]').val('');
+            }
+        });
+
+    });
+
+    function goTo(sectionId) {
+        $('div.section').hide();
+        $('#' + sectionId).show();
+    }
+
+    function addUser(uType, email) {
+        if (email.match(/^[A-Z0-9\._%+-]+@[A-Z0-9\.-]+\.[A-Z]{2,4}$/i)) {
+            var rm = "";
+
+            if (!$("#s_" + uType).val().match(new RegExp(email, "i"))) {
+                if (email !== curEmail) {
                     rm = "<a class=\"remove\" href=\"javascript:removeUser('" + uType + "','" + email + "')\">Remove</a>";
                 }
-                else
-                {
+                else {
                     rm = '<em>You cannot remove yourself as a manager.</em>';
                 }
-  				$("#s_" + uType + " tbody").append("<tr><td>" + email + "</td><td>"  + rm + "</td></tr>");
-  			}
-  			updateUField(uType);
-  			
-  		}
-  		else
-  		{
-  			$('#message').empty().append("<p class=\"flash err\">" + uType + " must be added using their email address, <em>" + email+ "</em> is not an email address</p>");
-  		}
-  	}
-  	
-  	function removeUser(uType, email)
-  	{
-  		$("#s_" + uType + " tr").each(function(idx, ele)
-  		{
-  			if($(ele.getElementsByTagName('td')[0]).text() == email)
-  			{
-  				$(ele).remove()
-  			}
-  		});
-  		updateUField(uType);
-  	}
-  	
-  	function updateUField(uType)
-  	{
-  		$("#" + uType).val("");
-  		$("#s_" + uType + " tr").each(function(idx, ele){
-  			$("#" + uType).val($("#" + uType).val() + (idx > 1 ? "," : "") + $(ele.getElementsByTagName('td')[0]).text());
-  		});
-  	}
-  	
-  	function showMessage(msg, type)
-  	{
-  		$('#message').empty().append("<p class=\"flash " + type + "\">" + msg + "</p>");
-  	}
-  	
-  	function save()
-  	{
-  		var vals = $('form').serializeArray();
-  		var valStr = '';
-  		
-  		for(var i = vals.length; i--;)
-  		{
-  			if( vals[i].name == 'public' ) vals[i].value = $('#isPublic').attr('checked') == 'checked';
-  			if( vals[i].name == 'listed' ) vals[i].value = $('#isListed').attr('checked') == 'checked';
-  			if( valStr != '') valStr = valStr + '&';
-  			valStr += vals[i].name + '=' + vals[i].value;
-  		}
-  		  		
-  		$.ajax({
-  			url : location.href.replace("/manage", "/updateStructure"),
-  			type : 'POST',
-  			data : valStr,
-  			success: function(data, status, xhr){
-  				showMessage("Project updates saved", "go");  				
-  			},
-  			error : function(xhr, status, err){
-  				window.xhr = xhr;
-  				showMessage("Project update failed", "err");		  				
-  			}
-  		});
-  	}
-  	
-  	function deleteProject()
-	{
-		if( confirm("If you delete this project the project definition and all data will be removed from the server. Are you sure you want to do this?") )
-		{
-			$('#s_delete a').replaceWith('<p><img src="../images/loading-sm.gif" alt="deleting..." />Deleting Project ' + projectName + '</p>');
-			var url = location.href.replace('/manage', '');
-			$.ajax(url, {
-				type : 'DELETE',
-				success: function() { 
-					location.replace(url.replace(projectName, '')); 
-				}
-			});
-		}
-	}
-  	
-  </script>
+                $("#s_" + uType + " tbody").append("<tr><td>" + email + "</td><td>" + rm + "</td></tr>");
+            }
+            updateUField(uType);
+
+        }
+        else {
+            $('#message').empty().append("<p class=\"flash err\">" + uType + " must be added using their email address, <em>" + email + "</em> is not an email address</p>");
+        }
+    }
+
+    function removeUser(uType, email) {
+        $("#s_" + uType + " tr").each(function (idx, ele) {
+            if ($(ele.getElementsByTagName('td')[0]).text() == email) {
+                $(ele).remove()
+            }
+        });
+        updateUField(uType);
+    }
+
+    function updateUField(uType) {
+        $("#" + uType).val("");
+        $("#s_" + uType + " tr").each(function (idx, ele) {
+            $("#" + uType).val($("#" + uType).val() + (idx > 1 ? "," : "") + $(ele.getElementsByTagName('td')[0]).text());
+        });
+    }
+
+    function showMessage(msg, type) {
+        $('#message').empty().append("<p class=\"flash " + type + "\">" + msg + "</p>");
+    }
+
+    function save() {
+        var vals = $('form').serializeArray();
+        var valStr = '';
+
+        for (var i = vals.length; i--;) {
+            if (vals[i].name == 'public') vals[i].value = $('#isPublic').attr('checked') == 'checked';
+            if (vals[i].name == 'listed') vals[i].value = $('#isListed').attr('checked') == 'checked';
+            if (valStr != '') valStr = valStr + '&';
+            valStr += vals[i].name + '=' + vals[i].value;
+        }
+
+        $.ajax({
+            url: location.href.replace("/manage", "/updateStructure"),
+            type: 'POST',
+            data: valStr,
+            success: function (data, status, xhr) {
+                showMessage("Project updates saved", "go");
+            },
+            error: function (xhr, status, err) {
+                window.xhr = xhr;
+                showMessage("Project update failed", "err");
+            }
+        });
+    }
+
+    function deleteProject() {
+        if (confirm("If you delete this project the project definition and all data will be removed from the server. Are you sure you want to do this?")) {
+            $('#s_delete a').replaceWith('<p><img src="../images/loading-sm.gif" alt="deleting..." />Deleting Project ' + projectName + '</p>');
+            var url = location.href.replace('/manage', '');
+            $.ajax(url, {
+                type: 'DELETE',
+                success: function () {
+                    location.replace(url.replace(projectName, ''));
+                }
+            });
+        }
+    }
+
+</script>
 {{/script}}
 {{breadcrumbs}}
-  &gt; <a href="../{#projectName#}">{#projectName#}</a> &gt; <a href="../{#projectName#}/update">Manage Project</a>
+&gt; <a href="../{#projectName#}">{#projectName#}</a> &gt; <a href="../{#projectName#}/update">Manage Project</a>
 {{/breadcrumbs}}
 {{main}}
-	  <h1 id="title">Manage Project : <span class="projectName"></span></h1>
-	  <div id="message"></div>
-	  <form id="projectOptions" action="updateStructure" method="POST">
-	  		<ul>
-	  			<!-- <li><a href="#projectDef">Project Definition</a></li> -->
-	  			<li><a href="#description">Description and Image</a></li>
-	  			<li><a href="#visibility">Visibility</a></li>
-	  			<li><a href="#listing">Listing</a></li>
-	  			<li><a href="#s_managers">Managers</a></li>
-	  			<li><a href="#s_curators">Curators</a></li>
-	  			<li><a href="#s_delete">Delete Project</a></li>
-	  		</ul>
-		  	<!-- <div id="projectDef" class="section">
-			  	<h2>Project Definition</h2>
-			  	<iframe id="uploadxml" src="{#SITE_ROOT#}/html/projectIFrame.html"></iframe>
-		  		<div id="uploadStatus" class="flash"></div>
-		 		<input type="hidden" name="xml"/>
-		 		<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
-		 		
-	 		</div> -->
-	 		<div id="description" class="section">
+<!--<h1 id="title">Manage Project : <span class="projectName"></span></h1>-->
+<div id="message"></div>
+<div class="row">
+    <div class="col-lg-8 col-md-6 col-sm-12 col-md-offset-3 col-lg-offset-2">
+        <form id="projectOptions" action="updateStructure" method="POST" class="update-project">
+            <ul>
+                <!-- <li><a href="#projectDef">Project Definition</a></li> -->
+                <li><a href="#description-container">Details</a></li>
+                <li><a href="#visibility">Visibility</a></li>
+                <li><a href="#listing">Listing</a></li>
+                <li><a href="#s_managers">Managers</a></li>
+                <li><a href="#s_curators">Curators</a></li>
+                <li><a href="#s_delete">Delete Project</a></li>
+            </ul>
+            <div id="description-container" class="section">
                 <div class="group">
-                    <h2>Project Description</h2>
+                    <div class="well well-sm">Project Description</div>
                     <p>Here you can add a plain text description of your project.</p>
                     <textarea rows="10" cols="50" id="description" name="description">{#description#}</textarea>
                 </div>
                 <div class="group">
-                    <h2>Project Image or Logo</h2>
+                    <div class="well well-sm">Project Image or Logo</div>
                     <p>You can also upload a logo or other image that will be displayed on your project page.</p>
                     <iframe id="uploadimage" src="uploadMedia?fn={#image#}"></iframe>
                     <div id="uploadStatusImage" class="flash"></div>
                     <input type="hidden" name="projectImage"/>
-                    <a class="panelSwitcher" href="javascript:save()">Save Changes</a>
-		 		</div>
-	 		</div>
-		 	<div id="visibility" class="section">
-				<h2>Data Visibility</h2>
-				<p>You can choose whether your data is available to anyone via this website, or restricted to the project managers and curators. You can add Managers and Curators using the tabs on this page.</p>
-				<div id="public" class="choice">
-					<input type="radio" name="public" id="isPublic" value="true" /><label for="isPublic"><b>Public</b> I would like anyone have access to this project's data.</label>
-					<input type="radio" name="public" id="isPrivate" value="false" /><label for="isPrivate"><b>Private</b> I want to restrict access to the project managers and curators.</label>
-				</div>
-				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
-				
-			</div>
-			<div id="listing" class="section">
-				<h2>Listing on the Homepage</h2>
-				<p>The front page of this server displays a list of projects that have been created on this server, please choose one of the following options</p>
-				<div id="listed" class="choice">
-					<input type="radio" name="listed" id="isListed" value="true" /><label for="isListed"><b>Listed</b> I would like my project listed publically</label>
-					<input type="radio" name="listed" id="notListed" value="" /><label for="notListed"><b>Hidden</b> I do not want my project to be listed publically</label>
-				</div>
-				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
-			</div>
-			<div id="s_managers" class="section">
-				<h2>Project Managers</h2>
-				<p>Here you can add email addresses of those users you would like to have full access to managing your project.    Managers are able to add and remove other managers and curators, Managers can also add/edit/delete data via the web interface.</p>
-                <p></p>
-				<table> 
-					<thead>
-						<tr><th>Email</th><th class="remove">Remove</th></tr>
-					</thead>
-					<tbody>
-					</tbody>
-				</table>
-				<label for="newmanager">Please enter gmail or (for local users) email address for the manager you would like to add: </label><input type="email" id="newmanager" /><a class="button" href="javascript:addUser('managers', $('#newmanager').val())">Add manager</a>
-				<input type="hidden" name="managers" id="managers"/>
-				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
-			</div>
-			<div id="s_curators" class="section">
-				<h2>Project Curators</h2>
-				<p>Here you can add email addresses of those users you would like to act as curators.  Curators can add/edit/delete data via the web interface.</p>
+                </div>
+                <a class="panelSwitcher btn btn-default pull-right" href="javascript:save()">Save</a>
+            </div>
+            <div id="visibility" class="section">
+                <div class="well well-sm">Data Visibility</div>
+                <p>You can choose whether your data is available to anyone via this website, or restricted to the project managers and curators. You can add Managers and Curators
+                    using the tabs on this page.</p>
+
+                <div id="public" class="choice radio">
+                    <label>
+                        <input type="radio" name="public" id="isPublic" value="true" checked>
+                        <i class="fa fa-users fa-2x fa-fw"></i>
+                        <strong>Public:</strong> I would like to make my project open and visible to anyone
+                    </label>
+                    <br/>
+                    <label>
+                        <input type="radio" name="public" id="isPrivate" value="false">
+                        <i class="fa fa-lock fa-2x fa-fw"></i>
+                        <strong>Private:</strong> I would like to restrict access to users I specify
+                    </label>
+                </div>
+                <a class="panelSwitcher btn btn-default pull-right" href="javascript:save()">Save</a>
+            </div>
+            <div id="listing" class="section">
+                <div class="well well-sm">Project visibility</div>
+                <p>The front page of this server displays a list of projects that have been created on this server, please choose one of the following options</p>
+                <label>
+                    <input type="radio" name="listed" id="isListed" value="true" checked>
+                    <i class="fa fa-list-alt fa-2x fa-fw"></i>
+                    <strong>Listed:</strong> I would like my project to appear in a list of projects on the server homepage
+                </label>
+                <br/>
+                <label>
+                    <input type="radio" name="listed" id="notListed" value="false">
+                    <i class="fa fa-eye-slash fa-2x fa-fw"></i>
+                    <strong>Hidden:</strong> I would <strong class="text-warning">NOT</strong> like my project to appear in a list of projects on the server homepage.
+                </label>
+                <br/>
+                <a class="panelSwitcher btn btn-default pull-right" href="javascript:save()">Save</a>
+            </div>
+            <div id="s_managers" class="section">
+                <div class="well well-sm">Project managers</div>
+                <p>Here you can add email addresses of those users you would like to have full access to managing your project.</p>
+
+                <p>Managers are able to add and remove other managers and curators, Managers can also add/edit/delete data via the web interface.</p>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th class="remove">Remove</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+
+
+                <div class="form-group">
+                    <label for="newmanager">Please enter gmail or (for local users) email address for the curator you would like to add</label>
+                    <input type="email" class="form-control" id="newmanager" placeholder="Email">
+                </div>
+
+                <a class="button btn btn-default pull-right" href="javascript:addUser('managers', $('#newmanager').val())">Add manager</a>
+                <input type="hidden" name="managers" id="managers"/>
+                <a class="panelSwitcher btn btn-default pull-right" href="javascript:save()">Save</a>
+            </div>
+            <div id="s_curators" class="section">
+                <div class="well well-sm">Project curators</div>
+                <p>Here you can add email addresses of those users you would like to act as curators. Curators can add/edit/delete data via the web interface.</p>
+
                 <p>If this project is not publicly visible only curators and managers can add data via the web.</p>
-				<table> 
-					<thead>
-						<tr><th>Email</th><th class="remove">Remove</th></tr>
-					</thead>
-					<tbody>
-					</tbody>
-				</table>
-				<label for="newcurator">Please enter gmail or (for local users) email address for the curator you would like to add: </label><input type="email" id="newcurator" /><a class="button" href="javascript:addUser('curators', $('#newcurator').val())">Add curator</a>
-				<input type="hidden" name="curators" id="curators"/>
-				<a class="panelSwitcher" href="javascript:save()">Save Changes</a>
-			</div>
-			<div id="s_delete" class="section">
-				<h2>Delete Project</h2>
-				<p>Use the button below to delete this project and all of its data from the server. Deleting your project is permanent and all data will be removed. </p>
-				<a href="javascript:deleteProject()" class="danger button"> Delete Project </a>
-			</div>
-			
-	</form>
-  
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th class="remove">Remove</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+
+                <div class="form-group">
+                    <label for="newcurator">Please enter gmail or (for local users) email address for the curator you would like to add</label>
+                    <input type="email" class="form-control" id="newcurator" placeholder="Email">
+                </div>
+                <a class="button btn btn-default pull-right" href="javascript:addUser('curators', $('#newcurator').val())">Add curator</a>
+                <input type="hidden" name="curators" id="curators"/>
+                <a class="panelSwitcher btn btn-default pull-right" href="javascript:save()">Save</a>
+            </div>
+            <div id="s_delete" class="section">
+                <div class="well well-sm">Project deletion</div>
+                <p>Use the button below to delete this project and all of its data from the server. Deleting your project is permanent and all data will be removed. </p>
+                <a href="javascript:deleteProject()" class="button btn btn-danger btn-lg">Delete Project</a>
+            </div>
+        </form>
+    </div>
+</div>
 {{/main}}

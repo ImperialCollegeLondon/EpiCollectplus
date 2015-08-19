@@ -99,15 +99,14 @@
         if (frmCount == 0) {
             var curpage = location.href.trimChars('/');
             $("#menu p, #menu h1").remove();
-            $("#menu").append("<p>This project's homepage is <a href=\"" + curpage + "\">" + curpage + "</a></p>");
-            $("#menu").append('<p>Congratulations, you have now created your project website. Before submitting data you must create (a) form(s). To do this click the <a href="' + curpage + '/formBuilder">Create or Edit Forms</a> button above. For instructions, please click the link at the top left of this page.</p>');
+            $("#menu").append('<p>This project\'s homepage is <a class="project-home-link" href="' + curpage + '">' + curpage + '</a></p>');
+            $("#menu").append('<p><strong class="test-success">Congratulations,</strong> you have now created your project website. Before submitting data you must create (a) form(s): to do this click the <a href="' + curpage + '/formBuilder">Create or Edit Forms</a> button above. For instructions, please click the link at the top left of this page.</p>');
             $("#menu").append('<p>You can also add some explanatory text and upload an image which will appear here by clicking the <a href="' + curpage + '/manage">Manage Project</a> button near the top of the page. You can also update user premissions and other project settings from this page.</p>');
         }
 
         $("select").change(function (evt) {
             $("#" + evt.target.id.replace("field_", "")).attr("name", $(evt.target).val());
         });
-
     }
 
 

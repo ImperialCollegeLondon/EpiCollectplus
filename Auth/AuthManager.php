@@ -228,7 +228,10 @@ class AuthManager {
                     die("user creation failed $sql");
             }
 
+            // get current time
             $dat = new DateTime();
+
+            //add a length specified by session length in the settings
             $dat = $dat->add(new DateInterval("PT{$cfg->settings["security"]["session_length"]}S"));
             $sql = "INSERT INTO ecsession (id, user, expires) VALUES ('" . session_id() . "', $uid, " . $dat->getTimestamp() . ");";
 

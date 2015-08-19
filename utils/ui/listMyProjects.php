@@ -27,7 +27,16 @@ function listMyProjects() {
         $count = count($prjs);
 
         //create dom for list of user projects
-        $html = '<h3>My Projects</h3><div class="my-projects-list list-group ">';
+        $html = '<div class="row">';
+        $html .= '<div class="col-md-6 col-md-offset-3">';
+        $html .= '<div class="panel panel-default">';
+        $html .= '<div class="panel-heading">';
+        $html .= '<h3 class="panel-title">My Projects</h3>';
+        $html .= '</div>';
+        $html .= '<div class="panel-body">';
+        $html .= '<div class="my-projects-list list-group ">';
+
+
         for ($i = 0; $i < $count; $i++) {
 
             //project metadata
@@ -41,13 +50,12 @@ function listMyProjects() {
             if ($project_image == null) {
                 $project_image = $SITE_ROOT . '/images/project-image-placeholder-100x100.png';
             }
-            if($project_desc ==null) {
+            if ($project_desc == null) {
                 $project_desc = 'No description available yet';
-            }
-            else {
+            } else {
                 //truncate description to 300 chars for display purposes on long text
-                if(strlen($project_desc) >= 300) {
-                    $project_desc = substr($project_desc, 0, 300).'...';
+                if (strlen($project_desc) >= 300) {
+                    $project_desc = substr($project_desc, 0, 300) . '...';
                 }
             }
 
@@ -66,9 +74,8 @@ function listMyProjects() {
             $html .= '</a>';
 
 
-
         }
-        $html .= '</div>';
+        $html .= '</div></div></div></div>';
 
         $vals['userprojects'] = $html;
     }

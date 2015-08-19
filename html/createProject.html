@@ -1,42 +1,5 @@
 {{style}}
-<style type="text/css">
-
-    #uploadxml {
-        border: 0;
-        width: 100%;
-        height: 80px;
-    }
-
-    table {
-        width: 50em;
-        margin-bottom: 1em;
-    }
-
-    th {
-        text-align: left;
-    }
-
-    ul, h3 {
-        margin: 1em 0;
-    }
-
-    ul li {
-        margin: 0.5em 1em;
-    }
-
-    .panelSwitcher {
-        float: right;
-        margin: 0.5em 0.25em 0.2em 0.25em;
-    }
-
-    .remove {
-        width: 6.5em;
-    }
-
-
-</style>
 {{/style}}
-
 {{script}}
 <script type="text/javascript">
     var obj;
@@ -233,8 +196,9 @@
             </div>
             <div class="panel-body">
                 <div id="message" class="flashes"></div>
-                <form id="projectOptions" action="create" method="POST">
+                <form id="projectOptions" action="create" method="POST" class="create-project">
                     <div id="projectDef" class="section" title="Project Definition">
+                        <div class="well well-sm">1 - Add the project name</div>
                         <p>Please enter a name for your project - this will act as the name used for your website and also as the name used when entering into your phone to start
                             collecting data.</p>
 
@@ -260,44 +224,59 @@
                             </div>
                             <br/>
                         </div>
-                        <a class="panelSwitcher next" id="pdNext" href="javascript:goTo('visibility');"> Continue </a>
+                        <a class="panelSwitcher next btn btn-default pull-right" id="pdNext" href="javascript:goTo('visibility');"> Continue </a>
                     </div>
                     <div id="visibility" class="section" title="Data Visibility">
-
+                        <div class="well well-sm">2 - Choose data visibility options</div>
                         <p>Now you can specify whether you would like your project to be public (i.e. available for anyone to view data via the web) or private (will
                             require a
                             user to login to see data).</p>
                         <p>
                             You can add users to a private project using the <mark>Managers</mark> and/or <mark>Curators</mark> tab on the <strong>Manage Project</strong> screen.</p>
 
-                        <div id="public" class="choice">
-                            <input type="radio" name="public" id="isPublic" value="true" checked="checked"/><label for="isPublic"><b>Public</b> I would like to make my project open
-                            and
-                            visible to anyone</label>
-                            <input type="radio" name="public" id="isPrivate" value="false"/><label for="isPrivate"><b>Private</b> I would like to restrict access to users I
-                            specify</label>
+                        <div id="public" class="choice radio">
+                            <label>
+                                <input type="radio" name="public" id="isPublic" value="true" checked>
+                                <i class="fa fa-users fa-2x fa-fw"></i>
+                                <strong>Public:</strong> I would like to make my project open and visible to anyone
+                            </label>
+                            <br/>
+                            <label>
+                                <input type="radio" name="public" id="isPrivate" value="false">
+                                <i class="fa fa-lock fa-2x fa-fw"></i>
+                                <strong>Private:</strong> I would like to restrict access to users I specify
+                            </label>
                         </div>
-                        <br/>
-                        <a class="panelSwitcher next" href="javascript:goTo('listing');"> Continue </a>
-                        <a class="panelSwitcher prev" href="javascript:goTo('projectDef');"> Back </a>
+
+
+
+                        <a class="panelSwitcher next btn btn-default pull-right" href="javascript:goTo('listing');"> Continue </a>
+                        <a class="panelSwitcher prev btn btn-default pull-left" href="javascript:goTo('projectDef');"> Back </a>
 
                     </div>
                     <div id="listing" class="section" title="Listing on homepage">
-                        <!-- <h2>3. Project Listing on the Homepage</h2> -->
+                        <div class="well well-sm">3 - Choose project visibility options</div>
                         <p>Here you can choose whether you would like your project to appear in a list of projects available for anyone to browse.</p>
                         <p>This will encourage users to add data
                             to your project. If you choose to do this then consider adding a description and project image through the <strong>Manage Project</strong> page.</p>
-                        <div id="listed" class="choice">
-                            <input type="radio" name="listed" id="isListed" value="true" checked="checked"/><label for="isListed"><b>Listed</b> I would like my project to appear in
-                            a
-                            list of projects on the server homepage<br/> &nbsp;</label>
-                            <input type="radio" name="listed" id="notListed" value="false"/><label for="notListed"><b>Hidden</b> I would not like my project to appear in a list of
-                            projects on the server homepage. </label>
+                        <div id="listed" class="choice radio">
+
+                            <label>
+                                <input type="radio" name="listed" id="isListed" value="true" checked>
+                                <i class="fa fa-list-alt fa-2x fa-fw"></i>
+                                <strong>Listed:</strong> I would like my project to appear in a list of projects on the server homepage
+                            </label>
+                            <br/>
+                            <label>
+                                <input type="radio" name="listed" id="notListed" value="false">
+                                <i class="fa fa-eye-slash fa-2x fa-fw"></i>
+                                <strong>Hidden:</strong> I would <strong class="text-warning">NOT</strong> like my project to appear in a list of projects on the server homepage.
+                            </label>
                         </div>
-                        <br/>
-                        <a class="panelSwitcher next" href="javascript:document.forms[0].submit();"> Create Project </a>
+
+                        <a class="panelSwitcher next btn btn-default pull-right" href="javascript:document.forms[0].submit();"> Create Project </a>
                         <!-- <a class="panelSwitcher" href="javascript:goTo('s_managers');"> Continue </a> -->
-                        <a class="panelSwitcher prev" href="javascript:goTo('visibility');"> Back </a>
+                        <a class="panelSwitcher prev btn btn-default pull-left" href="javascript:goTo('visibility');"> Back </a>
                     </div>
                     <div id="s_managers" class="section">
                         <h2>4. Project Managers</h2>

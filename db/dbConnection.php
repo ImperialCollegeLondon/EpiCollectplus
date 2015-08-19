@@ -139,7 +139,7 @@ class dbConnection {
             $this->con->set_charset('utf8');
 
             if($this->resSet && !is_bool($this->resSet)) {
-                mysqli_free_result($this->resSet);
+               // mysqli_free_result($this->resSet);
             }
 
             $this->resSet = $this->con->query($qry);
