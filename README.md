@@ -4,7 +4,7 @@ EpiCollect+ is licenced under a [AGPLv3 Licence](http://opensource.org/licenses/
 
 # Mobile Apps
 
-<a href="https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollectplus.html5&hl=en_GB">Android, </a>
+<a href="https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollectplus.html5&hl=en_GB">Android</a>
 <a href="https://itunes.apple.com/us/app/epicollect+/id999309173?ls=1&mt=8">iOS</a>
 
 # Acknowledgements
