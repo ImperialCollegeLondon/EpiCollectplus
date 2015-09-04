@@ -1,0 +1,69 @@
+.social {
+    display: none;
+}
+.toolbox .footer {
+    background-color: #ffffff;
+}
+#errorList {
+    width:30em!important;
+    margin-top: 35px;
+}
+.ecplus-columns {
+    margin-top:2em!important;
+}
+.ecplus-columns .first, .ecplus-columns .last {
+    width: 19em;
+}
+#errorList h5 {
+    margin:0;
+}
+#formList {
+    border:none;
+}
+#formList .form {
+    min-height:120px!important;
+    min-width: 150px!important;
+    margin-bottom:15px!important;
+}
+.fa-fw {
+    vertical-align: middle;
+}
+label {
+    display: inline-block;
+    font-weight: bold;
+    /* min-width: 15em; */
+}
+.label {
+    color: #000000!important;
+    font-size: 90%!important;
+    text-align: left!important;
+    padding:0!important;
+}
+.ecplus-columns .last {
+    width: 38em;
+}
+.ecplus-columns .second {
+    display: block;
+    margin: 0 22em 0 20em;
+    height: 68em;
+    background-color: #EEFFEE;
+    padding: 0;
+    max-width: 70em;
+}
+input#inputLabel {
+    width: 75%;
+    padding: 5px;
+}
+input#inputId {
+    padding: 3px;
+    margin-left: -2px!important;
+}
+.ecplus-columns .last label {
+    display: inline-block!important;
+    width: 100px!important;
+    min-width: 100px!important;
+}
+.input-btn-controls {
+    margin-top:10px;
+    text-align: right;
+}

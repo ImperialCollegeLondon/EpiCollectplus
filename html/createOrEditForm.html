@@ -1,5 +1,6 @@
 {{style}}
 <link rel="stylesheet" type="text/css" href="../css/EpiSkins.css" />
+<link rel="stylesheet" type="text/css" href="../css/form-builder-hacks.css" />
 <style type="text/css">
     body
     {
@@ -107,26 +108,26 @@
 
     #formList .formctl.add, #addOption, #addJump, #btn_save, #btn_done, #removeControl
     {
-        display : inline-block;
-        color : black;
-        background : url("../images/glyphicons/glyphicons_190_circle_plus.png") 5px 50% no-repeat #CCC;
+        /*display : inline-block;*/
+        /*color : black;*/
+        /*background : url("../images/glyphicons/glyphicons_190_circle_plus.png") 5px 50% no-repeat #CCC;*/
         /*margin-left: 5px;*/
-        padding-left : 37px;
-        padding-right : 10px;
-        line-height : 24pt;
-        vertical-align: middle;
+        /*padding-left : 37px;*/
+        /*padding-right : 10px;*/
+        /*line-height : 24pt;*/
+        /*vertical-align: middle;*/
         width : auto;
 
     }
 
     #btn_save, #btn_done
     {
-        background : url("../images/glyphicons/glyphicons_206_ok_2.png") 5px 50% no-repeat #CCC;
+        /*background : url("../images/glyphicons/glyphicons_206_ok_2.png") 5px 50% no-repeat #CCC;*/
     }
 
     #removeControl
     {
-        background : url("../images/glyphicons/glyphicons_016_bin.png") 5px 50% no-repeat #CCC;
+        /*background : url("../images/glyphicons/glyphicons_016_bin.png") 5px 50% no-repeat #CCC;*/
     }
 
     #formList .error .preview
@@ -167,7 +168,7 @@
         border-top : 1px solid black;
     }
 
-    #errorList .footer
+    #errorList .errorList-footer
     {
         position : absolute;
         padding : 0.5em;
@@ -184,7 +185,7 @@
         margin-right : 1em;
     }
 
-    #errorList .footer a
+    #errorList .errorList-footer a
     {
         float:right;
         background : white;
@@ -193,13 +194,13 @@
         margin : -0.5em 0em;
     }
 
-    #errorList .footer a.next
+    #errorList .errorList-footer a.next
     {
         margin-right : -0.5em;
         border-bottom-right-radius:0.5em;
     }
 
-    #errorList .footer a:hover
+    #errorList .errorList-footer a:hover
     {
         background: black;
         color: white;
@@ -329,9 +330,9 @@
 <!--<h1>Form Builder</h1>-->
 <div class="toolbox">
     <div id = "errorList">
-        Error list
+        Error list#errorList
     </div>
-    <div><a id="btn_save" href="javascript:saveProject()" class="button">Save Project</a></div>
+    <div><a id="btn_save btn btn-default" href="javascript:saveProject()" class="button"><i class="fa fa-check fa-fw fa-2x"></i>Save Project</a></div>
     <div id="formList_wrapper">
         <div id="formList">
 
@@ -534,9 +535,9 @@
 
                 </div>
             </div>
-            <div>
-                <a id="btn_done" class="button " href="javascript:updateSelectedCtl();">Done</a>
-                <a id="removeControl" class="button removeControl" href="javascript:removeSelected();">Delete</a>
+            <div class="input-btn-controls">
+                <a id="btn_done" class="button btn btn-default" href="javascript:updateSelectedCtl();"><i class="fa fa-check fa-fw fa-2x"></i>Done</a>
+                <a id="removeControl" class="button removeControl btn btn-default" href="javascript:removeSelected();"><i class="fa fa-trash fa-fw fa-2x"></i>Delete</a>
             </div>
 
 
