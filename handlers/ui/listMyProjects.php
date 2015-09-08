@@ -72,12 +72,11 @@ function listMyProjects() {
             $html .= '<span class="badge">' . $total_entries_24 . ' entries in the last 24 hours </span>';
             $html .= '</div>';
             $html .= '</a>';
-
-
         }
-        $html .= '</div></div></div></div>';
+        $html .= '</div></div></div></div></div>';
 
         $vals['userprojects'] = $html;
+
     }
 
     echo applyTemplate("my-projects.html", "index.html", $vals);
