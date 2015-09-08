@@ -38,14 +38,15 @@ Let's say you install epicollect on http://localhost/dev/epicollectplus
 
     AddDefaultCharset utf-8
     RewriteEngine On
-    RewriteCond %{REQUEST_URI} !^/dev/epicollectplus/(ec\/uploads|images|js|css)
+    RewriteCond %{REQUEST_URI} !^/dev/epicollectplus-dev/(ec\/uploads|images|js|css|png)
+    RewriteCond %{REQUEST_FILENAME} !\.(css|js|png|jpg)$
     RewriteRule .* main.php
     
 Or if you install in the server root:   
 
      AddDefaultCharset utf-8
      RewriteEngine on
-     RewriteCond %{REQUEST_URI} !^/(ec\/uploads|images|js|css)
+     RewriteCond %{REQUEST_URI} !^/(ec\/uploads|images|js|css|png)
      RewriteRule .* main.php
 
 If you're using IIS (tip: just don't) then you'll need to configure URLRewrite.
