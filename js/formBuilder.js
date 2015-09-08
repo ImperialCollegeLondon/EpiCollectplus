@@ -1632,7 +1632,7 @@ function askForKey(keyDeleted) {
     form_html_deleted_key += '</form>';
 
     var add_key_message = 'Each EpiCollect+ form must have a unique \'key\' question - i.e. one where the value entered by a user will be unique each time a form is filled in.';
-    add_key_message += ' Do you have a question that will be unique to each form entry?';
+    add_key_message += ' <br/>Do you have a question that will be unique to each form entry?';
 
     var deleted_key_message = 'You have deleted the key for this form, please choose a new key field to generate.';
 

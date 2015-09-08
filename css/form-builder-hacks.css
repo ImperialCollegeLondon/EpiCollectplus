@@ -98,3 +98,12 @@ input#inputId {
 .ecplus-column-bootstrap {
     padding:10px;
 }
+#ec_dialog {
+    text-align:left;
+}
+#ec_dialog input {
+    width:100%;
+}
+.ui-dialog-titlebar-close {
+    display:none;
+}
