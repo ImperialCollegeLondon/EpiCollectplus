@@ -99,3 +99,10 @@ replacing the placeholders with your Google API details https://developers.googl
 
 If you do not add these parameters, the option to login using Google Plus Sign will not be shown
 
+#### Notes for developers only
+
+`development` branch is the branch we currently push to production
+
+`relayout` branch is an experimental branch featuring a bit of re-design and it is the most up to date, so the best candidate for a fork, as it will be merged to `development` soon
+
+All the other branches are just legacy branches we keep for reference and we might delete in the future
