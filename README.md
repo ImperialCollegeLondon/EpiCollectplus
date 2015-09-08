@@ -106,3 +106,5 @@ If you do not add these parameters, the option to login using Google Plus Sign w
 `relayout` branch is an experimental branch featuring a bit of re-design and it is the most up to date, so the best candidate for a fork, as it will be merged to `development` soon
 
 All the other branches are just legacy branches we keep for reference and we might delete in the future
+
+Google API PHP library: we are using an old repo, you can find the code into `Auth/GooglePHPLibrary/` folder
