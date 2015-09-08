@@ -62,53 +62,53 @@ if (localStorage && localStorage.getItem('num_entries')) numEnts = localStorage.
 
 var IE8 = false; //annoying, but we need the SVG to work... or the workaround to work in IE8
 
-$(document).ready(function () {
-    'use strict';
-    ////immersive mode
-    //var fullscreen = false;
-    //
-    //$('.immersive-mode-btn a').on('click', function () {
-    //    if (fullscreen) {
-    //        $('#pageHead').fadeIn();
-    //        $('#breadcrumbs').fadeIn();
-    //        $('.social').fadeIn();
-    //        $('footer').fadeIn();
-    //
-    //    }
-    //    else {
-    //        $('#pageHead').fadeOut();
-    //        $('#breadcrumbs').fadeOut();
-    //        $('.social').fadeOut();
-    //        $('footer').fadeOut();
-    //        $('#sidebar').css({'margin-top': '0px'});
-    //
-    //
-    //    }
-    //    fullscreen = !fullscreen;
-    //});
-    var map_container = $('#map-container .panel.panel-default');
-
-    map_container.resizable({
-
-        handles: {s: '.map-resize-handle'},
-
-        resize: function () {
-            $('#map-container .panel').css({'padding-bottom': '0px'});
-
-            $('#map').height(map_container.height() - 100);
-
-            //console.log($('#map').height());
-            //console.log($('#map-container .panel.panel-default').height());
-
-            google.maps.event.trigger(map, 'resize');
-            // map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
-        },
-
-        start: function () {
-            google.maps.event.trigger(map, 'resize');
-        }
-    });
-});
+//$(document).ready(function () {
+//    'use strict';
+//    ////immersive mode
+//    //var fullscreen = false;
+//    //
+//    //$('.immersive-mode-btn a').on('click', function () {
+//    //    if (fullscreen) {
+//    //        $('#pageHead').fadeIn();
+//    //        $('#breadcrumbs').fadeIn();
+//    //        $('.social').fadeIn();
+//    //        $('footer').fadeIn();
+//    //
+//    //    }
+//    //    else {
+//    //        $('#pageHead').fadeOut();
+//    //        $('#breadcrumbs').fadeOut();
+//    //        $('.social').fadeOut();
+//    //        $('footer').fadeOut();
+//    //        $('#sidebar').css({'margin-top': '0px'});
+//    //
+//    //
+//    //    }
+//    //    fullscreen = !fullscreen;
+//    //});
+//    var map_container = $('#map-container .panel.panel-default');
+//
+//    map_container.resizable({
+//
+//        handles: {s: '.map-resize-handle'},
+//
+//        resize: function () {
+//            $('#map-container .panel').css({'padding-bottom': '0px'});
+//
+//            $('#map').height(map_container.height() - 100);
+//
+//            //console.log($('#map').height());
+//            //console.log($('#map-container .panel.panel-default').height());
+//
+//            google.maps.event.trigger(map, 'resize');
+//            // map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+//        },
+//
+//        start: function () {
+//            google.maps.event.trigger(map, 'resize');
+//        }
+//    });
+//});
 
 
 $(function () {

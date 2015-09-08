@@ -30,28 +30,28 @@ function siteHome() {
     $vals["featured"] = '<div class="featured-projects" data-example-id="thumbnails-with-custom-content">
         <h3>Featured Projects</h3>
         <div class="row">
-            <a href="#" class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+            <a href="#" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
                 <div class="thumbnail">
                     <img class="img-responsive " src="{#SITE_ROOT#}/images/ecplus-featured-1.jpg" alt="Generic placeholder thumbnail">
                     <h3>Thumbnail label</h3>
                     <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
                 </div>
             </a>
-             <a href="#" class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+             <a href="#" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
                 <div class="thumbnail">
                     <img class="img-responsive " src="{#SITE_ROOT#}/images/ecplus-featured-2.jpg" alt="Generic placeholder thumbnail">
                     <h3>Thumbnail label</h3>
                     <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
                 </div>
             </a>
-             <a href="#" class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+             <a href="#" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
                 <div class="thumbnail">
                     <img class="img-responsive " src="{#SITE_ROOT#}/images/ecplus-featured-3.jpg" alt="Generic placeholder thumbnail">
                     <h3>Thumbnail label</h3>
                     <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
                 </div>
             </a>
-              <a href="#" class="col-xs-12 col-sm-6 col-md-6 col-lg-3">
+              <a href="#" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
                 <div class="thumbnail">
                     <img class="img-responsive " src="{#SITE_ROOT#}/images/ecplus-featured-4.jpg" alt="Generic placeholder thumbnail">
                     <h3>Thumbnail label</h3>

@@ -97,7 +97,7 @@ function siteTest() {
                     }
                     if (count($perms) == 0) {
                         $res["dbPermStatus"] = "succeed";
-                        $res["dbPermResults"] = "Permssions Correct";
+                        $res["dbPermResults"] = "Permissions Correct";
                     } else {
                         $res ["dbPermResults"] = "Permssions not set, the user {$cfg->settings["database"]["user"]} is missing " . implode(", ", $perms) . " permissions on the database {$cfg->settings["database"]["database"]}";
                     }

@@ -133,6 +133,11 @@ li.ecplus-username {
     div#navbar {
         margin-right: 10px;
     }
+
+    footer {
+        position:relative!important;
+        height:auto!important;
+    }
 }
 
 div.project {

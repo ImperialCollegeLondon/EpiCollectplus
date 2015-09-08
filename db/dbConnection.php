@@ -38,6 +38,15 @@ class dbConnection {
                 $this->con = new mysqli($this->server, $this->username, $this->password, NULL, $this->port);
             } catch (Exception $e) {
                 echo 'Impossible to connect to database, is MySQL working? Does the user exist?';
+
+                echo '<br/><br/>';
+                echo $e;
+                echo '<br/><br/>';
+
+
+
+                echo 'Look at the details at ec/epicollect.ini';
+
                 exit();
             }
             $this->connected = true;
