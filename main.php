@@ -6,8 +6,9 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('memory_limit', -1);
 
-if (isset($_REQUEST['_SESSION']))
+if (isset($_REQUEST['_SESSION'])) {
     throw new Exception('Bad client request');
+}
 
 date_default_timezone_set('UTC');
 $dat = new DateTime('now');
@@ -79,10 +80,12 @@ include(sprintf('%s/Classes/EcEntry.php', $DIR));
 
 
 $url = (array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : $_SERVER["HTTP_X_ORIGINAL_URL"]); //strip off site root and GET query
-if ($SITE_ROOT != '')
+if ($SITE_ROOT != '') {
     $url = str_replace($SITE_ROOT, '', $url);
-if (strpos($url, '?'))
+}
+if (strpos($url, '?')) {
     $url = substr($url, 0, strpos($url, '?'));
+}
 $url = trim($url, '/');
 $url = urldecode($url);
 
@@ -126,7 +129,6 @@ $pageRules = array(
     'EpiCollectplus\.apk' => new PageRule(),
     'html/projectIFrame.html' => new PageRule(),
     'api' => new PageRule('apidocs.html', 'defaultHandler'),
-
     //project handlers
     'pc' => new PageRule(null, 'projectCreator', true),
     'create' => new PageRule(null, 'createFromXml', true),
@@ -143,10 +145,8 @@ $pageRules = array(
     'loginCallback' => new PageRule(null, 'loginCallback', false, true),
     'logout' => new PageRule(null, 'logoutHandler'),
     'chooseProvider.html' => new PageRule(null, 'chooseProvider'),
-
     //user projects
     'my-projects.html' => new PageRule(null, 'listMyProjects', true),
-
     //user handlers
     'updateUser.html' => new PageRule(null, 'updateUser', true),
     'saveUser' => new PageRule(null, 'saveUser', true),
@@ -158,19 +158,16 @@ $pageRules = array(
     'enableUser' => new PageRule(null, 'enableUser', true),
     'resetPassword' => new PageRule(null, 'resetPassword', true),
     'register' => new PageRule(null, 'createAccount', false),
-
     //generic, dynamic handlers
     'getControls' => new PageRule(null, 'getControlTypes'),
     'uploadFile.php' => new PageRule(null, 'uploadHandlerFromExt'),
     'ec/uploads/.+\.(jpe?g|mp4)$' => new PageRule(null, 'getMedia'),
     'ec/uploads/.+' => new PageRule(null, 'getUpload'),
-
     'uploadTest.html' => new PageRule(null, 'defaultHandler', true),
     'test' => new PageRule(null, 'siteTest', false),
     'tests.*' => new PageRule(),
     'createDB' => new PageRule(null, 'setupDB', $hasManagers),
     'writeSettings' => new PageRule(null, 'writeSettings', $hasManagers),
-
     //to API
     'projects' => new PageRule(null, 'projectList'),
     '[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|/)?' => new PageRule(null, 'projectHome'),
@@ -188,9 +185,7 @@ $pageRules = array(
     '[a-zA-Z0-9_-]+/uploadMedia' => new PageRule(null, 'uploadMedia'),
     '[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/uploadMedia' => new PageRule(null, 'uploadMedia'),
     '[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/__getImage' => new PageRule(null, 'getImage'),
-
     '[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+(\.xml|\.json|\.tsv|\.csv|\.kml|\.js|\.css|/)?' => new PageRule(null, 'formHandler'),
-
     //'[a-zA-Z0-9_-]*/[a-zA-Z0-9_-]*/usage' => new  => new PageRule(null, formUsage),
     '[^/\.]*/[^/\.]+/[^/\.]*(\.xml|\.json|/)?' => new PageRule(null, 'entryHandler')
 
@@ -204,7 +199,8 @@ $rule = false;
 /*Cookie policy handler*/
 
 if (!getValIfExists($_SESSION, 'SEEN_COOKIE_MSG')) {
-    flash(sprintf('EpiCollectPlus only uses first party cookies to make the site work. We do not add or read third-party cookies. If you are concerned about our use of cookies please read our <a href="%s/privacy.html">Privacy Statement</a>', $SITE_ROOT));
+    flash(sprintf('EpiCollectPlus only uses first party cookies to make the site work. We do not add or read third-party cookies. If you are concerned about our use of cookies please read our <a href="%s/privacy.html">Privacy Statement</a>',
+        $SITE_ROOT));
     $_SESSION['SEEN_COOKIE_MSG'] = true;
 }
 
@@ -251,6 +247,7 @@ if ($rule) {
             $frm = $auth->requestlogin($url);
         }
         echo applyTemplate("./base.html", "./loginbase.html", array("form" => $frm));
+
         return;
     }
     if ($rule->redirect) {
