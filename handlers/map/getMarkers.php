@@ -1,7 +1,8 @@
 <?php
 
 function getClusterMarker() {
-    //include './utils/markers.php';
+    //this line will incluse the file to generate the cluster icon
+    include './handlers/markers.php';
     $colours = getValIfExists($_GET, "colours");
     $counts = getValIfExists($_GET, "counts");
 
@@ -26,7 +27,8 @@ function getClusterMarker() {
 }
 
 function getPointMarker() {
-   // include "./utils/markers.php";
+    //this line will incluse the file to generate the marker icon
+    include "./handlers/markers.php";
 
     $colour = getValIfExists($_GET, "colour");
     $shape = getValIfExists($_GET, "shape");

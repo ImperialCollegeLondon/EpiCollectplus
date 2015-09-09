@@ -53,7 +53,7 @@ include(sprintf('%s/handlers/project/project.php', $DIR));
 include(sprintf('%s/handlers/project/uploadProjectXML.php', $DIR));
 include(sprintf('%s/handlers/project/handleXML.php', $DIR));
 include(sprintf('%s/handlers/config/sitetest.php', $DIR));
-include(sprintf('%s/handlers/map/markers.php', $DIR));
+include(sprintf('%s/handlers/map/getMarkers.php', $DIR));
 include(sprintf('%s/handlers/user/updateUser.php', $DIR));
 include(sprintf('%s/handlers/user/createAccount.php', $DIR));
 include(sprintf('%s/handlers/user/createUser.php', $DIR));
