@@ -416,6 +416,10 @@ div#tabs {
 
 }
 
+table.ecplus-data {
+    width: 100%;
+}
+
 table.ecplus-infowindow {
     max-width: 400px;
     max-height: 300px;
