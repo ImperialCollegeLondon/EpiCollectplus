@@ -1,86 +1,98 @@
 {{style}}
-	<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css" />
+<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollect2.css"/>
 {{/style}}
 {{script}}
-	<style type="text/css">
-		td, th
-		{
-			padding: 3px 3px 3px 3px !important;
-			text-align : left;
-			border-bottom: 1px solid #CCCCCC;
-		}
-		
-		.fail
-		{
-			color: #880000;
-		}
-		
-		.succeed
-		{
-			color: #008800;
-		}
-		
-		.message
-		{
-			background : #FFCCCC;
-			border: 2px #CCCCCC solid;
-			padding : 5px 5px 5px 5px;
-			
-		}
-		
-	</style>
-	<script type="text/javascript">
-	
-		function do_request(url, callback)
-		{
-			
-				var xmlhttp;
-				if (window.XMLHttpRequest)
-				{// code for IE7+, Firefox, Chrome, Opera, Safari
-					xmlhttp=new XMLHttpRequest();
-					
-				}
-				else
-				{// code for IE6, IE5
-					xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-				}
-				
-				xmlhttp.onreadystatechange=function()
-				{
-					if (xmlhttp.readyState==4 && xmlhttp.status==200)
-					{
-						callback(xmlhttp.responseText);
-					}
-				}
-				
-				xmlhttp.open("POST",url,true);
-				
-				xmlhttp.send();
-			
-		}
-	
-		function createDB()
-		{
-			do_request("./createDB", function(res){
-				if(res == "database set up")
-				{
-					location.reload()
-				}
-			});
-		}
-	</script>
+<style type="text/css">
+    td, th {
+        /*padding: 3px 3px 3px 3px !important;*/
+        text-align: left;
+        border-bottom: 1px solid #CCCCCC;
+    }
+
+    .fail {
+        color: #880000;
+    }
+
+    .succeed {
+        color: #008800;
+    }
+
+    .message {
+        background: #FFCCCC;
+        border: 2px #CCCCCC solid;
+        padding: 5px 5px 5px 5px;
+
+    }
+    div.social, footer {
+        display:none;
+    }
+
+</style>
+<script type="text/javascript">
+
+    function do_request(url, callback) {
+
+        var xmlhttp;
+        if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp = new XMLHttpRequest();
+
+        }
+        else {// code for IE6, IE5
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                callback(xmlhttp.responseText);
+            }
+        }
+
+        xmlhttp.open("POST", url, true);
+
+        xmlhttp.send();
+
+    }
+
+    function createDB() {
+        do_request("./createDB", function (res) {
+            if (res == "database set up") {
+                location.reload()
+            }
+        });
+    }
+</script>
 {{/script}}
 {{main}}
-	<h1>EpiCollect Server 2.0 Beta Test Page</h1>
-	{#redirMsg#}
-	<table>
-		<tr><th class="subtitle" colspan="2">Database Set up</th></tr>
-		<tr><td>MySQL Database</td><td class="{#dbStatus#}">{#dbResult#}</td></tr>
-		<tr><td>MySQL Permissions</td><td class="{#dbPermStatus#}">{#dbPermResults#}</td></tr>
-		<tr><th class="subtitle" colspan="2">Epicollect Database</th></tr>
-		<tr><td>Tables</td><td class="{#dbTableStatus#}">{#dbTableResult#}</td></tr>
-	</table>
-	<p class="{#endStatus#}">{#endMsg#}</p>
-	
-	<p>Any issues should be documented using <a href="http://code.google.com/p/epicollect">The EpiCollect Google Code Site</a></p>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h2 class="panel-title">EpiCollect+ Server Test Page</h2>
+    </div>
+    <div class="panel-body">
+        <h1></h1>
+        {#redirMsg#}
+        <table class="table">
+            <tr>
+                <th class="subtitle col-md-1" colspan="2">Database Set up</th>
+            </tr>
+            <tr>
+                <td class="col-md-1">MySQL Database</td>
+                <td class="{#dbStatus#}">{#dbResult#}</td>
+            </tr>
+            <tr>
+                <td class="col-md-1">MySQL Permissions</td>
+                <td class="{#dbPermStatus#}">{#dbPermResults#}</td>
+            </tr>
+            <tr>
+                <th class="subtitle col-md-1" colspan="2">Epicollect Database</th>
+            </tr>
+            <tr>
+                <td class="col-md-1">Tables</td>
+                <td class="{#dbTableStatus#}">{#dbTableResult#}</td>
+            </tr>
+        </table>
+        <p class="{#endStatus#}">{#endMsg#}</p>
+
+        <p>Any issues should be documented using our <strong><a href="https://github.com/ImperialCollegeLondon/EpiCollectplus">Github repository</a></strong></p>
+    </div>
+</div>
 {{/main}}

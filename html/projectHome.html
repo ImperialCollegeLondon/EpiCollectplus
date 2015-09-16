@@ -1,133 +1,151 @@
 {{style}}
-	<style type="text/css">
-		.frmHeader
-		{
-			display: block;
-			background-color: #CCCCCC;
-			border-top-left-radius : 0.5em;
-			border-top-right-radius : 0.5em;
-			font-weight : bold !important;
-			padding : 0.5em 0.5em 0.5em 0.5em;
-			margin-top : 1em;	
-		}
-		
-		.frmHeader:hover
-		{
-			border: 1px solid #999999; 
-			background: #dadada url(css/images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x; 
-			color: #212121;
-		}
-		
-		.form form
-		{
-			display: block;
-			border: 1px solid #CCCCCC;
-			border-bottom-left-radius : 0.5em;
-			border-bottom-right-radius : 0.5em;
-			padding : 0.5em 0.5em 0.5em 0.5em;
-			
-		}
-		
-		select
-		{
-			width : 15em;
-		}
-		
-		#projectDescription
-		{
-			position: relative;
-			display : inline-block;
-			width: 70%;
-		}
-		
-		.projectImage
-		{
-			max-height : 400px;
-			max-width : 27%;
-			display:inline-block;
-			vertical-align : top;
-			margin : 0.75em;
-		
-		}
-		
-	</style>
+<style type="text/css">
+    .frmHeader {
+        display: block;
+        background-color: #CCCCCC;
+        border-top-left-radius: 0.5em;
+        border-top-right-radius: 0.5em;
+        font-weight: bold !important;
+        padding: 0.5em 0.5em 0.5em 0.5em;
+        margin-top: 1em;
+    }
+
+    .frmHeader:hover {
+        border: 1px solid #999999;
+        background: #dadada url(css/images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x;
+        color: #212121;
+    }
+
+    .form form {
+        display: block;
+        border: 1px solid #CCCCCC;
+        border-bottom-left-radius: 0.5em;
+        border-bottom-right-radius: 0.5em;
+        padding: 0.5em 0.5em 0.5em 0.5em;
+
+    }
+
+    select {
+        width: 15em;
+    }
+
+    #projectDescription {
+        position: relative;
+        display: inline-block;
+        width: 70%;
+    }
+
+</style>
 {{/style}}
 
 {{script}}
-	
-	<script type="text/javascript">
-			var uid = "{#uid#}";
-		
-			var project = null;
-			var pnl;
-			var gp;
-		
-			var table;
-			
-			$(function()
-			{
-				EpiCollect.loadProject(location.href.trimChars("/") + ".xml", loadCallback);
-			});
-	
-			function loadCallback(prj){
-				project = prj;		
-				var _burl = location.href.trimChars("/");
-				
-				var frmCount = 0;
-				
-				for(var frm in project.forms)
-				{
-					frmCount++;
-					
-					if(!project.forms[frm].main) continue;
-					var opts = "";
-					for(var fld in project.forms[frm].fields)
-					{
-						var txt = project.forms[frm].fields[fld].text;
-						if(project.forms[frm].fields[fld].text.length > 40)
-						{
-							txt = txt.substr(0,37) + "...";
-						}
-						
-						if(fld == project.forms[frm].key)
-						{
-							opts = opts + "<option value=\"" +fld + "\" SELECTED>" + txt + "</option>"
-						}
-						else if(project.forms[frm].fields[fld].type != "")
-						{
-							opts = opts + "<option value=\"" +fld + "\">" + txt + "</option>"
-						}
-					}
-					$("#menu").append("<div class=\"form\"> <a class=\"frmHeader ui-state-default ui-corner-top\" href=\"" + _burl + "/" + frm + "\">" + frm + "</a> <form action=\"" + _burl + "/" + frm + "\"><a href=\"" + location.href.trimChars("/") + "/" + frm + "\">View All</a> or Show records where <select id=\"field_" + frm + "\">"+ opts +"</select> is similar to <input type=\"text\" id=\"" + frm + "\" name=\""+project.forms[frm].key+"\"> <input type=\"submit\" value=\"Show records\" /> </form></div>");
-				}
-				
-				if(frmCount == 0)
-				{
-					var curpage = location.href.trimChars('/');
-					$("#menu p, #menu h1").remove();
-					$("#menu").append("<p>This project's homepage is <a href=\"" + curpage + "\">" + curpage + "</a></p>");
-					$("#menu").append('<p>Congratulations, you have now created your project website. Before submitting data you must create (a) form(s). To do this click the <a href="' + curpage + '/formBuilder">Create or Edit Forms</a> button above. For instructions, please click the link at the top left of this page.</p>');
-					$("#menu").append('<p>You can also add some explanatory text and upload an image which will appear here by clicking the <a href="' + curpage + '/manage">Manage Project</a> button near the top of the page. You can also update user premissions and other project settings from this page.</p>');
-				}
-				
-				$("select").change(function(evt)
-				{
-					$("#" + evt.target.id.replace("field_","")).attr("name", $(evt.target).val());
-				});
-				
-			}
-			
-			
-	</script>
+
+<script type="text/javascript">
+    var uid = "{#uid#}";
+
+    var project = null;
+    var pnl;
+    var gp;
+
+    var table;
+
+    $(function () {
+        EpiCollect.loadProject(location.href.trimChars("/") + ".xml", loadCallback);
+    });
+
+    function loadCallback(prj) {
+        project = prj;
+        var _burl = location.href.trimChars("/");
+
+        var frmCount = 0;
+
+        for (var frm in project.forms) {
+            frmCount++;
+
+            if (!project.forms[frm].main) continue;
+            var opts = "";
+            for (var fld in project.forms[frm].fields) {
+                var txt = project.forms[frm].fields[fld].text;
+                if (project.forms[frm].fields[fld].text.length > 40) {
+                    txt = txt.substr(0, 37) + "...";
+                }
+
+                if (fld == project.forms[frm].key) {
+                    opts = opts + "<option value=\"" + fld + "\" SELECTED>" + txt + "</option>"
+                }
+                else if (project.forms[frm].fields[fld].type != "") {
+                    opts = opts + "<option value=\"" + fld + "\">" + txt + "</option>"
+                }
+            }
+
+            var _burl_frm = _burl + '/' + frm;
+            var html ='';
+            html += '<div class="form project-data-view-control">';
+            html += '<a class="frmHeader ui-state-default ui-corner-top" href="' + _burl_frm + '">' + frm + '</a>';
+            html += '<form action="' + _burl_frm + '">';
+            html += '<h5><a class="btn btn-default active" href="' + location.href.trimChars("/") + '/' + frm + '">View All data</a> or filter records:</h5>';
+            html += '<label for="field_' + frm + '">Where</label>';
+            html += '<select class="form-control" id="field_' + frm + '">'+ opts + '</select>';
+            html += '<label for="' + frm + '">Is similar to </label>';
+            html += '<input class="form-control" type="text" id="' + frm + '" name="' + project.forms[frm].key + '">';
+            html += '<input class="btn btn-default pull-right" type="submit" value="Show filtered records" />';
+            html += '</form></div>';
+
+//            $("#menu").append("<div class=\"form\"> <a class=\"frmHeader ui-state-default ui-corner-top\" href=\"" + _burl + "/" + frm + "\">" + frm + "</a> <form action=\"" + _burl + "/" + frm + "\"><a href=\"" + location.href.trimChars("/") + "/" + frm + "\">View All</a> or Show records <br/>where <select id=\"field_" + frm + "\">" + opts + "</select> <br/> is similar to <input type=\"text\" id=\"" + frm + "\" name=\"" + project.forms[frm].key + "\"> <input type=\"submit\" value=\"Show records\" /> </form></div>");
+
+            $("#menu").append(html);
+        }
+
+        if (frmCount == 0) {
+            var curpage = location.href.trimChars('/');
+            $("#menu p, #menu h1").remove();
+            $("#menu").append('<p>This project\'s homepage is <a class="project-home-link" href="' + curpage + '">' + curpage + '</a></p>');
+            $("#menu").append('<p><strong class="test-success">Congratulations,</strong> you have now created your project website. Before submitting data you must create (a) form(s): to do this click the <a href="' + curpage + '/formBuilder">Create or Edit Forms</a> button above. For instructions, please click the link at the top left of this page.</p>');
+            $("#menu").append('<p>You can also add some explanatory text and upload an image which will appear here by clicking the <a href="' + curpage + '/manage">Manage Project</a> button near the top of the page. You can also update user premissions and other project settings from this page.</p>');
+        }
+
+        $("select").change(function (evt) {
+            $("#" + evt.target.id.replace("field_", "")).attr("name", $(evt.target).val());
+        });
+    }
+
+
+</script>
 {{/script}}
 {{breadcrumbs}}
 &gt; <a href="./{#projectName#}">Project : {#projectName#}</a>
 {{/breadcrumbs}}
 {{main}}
-	<h1>{#projectName#}</h1>
-	<div id="projectPanel">{#adminMenu#} <a href="{#projectName#}.xml" class="button" target="_blank">Show XML</a></div>
-	<p id="projectDescription">{#projectDescription#}</p>{#projectImage#}
-	
-	<div id="menu"><h1>&nbsp;</h1><p>To view all data from a particular table click the relevant button, or to search, enter an ID in the text box and then click the button</p></div>
-	
+<!--set a panel-->
+<div class="row">
+    <div class="col-md-6">
+        <div class="project-home-panel panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">{#projectName#}</h3>
+            </div>
+            <div class="panel-body">
+                <div id="projectPanel">{#adminMenu#} <a href="{#projectName#}.xml" class="button" target="_blank">Show XML</a></div>
+
+
+                <div id="menu">
+                    <p class="view-data-instructions well">To view all data from a particular table click the relevant button, or to search, enter an ID in the text box and then
+                        click the button</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="project-home-panel panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Details</h3>
+            </div>
+            <div class="panel-body">
+                <p id="projectDescription">{#projectDescription#}</p>
+                {#projectImage#}
+            </div>
+        </div>
+    </div>
+</div>
+
+
 {{/main}}

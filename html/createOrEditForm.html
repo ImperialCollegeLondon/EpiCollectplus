@@ -1,554 +1,535 @@
 {{style}}
-		<link rel="stylesheet" type="text/css" href="../EpiSkins.css" />
-		<style type="text/css">
-			body
-			{
-				-webkit-touch-callout: none;
-				-webkit-user-select: none;
-				-khtml-user-select: none;
-				-moz-user-select: none;
-				-ms-user-select: none;
-				user-select: none;
-			}
-		
-			/*.column
-			{ 
-				border : 1px solid #333333;
-			}*/
-			
-			#formList_wrapper
-			{
-				overflow-x : auto;
-				overflow-y : hidden;
-			}
-			
-			#formList
-			{
-				display : block;
-				height : 10em;
-				margin-right : 12em;
-				
-			}
-			
-			#formList .form
-			{
-				position:relative;
-				border-radius : 0.5em;
-				display : inline-block;
-				height : 5em;
-				margin : 0.5em 0em .5em 0em;
-				padding : 3em 0.5em 0em 0.5em;
-				text-align : center;
-				min-width : 96px;
-				vertical-align :middle;
-			}
-			
-			#formList .ctls
-			{
-				display : none
-			}
-			
-			#formList .selected .ctls
-			{
-				position: absolute;
-				bottom: 0px;
-				left:0px;
-				right:0px;
-				display : block;
-				
-			}
-			
-			#formList .formctl
-			{
-				display :inline-block;
-				margin : 2px;
-				border-radius : 5px;
-				width : 32px;
-				height : 32px;
-				cursor: pointer;
-			}
-			
-			#formList .formctl:hover
-			{
-				border: 2px solid black;
-				margin: 0;
-			}
-			
-			#formList .form.warning
-			{
-				background : url("../images/glyphicons/glyphicons_078_warning_sign.png") no-repeat rgb(255, 255, 200);
-			}
-			
-			#formList .form.error
-			{
-				background : url("../images/glyphicons/glyphicons_196_circle_exclamation_mark.png") no-repeat rgb(255, 200, 200);
-			}
-			
-			.ecplus-form-element.warning
-			{
-				background-color: rgb(255, 255, 200);
-			}
-			
-			.ecplus-form-element.error
-			{
-				background-color: rgb(255, 200, 200);
-			}
-			
-			#formList .selected .formctl.delete
-			{
-				display : none;	
-			}
-			
-			#formList .form.last.selected .formctl.delete
-			{
-				display : inline-block;	
-				background : url("../images/glyphicons/glyphicons_016_bin.png") 50% 50% no-repeat #CCC;
-			}
-			
-			#formList .formctl.add, #addOption, #addJump, #btn_save, #btn_done, #removeControl
-			{
-				display : inline-block;	
-				color : black;
-				background : url("../images/glyphicons/glyphicons_190_circle_plus.png") 5px 50% no-repeat #CCC;
-				/*margin-left: 5px;*/
-				padding-left : 37px;
-				padding-right : 10px;
-				line-height : 24pt;
-				vertical-align: middle;
-				width : auto;
-				
-			}
-			
-			#btn_save, #btn_done
-			{
-				background : url("../images/glyphicons/glyphicons_206_ok_2.png") 5px 50% no-repeat #CCC;
-			}
-			
-			#removeControl
-			{
-				background : url("../images/glyphicons/glyphicons_016_bin.png") 5px 50% no-repeat #CCC;
-			}
-			
-			#formList .error .preview
-			{
-				display : none;
-			}
-			
-			#formList .preview
-			{
-				background : url("../images/glyphicons/glyphicons_051_eye_open.png") 50% 50% no-repeat #CCC;
-			}
-			
-			#formList .rename
-			{
-				background : url("../images/glyphicons/glyphicons_065_tag.png") 50% 50% no-repeat #CCC;
-			}
-			
-			#errorList 
-			{
-				width : 20em;
-				height: 10em;
-				float: right;
-				position : relative;
-				padding : 0.5em;
-				border-radius : 0.5em;
-				border : 1px solid black;
-			}
-			
-			#errorList .body
-			{
-				position : absolute;
-				padding : 0.5em;
-				bottom : 31px;
-				left: 0px;
-				right: 0px;
-				top : 26px;
-				line-height: 14px;
-				border-top : 1px solid black;
-			}
-			
-			#errorList .footer
-			{
-				position : absolute;
-				padding : 0.5em;
-				bottom : 0px;
-				left: 0px;
-				right: 0px;
-				line-height: 16px;
-				border-top : 1px solid black;
-			}
-			
-			#formList .form
-			{	
-				border : 0.5em solid #CCCCCC;
-				margin-right : 1em;	
-			}
-			
-			#errorList .footer a
-			{	
-				float:right;
-				background : white;
-				padding : 0.5em;
-				border-left : 1px solid black;
-				margin : -0.5em 0em;
-			}
-			
-			#errorList .footer a.next
-			{
-				margin-right : -0.5em;
-				border-bottom-right-radius:0.5em;
-			}
-			
-			#errorList .footer a:hover
-			{
-				background: black;
-				color: white;
-			}
-			
-			#errorList .error
-			{
-				background-color : rgba(255, 200, 200, 1);
-			}
-			
-			#errorList .warning
-			{
-				background-color : rgba(255, 255, 200, 1);
-			}
-			
-			#errorList h4
-			{
-				margin-top: 0;
-			}
-			
-			#formList .form:after
-			{	
-				content: ' ';
-				position : absolute;
-				right : -2em;
-				top: 50%;
-				width: 1.5em;
-				border-bottom: 0.5em solid #CCCCCC; 
-			}
-			
-			#formList .form:hover:after
-			{
-				border-bottom:0.5em solid #CCFFCC; 
-			}
-			
-			
-			#formList .control
-			{
-				border : 0.5em dashed #CCCCCC;	
-			}
-			
-			#formList span:hover
-			{
-				border-color : #CCFFCC;	
-			}
-			
-			#formList span.selected
-			{
-				border-color : #CCCCFF;
-			}
-			
-			.toolbox
-			{
-				height:12em;
-			}
-			
-			.end 
-			{
-				height : 3em;
-			}
-			
-			.ui-dialog form, .ui-dialog form div
-			{
-				margin : 1em;
-			}
-			
-			#options
-			{
-				border : 1px solid #CCC;	
-			}
-			
-			.selectOption, .jumpoption
-			{
-				margin: 1em 0;
-				position:relative;
-			}
-			
-			.selectOption:hover, .jumpoption:hover
-			{
-				background-color : #DDD;
-			}
-			
-			.selectOption .button.removeOption, .jumpoption .button.remove
-			{
-				position: absolute;
-				right : 0px;
-				top : 0px;
-				width: 3em;
-				height: 4em;
-				padding: 0;
-				background : url("../images/glyphicons/glyphicons_016_bin.png") 50% 50% no-repeat #CCC;
-			}
-			
-			.second h3, .last h3.title
-			{
-				background: #EEE;
-				border-bottom: 1px solid #CCC;
-				margin:0;
-				font-size : 10pt;
-				padding : 0.5em 0.5em 0.5em 0.5em;
-				border-top-left-radius : 0.5em;
-				border-top-right-radius : 0.5em;
-			}
-			
-			.last h3.title
-			{
-				margin : -0.5em -0.5em 0.5em -0.5em;
-			}
-			
-			
-		</style>
+<link rel="stylesheet" type="text/css" href="../css/EpiSkins.css"/>
+<link rel="stylesheet" type="text/css" href="../css/form-builder-hacks.css"/>
+<style type="text/css">
+    body {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /*.column
+    {
+        border : 1px solid #333333;
+    }*/
+
+    #formList_wrapper {
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    #formList {
+        display: block;
+        height: 10em;
+        margin-right: 12em;
+
+    }
+
+    #formList .form {
+        position: relative;
+        border-radius: 0.5em;
+        display: inline-block;
+        height: 5em;
+        margin: 0.5em 0em .5em 0em;
+        padding: 3em 0.5em 0em 0.5em;
+        text-align: center;
+        min-width: 96px;
+        vertical-align: middle;
+    }
+
+    #formList .ctls {
+        display: none
+    }
+
+    #formList .selected .ctls {
+        position: absolute;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+        display: block;
+
+    }
+
+    #formList .formctl {
+        display: inline-block;
+        margin: 2px;
+        border-radius: 5px;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+    }
+
+    #formList .formctl:hover {
+        border: 2px solid black;
+        margin: 0;
+    }
+
+    #formList .form.warning {
+        background: url("../images/glyphicons/glyphicons_078_warning_sign.png") no-repeat rgb(255, 255, 200);
+    }
+
+    #formList .form.error {
+        background: url("../images/glyphicons/glyphicons_196_circle_exclamation_mark.png") no-repeat rgb(255, 200, 200);
+    }
+
+    .ecplus-form-element.warning {
+        background-color: rgb(255, 255, 200);
+    }
+
+    .ecplus-form-element.error {
+        background-color: rgb(255, 200, 200);
+    }
+
+    #formList .selected .formctl.delete {
+        display: none;
+    }
+
+    #formList .form.last.selected .formctl.delete {
+        display: inline-block;
+        background: url("../images/glyphicons/glyphicons_016_bin.png") 50% 50% no-repeat #CCC;
+    }
+
+    #formList .formctl.add, #addOption, #addJump, #btn_save, #btn_done, #removeControl {
+        /*display : inline-block;*/
+        /*color : black;*/
+        /*background : url("../images/glyphicons/glyphicons_190_circle_plus.png") 5px 50% no-repeat #CCC;*/
+        /*margin-left: 5px;*/
+        /*padding-left : 37px;*/
+        /*padding-right : 10px;*/
+        /*line-height : 24pt;*/
+        /*vertical-align: middle;*/
+        width: auto;
+
+    }
+
+    #btn_save, #btn_done {
+        /*background : url("../images/glyphicons/glyphicons_206_ok_2.png") 5px 50% no-repeat #CCC;*/
+    }
+
+    #removeControl {
+        /*background : url("../images/glyphicons/glyphicons_016_bin.png") 5px 50% no-repeat #CCC;*/
+    }
+
+    #formList .error .preview {
+        display: none;
+    }
+
+    #formList .preview {
+        background: url("../images/glyphicons/glyphicons_051_eye_open.png") 50% 50% no-repeat #CCC;
+    }
+
+    #formList .rename {
+        background: url("../images/glyphicons/glyphicons_065_tag.png") 50% 50% no-repeat #CCC;
+    }
+
+    #errorList {
+        width: 20em;
+        height: 10em;
+        float: right;
+        position: relative;
+        padding: 0.5em;
+        border-radius: 0.5em;
+        border: 1px solid black;
+    }
+
+    #errorList .body {
+        position: absolute;
+        padding: 0.5em;
+        bottom: 31px;
+        left: 0px;
+        right: 0px;
+        top: 26px;
+        line-height: 14px;
+        border-top: 1px solid black;
+    }
+
+    #errorList .errorList-footer {
+        position: absolute;
+        padding: 0.5em;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+        line-height: 16px;
+        border-top: 1px solid black;
+    }
+
+    #formList .form {
+        border: 0.5em solid #CCCCCC;
+        margin-right: 1em;
+    }
+
+    #errorList .errorList-footer a {
+        float: right;
+        background: white;
+        padding: 0.5em;
+        border-left: 1px solid black;
+        margin: -0.5em 0em;
+    }
+
+    #errorList .errorList-footer a.next {
+        margin-right: -0.5em;
+        border-bottom-right-radius: 0.5em;
+    }
+
+    #errorList .errorList-footer a:hover {
+        background: black;
+        color: white;
+    }
+
+    #errorList .error {
+        background-color: rgba(255, 200, 200, 1);
+    }
+
+    #errorList .warning {
+        background-color: rgba(255, 255, 200, 1);
+    }
+
+    #errorList h4 {
+        margin-top: 0;
+    }
+
+    #formList .form:after {
+        content: ' ';
+        position: absolute;
+        right: -2em;
+        top: 50%;
+        width: 1.5em;
+        border-bottom: 0.5em solid #CCCCCC;
+    }
+
+    #formList .form:hover:after {
+        border-bottom: 0.5em solid #CCFFCC;
+    }
+
+    #formList .control {
+        border: 0.5em dashed #CCCCCC;
+    }
+
+    #formList span:hover {
+        border-color: #CCFFCC;
+    }
+
+    #formList span.selected {
+        border-color: #CCCCFF;
+    }
+
+    .toolbox {
+        height: 12em;
+    }
+
+    .end {
+        height: 3em;
+    }
+
+    .ui-dialog form, .ui-dialog form div {
+        margin: 1em;
+    }
+
+    #options {
+        border: 1px solid #CCC;
+    }
+
+    .selectOption, .jumpoption {
+        margin: 1em 0;
+        position: relative;
+    }
+
+    .selectOption:hover, .jumpoption:hover {
+        background-color: #DDD;
+    }
+
+    .selectOption .button.removeOption, .jumpoption .button.remove {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        width: 3em;
+        height: 4em;
+        padding: 0;
+        background: url("../images/glyphicons/glyphicons_016_bin.png") 50% 50% no-repeat #CCC;
+    }
+
+    .second h3, .last h3.title {
+        background: #EEE;
+        border-bottom: 1px solid #CCC;
+        margin: 0;
+        font-size: 10pt;
+        padding: 0.5em 0.5em 0.5em 0.5em;
+        border-top-left-radius: 0.5em;
+        border-top-right-radius: 0.5em;
+    }
+
+    .last h3.title {
+        margin: -0.5em -0.5em 0.5em -0.5em;
+    }
+
+
+</style>
 {{/style}}
-{{script}}				
-		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
-		<script type="text/javascript" src="../js/formBuilder.js"></script>
-		<script type="text/javascript" src="{#SITE_ROOT#}/js/gpsPicker.js"></script>
-		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.controlgroup.js"></script>
-		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.settingspanel.js"></script>
-		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.mediainput.js"></script>
-		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.timepicker.js"></script>
-		
+{{script}}
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="../js/formBuilder.js"></script>
+<script type="text/javascript" src="{#SITE_ROOT#}/js/gpsPicker.js"></script>
+<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.controlgroup.js"></script>
+<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.settingspanel.js"></script>
+<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.mediainput.js"></script>
+<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.timepicker.js"></script>
+
 {{/script}}
 {{breadcrumbs}}
 &gt; <a href="../{#projectName#}">Project : {#projectName#}</a> &gt; Form Builder
 {{/breadcrumbs}}
 {{main}}
-	<!--<h1>Form Builder</h1>-->
-	<div class="toolbox">
-		<div id = "errorList">
-			Error list
-		</div>
-		<div><a id="btn_save" href="javascript:saveProject()" class="button">Save Project</a></div>
-		<div id="formList_wrapper">
-			<div id="formList">
-	
-			</div>
-		</div>
-	</div>
-	<div class="ecplus-columns">
-		<div id="source" class="column first">
-      		<h3><a href="#">Text fields</a></h3>
-      		<div>
-	      		<div class="ecplus-form-element ecplus-text-element" type="text">
-	      			<p class="title">Text</p> 
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-numeric-element" type="numeric">
-	      			<p class="title">Numeric</p> 
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-date-element" type="date">
-	      			<p class="title">Date</p> 
-	       			
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-time-element" type="time">
-	      			<p class="title">Time</p> 
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-select1-element" type="select1">
-	      			<p class="title">Drop-down list</p> 
-	      			<p class="option">Option One</p>
-	      			<p class="option">Option Two</p>
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-radio-element" type="radio">
-	      			<p class="title">Radio Buttons</p> 
-	      			<p class="option">Option One</p>
-	      			<p class="option">Option Two</p>
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-select-element" type="select">
-	      			<p class="title">Check boxes</p> 
-	      			<p class="option">Option One</p>
-	      			<p class="option">Option Two</p>
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-textarea-element" type="textarea">
-	      			<p class="title">Multi-line Text</p> 
-	      		</div>
-	      	</div>
-	      	<h3><a href="#">Media fields</a></h3>
-      		<div>
-	      		<div class="ecplus-form-element ecplus-location-element" type="location">
-	      			<p class="title">Location</p> 
-	      			
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-photo-element" type="photo">
-	      			<p class="title">Photograph</p> 
-	      			
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-video-element" type="video">
-	      			<p class="title">Video</p> 
-	      			
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-audio-element" type="audio">
-	      			<p class="title">Audio</p> 
-	      			
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-barcode-element" type="barcode">
-	      			<p class="title">Barcode</p> 
-	      			
-	      		</div>
-      		</div>
-      		<h3><a href="#">Links with other forms</a></h3>
-			<div>
-				<div class="ecplus-form-element ecplus-fk-element" type="fk">
-	      			<p class="title">Link from another form</p> 
-	      		</div>
-	      		<div class="ecplus-form-element ecplus-branch-element" type="branch">
-      				<p class="title">Branch Form</p> 
-      			</div>
-      		</div>
-    	</div> <!--source-->
-	    <div id="middle" class="column second">
-	   		<h3>Form : <span class="sub">Drag fields from the column on the left into this column</span></h3>
-	        <div class="ui-sortable" id="destination"><div class="end">&nbsp;</div></div>
+<!--<h1>Form Builder</h1>-->
+<div class="toolbox">
+    <div id="errorList">
+        Error list#errorList
+    </div>
+    <div><a id="btn_save btn btn-default" href="javascript:saveProject()" class="button"><i class="fa fa-check fa-fw fa-2x"></i>Save Project</a></div>
+    <div id="formList_wrapper">
+        <div id="formList">
 
-	    </div>
-	    <div id="details" class="column last">
-	        <h3 class="title">Field Properties</h3>	
-	       		<form id="props" autocomplete="off">
-	       			<div class="fk ctrl">
-	       				<p>
-	       					Most properties of a foreign key field are not editable.
-	       				</p>
-	       			</div>
-			   		<div class="label ctrl" notfor="fk">
-				        	<label for="inputLabel">
-				        		Label
-				        	</label>
-				        	<input id="inputLabel" name="text" type="text" />
-				    </div>
-				    <div class="id ctrl" notfor="fk">
-				           	<label for="id">
-				           		ID
-				           	</label>
-				           	<input id="inputId" name="id" type="text"  maxlength="45" />
-				    </div>
-				    <div class="required ctrl" notfor="fk">
-				           	<label for="required">Required</label>
-				           	<input type="checkbox" id="required" name="required" value="true" />
-				    </div>
-				   	<div id="titleCtrl" class="title ctrl" title="A title field appears on the list of entries to help the user distinguish between entries." allow="text,numeric,select1,radio,barcode">
-				           	<label for="title">Title</label> 
-				           	<input type="checkbox" id="title" name="title" value="true" />
-				    </div>
-				    <div id="branchButton" allow="branch" class="branch ctrl">
-						    	<a href="javascript:switchToBranch();" class="button">Edit branch form</a>
-						    </div>
-					 <div class="date ctrl" allow="date">	
-					        	<label for="date">Date Format</label> 
-					        	<select id="date" name="date" >
-					        		<option value="dd/MM/yyyy">Day/Month/Year</option>
-					        		<option value="MM/dd/yyyy">Month/Day/Year</option>
-					        		<option value="yyyy/MM/dd">Year/Month/Day</option>
-					        		<option value="MM/yyyy">Month/Year</option>
-					        		<option value="dd/MM">Day/Month</option>
-					        	</select>
-					    </div>
-					    <div class="time ctrl" allow="time">
-					        	<label for="inputmax">Time Format</label> 
-					        	<select id="time" name="time" >
-					        		<option value="HH:mm:ss">Hours:Minutes:Seconds (24 hours)</option>
-					        		<option value="hh:mm:ss">Hours:Minutes:Seconds (12 hours)</option>
-					        		<option value="HH:mm">Hours:Minutes (24 hours)</option>
-					        		<option value="hh:mm">Hours:Minutes (12 hours)</option>
-					        		<option value="mm:ss">Minutes:Seconds</option>
-					        	</select>
-					    </div>
-					   	<div class="set ctrl" allow="date,time">
-					        	<label for="inputSet">Set default to current date/time</label> 
-					        	<input type="checkbox" id="set" name="set" value="true" />
-					    </div>
-				    <div class="advanced accordian">
-				    	 <h3 class="options ctrl" allow="select,radio,select1"><a href="#">Options</a></h3>
-					     <div id="options" class="">
-							
-							 <a id="addOption" href="javascript:void(0);" class="button">Add Option</a>
-							 
-						
-						</div>
-					    <h3><a href="#">Advanced</a></h3>
-	      				<div>
-						   <!--  - <div id="fkPanel" class="fk ctrl" allow="fk">
-						    	<label for="parent">Use key from </label><select id="parent" name="parent"></select>
-						    </div>-->
-						    
+        </div>
+    </div>
+</div>
+<div class="ecplus-columns row">
+    <div class="col-md-3">
+        <div id="source" class="column  first">
+            <h3><a href="#">Text fields</a></h3>
 
-						   <div id="keyCtrl" allow="text,numeric,barcode" class="key ctrl hidden">
-						           	<!--  <label for="key">Key</label> --> 
-						           	<input type="hidden" id="key" name="key" value="true" disabled="disabled" />
-						    </div>
-						    <div allow="text,numeric,select1,radio,barcode" class="search ctrl">
-						        	<label>Searchable</label> 
-						        	<input type="checkbox" id="search" name="search" value="true" />
-						    </div>
-						    <div class="decimal ctrl">
-						        	<input type="radio" id="rdo_decimal" name="numeric" value="decimal" /><label for="numeric">Decimal</label> <br/>
-						     </div>
-						      <div class="integer ctrl">
-						        	<input type="radio" id="rdo_integer" name="numeric" value="integer" /><label for="numeric">Integer</label> <br/>
-						    </div>
-						    <div class="min ctrl">
-						        	<label for="inputmin">Minumum Value</label> 
-						        	<input type="number" id="min" name="min" />
-						    </div>
-						    <div class="max ctrl">
-						        	<label for="inputmax">Maximum Value</label> 
-						        	<input type="number" id="max" name="max" />
-						    </div>
-						   
-						    <div class="default ctrl" allow="text,numeric" notfor="key,audio,fk,video,location,photo,date,time,branch">
-						        	<label for="inputdefault">Default</label>
-						        	<input type="text" id="default" name="defaultValue"  maxlength="1000" />
-						     </div>
-						     <div class="regex ctrl" allow="text,textarea,barcode">
-				
-						       	<label for="inputregex">Regular Expression</label> 
-						       	<input type="text" id="regex" name="regex" maxlength="255" title="Enter a regular expression without the opening and closing slashes."/>
-				 
-						     </div>
-						     <div class="verify ctrl" allow="text,numeric,date,time,barcode">
-						        	<label for="inputVerify">Double Entry</label>
-						        	<input type="checkbox" id="verify" name="verify" value="true" />
-						     </div>
-						     <div class="genkey ctrl" allow="key">
-						       	<label for="inputGenKey">Generate Key</label>
-						       	<input type="checkbox" id="genkey" name="genkey" value="true" />
-							</div>
-							<div class="hidden ctrl" allow="gen,fk">
-						      	<label for="inputHidden">Hidden</label>
-						      	<input type="checkbox" id="hidden" name="hidden" value="true" />
-						    </div> 
-						</div>
-						<h3 class="jumps ctrl"><a href="#">Jumps</a></h3>
-						<div id="jumps" class="" allow="select,radio,select1">
-							<a id="addJump" href="javascript:void(0);" class="button">Add Jump</a>
-							
-						</div>
-					</div>
-					<div>
-						<a id="btn_done" class="button " href="javascript:updateSelectedCtl();">Done</a>
-						<a id="removeControl" class="button removeControl" href="javascript:removeSelected();">Delete</a>
-					</div>
-				
-					
-				</form>
-		    </div>
-			
-	    </div> <!-- details-->
-	</div> <!--columns-->
+            <div>
+                <div class="ecplus-form-element ecplus-text-element" type="text">
+                    <p class="title">Text</p>
+                </div>
+                <div class="ecplus-form-element ecplus-numeric-element" type="numeric">
+                    <p class="title">Numeric</p>
+                </div>
+                <div class="ecplus-form-element ecplus-date-element" type="date">
+                    <p class="title">Date</p>
+
+                </div>
+                <div class="ecplus-form-element ecplus-time-element" type="time">
+                    <p class="title">Time</p>
+                </div>
+                <div class="ecplus-form-element ecplus-select1-element" type="select1">
+                    <p class="title">Drop-down list</p>
+
+                    <p class="option">Option One</p>
+
+                    <p class="option">Option Two</p>
+                </div>
+                <div class="ecplus-form-element ecplus-radio-element" type="radio">
+                    <p class="title">Radio Buttons</p>
+
+                    <p class="option">Option One</p>
+
+                    <p class="option">Option Two</p>
+                </div>
+                <div class="ecplus-form-element ecplus-select-element" type="select">
+                    <p class="title">Check boxes</p>
+
+                    <p class="option">Option One</p>
+
+                    <p class="option">Option Two</p>
+                </div>
+                <div class="ecplus-form-element ecplus-textarea-element" type="textarea">
+                    <p class="title">Multi-line Text</p>
+                </div>
+            </div>
+            <h3><a href="#">Media fields</a></h3>
+
+            <div>
+                <div class="ecplus-form-element ecplus-location-element" type="location">
+                    <p class="title">Location</p>
+
+                </div>
+                <div class="ecplus-form-element ecplus-photo-element" type="photo">
+                    <p class="title">Photograph</p>
+
+                </div>
+                <div class="ecplus-form-element ecplus-video-element" type="video">
+                    <p class="title">Video</p>
+
+                </div>
+                <div class="ecplus-form-element ecplus-audio-element" type="audio">
+                    <p class="title">Audio</p>
+
+                </div>
+                <div class="ecplus-form-element ecplus-barcode-element" type="barcode">
+                    <p class="title">Barcode</p>
+
+                </div>
+            </div>
+            <h3><a href="#">Links with other forms</a></h3>
+
+            <div>
+                <div class="ecplus-form-element ecplus-fk-element" type="fk">
+                    <p class="title">Link from another form</p>
+                </div>
+                <div class="ecplus-form-element ecplus-branch-element" type="branch">
+                    <p class="title">Branch Form</p>
+                </div>
+            </div>
+        </div>
+        <!--source-->
+    </div>
+
+    <div class="col-md-5">
+        <div id="middle" class="column second">
+            <h3>Form : <span class="sub">Drag fields from the column on the left into this column</span></h3>
+
+            <div class="ui-sortable" id="destination">
+                <div class="end">&nbsp;</div>
+            </div>
+
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div id="details" class="column last">
+            <h3 class="title">Field Properties</h3>
+
+            <form id="props" autocomplete="off">
+                <div class="fk ctrl">
+                    <p>
+                        Most properties of a foreign key field are not editable.
+                    </p>
+                </div>
+                <div class="label ctrl" notfor="fk">
+                    <label for="inputLabel">
+                        Label
+                    </label>
+                    <input id="inputLabel" name="text" type="text"/>
+                </div>
+                <div class="id ctrl" notfor="fk">
+                    <label for="id">
+                        ID
+                    </label>
+                    <input id="inputId" name="id" type="text" maxlength="45"/>
+                </div>
+                <div class="required ctrl" notfor="fk">
+                    <label for="required">Required</label>
+                    <input type="checkbox" id="required" name="required" value="true"/>
+                </div>
+                <div id="titleCtrl" class="title ctrl" title="A title field appears on the list of entries to help the user distinguish between entries."
+                     allow="text,numeric,select1,radio,barcode">
+                    <label for="title">Title</label>
+                    <input type="checkbox" id="title" name="title" value="true"/>
+                </div>
+                <div id="branchButton" allow="branch" class="branch ctrl">
+                    <a href="javascript:switchToBranch();" class="button">Edit branch form</a>
+                </div>
+                <div class="date ctrl" allow="date">
+                    <label for="date">Date Format</label>
+                    <select id="date" name="date">
+                        <option value="dd/MM/yyyy">Day/Month/Year</option>
+                        <option value="MM/dd/yyyy">Month/Day/Year</option>
+                        <option value="yyyy/MM/dd">Year/Month/Day</option>
+                        <option value="MM/yyyy">Month/Year</option>
+                        <option value="dd/MM">Day/Month</option>
+                    </select>
+                </div>
+                <div class="time ctrl" allow="time">
+                    <label for="inputmax">Time Format</label>
+                    <select id="time" name="time">
+                        <option value="HH:mm:ss">Hours:Minutes:Seconds (24 hours)</option>
+                        <option value="hh:mm:ss">Hours:Minutes:Seconds (12 hours)</option>
+                        <option value="HH:mm">Hours:Minutes (24 hours)</option>
+                        <option value="hh:mm">Hours:Minutes (12 hours)</option>
+                        <option value="mm:ss">Minutes:Seconds</option>
+                    </select>
+                </div>
+                <div class="set ctrl" allow="date,time">
+                    <label for="inputSet">Set default to current date/time</label>
+                    <input type="checkbox" id="set" name="set" value="true"/>
+                </div>
+                <div class="advanced accordian">
+                    <h3 class="options ctrl" allow="select,radio,select1"><a href="#">Options</a></h3>
+
+                    <div id="options" class="">
+
+                        <a id="addOption" href="javascript:void(0);" class="button">Add Option</a>
+
+
+                    </div>
+                    <h3><a href="#">Advanced</a></h3>
+
+                    <div>
+                        <!--  - <div id="fkPanel" class="fk ctrl" allow="fk">
+                             <label for="parent">Use key from </label><select id="parent" name="parent"></select>
+                         </div>-->
+
+
+                        <div id="keyCtrl" allow="text,numeric,barcode" class="key ctrl hidden">
+                            <!--  <label for="key">Key</label> -->
+                            <input type="hidden" id="key" name="key" value="true" disabled="disabled"/>
+                        </div>
+                        <div allow="text,numeric,select1,radio,barcode" class="search ctrl">
+                            <label>Searchable</label>
+                            <input type="checkbox" id="search" name="search" value="true"/>
+                        </div>
+                        <div class="decimal ctrl">
+                            <input type="radio" id="rdo_decimal" name="numeric" value="decimal"/><label for="numeric">Decimal</label> <br/>
+                        </div>
+                        <div class="integer ctrl">
+                            <input type="radio" id="rdo_integer" name="numeric" value="integer"/><label for="numeric">Integer</label> <br/>
+                        </div>
+                        <div class="min ctrl">
+                            <label for="inputmin">Minumum Value</label>
+                            <input type="number" id="min" name="min"/>
+                        </div>
+                        <div class="max ctrl">
+                            <label for="inputmax">Maximum Value</label>
+                            <input type="number" id="max" name="max"/>
+                        </div>
+
+                        <div class="default ctrl" allow="text,numeric" notfor="key,audio,fk,video,location,photo,date,time,branch">
+                            <label for="inputdefault">Default</label>
+                            <input type="text" id="default" name="defaultValue" maxlength="1000"/>
+                        </div>
+                        <div class="regex ctrl" allow="text,textarea,barcode">
+
+                            <label for="inputregex">Regular Expression</label>
+                            <input type="text" id="regex" name="regex" maxlength="255" title="Enter a regular expression without the opening and closing slashes."/>
+
+                        </div>
+                        <div class="verify ctrl" allow="text,numeric,date,time,barcode">
+                            <label for="inputVerify">Double Entry</label>
+                            <input type="checkbox" id="verify" name="verify" value="true"/>
+                        </div>
+                        <div class="genkey ctrl" allow="key">
+                            <label for="inputGenKey">Generate Key</label>
+                            <input type="checkbox" id="genkey" name="genkey" value="true"/>
+                        </div>
+                        <div class="hidden ctrl" allow="gen,fk">
+                            <label for="inputHidden">Hidden</label>
+                            <input type="checkbox" id="hidden" name="hidden" value="true"/>
+                        </div>
+                    </div>
+                    <h3 class="jumps ctrl"><a href="#">Jumps</a></h3>
+
+                    <div id="jumps" class="" allow="select,radio,select1">
+                        <a id="addJump" href="javascript:void(0);" class="button">Add Jump</a>
+
+                    </div>
+                </div>
+                <div class="input-btn-controls">
+                    <a id="btn_done" class="button btn btn-default" href="javascript:updateSelectedCtl();"><i class="fa fa-check fa-fw fa-2x"></i>Done</a>
+                    <a id="removeControl" class="button removeControl btn btn-default" href="javascript:removeSelected();"><i class="fa fa-trash fa-fw fa-2x"></i>Delete</a>
+                </div>
+
+
+            </form>
+        </div>
+    </div>
+</div> <!-- details-->
+</div> <!--columns-->
 <p>
 </p>
 <div class="formOptions">
-    <!--Allow users to edit entries initially recorded on other users' devices? (<a href="http://www.epicollect.net/formHelp.asp#allowDownloadEdits" target="_blank">help</a>) --><input name="allowDownloadEdits" type="hidden">
+    <!--Allow users to edit entries initially recorded on other users' devices? (<a href="http://www.epicollect.net/formHelp.asp#allowDownloadEdits" target="_blank">help</a>) --><input
+        name="allowDownloadEdits" type="hidden">
 </div>
 
 {{/main}}

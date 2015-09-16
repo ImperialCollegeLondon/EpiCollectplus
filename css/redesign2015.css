@@ -1,0 +1,628 @@
+/* Hack to have footer color expanding when viewing on ipad*/
+body {
+    /*background-color: #d2a9fd;*/
+    min-width: 992px !important;
+}
+
+.container-fluid {
+    background-color: #fff;
+}
+
+#main {
+
+}
+
+.clearfix {
+    clear: both;
+}
+
+.flash {
+    background-color: #FFEEEE;
+    text-align: center;
+}
+
+#breadcrumbs {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom:15px;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    /* Margin bottom by footer height */
+    margin-bottom: 170px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 150px;
+    background-color: #d2a9fd;
+    padding: 0 50px;
+}
+
+.footer ul li {
+    list-style: none;
+}
+
+li.ios-app {
+    margin-top: 10px;
+}
+
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+body > .container {
+    padding: 60px 15px 0;
+}
+
+.container .text-muted {
+    margin: 20px 0;
+}
+
+.footer > .container {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+code {
+    font-size: 80%;
+}
+
+/* Custom css*/
+h3 {
+    margin-top: 0;
+}
+
+.page-header {
+    margin: 0;
+}
+
+.container-fluid.top-nav, .navbar-default {
+    background-color: #cccccc;
+}
+
+.thumbnail {
+    overflow: hidden;
+}
+
+.container-fluid {
+    padding: 0;
+}
+
+a.branding img {
+    padding-top: 10px;
+}
+
+ul.nav.navbar-nav li a {
+    padding-top: 21px;
+    padding-bottom: 21px;
+    color: #2a5db1;
+}
+
+li.ecplus-username {
+    padding-top: 21px;
+    padding-bottom: 21px;
+}
+
+.nav > li > a {
+    position: relative;
+    display: block;
+    padding: 10px;
+}
+
+.navbar-toggle {
+    margin-top: 14px;
+}
+
+.navbar-default .navbar-collapse, .navbar-default .navbar-form {
+    border: none !important;
+}
+
+/*Navbar collapsed*/
+@media (max-width: 992px) {
+    div#navbar {
+        margin-right: 10px;
+    }
+
+    footer {
+        position:relative!important;
+        height:auto!important;
+    }
+}
+
+div.project {
+    margin: .5em;
+    border-bottom: 1px solid #ccc;
+}
+
+i.project-icon {
+    margin-right: 10px;
+}
+
+.featured-projects {
+    /*margin-top: 10px;*/
+}
+
+.featured-projects img {
+    /*margin-top: 10px;*/
+    width: 100%;
+}
+
+.thumbnail h3 {
+    margin: 5px 10px;
+}
+
+.thumbnail p {
+    margin: 5px 10px;
+}
+
+.featured-projects a {
+    color: #333;
+    padding: 10px;
+    text-decoration: none;
+}
+
+.featured-projects .thumbnail {
+    padding: 0;
+    background-color: #eeeeee;
+}
+
+/********* Project list **************/
+/* Crop images as square using css background http://goo.gl/1Jyxyv or https://goo.gl/yu5nsT*/
+.project-thumbnail {
+    /*position: absolute;*/
+
+    width: 100px;
+    height: 100px;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    float: left;
+
+}
+
+.project-list-item {
+    /*height:120px;*/
+}
+
+.project-list-item .project-name, .project-list-item .project-description {
+    /*padding-left: 120px;*/
+}
+
+.project-metadata {
+    /*float:left;*/
+    margin-left: 10px;
+    width: 85%;
+}
+
+.project-list-item .project-name {
+    color: #a64dfb;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.project-list-item .project-description {
+    margin-bottom: 5px;
+    display: block;
+}
+
+a.project-list-item.list-group-item {
+    overflow: hidden;
+}
+
+.project-badge-counters {
+    /*float: left;*/
+}
+
+a.project-list-item.list-group-item {
+    margin-bottom: 10px;
+}
+
+/* User projects list*/
+.my-projects-list .project-name {
+    margin-left: 10px;
+}
+
+.my-projects-list .project-description {
+    padding-left: 110px;
+}
+
+.my-projects-list .project-badge-counters {
+    margin-top: 10px;
+}
+
+/* Social links*/
+.social {
+    margin-right: 50px;
+}
+
+/* Login Screen*/
+h4.login {
+    text-align: center;
+}
+
+.login-panel {
+    min-height: 300px;
+    margin: 20px auto;
+}
+
+.provider.google.panel-body {
+    text-align: center;
+}
+
+/* Create project*/
+.more-info.panel, .project-setup.panel {
+    min-height: 400px;
+}
+
+label.ui-state-active.ui-button.ui-widget.ui-state-default.ui-button-text-only.ui-corner-left {
+    width: 100%;
+}
+
+label.ui-button.ui-widget.ui-state-default.ui-button-text-only.ui-corner-right {
+    width: 100%;
+}
+
+a.panelSwitcher.next.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only {
+    position: absolute;
+    bottom: 2em;
+    right: 2em;
+    width: 100px;
+}
+
+a.panelSwitcher.prev.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only {
+    position: absolute;
+    left: 2em;
+    bottom: 2em;
+    width: 100px;
+}
+
+p.epicollect-info-sidebar.bg-info {
+    padding: 12px;
+    margin: 0;
+}
+
+iframe {
+    border: none;
+    width: 100%;
+}
+
+#public .fa-2x, #listed .fa-2x, #listing .fa-2x{
+    vertical-align: middle;
+}
+
+#public label, #listed label, #listing label {
+    padding: 10px;
+    margin: 10px;
+}
+div#menu {
+    margin-top: 20px;
+}
+#projectOptions.update-project > div {
+    border: 1px solid #ccc;
+    overflow:hidden;
+}
+#projectOptions.update-project .ui-tabs .ui-tabs-nav {
+    border:none;
+}
+#projectOptions.update-project table {
+    width:100%;
+    padding:20px;
+}
+#projectOptions.update-project table td, #projectOptions table th {
+    padding:10px;
+}
+#projectOptions.update-project .button {
+    margin:0;
+}
+/******** Project home *************/
+
+p.view-data-instructions.well {
+    margin-top: 10px;
+}
+
+img.projectImage {
+    width: 100%;
+    max-width: 300px;
+}
+
+.project-thumbnail-big {
+    width: 200px;
+    height: 200px;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    float: left;
+}
+
+p#projectDescription {
+    width: 100%
+}
+
+.project-home-panel {
+    min-height: 400px;
+}
+
+.project-data-view-control form {
+    overflow: hidden;
+
+}
+
+.project-data-view-control a {
+    color: #333 !important;
+}
+
+.project-data-view-control select {
+    margin-bottom: 10px;
+}
+
+.project-data-view-control input {
+    margin-bottom: 20px;
+}
+
+.isloading-wrapper.isloading-right {
+    margin-left: 10px;
+}
+
+.isloading-overlay {
+    position: relative;
+    text-align: center;
+}
+
+.isloading-overlay .isloading-wrapper {
+    background: #FFFFFF;
+    -webkit-border-radius: 7px;
+    -webkit-background-clip: padding-box;
+    -moz-border-radius: 7px;
+    -moz-background-clip: padding;
+    border-radius: 7px;
+    background-clip: padding-box;
+    display: inline-block;
+    margin: 0 auto;
+    padding: 10px 20px;
+    top: 10%;
+    z-index: 9000;
+}
+
+div#tabs {
+    display: none;
+}
+
+.data-spinning-loader {
+    text-align: center;
+    z-index: 9999;
+    margin-top: 100px;
+    /*display: none;*/
+}
+
+.ecplus-data th {
+    background-color: #838383;
+    color: #ffffff;
+}
+
+.ecplus-data th, .ecplus-data td {
+    white-space: nowrap;
+    /* width: 100%; */
+
+}
+
+table.ecplus-data {
+    width: 100%;
+}
+
+table.ecplus-infowindow {
+    max-width: 400px;
+    max-height: 300px;
+    overflow: auto;
+}
+
+table.ecplus-infowindow th, table.ecplus-infowindow td {
+    font-size: 12px !important
+}
+
+table.ecplus-data img {
+    width: 75px !important;
+    height: auto !important;
+}
+
+table.ecplus-data img.data-table-arrow-images {
+    width: 12px !important;
+}
+
+li.ui-state-default.ui-corner-top.ui-tabs-active.ui-state-active {
+    padding: 10px;
+}
+
+li.ui-state-default.ui-corner-top {
+    padding: 10px;
+}
+
+#showHideFields .ui-button-text-icon-secondary .ui-button-text, .ui-button-text-icons .ui-button-text {
+    padding: 4px 15px;
+}
+
+/*************** Map view ****************/
+
+/* super hack to avoid bootstrap to cut clusters*/
+#map .gm-style div[title=""] {
+    width: 50px !important;
+    height: 50px !important;
+}
+
+.gm-style img {
+    max-width: none;
+}
+
+.gm-style label {
+    width: auto;
+    display: inline;
+}
+
+#map img {
+    max-width: none !important;
+}
+
+div#mapTab, div#tableTab {
+    padding: 10px 0;
+    overflow: hidden;
+}
+
+div#mapTab #sidebar a.list-group-item {
+    padding: 5px 2px;
+    overflow-y: auto;
+    position: relative;
+}
+
+h4#fieldSelectorLabel, #fieldSelector {
+    /*visibility: hidden;*/
+}
+
+#map-container .panel div.sidebar-list {
+    /*height: 100% position : relative;*/
+    /*overflow: hidden;*/
+}
+
+div.sidebar-list .panel {
+    /*position: relative;*/
+    /*height: 100%*/
+}
+
+div.sidebar-list .panel .panel-body {
+    /*position: relative;*/
+    /*height: 100%*/
+
+}
+
+div.sidebar-list .panel .panel-body div#sidebar {
+    position: absolute;
+    top: 60px;
+    bottom: 20px;
+    overflow-y: scroll;
+}
+
+#map-container {
+    position: relative;
+    /*overflow: hidden;*/
+    /*height: 100%*/
+    /*max-height: 400px !important;*/
+    /*height:80%;*/
+    opacity: 1 !important;
+}
+
+#map-container .panel {
+    /*max-height:400px!important;*/
+    padding-bottom: 5px;
+    opacity: 1 !important;
+}
+
+#graphOne {
+    top: -1px;
+    right: 14px;
+}
+
+.ecplus-settingspanel label {
+    margin: 0 10px;
+}
+
+div#map {
+    /*width:100%!important;*/
+    vh: 100% !important;
+    margin-left: 200px;
+    opacity: 1 !important;
+    /*max-height: 400px;*/
+    /* position relative is really important for Firefox!!!!!*/
+    position: relative;
+}
+
+#tableTab div#ui-accordion-csvform-panel-0 {
+    height: 120px !important;
+}
+
+input.upload-csv {
+    padding: 10px 0;
+}
+
+div#bottombar.row {
+    margin-top: 20px;
+}
+
+div#bottombar.row .panel {
+    min-height: 270px;
+}
+
+div#fieldFilter .field-filter-controls {
+    margin-top: 20px;
+    margin-bottom: 0 !important;
+}
+
+div#fieldColour .field-filter-controls {
+    margin-top: 95px;
+    margin-bottom: 0 !important;
+}
+
+.time-range.form-inline {
+    margin: 20px 0;
+}
+
+.field-filter-controls.pull-right {
+    /*position: absolute;*/
+    /*bottom: 30px;*/
+    /*right: 30px;*/
+}
+
+div#slider-range {
+    margin-bottom: 10px;
+}
+
+.immersive-mode-btn a {
+    color: #333;
+}
+
+.ui-tabs .ui-tabs-nav {
+    padding: 0;
+    margin: 0;
+}
+
+li.ui-state-default.ui-corner-top.ui-tabs-active.ui-state-active {
+    padding: 3px;
+}
+
+li.ui-state-default.ui-corner-top {
+    padding: 3px;
+}
+
+.panel-heading {
+    padding: 5px 15px;
+}
+
+.btn {
+    padding: 3px 6px;
+}
+
+.map-resize-handle {
+    height: 20px;
+    color: #838383;
+    /*z-index: 9999;*/
+    display: block;
+    position: relative;
+    /* background-color: black; */
+    text-align: center;
+    font-size: 15px;
+    width: 100%;
+    border-top: 1px solid #ccc
+
+}
+
+.map-resize-handle i {
+    height: 20px;
+}

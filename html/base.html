@@ -1,67 +1,137 @@
 <!DOCTYPE html>
 <html>
-	<head>
+<head>
 
-		{#style#}
-		
-		<link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/jquery-ui-1.8.17.custom.css" />
-        <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollectPlus.css" />
-		<script type="text/javascript" >var SITE_ROOT = '{#SITE_ROOT#}';</script>
-		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.min.js"></script>
-		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-migrate.min.js"></script>
-		<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui.min.js"></script>
-		<script type="text/javascript" src="{#SITE_ROOT#}/js/checkurl.js"></script>
-		<script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollectPlus.js" ></script>
-		
-			
-		{#script#}
-		
-		<link rel="icon" href="favicon.ico" type="image/x-icon" /> 
-		<link rel="shortcut icon" href="favicon.png" type="image/png" />
-		
-		
-		<title>EpiCollect+</title>
-	</head>
-	<body>
-		<div id="pageHead">
-		<div id="loginStatus">
-			{#loggedIn#}
-		</div>
-			<a href="{#SITE_ROOT#}/"><img alt="EpiCollect+" src="{#SITE_ROOT#}/images/logo_new_plus_thin.png" width="242" height="50" /></a><span class="beta-tag">Beta</span>
-			<div id="nav"> 
-				<!-- <a href="{#SITE_ROOT#}/index.html">Home</a> -->
-							<a href="{#SITE_ROOT#}/createProject.html">Create Project</a>
-				<a href="http://www.epicollect.net/plus_instructions/default.html" target="__blank">Instructions </a>
+    {#style#}
 
-				<a href="javascript:EpiCollect.ShowPrivacy()">Privacy Policy</a>
-				<!-- <a href="{#SITE_ROOT#}/instructions/HANDSETS.html">Handsets</a> 
-				<a href="{#SITE_ROOT#}/instructions/FAQ.html">FAQ</a>  
-				<a href="{#SITE_ROOT#}/instructions/developers.html">Developers</a>   
-				<a href="{#SITE_ROOT#}/instructions/ABOUTUS.html">About us</a>-->
-			</div> 
-		</div>
-		<div id="breadcrumbs"><a href="{#SITE_ROOT#}/">Home</a>{#breadcrumbs#}</div>
-		
-		<div id="main">
-			{#main#}
-		</div>
-		<div id="foot"> 
-			<span class="leftie">Version {#codeVersion#} build {#build#} - EpiCollect+ is developed at <a href="http://www.imperial.ac.uk" target="_blank">Imperial College London</a> | <a href="mailto:d.aanensen@imperial.ac.uk">Contact us </a></span>
-			<span class="rightie"><!--  <a href="http://github.com/ImperialCollectLondon/EpiCollectPlus"  target="__blank"><img src="{#SITE_ROOT#}/images/googleCode.png" style="vertical-align:middle" alt="Visit EpiCollect on Google Code" width="27" height = "27" /></a>
-				<a href="http://www.twitter.com/epicollect" target="__blank"><img src="http://twitter-badges.s3.amazonaws.com/follow_us-b.png" alt="Follow EpiCollect on Twitter" style="vertical-align:middle" width="160" height="27"/></a>--></span>
-		</div>
-		<script type="text/javascript">
+    <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/jquery-ui-1.8.17.custom.css"/>
+    <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollectPlus.css"/>
+    <script type="text/javascript">var SITE_ROOT = '{#SITE_ROOT#}';</script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.min.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-migrate.min.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/checkurl.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/is-loading.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollectPlus.js"></script>
 
-			  var _gaq = _gaq || [];
-			  _gaq.push(['_setAccount', '{#GA_ACCOUNT#}']);
-			  _gaq.push(['_trackPageview']);
-			
-			  (function() {
-			    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-			    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-			  })();
 
-		</script>  
-	</body>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/epicollectplus.bootstrap.min.css"/>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!--//re-design 2015-->
+    <link rel="stylesheet" href="{#SITE_ROOT#}/css/redesign2015.css">
+
+    {#script#}
+    <link rel="icon" href="{#SITE_ROOT#}/images/favicon.ico?v=3" type="image/x-icon"/>
+    <link rel="shortcut icon" href="{#SITE_ROOT#}/images/favicon.png?v=3" type="image/png"/>
+
+
+    <title>EpiCollect+</title>
+</head>
+<body>
+
+<div class="container-fluid">
+    <nav id="pageHead" class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid top-nav">
+
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="branding" href="{#SITE_ROOT#}/"><img alt="EpiCollect+" src="{#SITE_ROOT#}/images/logo_new_plus_thin.png" width="242" height="50"/></a>
+            </div>
+
+
+            <div id="navbar" class="ecplus-navbar navbar-collapse collapse pull-right">
+                <ul class="nav navbar-nav">
+                    {#loggedIn#}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="breadcrumbs" class="pull-left"><a href="{#SITE_ROOT#}/">Home</a>{#breadcrumbs#}</div>
+    <div class="social pull-right">
+        <a href="https://twitter.com/share" class="twitter-share-button" data-via="EpiCollect" data-size="large" data-hashtags="epicollect">Tweet</a>
+        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
+        </script>
+        <!-- Place this tag where you want the button to render. -->
+        <a class="github-button" href="https://github.com/ImperialCollegeLondon" data-style="mega" data-count-href="/ImperialCollegeLondon/followers" data-count-api="/users/ImperialCollegeLondon#followers" data-count-aria-label="# followers on GitHub" aria-label="Follow @ImperialCollegeLondon on GitHub">Follow @ImperialCollegeLondon</a>
+    </div>
+    <div class="clearfix"></div>
+    <div id="main">
+        {#featured#}
+
+        {#main#}
+    </div>
+
+    <div class="container-fluid">
+        <footer id="foot" class="footer"><!--FOOOTER-->
+            <div class="row">
+                <section class="footer-social col-sm-12 col-md-3">
+                    <ul class="list-group">
+                        <li>Epicollect+ v{#codeVersion#} build {#build#}</li>
+                        <li><a href="http://www.epicollect.net/plus_instructions/default.html" target="__blank">Instructions </a></li>
+                        <li><a href="mailto:d.aanensen@imperial.ac.uk">Contact us </a></li>
+                        <li><a href="javascript:EpiCollect.ShowPrivacy()">Privacy Policy</a></li>
+                    </ul>
+                </section>
+
+                <section class="footer-info col-sm-12 col-md-3">
+                    <img src="{#SITE_ROOT#}/images/FP7_EU.jpg" alt="FP7 Europe Logo" width="200"/>
+                </section>
+
+                <section class="footer-info col-sm-12 col-md-3">
+                    <img src="{#SITE_ROOT#}/images/imperial_college_london.png" alt="Imperial College London Logo" width="200"/>
+                </section>
+
+                <section class="footer-info col-sm-12 col-md-3">
+                    <ul>
+                        <li class="android-app">
+                            <a href="https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollectplus.html5">
+                                <img alt="Android app on Google Play" src="{#SITE_ROOT#}/images/android-app-badge.png" width="150"/>
+                            </a>
+                        </li>
+                        <li class="ios-app">
+                            <a href="https://geo.itunes.apple.com/gb/app/epicollect+/id999309173?mt=8">
+                                <img alt="iOS app on App Store" src="{#SITE_ROOT#}/images/ios-app-badge.png" width="150"/>
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+
+
+
+            </div>
+        </footer>
+        <!--FOOOTER-->
+    </div>
+
+
+</div>
+<script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', '{#GA_ACCOUNT#}']);
+    _gaq.push(['_trackPageview']);
+
+    (function () {
+        var ga = document.createElement('script');
+        ga.type = 'text/javascript';
+        ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(ga, s);
+    })();
+
+</script>
+<!-- Place this tag right after the last button or just before your close body tag. -->
+<script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
+</body>
 </html>

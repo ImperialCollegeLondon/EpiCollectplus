@@ -6,7 +6,7 @@ require_once 'GooglePHPLibrary/Google_Client.php';
 require_once 'GooglePHPLibrary/contrib/Google_Oauth2Service.php';
 
 //log tool, Chrome Logger for PHP
-require_once __DIR__ . "/../utils/ChromePhp.php";
+require_once __DIR__ . "/../handlers/ChromePhp.php";
 
 class OpenIDProvider extends AuthProvider {
 
@@ -21,9 +21,9 @@ class OpenIDProvider extends AuthProvider {
 
         global $SITE_ROOT, $cfg;
 
-        if (isset($_SESSION["token"])) {
-            ChromePhp::log($_SESSION["token"]);
-        }
+        //if (isset($_SESSION["token"])) {
+        //    ChromePhp::log($_SESSION["token"]);
+        //}
 
         $this->openid = new LightOpenID("$SITE_ROOT/loginCallback");
         $this->openid->identity = array_key_exists("openid", $_SESSION) ? $_SESSION["openid"] : "";
@@ -37,7 +37,7 @@ class OpenIDProvider extends AuthProvider {
 
         //auto or force: use force during development to always show the prompt
         //@see https://developers.google.com/accounts/docs/OAuth2WebServer
-        $this->gClient->setApprovalPrompt("force");
+      //  $this->gClient->setApprovalPrompt("force");
 
         //Create a state token to prevent request forgery.
         // Store it in the session for later validation.

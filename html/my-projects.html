@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    {#style#}
+
+    <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/jquery-ui-1.8.17.custom.css"/>
+    <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/EpiCollectPlus.css"/>
+    <script type="text/javascript">var SITE_ROOT = '{#SITE_ROOT#}';</script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.min.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-migrate.min.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/checkurl.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollectPlus.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/epicollectplus.bootstrap.min.css"/>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!--//re-design 2015-->
+    <link rel="stylesheet" href="{#SITE_ROOT#}/css/redesign2015.css">
+    {#script#}
+    <link rel="icon" href="{#SITE_ROOT#}/images/favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="{#SITE_ROOT#}/images/favicon.png" type="image/png"/>
+
+
+    <title>EpiCollect+</title>
+</head>
+<body>
+<div class="container-fluid">
+    <nav id="pageHead" class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid top-nav">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="branding" href="{#SITE_ROOT#}/"><img alt="EpiCollect+" src="{#SITE_ROOT#}/images/logo_new_plus_thin.png" width="242" height="50"/></a>
+            </div>
+
+            <div id="navbar" class="ecplus-navbar navbar-collapse collapse pull-right">
+                <ul class="nav navbar-nav">
+                    {#loggedIn#}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="breadcrumbs">
+        <a href="{#SITE_ROOT#}/">Home</a> &gt; <a href="{#SITE_ROOT#}/my-projects">My Projects</a>
+    </div>
+
+    <!--Show user projects-->
+    <div id="main">
+        {#main#}
+    </div>
+    <!--Footer-->
+    <div class="container-fluid">
+        <footer id="foot" class="footer"><!--FOOOTER-->
+            <div class="row">
+                <section class="footer-social col-sm-12 col-md-3">
+                    <ul class="list-group">
+                        <li>Epicollect+ v{#codeVersion#} build {#build#}</li>
+                        <li><a href="http://www.epicollect.net/plus_instructions/default.html" target="__blank">Instructions </a></li>
+                        <li><a href="mailto:d.aanensen@imperial.ac.uk">Contact us </a></li>
+                    </ul>
+                </section>
+
+                <section class="footer-info col-sm-12 col-md-3">
+                    <img src="{#SITE_ROOT#}/images/FP7_EU.jpg" alt="FP7 Europe Logo" width="200"/>
+                </section>
+
+                <section class="footer-info col-sm-12 col-md-3">
+                    <ul>
+                        <li><a href="javascript:EpiCollect.ShowPrivacy()">Privacy Policy</a></li>
+                        <li><a href="#" title="Copyright Imperial College London 2015">Copyright Imperial College London 2015 </a></li>
+                    </ul>
+                </section>
+
+
+                <section class="footer-info col-sm-12 col-md-3">
+                    <img src="{#SITE_ROOT#}/images/imperial_college_london.png" alt="Imperial College London Logo" width="200"/>
+                </section>
+            </div>
+        </footer>
+        <!--FOOOTER-->
+    </div>
+
+</div>
+<script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', '{#GA_ACCOUNT#}']);
+    _gaq.push(['_trackPageview']);
+
+    (function () {
+        var ga = document.createElement('script');
+        ga.type = 'text/javascript';
+        ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(ga, s);
+    })();
+
+</script>
+</body>
+</html>

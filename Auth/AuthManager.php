@@ -85,25 +85,64 @@ class AuthManager {
             global $url, $SITE_ROOT;
             $server = trim($_SERVER["HTTP_HOST"], "/");
             $root = trim($SITE_ROOT, "/");
-            $frm = "<p>Please Choose a Method to login</p>";
+            $frm = '<h4 class="login">Please Choose a Method to login</h4>';
+
+            $frm .= '<div class="row">';
+
+            $col_counter = 0;
+            $col_counter = $this->localEnabled ? 1 : $col_counter;
+            $col_counter = $this->openIdEnabled ? 2 : $col_counter;
+            $col_counter = ($this->ldapEnabled && array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "") ? 3 : $col_counter;
+
+            $bootstrap_cols = 12 / $col_counter;
+
 
             if ($this->localEnabled) {
-                $frm .= "<div class=\"provider epicollect\"><h3>EpiCollect Account</h3>" . $this->providers["LOCAL"]->requestLogin("http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}/" . trim($requestedUrl, '/'), !$hasManagers) . "</div>";
+                $frm .= '<div class="col-md-' . $bootstrap_cols . '">';
+
+                $frm .= '<div class="login-panel panel panel-default"><div class="panel-heading">Epicollect Account</div><div class=" provider epicollect panel-body">';
+                $frm .= $this->providers["LOCAL"]->requestLogin("http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}/" . trim($requestedUrl, '/'), !$hasManagers);
+                $frm .= '</div></div>';
+
+                $frm .= '</div>';
+
+                //$frm .= "<div class=\"provider epicollect\"><h3>EpiCollect Account</h3>" .$this->providers["LOCAL"]->requestLogin("http://{$_SERVER['HTTP_HOST']}{$SITE_ROOT}/" . trim($requestedUrl, '/'), !$hasManagers) . "</div>";
             }
 
             if ($this->openIdEnabled) {
+
                 $this->providers["OPENID"]->authUrl;
 
-                //$frm .= '<div class="provider google"><h3>Google/Gmail</h3><a class="btn" href="'.$this->providers["OPENID"]->authUrl.'?provider=OPENID">Google/Gmail account (OpenID)</a></div>';
+                $frm .= '<div class="col-md-' . $bootstrap_cols . '">';
 
-                $frm .= "<div class=\"provider google\"><h3>Google/Gmail</h3><a class=\"btn\" href=\"http://$server/$root/$url?provider=OPENID\">Google/Gmail account (OpenID)</a></div>";
+                $frm .= '<div class="login-panel panel panel-default"><div class="panel-heading">Google (former Gmail/OpenID)</div><div class="provider google panel-body">';
+                $frm .= '<a class="btn" href="http://' . $server . '/' . $root . '/' . $url . '?provider=OPENID"><img class="img-responsive" src="' . $SITE_ROOT . '/images/gplus-signin.png" width="300"></a>';
+                $frm .= '</div></div>';
 
-               // $frm .= "<div class=\"provider google\"><h3>Google/Gmail</h3><a class=\"btn\" href=\"http://$server/$root/$url?provider=OPENID\">Google/Gmail account (OpenID)</a></div>";
+                $frm .= '</div>';
+
+                //$frm .= '<div class="provider google"><a class="btn" href="http://$server/$root/$url?provider=OPENID"><img src="' . $SITE_ROOT . '/images/gplus-signin.png" width="300"></a></div>';
+
+
             }
 
-            if ($this->ldapEnabled && array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "") {
-                $frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=LDAP\">Windows Account ({$cfg->settings["security"]["ldap_domain"]})</a>";
+
+
+           if ($this->ldapEnabled && array_key_exists("ldap_domain", $cfg->settings["security"]) && $cfg->settings["security"]["ldap_domain"] != "") {
+                $frm .= '<div class="col-md-' . $bootstrap_cols . '">';
+
+                $frm .= '<div class="login-panel panel panel-default"><div class="panel-heading">Windows Account</div><div class="provider  panel-body">';
+                $frm .= '<a class="provider" href="http://'.$server.'/'.$root.'/'.$url.'?provider=LDAP">' . $cfg->settings["security"]["ldap_domain"] . '</a>';
+                $frm .= '</div></div>';
+
+                $frm .= '</div';
+
+                //$frm .= "<a class=\"provider\" href=\"http://$server/$root/$url?provider=LDAP\">Windows Account ({$cfg->settings["security"]["ldap_domain"]})</a>";
             }
+
+            $frm .= '</div>';
+
+
             return $frm;
         }
 
@@ -167,7 +206,8 @@ class AuthManager {
             }
 
             $res = $db->do_query($sql);
-            if ($res !== true) die($res . "\n" . $sql);
+            if ($res !== true)
+                die($res . "\n" . $sql);
             while ($arr = $db->get_row_array()) {
 
                 if ($arr["active"]) {
@@ -181,26 +221,33 @@ class AuthManager {
             if ($provider != "LOCAL" && !$uid) {
                 $sql = "INSERT INTO user (FirstName, LastName, Email, details, language, serverManager) VALUES ('{$this->firstName}','{$this->lastName}','{$this->email}','" . $this->providers[$provider]->getCredentialString() . "','{$this->language}', " . (count($this->getServerManagers()) == 0 ? "1" : "0") . ")";
                 $res = $db->do_query($sql);
-                if ($res !== true) die($res);
+                if ($res !== true)
+                    die($res);
                 $uid = $db->last_id();
-                if (!$uid) die("user creation failed $sql");
+                if (!$uid)
+                    die("user creation failed $sql");
             }
 
+            // get current time
             $dat = new DateTime();
+
+            //add a length specified by session length in the settings
             $dat = $dat->add(new DateInterval("PT{$cfg->settings["security"]["session_length"]}S"));
             $sql = "INSERT INTO ecsession (id, user, expires) VALUES ('" . session_id() . "', $uid, " . $dat->getTimestamp() . ");";
 
             $res = $db->do_query($sql);
-            if ($res !== true && !preg_match("/Duplicate Key/i", $res)) die($res . "\n" . $sql);
+            if ($res !== true && !preg_match("/Duplicate Key/i", $res))
+                die($res . "\n" . $sql);
 
             header("location: {$_SESSION["url"]}");
             return;
         } else {
-            flash("Login failed, please try again");
+            flash('<span class="login-failed text-danger">Login failed, please try again');
             if (!array_key_exists("tries", $_SESSION)) {
                 $_SESSION["tries"] = 1;
             } else {
-                if ($_SESSION["tries"] < 6) $_SESSION["tries"]++;
+                if ($_SESSION["tries"] < 6)
+                    $_SESSION["tries"]++;
             }
             //sleep($_SESSION["tries"] * $_SESSION["tries"]);
             global $SITE_ROOT;
@@ -211,10 +258,12 @@ class AuthManager {
     function logout($provider = "") {
         //if(!array_key_exists($provider, $this->providers)) return false;
         global $db;
-        if (!$db) $db = new dbConnection();
+        if (!$db)
+            $db = new dbConnection();
 
         $res = $db->do_query("DELETE FROM ecsession WHERE id = '" . session_id() . "'");
-        if (!$res) die("$res - $sql");
+        if (!$res)
+            die("$res - $sql");
         $_SESSION['provider'] = null;
         $params = session_get_cookie_params();
         setcookie(session_name(), '', time() - 42000,
@@ -235,19 +284,22 @@ class AuthManager {
             }
         }
 
-        if (!$db->connected) return false;
+        if (!$db->connected)
+            return false;
         $dat = new DateTime();
         $qry = "DELETE FROM ecsession WHERE expires < " . $dat->getTimestamp();
 
         $res = $db->do_query($qry);
-        if ($res !== true) return false;
+        if ($res !== true)
+            return false;
 
         $this->user = false;
 
         //Here is checking if the user value in the ecsession table is the same as idUsers in the user table...well, how are these rows set in the first place?
         $qry = "select user, firstName, lastName, email, serverManager from ecsession left join user on ecsession.user = user.idUsers WHERE ecsession.id = '" . session_id() . "'";
         $res = $db->do_query($qry);
-        if ($res !== true) die($res . "\n" . $qry);
+        if ($res !== true)
+            die($res . "\n" . $qry);
 
         while ($arr = $db->get_row_array()) {
             $this->user = $arr["user"];
@@ -274,18 +326,22 @@ class AuthManager {
             $r += $arr["serverManager"];
         }
 
-        if ($u == 0) return 0;
-        if ($r > 0) return -1;
+        if ($u == 0)
+            return 0;
+        if ($r > 0)
+            return -1;
 
         $qry = "UPDATE user SET serverManager = 1 WHERE email = '$email'";
-        if ($db->do_query($qry) !== true) die("oops");
+        if ($db->do_query($qry) !== true)
+            die("oops");
         return 1;
     }
 
     function removeServerManager($email) {
         global $db;
         $qry = "UPDATE user SET serverManager = 0 WHERE email = '$email'";
-        if ($db->do_query($qry) !== true) die("oops");
+        if ($db->do_query($qry) !== true)
+            die("oops");
     }
 
     function getServerManagers() {
@@ -296,7 +352,8 @@ class AuthManager {
             if ($db) {
                 $qry = "SELECT firstName, lastName, Email FROM user WHERE serverManager = 1 and active = 1";
                 $res = $db->do_query($qry);
-                if ($res !== true) throw new Exception(sprintf('MySQL error :  %s last successful query was %s', $res, $db->lastQuery));
+                if ($res !== true)
+                    throw new Exception(sprintf('MySQL error :  %s last successful query was %s', $res, $db->lastQuery));
 
                 while ($arr = $db->get_row_array()) {
                     array_push($men, $arr);
@@ -329,7 +386,8 @@ class AuthManager {
             $res = $this->providers["LOCAL"]->createUser($username, $pass, $email, $firstName, $lastName, $language, !$hasManagers);
 
             if ($res === true) {
-                if (!$hasManagers) flash('Please sign in with the user account you have just created.');
+                if (!$hasManagers)
+                    flash('Please sign in with the user account you have just created.');
                 return true;
             } elseif (preg_match("/Duplicate entry '.*' for key 'Email'/", $res)) {
                 flash("A user already exists with that email address", "err");
