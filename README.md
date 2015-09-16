@@ -4,9 +4,8 @@ EpiCollect+ is licenced under a [AGPLv3 Licence](http://opensource.org/licenses/
 
 # Mobile Apps
 
-Android: https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollectplus.html5&hl=en_GB
-
-iOS: https://itunes.apple.com/us/app/epicollect+/id999309173?ls=1&mt=8
+<a href="https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollectplus.html5&hl=en_GB">Android</a>
+<a href="https://itunes.apple.com/us/app/epicollect+/id999309173?ls=1&mt=8">iOS</a>
 
 # Acknowledgements
 EpiCollect+ uses [Glyphicons](http://glyphicons.com/), [jQuery](http://jquery.com), [jQuery UI](http://jqueryui.com) and [Raphael](http://raphaeljs.com/)
@@ -101,3 +100,12 @@ replacing the placeholders with your Google API details https://developers.googl
 
 If you do not add these parameters, the option to login using Google Plus Sign will not be shown
 
+#### Notes for developers only
+
+`development` branch is the branch we currently push to production
+
+`relayout` branch is an experimental branch featuring a bit of re-design and it is the most up to date, so the best candidate for a fork, as it will be merged to `development` soon
+
+All the other branches are just legacy branches we keep for reference and we might delete in the future
+
+Google API PHP library: we are using an old repo, you can find the code into `Auth/GooglePHPLibrary/` folder
