@@ -30,32 +30,33 @@ function siteHome() {
     $vals["featured"] = '<div class="featured-projects" data-example-id="thumbnails-with-custom-content">
         <h3>Featured Projects</h3>
         <div class="row">
-            <a href="#" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
+            <a href="http://geokey.org.uk/" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
                 <div class="thumbnail">
-                    <img class="img-responsive " src="{#SITE_ROOT#}/images/ecplus-featured-1.jpg" alt="Generic placeholder thumbnail">
-                    <h3>Thumbnail label</h3>
-                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+                    <img class="img-responsive " src="{#SITE_ROOT#}/images/cc-geokey.png" alt="GeoKey logo">
+                    <h3>GeoKey</h3>
+                    <p>Collect, share and discuss local knowledge. <br/><br/>GeoKey is an infrastructure for participatory mapping.</p>
                 </div>
             </a>
-             <a href="#" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
+             <a href="{#SITE_ROOT#}/lichens" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
                 <div class="thumbnail">
-                    <img class="img-responsive " src="{#SITE_ROOT#}/images/ecplus-featured-2.jpg" alt="Generic placeholder thumbnail">
-                    <h3>Thumbnail label</h3>
-                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+                    <img class="img-responsive " src="{#SITE_ROOT#}/images/cc-lichens.png" alt="Crowd Crafting Lichens Project">
+                    <h3>Lichens as Biomarkers</h3>
+                    <p>The goal of this application is to help to analyze, classify and measure the size of the lichens in order to study the quality of air in different areas of the cities.
+                    </p>
                 </div>
             </a>
-             <a href="#" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
+             <a href="http://www.geotagx.org/" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
                 <div class="thumbnail">
-                    <img class="img-responsive " src="{#SITE_ROOT#}/images/ecplus-featured-3.jpg" alt="Generic placeholder thumbnail">
-                    <h3>Thumbnail label</h3>
-                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+                    <img class="img-responsive " src="{#SITE_ROOT#}/images/cc-geotagx.png" alt="GGeoTag-X">
+                    <h3>GeoTag-X</h3>
+                    <p>Help disaster relief efforts on the ground to plan a response by asking volunteers to analyse photos taken in disaster-affected areas</p>
                 </div>
             </a>
-              <a href="#" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
+              <a href="{#SITE_ROOT#}/Schools" class="col-xs-6 col-sm-6 col-md-6 col-lg-3">
                 <div class="thumbnail">
-                    <img class="img-responsive " src="{#SITE_ROOT#}/images/ecplus-featured-4.jpg" alt="Generic placeholder thumbnail">
-                    <h3>Thumbnail label</h3>
-                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+                    <img class="img-responsive " src="{#SITE_ROOT#}/images/cc-schools.png" alt="Schools project">
+                    <h3>Schools</h3>
+                    <p>Help participate in a survey of schools collecting information on size of school, type of school, location and facilities available for pupils.</p>
                 </div>
             </a>
         </div>

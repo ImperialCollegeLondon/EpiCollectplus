@@ -1,5 +1,7 @@
 <?php
 
+/* Function to handle data upload
+ * */
 function uploadData() {
     global $url, $log;
 
