@@ -55,9 +55,8 @@ class OpenIDProvider extends AuthProvider {
         //For not logged in user, get google login url
         $this->authUrl = $this->gClient->createAuthUrl();
 
-        if (!isset($_SESSION["Google_OAuth2_URL"])) {
-            $_SESSION["Google_OAuth2_URL"] = $this->authUrl;
-        }
+        $_SESSION["Google_OAuth2_URL"] = $this->authUrl;
+
     }
 
     function getType() {
