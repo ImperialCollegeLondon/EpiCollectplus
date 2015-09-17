@@ -62,8 +62,8 @@ if (localStorage && localStorage.getItem('num_entries')) numEnts = localStorage.
 
 var IE8 = false; //annoying, but we need the SVG to work... or the workaround to work in IE8
 
-//$(document).ready(function () {
-//    'use strict';
+$(document).ready(function () {
+    'use strict';
 //    ////immersive mode
 //    //var fullscreen = false;
 //    //
@@ -86,29 +86,29 @@ var IE8 = false; //annoying, but we need the SVG to work... or the workaround to
 //    //    }
 //    //    fullscreen = !fullscreen;
 //    //});
-//    var map_container = $('#map-container .panel.panel-default');
-//
-//    map_container.resizable({
-//
-//        handles: {s: '.map-resize-handle'},
-//
-//        resize: function () {
-//            $('#map-container .panel').css({'padding-bottom': '0px'});
-//
-//            $('#map').height(map_container.height() - 100);
-//
-//            //console.log($('#map').height());
-//            //console.log($('#map-container .panel.panel-default').height());
-//
-//            google.maps.event.trigger(map, 'resize');
-//            // map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
-//        },
-//
-//        start: function () {
-//            google.maps.event.trigger(map, 'resize');
-//        }
-//    });
-//});
+    var map_container = $('#map-container .panel.panel-default');
+
+    map_container.resizable({
+
+        handles: {s: '.map-resize-handle'},
+
+        resize: function () {
+            $('#map-container .panel').css({'padding-bottom': '0px'});
+
+            $('#map').height(map_container.height() - 100);
+
+            //console.log($('#map').height());
+            //console.log($('#map-container .panel.panel-default').height());
+
+            google.maps.event.trigger(map, 'resize');
+            // map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(minlat, minlon), new google.maps.LatLng(maxlat, maxlon)));
+        },
+
+        start: function () {
+            google.maps.event.trigger(map, 'resize');
+        }
+    });
+});
 
 
 $(function () {
@@ -217,10 +217,14 @@ function setProgressMessage(msg) {
 
 
 function setProgress(n) {
+
+    //while markers are loading
     if (n < totalents) {
         setProgressMessage('loading... ' + n + '/' + totalents);
     }
     else {
+
+        //markers loaded
         setProgressMessage('Loaded');
         setTimeout(function () {
             $('#progressbar').hide();
@@ -232,22 +236,22 @@ function setProgress(n) {
 
 }
 
-function toggleMenu(selector) {
-
-    var jq = $(selector + ' .ecplus-dropdown-menu');
-    var visible = jq.css('display') !== 'none';
-
-    if (visible) jq.hide();
-    else {
-        $(document.body).click(function (evt) {
-            if ($(evt.target).attr("type") !== "checkbox" && $(evt.target)[0].tagName !== "LABEL")
-                $(selector + " .ecplus-dropdown-menu").hide();
-        });
-
-        jq.show();
-
-    }
-}
+//function toggleMenu(selector) {
+//
+//    var jq = $(selector + ' .ecplus-dropdown-menu');
+//    var visible = jq.css('display') !== 'none';
+//
+//    if (visible) jq.hide();
+//    else {
+//        $(document.body).click(function (evt) {
+//            if ($(evt.target).attr("type") !== "checkbox" && $(evt.target)[0].tagName !== "LABEL")
+//                $(selector + " .ecplus-dropdown-menu").hide();
+//        });
+//
+//        jq.show();
+//
+//    }
+//}
 
 function createMap(div) {
     var doc = document;
@@ -934,17 +938,23 @@ function addToSidebar(index, text, hasPosition) {
     var link;
     var truncated_text;
 
-    truncated_text = (text.length > 20) ? text.substr(0, 20) + '...' : text;
+    //there is a bug, sometimes text is undefined?
+    if(text !== undefined) {
+        truncated_text = (text.length > 20) ? text.substr(0, 20) + '...' : text;
 
-    if (hasPosition !== false) {
+        if (hasPosition !== false) {
 
 
-        link = '<a class="list-group-item" href="javascript:showBubbleFor(' + index + ')" index="' + index + '">' + truncated_text + '</a>';
-        $("#sidebar").append(link);
+            link = '<a class="list-group-item" href="javascript:showBubbleFor(' + index + ')" index="' + index + '">' + truncated_text + '</a>';
+            $("#sidebar").append(link);
+        }
+        else {
+            link = '<a class="list-group-item disabled" href="javascript:showBubbleFor(' + index + ')" index="' + index + '">' + truncated_text + '</a>';
+            $("#sidebar").append(link);
+        }
     }
     else {
-        link = '<a class="list-group-item disabled" href="javascript:showBubbleFor(' + index + ')" index="' + index + '">' + truncated_text + '</a>';
-        $("#sidebar").append(link);
+        //do nothing, we need to look where the 'undefined' comes from
     }
 }
 

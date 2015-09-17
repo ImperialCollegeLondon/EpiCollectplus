@@ -4,19 +4,19 @@
 		{
 			border: 1px solid #FFAAAA;
 		}
-		
+
 		label
 		{
 			display: inline-block;
 			width: 10em;
 		}
-		
+
 		input[type=submit]
 		{
 			magin-top: .2em;
 			margin-left:11em;
 		}
-		
+
 		#users section
 		{
 			vertical-align: top;
@@ -24,37 +24,37 @@
 			width : 45%;
             margin-right : 2em;
 		}
-		
+
 		#users section table
-		{	
+		{
 			width : 100%;
 		}
-	
+
 		.disabled
 		{
 			color : #888888;
 		}
-	
+
 		.reset
 		{
 			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_240_rotation_lock.png") 0.5em 45% no-repeat;
 		}
-		
+
 		.disable
 		{
 			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_007_user_remove.png") 0.5em 45% no-repeat;
 		}
-		
+
 		.enable
 		{
 			background : url("{#SITE_ROOT#}/images/glyphicons/glyphicons_006_user_add.png") 0.5em 45% no-repeat;
 		}
-	
+
 		.reset, .disable, .enable
 		{
 			vertical-align : middle;
 		}
-		
+
 		.reset a, .disable a, .enable a
 		{
 			margin: 0;
@@ -64,24 +64,30 @@
 			padding-top: 4px;
             padding-bottom: 4px;
 		}
-		
+
 		.reset a:hover, .disable a:hover, .enable a :hover
 		{
 			background-color : rgba(255,255,255,0.4);
 		}
+        div#tabs {
+            display: block!important;
+        }
 	</style>
 {{/style}}
 {{script}}
 	<script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui.min.js"></script>
         <script type="text/javascript">
+
+
+
 		var en = false;
-	
+
 		function openResetForm(usr)
 		{
 			userToEdit = usr;
 			$("#resetConfirmDialog").dialog("open");
 		}
-        
+
 		function openDisableForm(usr, enable)
 		{
 			userToEdit = usr;
@@ -93,7 +99,7 @@
 			else
 			{$("#disableConfirmDialog").dialog("open");}
 		}
-		
+
 
 		function populateUsers()
 		{
@@ -119,13 +125,13 @@
 				}
 			});
 		}
-		
-	
+
+
 		$(function(){
-			$("#tabs").tabs();	
-			
+			$("#tabs").tabs();
+
 			populateUsers();
-			
+
 			$("#resetConfirmDialog").dialog({
 				autoOpen : false,
 				modal: true,
@@ -138,13 +144,13 @@
 								type : "POST",
 								success : function(data, status, xhr)
 								{
-								
+
 									if(data.result)
 									{
 										$("#resetConfirmDialog").dialog("close");
 										$("#dialog").attr("title", "Password Reset");
 										$("#dialog").html("The user's password has been reset and is now <b>" + data.result +"</b>");
-										$("#dialog").dialog({ 
+										$("#dialog").dialog({
 											modal : true,
 											resize : false,
 											buttons: {
@@ -160,7 +166,7 @@
 										$("#dialog")
 											.attr("title", "Reset Failed")
 											.html("Could not reset the user's password</div>")
-											.dialog({ 
+											.dialog({
 												modal : true,
 												resize : false,
 												buttons: {
@@ -177,7 +183,7 @@
 									$("#dialog")
 										.attr("title", "Reset Failed")
 										.html("Could not reset the user's password</div>")
-										.dialog({ 
+										.dialog({
 											modal : true,
 											resize : false,
 											buttons: {
@@ -188,13 +194,13 @@
 										});
 								}
 						});
-						
+
 					},
 					"Cancel" : function (){$(this).dialog("close");}
 				}
-				
+
 			});
-			
+
 			$("#disableConfirmDialog").dialog({
 				autoOpen : false,
 				modal: true,
@@ -207,14 +213,14 @@
 									type : "POST",
 									success : function(data, status, xhr)
 									{
-									
+
 										if(data.result)
 										{
 											$("#disableConfirmDialog").dialog("close");
 											$("#dialog").attr("title", "User Disabled");
 											$("#dialog").html("The user has been disabled");
 											populateUsers();
-											$("#dialog").dialog({ 
+											$("#dialog").dialog({
 												modal : true,
 												resize : false,
 												buttons: {
@@ -230,7 +236,7 @@
 											$("#dialog")
 												.attr("title", "User enable failed")
 												.html("Could not enabled the user")
-												.dialog({ 
+												.dialog({
 													modal : true,
 													resize : false,
 													buttons: {
@@ -247,7 +253,7 @@
 										$("#dialog")
 											.attr("title", "User enable failed")
 											.html("Could not enabled the user")
-											.dialog({ 
+											.dialog({
 												modal : true,
 												resize : false,
 												buttons: {
@@ -257,15 +263,15 @@
 												}
 											});
 									}
-									
+
 							});
-						
+
 					},
 					"Cancel" : function (){$(this).dialog("close");}
 				}
-				
+
 			});
-			
+
 			$("#enableConfirmDialog").dialog({
 				autoOpen : false,
 				modal: true,
@@ -278,14 +284,14 @@
 									type : "POST",
 									success : function(data, status, xhr)
 									{
-									
+
 										if(data.result)
 										{
 											$("#enableConfirmDialog").dialog("close");
 											$("#dialog").attr("title", "User Enabled");
 											$("#dialog").html("The user has been enabled");
 											populateUsers();
-											$("#dialog").dialog({ 
+											$("#dialog").dialog({
 												modal : true,
 												resize : false,
 												buttons: {
@@ -301,7 +307,7 @@
 											$("#dialog")
 												.attr("title", "User enable failed")
 												.html("Could not enabled the user")
-												.dialog({ 
+												.dialog({
 													modal : true,
 													resize : false,
 													buttons: {
@@ -318,7 +324,7 @@
 										$("#dialog")
 											.attr("title", "User enable failed")
 											.html("Could not enabled the user")
-											.dialog({ 
+											.dialog({
 												modal : true,
 												resize : false,
 												buttons: {
@@ -328,18 +334,18 @@
 												}
 											});
 									}
-									
-							});						
+
+							});
 					},
 					"Cancel" : function (){$(this).dialog("close");}
 				}
-				
+
 			});
-			
+
 			$("input[type=\"password\"]").change(function(e){
 				var qs = true;
 				var ps = false;
-				
+
 				$("input[type=\"password\"]").each(function(idx, ele){
 					if(ps === false)
 					{
@@ -350,8 +356,8 @@
 						if($(ele).val() != ps) qs = false;
 					}
 				});
-				
-				if(qs) 
+
+				if(qs)
 				{
 					$("input[type=\"password\"]").removeClass("invalid");
 				}
@@ -360,19 +366,19 @@
 					$("input[type=\"password\"]").addClass("invalid");
 				}
 			});
-			
+
 			var vals = {#vals#}
-			
+
 			$("#_LDAP").change(function(e){
 				var ldapvis = e.target.checked;
 				$(".ldap_option").toggle(ldapvis);
 			});
 			$(".session_comp").change(function(e){
 				$("#session_length").val(
-					$("#session_length_base").val() * $("#session_length_mutiplier").val()		
+					$("#session_length_base").val() * $("#session_length_mutiplier").val()
 				);
 			})
-			
+
 			$("select, input").each(function(idx, ele)
 			{
 				if(vals[ele.name])
@@ -380,25 +386,25 @@
 					$(ele).val(vals[ele.name]);
 				}
 			});
-			
+
 			$("input[type=\"checkbox\"]").each(function(idx, ele)
 			{
 				$(ele).attr("checked", $("#" + ele.id.replace("_", "").toLowerCase()).val() == "true" ? "checked" : null);
 			});
-			
+
 			$("input[type=\"checkbox\"]").change(function(e){
 				$("#" + e.target.id.replace("_", "").toLowerCase()).val(e.target.checked);
-				
+
 			});
-			
+
 			$("#session_length_base").val(
-					$("#session_length").val() / $("#session_length_mutiplier").val()				
+					$("#session_length").val() / $("#session_length_mutiplier").val()
 			);
-			
+
 			var ldapvis = $("#_LDAP").attr("checked") == "checked";
 			$(".ldap_option").toggle(ldapvis);
 		});
-		
+
 	</script>
 {{/script}}
 {{main}}
@@ -423,7 +429,7 @@
 		<div id="security">
 			<form method="POST" action="{#SITE_ROOT#}/writeSettings">
 				<h1>Security and Authentication</h1>
-				
+
 				<label for="security\auth_method">User Authentication Methods</label>
 				<p><input type="checkbox" id="_OPENID" />OpenID <input type="hidden" id="openid" name="security\use_openID" /></p>
 				<p><input type="checkbox" id="_LDAP" />LDAP (Windows Active Directory) <input type="hidden" id="ldap" name="security\use_ldap" /></p>
@@ -447,10 +453,10 @@
 					<input type="hidden" id="session_length" name="security\session_length" /></p>
 					<input type="hidden" name="edit" value="true" />
 					<input type="submit" name="submit" Value="Save Settings" />
-					
+
 			</form>
 		</div>
-	
+
 		<div id="database">
 			<form method="POST" action="{#SITE_ROOT#}/writeSettings">
 				<h1>Database Settings</h1>
@@ -496,12 +502,12 @@
 						<label for="email">Email</label>
 						<input type="email" name="email" />
 					</p>
-	
+
 					<p>
 						<label for="username">User Name</label>
 						<input type="text" name="username" />
 					</p>
-	
+
 					<p>
 						<label for="password">Password</label>
 						<input type="password" name="password" />

@@ -196,11 +196,11 @@
     }
 
     .minmax {
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
-    z-index: 100;
-    padding: 2px;
+        position: absolute;
+        bottom: 0px;
+        left: 0px;
+        z-index: 100;
+        padding: 2px;
     }
 
     /*.hover .minmax {*/
@@ -262,6 +262,7 @@
 <script type="text/javascript" src="{#SITE_ROOT#}/js/graphics.js"></script>
 <script type="text/javascript" src="{#SITE_ROOT#}/js/form-home.js">
 
+
 </script>
 
 {{/script}}
@@ -285,9 +286,12 @@
             {#curationbuttons#}
             <!--<span class="immersive-mode-btn"><a class="btn btn-default" href="#"><i class="fa fa-arrows-alt fa-2x"></i></a></span>-->
             <span class="ecplus-toolbar-divider">&nbsp;</span>
-            <label for="filter_fields">Filter List By</label><select id="filter_fields" class="fieldList form-control"></select> <input class="form-control" id="filter_value"/>
+            <label for="filter_fields">Filter List By</label><select id="filter_fields"
+                                                                     class="fieldList form-control"></select> <input
+                class="form-control" id="filter_value"/>
                                 <span id="filterControls" class="button-set">
-                                        <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value').val());" class="btn btn-default">
+                                        <a href="javascript:doFilter($('#filter_fields').val(), $('#filter_value').val());"
+                                           class="btn btn-default">
                                             <i class="fa fa-search "></i>
                                         </a>
                                         <a href="javascript:doFilter('','');" class="btn btn-default">Clear Filter</a>
@@ -302,7 +306,8 @@
                     <i class="fa fa-download fa-2x"> </i>
                     TSV
                 </a>
-                <a class="btn btn-default" href="./{#formName#}.xml?mode=list" title="Download data as XML" target="__blank">
+                <a class="btn btn-default" href="./{#formName#}.xml?mode=list" title="Download data as XML"
+                   target="__blank">
                     <i class="fa fa-download fa-2x"></i>
                     XML</a>
             </span>
@@ -322,15 +327,21 @@
 
                     </span> to <span id="end"></span> of <span id="total"></span>
                                         <span id="backwardButtons" class="button-set">
-                                            <a class="btn btn-default" href="javascript:getData();" title="Refresh entries">
-                                                <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_081_refresh.png" alt="next"/>
+                                            <a class="btn btn-default" href="javascript:getData();"
+                                               title="Refresh entries">
+                                                <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_081_refresh.png"
+                                                     alt="next"/>
                                             </a>
 
-                                            <a class="btn btn-default" href="javascript:turnPage();" title="Go to next page">
-                                                <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png" alt="next"/>
+                                            <a class="btn btn-default" href="javascript:turnPage();"
+                                               title="Go to next page">
+                                                <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_173_play.png"
+                                                     alt="next"/>
                                             </a>
-                                            <a class="btn btn-default" href="javascript:lastPage();" title="Go to final page">
-                                                <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png" alt="last"/>
+                                            <a class="btn btn-default" href="javascript:lastPage();"
+                                               title="Go to final page">
+                                                <img src="{#SITE_ROOT#}/images/glyphicons/glyphicons_178_step_forward.png"
+                                                     alt="last"/>
                                             </a>
                                     </span>
 				</span>
@@ -368,11 +379,11 @@
                         </div>
 
                     </div>
-                    <div class="map-resize-handle ui-resizable-handle ui-resizable-s"><i class="fa fa-ellipsis-h"></i></div>
+                    <div class="map-resize-handle ui-resizable-handle ui-resizable-s"><i class="fa fa-ellipsis-h"></i>
+                    </div>
                 </div>
 
             </div>
-
 
 
         </div>
@@ -421,7 +432,8 @@
                         </div>
                         <div class="form-group field-filter-controls pull-right ">
                             <a href="javascript:doMapFieldFilter()" class="btn btn-default btn-sm">Apply</a>
-                            <a href="javascript:clearMapFilter();" class="clearFilterbtn btn btn-default btn-sm">Clear</a>
+                            <a href="javascript:clearMapFilter();"
+                               class="clearFilterbtn btn btn-default btn-sm">Clear</a>
                         </div>
                     </div>
                 </div>
@@ -437,7 +449,8 @@
                             <select id="mapColourField" class="colourFieldList form-control"></select>
                         </div>
                         <div class="field-filter-controls pull-right">
-                            <a href="javascript:colourMarkersBy($('#mapColourField').val())" class="btn btn-default btn-sm">Apply Colouring</a>
+                            <a href="javascript:colourMarkersBy($('#mapColourField').val())"
+                               class="btn btn-default btn-sm">Apply Colouring</a>
                         </div>
                     </div>
 

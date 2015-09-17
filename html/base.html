@@ -12,6 +12,7 @@
     <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="{#SITE_ROOT#}/js/checkurl.js"></script>
     <script type="text/javascript" src="{#SITE_ROOT#}/js/is-loading.js"></script>
+    <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.matchHeight.js"></script>
     <script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollectPlus.js"></script>
 
 
@@ -67,6 +68,8 @@
     <div class="clearfix"></div>
     <div id="main">
         {#featured#}
+
+        {#integrations#}
 
         {#main#}
     </div>
@@ -129,6 +132,12 @@
         var s = document.getElementsByTagName('script')[0];
         s.parentNode.insertBefore(ga, s);
     })();
+
+    $(window).on('resize', function(){
+            console.log('resizing');
+            $('.match-height').matchHeight();
+            $.fn.matchHeight._update();
+    });
 
 </script>
 <!-- Place this tag right after the last button or just before your close body tag. -->
