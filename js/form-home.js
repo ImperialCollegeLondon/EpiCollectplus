@@ -315,10 +315,7 @@ function loadCallback(prj) {
 
     ecplus_table_header.resizable({
         handles: "e",
-        alsoResize: ".ecplus-data",
-        resize: function (ele) {
-            $("td." + ele.element[0].className.substring(0, ele.element[0].className.indexOf(" "))).css({"max-width": (ele.element.width() - 5) + "px"});
-        }
+        alsoResize: ".ecplus-data"
     });
 
     ecplus_table_header.append('<img src="../images/uparrow.png" class="asc data-table-arrow-images" width="12" /><img src="../images/downarrow.png" class="desc data-table-arrow-images" width="12" />');
