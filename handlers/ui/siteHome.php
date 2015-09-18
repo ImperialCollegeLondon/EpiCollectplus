@@ -92,7 +92,7 @@ function siteHome() {
                 <div class="thumbnail match-height">
                     <img class="img-responsive " src="{#SITE_ROOT#}/images/cc-cartodb.png" alt="carto DB">
                     <h3>CartoDB</h3>
-                    <p>Help participate in a survey of schools collecting information on size of school, type of school, location and facilities available for pupils.</p>
+                    <p>MAP YOUR WORLD\'S DATA: CartoDB is the easiest way to map and analyze your location data </p>
                 </div>
             </a>
         </div>

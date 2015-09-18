@@ -120,6 +120,9 @@
 </div>
 <script type="text/javascript">
 
+    var url = window.location.href;
+    var url_parts = url.split('/');
+
     var _gaq = _gaq || [];
     _gaq.push(['_setAccount', '{#GA_ACCOUNT#}']);
     _gaq.push(['_trackPageview']);
@@ -133,10 +136,24 @@
         s.parentNode.insertBefore(ga, s);
     })();
 
+    //match containers height on first page load (only on home page)
+    if(url_parts[url_parts.length - 1] === '') {
+        $('.match-height').matchHeight();
+        $.fn.matchHeight._update();
+    }
+
+    //match height on page resize
     $(window).on('resize', function(){
+
+        var url = window.location.href;
+        var url_parts = url.split('/');
+
+        //resize only on home screen, it is for the featured projects and integrations containers
+        if(url_parts[url_parts.length - 1] === '') {
             console.log('resizing');
             $('.match-height').matchHeight();
             $.fn.matchHeight._update();
+        }
     });
 
 </script>
