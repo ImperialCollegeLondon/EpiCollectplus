@@ -245,7 +245,7 @@ function updateProject() {
             $drty = false;
             if ($xml && $xml != "") {
                 $prj->parse($xml);
-                if ($prj->name != oldName) {
+                if ($prj->name != $oldName) {
                     header("HTTP/1.1 400 CANNOT CHANGE NAME", 400);
                     return false;
                 }
