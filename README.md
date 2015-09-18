@@ -107,12 +107,13 @@ To enable LDAP integration for login:
 
 On a linux server (tested on CentOS 7), you can run the following commands via command line to ensure ldap is installed and configured:
 
+```
 yum install policycoreutils-python
 
 semanage port -l | grep ldap
 
 setsebool -P httpd_can_connect_ldap on
-
+```
 
 #### Notes for developers only
 
