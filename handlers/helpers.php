@@ -25,9 +25,13 @@ function openCfg() {
     try {
         $cfg = new ConfigManager($cfg_fn);
 
+        // check for ldap php component installed
         if ($cfg->settings['security']['use_ldap'] && !function_exists('ldap_connect')) {
             $cfg->settings['security']['use_ldap'] = false;
             $cfg->writeConfig();
+            // show user error and link to guide on github
+            die('ERROR: No ldap_connect - please install php-ldap');
+            echo '<br />For more information, please check <a href="https://github.com/ImperialCollegeLondon/EpiCollectplus#step-7--ldap-installation">this guide</a>.';
         }
 
         if (!array_key_exists('salt', $cfg->settings['security']) || trim($cfg->settings['security']['salt']) == '') {
