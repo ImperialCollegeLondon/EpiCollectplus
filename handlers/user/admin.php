@@ -1,6 +1,7 @@
 <?php
 
-function admin() {
+function admin()
+{
 
     global $auth, $SITE_ROOT, $cfg;
 
@@ -13,9 +14,24 @@ function admin() {
 
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $mans = $auth->getServerManagers();
-        $men = "";
+        $men = '';
+        $men_email = $auth->getUserEmail();
         foreach ($mans as $man) {
-            $men .= "<form method=\"POST\" action=\"user/manager\"><p>{$man["firstName"]} {$man["lastName"]} ({$man["Email"]})<input type=\"hidden\" name=\"email\" value=\"{$man["Email"]}\" />" . ($auth->getUserEmail() == $man["Email"] ? "" : "<input type=\"submit\" name=\"remove\" value=\"Remove\" />") . "</form></p>";
+
+            $men .= '<form method="POST" action="user/manager">';
+            $men .= '<div class="form-group">';
+            $men .= '<label>';
+            $men .= $man["firstName"] . ' ' . $man["lastName"] . ' (' . $man["Email"] . ')';
+            $men .= '</label>';
+            $men .= '<input type="hidden" name="email" value="' . $man["Email"] . '" />';
+
+            if ($men_email != $man["Email"]) {
+                $men .= '<input type="submit" name="remove" value="Remove" class="btn btn-default pull-right"/>';
+            }
+            $men .= '</form>';
+            $men .= '</div>';
+
+
         }
 
         $arr = "{";
@@ -28,7 +44,9 @@ function admin() {
 
         echo applyTemplate("./base.html", "./admin.html", array("serverManagers" => $men, "vals" => $arr));
 
-    } else if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        createUser();
+    } else {
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            createUser();
+        }
     }
 }
