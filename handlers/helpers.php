@@ -85,9 +85,21 @@ function makeUrl($fn) {
 
 function handleError($errno, $errstr, $errfile, $errline, array $errcontext) {
 
-
+    global $SITE_ROOT;
     // error was suppressed with the @-operator
     if (0 === error_reporting()) {
+
+        //experimental!
+        //clear cache
+        header("Expires: Tue, 01 Jan 2000 00:00:00 GMT");
+        header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+
+        //reload home page
+        header("location: http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/login.php");
+
         return false;
     }
 
