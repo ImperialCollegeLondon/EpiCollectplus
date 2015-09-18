@@ -105,7 +105,7 @@ If you do not add these parameters, the option to login using Google Plus Sign w
 
 To enable LDAP integration for login:
 
-On a linux server (tested on CentOS 7), you can run the following commands via command line to ensure ldap is installed and configured:
+On a linux server (tested on CentOS 7), you can run the following commands via command line to ensure LDAP is installed and configured:
 
 ```
 yum install policycoreutils-python

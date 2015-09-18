@@ -90,7 +90,13 @@ class EcProject{
 					{
 						foreach($tbl->branches as $branch)
 						{
+							try {
 								$this->tables[$branch]->branchOf = $tname;
+							} catch (ErrorException $e) {
+								// any errors here, return false
+								return false;
+							}
+
 						}
 					}
 					
