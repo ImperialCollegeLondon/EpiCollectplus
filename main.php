@@ -6,6 +6,13 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('memory_limit', -1);
 
+// restrict direct access to file
+if (stripos($_SERVER['REQUEST_URI'], 'main.php')) {
+    // redirect to home page
+    header('Location: index.html');
+    exit();
+}
+
 if (isset($_REQUEST['_SESSION'])) {
     throw new Exception('Bad client request');
 }
