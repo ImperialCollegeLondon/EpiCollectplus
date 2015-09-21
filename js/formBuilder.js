@@ -300,7 +300,7 @@ PropertiesForm.prototype.setForKey = function () {
     //check required and disable
     $('.required input, .key input').prop('checked', true).prop('disabled', true);
 
-    $('.hidden', this.div).show()
+    $('.ecplushidden', this.div).show()
 };
 
 /**
@@ -359,7 +359,9 @@ PropertiesForm.prototype.setValuesFor = function (ctrl) {
     $('.genkey input', this.div).prop('checked', ctrl.genkey);
     $('.integer input', this.div).prop('checked', ctrl.isinteger);
     $('.decimal input', this.div).prop('checked', ctrl.isdouble);
-    $('.hidden input', this.div).prop('checked', ctrl.hidden);
+    $('.ecplushidden input', this.div).prop('checked', ctrl.hidden);
+
+
     $('.min input', this.div).val(ctrl.min);
     $('.max input', this.div).val(ctrl.max);
 
@@ -1681,6 +1683,8 @@ function askForKey(keyDeleted) {
                     new_field.isinteger = false;
                     new_field.genkey = true;
                     vals.key_type = 'text';
+                    // set key as hidden
+                    new_field.hidden = true;
                 }
                 else {
                     key_id = vals.new_key;
