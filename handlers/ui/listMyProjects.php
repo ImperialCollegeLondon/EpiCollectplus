@@ -36,8 +36,12 @@ function listMyProjects() {
         $html .= '<div class="panel-body">';
         $html .= '<div class="my-projects-list list-group ">';
 
-
+        $hasProjects = false;
         for ($i = 0; $i < $count; $i++) {
+
+            if (!$hasProjects) {
+                $hasProjects = true;
+            }
 
             //project metadata
             $href = $SITE_ROOT . '/' . $prjs[$i]["name"];
@@ -73,6 +77,12 @@ function listMyProjects() {
             $html .= '</div>';
             $html .= '</a>';
         }
+
+        // if the user has no projects, inform them
+        if (!$hasProjects) {
+            $html .= '<p>You currently have no Projects. <a href="createProject.html">Create one now</a>.</p>';
+        }
+
         $html .= '</div></div></div></div></div>';
 
         $vals['userprojects'] = $html;
