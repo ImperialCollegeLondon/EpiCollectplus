@@ -784,9 +784,16 @@ class EcProject{
 		public static function getUserProjects($uid, $fmt = 'json', $nodups = false)
 		{
 			global $db;
-			
-			$qry = sprintf('SELECT p.name as name, p.ttl as ttl, p.ttl24 as ttl24, p.isListed as listed, p.description as description, p.image as image FROM (SELECT id,name, description, image, count(entry.idEntry) as ttl, x.ttl as ttl24, isListed FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName group by project.name) p join userprojectpermission upp on p.id = upp.project WHERE upp.user = %s order by p.name asc', $uid);
-			$res = $db->do_query($qry);
+
+
+			//legacy query
+			$qry = sprintf('SELECT p.name as name, p.ttl as ttl, p.ttl24 as ttl24, p.isListed as listed, p.description as description, p.image as image FROM (SELECT id,name, description, image, count(entry.idEntry) as ttl, x.ttl as ttl24, isListed FROM project left join entry on project.name = entry.projectName group by project.name) p join userprojectpermission upp on p.id = upp.project WHERE upp.user = %s order by p.name asc', $uid);
+
+
+			//faster query, we do not get the last entries in the past 24hrs as it is too slow, we would need a "stats" table for that
+			$query = 'select  count(entry.idEntry) as ttl, project.name as name, project.description as description, project.image as image, project.isListed as listed from project left join entry on project.name=entry.projectName where project.id IN (select userprojectpermission.project from userprojectpermission join user where userprojectpermission.user=user.idUsers and user.idUsers='.$uid.') group by project.name;';
+
+			$res = $db->do_query($query);
 			$projects = array();
 			if( $res === true )
 			{
@@ -799,7 +806,7 @@ class EcProject{
    
 					$arr['listed'] = ( $arr['listed'] === '1' ? 'public' : 'private' );
                     $arr['ttl'] = intval($arr['ttl']);
-                    $arr['ttl24'] = intval($arr['ttl24']);
+                   // $arr['ttl24'] = intval($arr['ttl24']);
 					array_push($projects, $arr);
 				}
 			}

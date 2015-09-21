@@ -28,7 +28,7 @@ function listMyProjects() {
 
         //create dom for list of user projects
         $html = '<div class="row">';
-        $html .= '<div class="col-md-6 col-md-offset-3">';
+        $html .= '<div class="col-sm-12 col-md-6 col-lg-6">';
         $html .= '<div class="panel panel-default">';
         $html .= '<div class="panel-heading">';
         $html .= '<h3 class="panel-title">My Projects</h3>';
@@ -43,9 +43,11 @@ function listMyProjects() {
             $href = $SITE_ROOT . '/' . $prjs[$i]["name"];
             $project_name = $prjs[$i]["name"];
             $total_entries = $prjs[$i]["ttl"];
-            $total_entries_24 = $prjs[$i]["ttl24"];
+            $listed = $prjs[$i]["listed"];
             $project_image = $prjs[$i]["image"];
             $project_desc = $prjs[$i]["description"];
+
+            $background = ($listed == 'public') ? 'bg-success' : 'bg-warning';
 
             if ($project_image == null) {
                 $project_image = $SITE_ROOT . '/images/project-image-placeholder-100x100.png';
@@ -59,7 +61,7 @@ function listMyProjects() {
                 }
             }
 
-            $html .= '<a href="' . $href . '" class="project-list-item list-group-item">';
+            $html .= '<a href="' . $href . '" class="project-list-item list-group-item '.$background.'">';
             $html .= "<div class='project-thumbnail' style='background-image: url(" . $project_image . "');'>";
             //$html .= '<img class="project-image img-rounded ' . $orientation . ' " src="' . $project_image . '" alt="Project image"/>';
             $html .= '</div>';
@@ -69,7 +71,7 @@ function listMyProjects() {
             $html .= '<div class="clearfix"></div>';
             $html .= '<div class="project-badge-counters">';
             $html .= '<span class="badge">' . $total_entries . ' total entries</span>';
-            $html .= '<span class="badge">' . $total_entries_24 . ' entries in the last 24 hours </span>';
+            $html .= '<span class="badge">' . $listed . ' </span>';
             $html .= '</div>';
             $html .= '</a>';
         }

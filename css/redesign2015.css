@@ -240,6 +240,12 @@ a.project-list-item.list-group-item {
 .my-projects-list .project-badge-counters {
     margin-top: 10px;
 }
+.my-projects-list a.bg-warning {
+    background-color: #fcf8e3!important;
+}
+.my-projects-list a.bg-success {
+    background-color: #c1e2b3!important;
+}
 
 /* Social links*/
 .social {
