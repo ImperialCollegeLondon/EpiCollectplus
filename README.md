@@ -100,6 +100,21 @@ replacing the placeholders with your Google API details https://developers.googl
 
 If you do not add these parameters, the option to login using Google Plus Sign will not be shown
 
+
+##Step 7 : LDAP installation
+
+To enable LDAP integration for login:
+
+On a linux server (tested on CentOS 7), you can run the following commands via command line to ensure LDAP is installed and configured:
+
+```
+yum install policycoreutils-python
+
+semanage port -l | grep ldap
+
+setsebool -P httpd_can_connect_ldap on
+```
+
 #### Notes for developers only
 
 `development` branch is the branch we currently push to production
