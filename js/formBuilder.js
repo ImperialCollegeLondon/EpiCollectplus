@@ -298,18 +298,16 @@ PropertiesForm.prototype.setForKey = function () {
     // if we don't have a generated key
     // disable and uncheck the "hidden" field
     if (!$('#genkey').prop("checked")) {
-        $('#hidden').prop('disabled', true);
-        $('#hidden').prop('checked', false);
+        $('#hidden').prop('disabled', true).prop('checked', false);
     }
 
     // bind change event listener to "generate key" field
-    $('#genkey').change( function() {
+    $(document).on("change", '#genkey', function() {
 
-        if (!$(this).is(':checked')) {
+        if (!this.checked) {
             // if we don't have a generated key
             // disable and uncheck the "hidden" field
-            $('#hidden').prop('disabled', true);
-            $('#hidden').prop('checked', false);
+            $('#hidden').prop('disabled', true).prop('checked', false);
         } else {
             // otherwise enable
             $('#hidden').prop('disabled', false);
@@ -400,6 +398,7 @@ PropertiesForm.prototype.setValuesFor = function (ctrl) {
             this.addJump(jump_def[i], jump_def[i + 1]);
         }
     }
+
 };
 
 PropertiesForm.prototype.reset = function () {
