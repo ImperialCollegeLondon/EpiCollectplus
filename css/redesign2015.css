@@ -24,7 +24,7 @@ body {
 #breadcrumbs {
     font-size: 16px;
     font-weight: bold;
-    margin-bottom:15px;
+    margin-bottom: 15px;
 }
 
 /* Sticky footer styles
@@ -100,7 +100,7 @@ h3 {
 }
 
 a.branding img {
-    margin-top:5px;
+    margin-top: 5px;
 }
 
 ul.nav.navbar-nav li a {
@@ -135,8 +135,18 @@ li.ecplus-username {
     }
 
     footer {
-        position:relative!important;
-        height:auto!important;
+        position: relative !important;
+        /*height: auto !important;*/
+    }
+    footer section {
+        margin: 30px 0;
+    }
+    .row.footer-height {
+        text-align: center
+    }
+    /* Check this for footer height when the site is viewed on small screens*/
+    body {
+        margin-bottom:0!important;
     }
 }
 
@@ -191,6 +201,17 @@ i.project-icon {
 
 }
 
+.ecplus-play-store-badge img, .ecplus-app-store-badge img {
+    margin-top: -20px;
+}
+
+.ecplus-app-store-badge img {
+
+}
+.ecplus-play-store-badge {
+    margin-left: 7px;
+}
+
 .project-list-item {
     /*height:120px;*/
 }
@@ -240,11 +261,28 @@ a.project-list-item.list-group-item {
 .my-projects-list .project-badge-counters {
     margin-top: 10px;
 }
+
 .my-projects-list a.bg-warning {
-    background-color: #fcf8e3!important;
+    background-color: #fcf8e3 !important;
 }
+
 .my-projects-list a.bg-success {
-    background-color: #c1e2b3!important;
+    background-color: #c1e2b3 !important;
+}
+
+.project-public-tag {
+    background-color: #c1e2b3;
+    padding: 5px;
+    color: #333;
+    border-radius: 5px;
+}
+
+.project-private-tag {
+    background-color: #fcf8e3;
+    padding: 5px;
+    color: #333;
+    border-radius: 5px;
+    margin-right: 10px
 }
 
 /* Social links*/
@@ -303,7 +341,7 @@ iframe {
     width: 100%;
 }
 
-#public .fa-2x, #listed .fa-2x, #listing .fa-2x{
+#public .fa-2x, #listed .fa-2x, #listing .fa-2x {
     vertical-align: middle;
 }
 
@@ -311,26 +349,33 @@ iframe {
     padding: 10px;
     margin: 10px;
 }
+
 div#menu {
     margin-top: 20px;
 }
+
 #projectOptions.update-project > div {
     border: 1px solid #ccc;
-    overflow:hidden;
+    overflow: hidden;
 }
+
 #projectOptions.update-project .ui-tabs .ui-tabs-nav {
-    border:none;
+    border: none;
 }
+
 #projectOptions.update-project table {
-    width:100%;
-    padding:20px;
+    width: 100%;
+    padding: 20px;
 }
+
 #projectOptions.update-project table td, #projectOptions table th {
-    padding:10px;
+    padding: 10px;
 }
+
 #projectOptions.update-project .button {
-    margin:0;
+    margin: 0;
 }
+
 /******** Project home *************/
 
 p.view-data-instructions.well {

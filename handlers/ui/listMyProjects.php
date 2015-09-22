@@ -31,7 +31,8 @@ function listMyProjects() {
         $html .= '<div class="col-sm-12 col-md-6 col-lg-6">';
         $html .= '<div class="panel panel-default">';
         $html .= '<div class="panel-heading">';
-        $html .= '<h3 class="panel-title">My Projects</h3>';
+        $html .= '<h3 class="panel-title">My Projects <div class="project-public-tag pull-right">Public</div><div class="project-private-tag pull-right">Private</div></h3>';
+        $html .= '<div class="clearfix"></div>';
         $html .= '</div>';
         $html .= '<div class="panel-body">';
         $html .= '<div class="my-projects-list list-group ">';

@@ -59,11 +59,22 @@
 
     <div id="breadcrumbs" class="pull-left"><a href="{#SITE_ROOT#}/">Home</a>{#breadcrumbs#}</div>
     <div class="social pull-right">
+
+        <!--<a class="ecplus-app-store-badge" href="https://geo.itunes.apple.com/us/app/epicollect+/id999309173?mt=8" style="display:inline-block;overflow:hidden;background:url(http://linkmaker.itunes.apple.com/images/badges/en-us/badge_appstore-lrg.svg) no-repeat;width:165px;height:40px;"></a>-->
         <a href="https://twitter.com/share" class="twitter-share-button" data-via="EpiCollect" data-size="large" data-hashtags="epicollect">Tweet</a>
         <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
         </script>
         <!-- Place this tag where you want the button to render. -->
         <a class="github-button" href="https://github.com/ImperialCollegeLondon" data-style="mega" data-count-href="/ImperialCollegeLondon/followers" data-count-api="/users/ImperialCollegeLondon#followers" data-count-aria-label="# followers on GitHub" aria-label="Follow @ImperialCollegeLondon on GitHub">Follow @ImperialCollegeLondon</a>
+
+        <a class="ecplus-play-store-badge" href="https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollectplus.html5">
+            <img alt="Android app on Google Play"
+                 src="{#SITE_ROOT#}/images/android-logo-256x256.png" width="48" height="48"/>
+        </a>
+        <a class="ecplus-app-store-badge" href="https://geo.itunes.apple.com/us/app/epicollect+/id999309173?mt=8" >
+            <img alt="iOS app on App Store"
+                 src="{#SITE_ROOT#}/images/apple-logo-256x256.png" width="48" height="48"/>
+        </a>
     </div>
     <div class="clearfix"></div>
     <div id="main">
@@ -75,9 +86,9 @@
     </div>
 
     <div class="container-fluid">
-        <footer id="foot" class="footer"><!--FOOOTER-->
-            <div class="row">
-                <section class="footer-social col-sm-12 col-md-3">
+        <footer id="foot" class="footer footer-height"><!--FOOOTER-->
+            <div class="row footer-height">
+                <section class="footer-social col-sm-3 col-md-3">
                     <ul class="list-group">
                         <li>Epicollect+ v{#codeVersion#} build {#build#}</li>
                         <li><a href="http://www.epicollect.net/plus_instructions/default.html" target="__blank">Instructions </a></li>
@@ -86,15 +97,15 @@
                     </ul>
                 </section>
 
-                <section class="footer-info col-sm-12 col-md-3">
+                <section class="footer-info col-sm-3 col-md-3">
                     <img src="{#SITE_ROOT#}/images/FP7_EU.jpg" alt="FP7 Europe Logo" width="200"/>
                 </section>
 
-                <section class="footer-info col-sm-12 col-md-3">
+                <section class="footer-info col-sm-3 col-md-3">
                     <img src="{#SITE_ROOT#}/images/imperial_college_london.png" alt="Imperial College London Logo" width="200"/>
                 </section>
 
-                <section class="footer-info col-sm-12 col-md-3">
+                <section class="footer-info col-sm-3 col-md-3">
                     <ul>
                         <li class="android-app">
                             <a href="https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollectplus.html5">
@@ -142,6 +153,11 @@
         $.fn.matchHeight._update();
     }
 
+    //resize footer on page load
+    $('.footer-height').matchHeight();
+    $.fn.matchHeight._update();
+
+
     //match height on page resize
     $(window).on('resize', function(){
 
@@ -154,6 +170,10 @@
             $('.match-height').matchHeight();
             $.fn.matchHeight._update();
         }
+
+        //resize footer
+        $('.footer-height').matchHeight();
+        $.fn.matchHeight._update();
     });
 
 </script>
