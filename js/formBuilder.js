@@ -357,8 +357,10 @@ PropertiesForm.prototype.setForCtrl = function (ctrl) {
         if (ctl == 'time') {
             var timectl = $('.time select', this.div);
             timectl.val(timectl[0].options[0].value);
+        } else if (ctl == 'time') {
+            var timectl = $('.date select', this.div);
+            timectl.val(timectl[0].options[0].value);
         }
-        
     }
 
     this.setValuesFor(ctrl);
@@ -398,8 +400,6 @@ PropertiesForm.prototype.setValuesFor = function (ctrl) {
             this.addJump(jump_def[i], jump_def[i + 1]);
         }
     }
-
-
 };
 
 PropertiesForm.prototype.reset = function () {
