@@ -291,7 +291,9 @@ class EcField{
 			$qry .= ($this->search ? "1," : "0,");
 			$qry .= ($this->group_form ? "'{$this->group_form}'," : "NULL,");
 			$qry .= ($this->branch_form ? "'{$this->branch_form}'," : "NULL,");
-			$qry .= ($this->display ? "1," : "0,");
+			// generated keys can be hidden or displayed
+			// every other field can only be displayed
+			$qry .= (!$this->display && $this->genkey ? "0," : "1,");
 			$qry .= ($this->genkey ? "1," : "0,");
 			$qry .= ($this->upperCase ? "1," : "0,");
 			$qry .= ($this->date ? "'{$this->date}'," : "NULL,");
