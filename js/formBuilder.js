@@ -404,6 +404,13 @@ PropertiesForm.prototype.setValuesFor = function (ctrl) {
         this.addOption('Default choice', 1);
     }
 
+    // don't allow media fields to be required
+    var notRequiredFields = ['location', 'photo', 'video', 'audio', 'barcode'];
+
+    if ($.inArray($('#' + ctrl.id).attr('type'), notRequiredFields) > -1) {
+        $('.required input', this.div).prop('disabled', true);
+    }
+
 };
 
 PropertiesForm.prototype.reset = function () {

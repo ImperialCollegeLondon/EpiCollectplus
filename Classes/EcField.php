@@ -287,13 +287,19 @@ class EcField{
 			$qry .= "1,";
 			$qry .= ($this->doubleEntry ? "1," : "0,");
 			$qry .= ($this->jump ? "'{$this->jump}'," : "NULL,");
-			$qry .= ($this->required ? "1," : "0,");
+
+			// don't allow media fields to be added as required
+			$notRequired = array('location', 'photo', 'video', 'audio', 'barcode');
+			$qry .= ($this->required && !in_array($this->type, $notRequired) ? "1," : "0,");
+
 			$qry .= ($this->search ? "1," : "0,");
 			$qry .= ($this->group_form ? "'{$this->group_form}'," : "NULL,");
 			$qry .= ($this->branch_form ? "'{$this->branch_form}'," : "NULL,");
+
 			// generated keys can be hidden or displayed
 			// every other field can only be displayed
 			$qry .= (!$this->display && $this->genkey ? "0," : "1,");
+
 			$qry .= ($this->genkey ? "1," : "0,");
 			$qry .= ($this->upperCase ? "1," : "0,");
 			$qry .= ($this->date ? "'{$this->date}'," : "NULL,");
