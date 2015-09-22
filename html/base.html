@@ -86,9 +86,9 @@
     </div>
 
     <div class="container-fluid">
-        <footer id="foot" class="footer"><!--FOOOTER-->
-            <div class="row">
-                <section class="footer-social col-sm-12 col-md-3">
+        <footer id="foot" class="footer footer-height"><!--FOOOTER-->
+            <div class="row footer-height">
+                <section class="footer-social col-sm-3 col-md-3">
                     <ul class="list-group">
                         <li>Epicollect+ v{#codeVersion#} build {#build#}</li>
                         <li><a href="http://www.epicollect.net/plus_instructions/default.html" target="__blank">Instructions </a></li>
@@ -97,15 +97,15 @@
                     </ul>
                 </section>
 
-                <section class="footer-info col-sm-12 col-md-3">
+                <section class="footer-info col-sm-3 col-md-3">
                     <img src="{#SITE_ROOT#}/images/FP7_EU.jpg" alt="FP7 Europe Logo" width="200"/>
                 </section>
 
-                <section class="footer-info col-sm-12 col-md-3">
+                <section class="footer-info col-sm-3 col-md-3">
                     <img src="{#SITE_ROOT#}/images/imperial_college_london.png" alt="Imperial College London Logo" width="200"/>
                 </section>
 
-                <section class="footer-info col-sm-12 col-md-3">
+                <section class="footer-info col-sm-3 col-md-3">
                     <ul>
                         <li class="android-app">
                             <a href="https://play.google.com/store/apps/details?id=uk.ac.imperial.epicollectplus.html5">
@@ -153,6 +153,11 @@
         $.fn.matchHeight._update();
     }
 
+    //resize footer on page load
+    $('.footer-height').matchHeight();
+    $.fn.matchHeight._update();
+
+
     //match height on page resize
     $(window).on('resize', function(){
 
@@ -165,6 +170,10 @@
             $('.match-height').matchHeight();
             $.fn.matchHeight._update();
         }
+
+        //resize footer
+        $('.footer-height').matchHeight();
+        $.fn.matchHeight._update();
     });
 
 </script>
