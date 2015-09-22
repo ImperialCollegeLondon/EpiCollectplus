@@ -224,11 +224,7 @@ class LocalLoginProvider extends AuthProvider {
         //don't use MD5!
 
         if (!$this->db) {
-            global $db;
-            $this->db = $db;
-            include_once("db/dbConnection.php");
-            if (!$this->db)
-                $this->db = new dbConnection();
+            $this->db = new dbConnection();
         }
 
         $username = $this->db->escapeArg($username);

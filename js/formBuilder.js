@@ -399,9 +399,16 @@ PropertiesForm.prototype.setValuesFor = function (ctrl) {
         }
     }
 
-    // add default option for checkboxes
-    if ($('#' + ctrl.id).attr('type') == 'select') {
+    // add default option for checkboxes if none added
+    if (ctrl.options.length == 0 && $('#' + ctrl.id).attr('type') == 'select') {
         this.addOption('Default choice', 1);
+    }
+
+    // don't allow media fields to be required
+    var notRequiredFields = ['location', 'photo', 'video', 'audio'];
+
+    if ($.inArray($('#' + ctrl.id).attr('type'), notRequiredFields) > -1) {
+        $('.required input', this.div).prop('disabled', true);
     }
 
 };
