@@ -11,6 +11,7 @@
     <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-migrate.min.js"></script>
     <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="{#SITE_ROOT#}/js/checkurl.js"></script>
+
     <script type="text/javascript" src="{#SITE_ROOT#}/js/is-loading.js"></script>
     <script type="text/javascript" src="{#SITE_ROOT#}/js/jquery.matchHeight.js"></script>
     <script type="text/javascript" src="{#SITE_ROOT#}/js/EpiCollectPlus.js"></script>
@@ -20,7 +21,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="{#SITE_ROOT#}/css/epicollectplus.bootstrap.min.css"/>
     <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="{#SITE_ROOT#}/js/bootstrap.min.js"></script>
 
     <!--//re-design 2015-->
     <link rel="stylesheet" href="{#SITE_ROOT#}/css/redesign2015.css">
@@ -130,6 +131,11 @@
 
 </div>
 <script type="text/javascript">
+
+    //enable Bootstrap Tooltips
+    $(function () {
+        $('[data-toggle="popover"]').popover();
+    });
 
     var url = window.location.href;
     var url_parts = url.split('/');

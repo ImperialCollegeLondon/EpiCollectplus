@@ -475,13 +475,25 @@ PropertiesForm.prototype.setHandlers = function () {
  * Add an options to the options pane
  */
 PropertiesForm.prototype.addOption = function (label, value) {
-    if (!label) label = "";
-    if (!value) value = "";
+    if (!label){
+        label = '';
+    }
+    if (!value){
+        value = '';
+    }
 
     var panel = $('div#options', this.div);
-    panel.append('<div class="selectOption"><label title="The text displayed to the user">Label</label><input title="The text displayed to the user" name="optLabel" size="12" value="' + label + '" />'
-    + '<label title="The value stored in the database"l>Value</label><input title="The value stored in the database" name="optValue" size="12" value="' + value + '" />'
-    + '<a href="javascript:void(0);" title="Remove Option" class="button removeOption" >&nbsp;</a> </div>');
+    var options_html = '<div class="selectOption">';
+    options_html += '<div class="form-group">';
+    options_html += '<label title="The text displayed to the user">Label</label>';
+    options_html += '<input title="The text displayed to the user" name="optLabel" size="12" value="' + label + '" class="form-control" />';
+    options_html += '<label title="The value stored in the database"l>Value</label>';
+    options_html += '<input title="The value stored in the database" name="optValue" size="12" value="' + value + '" class="form-control" />';
+    options_html += '<a href="javascript:void(0);" title="Remove Option" class="button removeOption btn btn-default pull-right" ><i class="fa fa-trash-o fa-2x"></i></a>';
+    options_html += '</div>';
+    options_html += '</div>';
+
+    panel.append(options_html);
 
     this.setHandlers();
 };
@@ -490,20 +502,52 @@ PropertiesForm.prototype.addOption = function (label, value) {
  * Check the number of jumps and number of options and if there are still less jumps than options add another jump
  */
 PropertiesForm.prototype.addJump = function (destination, condition) {
-    var panel = $("#jumps", this.div);
+
+    var panel = $('#jumps', this.div);
+    var base_jump_html;
+    var extend_jump_html;
 
     if (($('.selectOption', this.div).length + 1) <= $('.jumpoption', this.div).length) {
         EpiCollect.dialog({content: 'You cannot have more jumps than options.'});
         return;
     }
 
-    var sta = '<div class="jumpoption"><label>When</label><select class="jumpType"><option value="">value is</option><option value="!">value is not</option><option value="NULL">field is blank</option><option value="ALL">always</option></select>';
+
+
+    base_jump_html = '';
+    base_jump_html += '<div class="jumpoption form-group">';
+    base_jump_html += '<label>When</label>';
+    base_jump_html += '<select class="jumpType form-control input-sm">';
+    base_jump_html += '<option value="">value is</option>';
+    base_jump_html += '<option value="!">value is not</option>';
+    base_jump_html += '<option value="NULL">field is blank</option>';
+    base_jump_html += '<option value="ALL">always</option>';
+    base_jump_html += '</select>';
 
     if (currentControl.type === 'input') {
-        panel.append(sta + '<label class="jumpvalues">Value</label><input type="text" class="jumpvalues" /><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >&nbsp;</a></div>');
+
+        extend_jump_html = '';
+        extend_jump_html += '<label class="jumpvalues">Value</label>';
+        extend_jump_html += '<input type="text" class="jumpvalues form-control input-sm" />';
+        extend_jump_html += '<label>Jump to</label>';
+        extend_jump_html += '<select class="jumpdestination form-control input-sm"></select>';
+        extend_jump_html += '<a href="javascript:void(0);" class="button remove btn btn-default pull-right" ><i class="fa fa-trash fa-fw fa-2x"></i></a>';
+        extend_jump_html += '</div>';
+
+        panel.append(base_jump_html + extend_jump_html);
     }
     else {
-        panel.append(sta + '<label class="jumpvalues">Value</label> <select class="jumpvalues"></select><br /><label>Jump to</label> <select class="jumpdestination"></select><br /><a href="javascript:void(0);" class="button remove" >&nbsp;</a></div>');
+
+        extend_jump_html = '';
+        extend_jump_html += '<label class="jumpvalues">Value</label>';
+        extend_jump_html += '<select class="jumpvalues form-control input-sm"></select>';
+        extend_jump_html += '<label>Jump to</label>';
+        extend_jump_html += '<select class="jumpdestination form-control input-sm"></select>';
+        extend_jump_html += '<a href="javascript:void(0);" class="button remove btn btn-default pull-right" ><i class="fa fa-trash fa-fw fa-2x"></i></a>';
+        extend_jump_html += '</div>';
+
+
+        panel.append(base_jump_html + extend_jump_html);
     }
 
     updateJumps();

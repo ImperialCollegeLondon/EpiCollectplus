@@ -856,32 +856,32 @@ tr.alt {
 }
 
 .ecplus-location-element {
-    height: 3em;
+    /*height: 3em;*/
     background: url("../markers/point") 2px 1.75em no-repeat;
 }
 
 .ecplus-photo-element {
-    height: 3em;
+    /*height: 3em;*/
     background: url("../images/glyphicons/glyphicons_011_camera.png") 2px 1.75em no-repeat;
 }
 
 .ecplus-video-element {
-    height: 3em;
+    /*height: 3em;*/
     background: url("../images/glyphicons/glyphicons_047_camera_small.png") 2px 1.75em no-repeat;
 }
 
 .ecplus-audio-element {
-    height: 3em;
+    /*height: 3em;*/
     background: url("../images/glyphicons/glyphicons_300_microphone.png") 2px 1.75em no-repeat;
 }
 
 .ecplus-barcode-element {
-    height: 3em;
+    /*height: 3em;*/
     background: url("../images/barcode.png") 2px 1.75em no-repeat;
 }
 
 .ecplus-branch-element {
-    height: 3em;
+    /*height: 3em;*/
     background: url("../images/branch.png") 2px 1.75em no-repeat;
 }
 

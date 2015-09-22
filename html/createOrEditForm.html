@@ -233,8 +233,8 @@
     }
 
     .selectOption, .jumpoption {
-        margin: 1em 0;
-        position: relative;
+        /*margin: 1em 0;*/
+        /*position: relative;*/
     }
 
     .selectOption:hover, .jumpoption:hover {
@@ -242,13 +242,13 @@
     }
 
     .selectOption .button.removeOption, .jumpoption .button.remove {
-        position: absolute;
-        right: 0px;
-        top: 0px;
-        width: 3em;
-        height: 4em;
-        padding: 0;
-        background: url("../images/glyphicons/glyphicons_016_bin.png") 50% 50% no-repeat #CCC;
+        /*position: absolute;*/
+        /*right: 0px;*/
+        /*top: 0px;*/
+        /*width: 3em;*/
+        /*height: 4em;*/
+        /*padding: 0;*/
+        /*background: url("../images/glyphicons/glyphicons_016_bin.png") 50% 50% no-repeat #CCC;*/
     }
 
     .second h3, .last h3.title {
@@ -400,29 +400,40 @@
                     <label for="inputLabel">
                         Label
                     </label>
-                    <input id="inputLabel" name="text" type="text"/>
+                    <button type="button" class="btn btn-default pull-right" data-toggle="popover" data-placement="left" data-trigger="focus" title="The Label should contain the question you would like a user to answer">
+                        <i class="fa fa-question-circle"></i>
+                    </button>
+                    <input id="inputLabel" name="text" type="text" class="form-control"/>
                 </div>
                 <div class="id ctrl" notfor="fk">
+
                     <label for="id">
                         ID
                     </label>
-                    <input id="inputId" name="id" type="text" maxlength="45"/>
+                    <button type="button" class="btn btn-default pull-right" data-toggle="popover" data-placement="left" data-trigger="focus" title="The ID can be viewed as the column heading under which users answers will be stored in the database. The ID should contain no spaces and be a convenient short hand name for the variable you wish to collect.">
+                        <i class="fa fa-question-circle"></i>
+                    </button>
+                    <input id="inputId" name="id" type="text" maxlength="45" class="form-control"/>
+
                 </div>
                 <div class="required ctrl" notfor="fk">
-                    <label for="required">Required</label>
                     <input type="checkbox" id="required" name="required" value="true"/>
+                    <label for="required">Required</label>
                 </div>
                 <div id="titleCtrl" class="title ctrl" title="A title field appears on the list of entries to help the user distinguish between entries."
                      allow="text,numeric,select1,radio,barcode">
-                    <label for="title">Title</label>
                     <input type="checkbox" id="title" name="title" value="true"/>
+                    <button type="button" class="btn btn-default pull-right" data-toggle="popover" data-placement="left" data-trigger="focus" title="A title field can be set on any text field within a form. The title field will be displayed when listing entries on the mobile devices, and should be chosen as a convenient , simple way of referring to each entry of a form">
+                        <i class="fa fa-question-circle"></i>
+                    </button>
+                    <label for="title">Title</label>
                 </div>
                 <div id="branchButton" allow="branch" class="branch ctrl">
                     <a href="javascript:switchToBranch();" class="button">Edit branch form</a>
                 </div>
                 <div class="date ctrl" allow="date">
                     <label for="date">Date Format</label>
-                    <select id="date" name="date">
+                    <select id="date" name="date" class="form-control">
                         <option value="dd/MM/yyyy">Day/Month/Year</option>
                         <option value="MM/dd/yyyy">Month/Day/Year</option>
                         <option value="yyyy/MM/dd">Year/Month/Day</option>
@@ -432,7 +443,7 @@
                 </div>
                 <div class="time ctrl" allow="time">
                     <label for="inputmax">Time Format</label>
-                    <select id="time" name="time">
+                    <select id="time" name="time" class="form-control">
                         <option value="HH:mm:ss">Hours:Minutes:Seconds (24 hours)</option>
                         <option value="hh:mm:ss">Hours:Minutes:Seconds (12 hours)</option>
                         <option value="HH:mm">Hours:Minutes (24 hours)</option>
@@ -441,15 +452,16 @@
                     </select>
                 </div>
                 <div class="set ctrl" allow="date,time">
-                    <label for="inputSet">Set default to current date/time</label>
                     <input type="checkbox" id="set" name="set" value="true"/>
+                    <label for="inputSet" style="width:220px!important;">Set default to current datetime</label>
                 </div>
                 <div class="advanced accordian">
                     <h3 class="options ctrl" allow="select,radio,select1"><a href="#">Options</a></h3>
 
                     <div id="options" class="">
 
-                        <a id="addOption" href="javascript:void(0);" class="button">Add Option</a>
+                        <a id="addOption" href="javascript:void(0);" class="button btn btn-default pull-right"><i class="fa fa-plus fa-2x"></i></a>
+                        <div class="clearfix"></div>
 
 
                     </div>
@@ -463,54 +475,59 @@
 
                         <div id="keyCtrl" allow="text,numeric,barcode" class="key ctrl hidden">
                             <!--  <label for="key">Key</label> -->
-                            <input type="hidden" id="key" name="key" value="true" disabled="disabled"/>
+                            <input type="hidden" id="key" name="key" value="true" disabled="disabled" class="form-control"/>
                         </div>
                         <div allow="text,numeric,select1,radio,barcode" class="search ctrl">
                             <label>Searchable</label>
-                            <input type="checkbox" id="search" name="search" value="true"/>
+                            <input type="checkbox" id="search" name="search" value="true" class="form-control"/>
                         </div>
                         <div class="decimal ctrl">
-                            <input type="radio" id="rdo_decimal" name="numeric" value="decimal"/><label for="numeric">Decimal</label> <br/>
+                            <input type="radio" id="rdo_decimal" name="numeric" value="decimal" />
+                            <label for="numeric">Decimal</label> <br/>
                         </div>
                         <div class="integer ctrl">
-                            <input type="radio" id="rdo_integer" name="numeric" value="integer"/><label for="numeric">Integer</label> <br/>
+                            <input type="radio" id="rdo_integer" name="numeric" value="integer" />
+                            <label for="numeric">Integer</label> <br/>
                         </div>
                         <div class="min ctrl">
                             <label for="inputmin">Minumum Value</label>
-                            <input type="number" id="min" name="min"/>
+                            <input type="number" id="min" name="min" class="form-control"/>
                         </div>
                         <div class="max ctrl">
                             <label for="inputmax">Maximum Value</label>
-                            <input type="number" id="max" name="max"/>
+                            <input type="number" id="max" name="max" class="form-control"/>
                         </div>
 
                         <div class="default ctrl" allow="text,numeric" notfor="key,audio,fk,video,location,photo,date,time,branch">
                             <label for="inputdefault">Default</label>
-                            <input type="text" id="default" name="defaultValue" maxlength="1000"/>
+                            <input type="text" id="default" name="defaultValue" maxlength="1000" class="form-control"/>
                         </div>
                         <div class="regex ctrl" allow="text,textarea,barcode">
 
                             <label for="inputregex">Regular Expression</label>
-                            <input type="text" id="regex" name="regex" maxlength="255" title="Enter a regular expression without the opening and closing slashes."/>
+                            <input type="text" id="regex" name="regex" maxlength="255" class="form-control" title="Enter a regular expression without the opening and closing slashes."/>
 
                         </div>
                         <div class="verify ctrl" allow="text,numeric,date,time,barcode">
-                            <label for="inputVerify">Double Entry</label>
                             <input type="checkbox" id="verify" name="verify" value="true"/>
+                            <label for="inputVerify">Double Entry</label>
                         </div>
                         <div class="genkey ctrl" allow="key">
-                            <label for="inputGenKey">Generate Key</label>
                             <input type="checkbox" id="genkey" name="genkey" value="true"/>
+                            <label for="inputGenKey">Generate Key </label>
                         </div>
                         <div class="ecplushidden ctrl" allow="gen,fk">
-                            <label for="inputHidden">Hidden</label>
                             <input type="checkbox" id="hidden" name="hidden" value="true"/>
+                            <label for="inputHidden">Hidden</label>
                         </div>
                     </div>
                     <h3 class="jumps ctrl"><a href="#">Jumps</a></h3>
 
                     <div id="jumps" class="" allow="select,radio,select1">
-                        <a id="addJump" href="javascript:void(0);" class="button">Add Jump</a>
+                        <a id="addJump" href="javascript:void(0);" class="button btn btn-default pull-right">
+                            <i class="fa fa-plus fa-2x"></i>
+                        </a>
+                        <div class="clearfix"></div>
 
                     </div>
                 </div>

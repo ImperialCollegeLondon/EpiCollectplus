@@ -677,3 +677,14 @@ li.ui-state-default.ui-corner-top {
 .map-resize-handle i {
     height: 20px;
 }
+
+/* form builder*/
+div#destination > div {
+    min-height: 5em;
+}
+.ecplus-columns .first {
+    background-color: #eee!important;
+}
+.ecplus-columns .second {
+    background-color: #D0E9DC!important;
+}
