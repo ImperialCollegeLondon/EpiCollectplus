@@ -399,6 +399,11 @@ PropertiesForm.prototype.setValuesFor = function (ctrl) {
         }
     }
 
+    // add default option for checkboxes
+    if ($('#' + ctrl.id).attr('type') == 'select') {
+        this.addOption('Default choice', 1);
+    }
+
 };
 
 PropertiesForm.prototype.reset = function () {
