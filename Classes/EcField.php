@@ -289,8 +289,8 @@ class EcField{
 			$qry .= ($this->jump ? "'{$this->jump}'," : "NULL,");
 
 			// don't allow media fields to be added as required
-			$notRequired = array('location', 'photo', 'video', 'audio');
-			$qry .= ($this->required && !in_array($this->type, $notRequired) ? "1," : "0,");
+			$notRequiredFields = array('location', 'photo', 'video', 'audio');
+			$qry .= ($this->required && !in_array($this->type, $notRequiredFields) ? "1," : "0,");
 
 			$qry .= ($this->search ? "1," : "0,");
 			$qry .= ($this->group_form ? "'{$this->group_form}'," : "NULL,");
