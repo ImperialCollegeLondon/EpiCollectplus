@@ -291,8 +291,29 @@ function PropertiesForm(div_id) {
  * Show the options for a field that is a key field
  */
 PropertiesForm.prototype.setForKey = function () {
+
     //show genkey
     $('.genkey', this.div).show();
+
+    // if we don't have a generated key
+    // disable and uncheck the "hidden" field
+    if (!$('#genkey').prop("checked")) {
+        $('#hidden').prop('disabled', true).prop('checked', false);
+    }
+
+    // bind change event listener to "generate key" field
+    $(document).on("change", '#genkey', function() {
+
+        if (!this.checked) {
+            // if we don't have a generated key
+            // disable and uncheck the "hidden" field
+            $('#hidden').prop('disabled', true).prop('checked', false);
+        } else {
+            // otherwise enable
+            $('#hidden').prop('disabled', false);
+        }
+
+    });
 
     //disable Id
     $('.id input', this.div).prop('disabled', true);
@@ -300,7 +321,7 @@ PropertiesForm.prototype.setForKey = function () {
     //check required and disable
     $('.required input, .key input').prop('checked', true).prop('disabled', true);
 
-    $('.ecplushidden', this.div).show()
+    $('.ecplushidden', this.div).show();
 };
 
 /**
@@ -377,6 +398,12 @@ PropertiesForm.prototype.setValuesFor = function (ctrl) {
             this.addJump(jump_def[i], jump_def[i + 1]);
         }
     }
+
+    // add default option for checkboxes
+    if ($('#' + ctrl.id).attr('type') == 'select') {
+        this.addOption('Default choice', 1);
+    }
+
 };
 
 PropertiesForm.prototype.reset = function () {
