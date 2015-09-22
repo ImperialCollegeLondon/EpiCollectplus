@@ -399,8 +399,8 @@ PropertiesForm.prototype.setValuesFor = function (ctrl) {
         }
     }
 
-    // add default option for checkboxes
-    if ($('#' + ctrl.id).attr('type') == 'select') {
+    // add default option for checkboxes if none added
+    if (ctrl.options.length == 0 && $('#' + ctrl.id).attr('type') == 'select') {
         this.addOption('Default choice', 1);
     }
 
