@@ -302,12 +302,12 @@ PropertiesForm.prototype.setForKey = function () {
         $('#hidden').prop('checked', false);
     }
 
-    // bind on click to listen for changes to "generate key" field
-    $('#genkey', this.div).bind('click', function (evt) {
+    // bind change event listener to "generate key" field
+    $('#genkey').change( function() {
 
-        // if we don't have a generated key
-        // disable and uncheck the "hidden" field
-        if (!$('#genkey').prop("checked")) {
+        if (!$(this).is(':checked')) {
+            // if we don't have a generated key
+            // disable and uncheck the "hidden" field
             $('#hidden').prop('disabled', true);
             $('#hidden').prop('checked', false);
         } else {
