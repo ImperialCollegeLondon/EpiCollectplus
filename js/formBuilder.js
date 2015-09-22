@@ -405,7 +405,7 @@ PropertiesForm.prototype.setValuesFor = function (ctrl) {
     }
 
     // don't allow media fields to be required
-    var notRequiredFields = ['location', 'photo', 'video', 'audio', 'barcode'];
+    var notRequiredFields = ['location', 'photo', 'video', 'audio'];
 
     if ($.inArray($('#' + ctrl.id).attr('type'), notRequiredFields) > -1) {
         $('.required input', this.div).prop('disabled', true);
