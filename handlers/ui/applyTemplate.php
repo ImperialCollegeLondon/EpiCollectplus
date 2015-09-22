@@ -56,7 +56,11 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
         // work out breadcrumbs
         //$template = str_replace("{#breadcrumbs#}", '', $template);
     } catch (Exception $err) {
+        print "<pre>";
+        print_r($err);
+        print "</pre>";
         unset($db);
+        exit();
         siteTest();
     }
 
