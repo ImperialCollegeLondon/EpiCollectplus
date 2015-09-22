@@ -157,7 +157,7 @@ CREATE TABLE IF NOT EXISTS `form` (
   `isMain` tinyint(1) NOT NULL DEFAULT b'1',
   `table_num` int(11) NOT NULL DEFAULT '1',
   `group` int(11) NULL DEFAULT NULL,
-  `keyField` varchar(45) DEFAULT NULL,
+  `keyField` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`idForm`),
   KEY `fk_Form_Project1` (`project`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=39 ~
