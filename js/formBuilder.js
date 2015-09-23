@@ -1,6 +1,7 @@
-var currentForm = undefined;
-var currentControl = undefined;
-var formName = undefined;
+'use strict';
+var currentForm;
+var currentControl;
+var formName;
 var dirty = false;
 
 /**
@@ -21,10 +22,10 @@ function ErrorList(id) {
     this.div.empty();
 
     html += '<h5>Project Validation</h5>';
-    html += '<div class="body"></div>' ;
+    html += '<div class="body"></div>';
     html += '<div class="errorList-footer">';
     html += '<span class="index"></span> of <span class="total"></span>';
-    html +=  '<a class="next">next</a><a class="prev">previous</a>';
+    html += '<a class="next">next</a><a class="prev">previous</a>';
     html += '</div>';
 
     this.div.append(html);
@@ -46,10 +47,8 @@ function ErrorList(id) {
  */
 ErrorList.prototype.addError = function (error) {
     this.errors.push(error);
-
     this.setTotal();
     this.showError(0);
-
 };
 
 /**
@@ -58,10 +57,8 @@ ErrorList.prototype.addError = function (error) {
  */
 ErrorList.prototype.addWarning = function (warning) {
     this.warnings.push(warning);
-
     this.setTotal();
     this.showError(0);
-
 };
 
 /**
@@ -183,12 +180,12 @@ FormList.prototype.drawForm = function (formName) {
     $('.form', this.div).removeClass('last');
 
     $('.add', this.div).before('<span id="' + formName + '" class="form last">' + formName + '<div class="ctls"><span class="formctl preview" title="Preview form">&nbsp;</span>' +
-    '<span class="formctl rename" title="Rename form">R</span><span class="formctl delete" title="Delete Form">&nbsp;</span></div></span>');
+        '<span class="formctl rename" title="Rename form">R</span><span class="formctl delete" title="Delete Form">&nbsp;</span></div></span>');
 
-    var fl = this;
+    var self = this;
 
     $('#' + formName, this.div).bind('click', function (evt) {
-        fl.setSelected(this.id);
+        self.setSelected(this.id);
     });
 
     $('#' + formName + ' .preview', this.div).bind('click', function (evt) {
@@ -244,35 +241,68 @@ FormList.prototype.addNewButton = function () {
 
 function PropertiesForm(div_id) {
     this.settings = {
-        "text": {"label": "", "id": "", "required": "", "title": "", "key": "", "searchable": "", "default": "", "regex": "", "verify": "", "jumps": ""},
-        "numeric": {
-            "label": "",
-            "id": "",
-            "required": "",
-            "title": "",
-            "key": "",
-            "jumps": "",
-            "default": "",
-            "regex": "",
-            "verify": "",
-            "integer": true,
-            "decimal": "",
-            "min": "",
-            "max": ""
+        text: {
+            label: '',
+            id: '',
+            required: '',
+            title: '',
+            key: '',
+            searchable: '',
+            default: '',
+            regex: '',
+            verify: '',
+            jumps: ''
         },
-        "date": {"label": "", "id": "", "required": "", "title": "", "verify": "", "jumps": "", "date": "", "set": ""},
-        "time": {"label": "", "id": "", "required": "", "title": "", "verify": "", "jumps": "", "time": "", "set": ""},
-        "select1": {"label": "", "id": "", "required": "", "title": "", "options": "", "jumps": "", "default": ""},
-        "radio": {"label": "", "id": "", "required": "", "title": "", "options": "", "jumps": "", "default": ""},
-        "select": {"label": "", "id": "", "required": "", "title": "", "options": "", "jumps": "", "default": ""},
-        "textarea": {"label": "", "id": "", "required": "", "title": "", "key": "", "jumps": "", "searchable": "", "default": "", "regex": "", "verify": ""},
-        "location": {"label": "", "id": "", "required": "", "jumps": ""},
-        "photo": {"label": "", "id": "", "required": "", "jumps": ""},
-        "video": {"label": "", "id": "", "required": "", "jumps": ""},// Quality/format settings?
-        "audio": {"label": "", "id": "", "required": "", "jumps": ""}, // Quality/format settings?
-        "barcode": {"label": "", "id": "", "required": "", "title": "", "key": "", "searchable": "", "jumps": "", "default": "", "regex": "", "verify": ""},
-        "branch": {"label": "", "id": "", "branch": "", "jumps": ""},
-        "fk": {"fk": "", "hidden": "", "jumps": ""}
+        numeric: {
+            label: '',
+            id: '',
+            required: '',
+            title: '',
+            key: '',
+            jumps: '',
+            default: '',
+            regex: '',
+            verify: '',
+            integer: true,
+            decimal: '',
+            min: '',
+            max: ''
+        },
+        date: {label: '', id: '', required: '', title: '', verify: '', jumps: '', date: '', set: ''},
+        time: {label: '', id: '', required: '', title: '', verify: '', jumps: '', time: '', set: ''},
+        select1: {label: '', id: '', required: '', title: '', options: '', jumps: '', default: ''},
+        radio: {label: '', id: '', required: '', title: '', options: '', jumps: '', default: ''},
+        select: {label: '', id: '', required: '', title: '', options: '', jumps: '', default: ''},
+        textarea: {
+            label: '',
+            id: '',
+            required: '',
+            title: '',
+            key: '',
+            jumps: '',
+            searchable: '',
+            default: '',
+            regex: '',
+            verify: ''
+        },
+        location: {label: '', id: '', required: '', jumps: ''},
+        photo: {label: '', id: '', required: '', jumps: ''},
+        video: {label: '', id: '', required: '', jumps: ''},// Quality/format settings?
+        audio: {label: '', id: '', required: '', jumps: ''}, // Quality/format settings?
+        barcode: {
+            label: '',
+            id: '',
+            required: '',
+            title: '',
+            key: '',
+            searchable: '',
+            jumps: '',
+            default: '',
+            regex: '',
+            verify: ''
+        },
+        branch: {label: '', id: '', branch: '', jumps: ''},
+        fk: {fk: '', hidden: '', jumps: ''}
     };
 
     this.div = $('#' + div_id);
@@ -296,17 +326,17 @@ PropertiesForm.prototype.setForKey = function () {
     $('.genkey', this.div).show();
 
     // if we don't have a generated key
-    // disable and uncheck the "hidden" field
-    if (!$('#genkey').prop("checked")) {
+    // disable and uncheck the 'hidden' field
+    if (!$('#genkey').prop('checked')) {
         $('#hidden').prop('disabled', true).prop('checked', false);
     }
 
-    // bind change event listener to "generate key" field
-    $(document).on("change", '#genkey', function() {
+    // bind change event listener to 'generate key' field
+    $(document).on('change', '#genkey', function () {
 
         if (!this.checked) {
             // if we don't have a generated key
-            // disable and uncheck the "hidden" field
+            // disable and uncheck the 'hidden' field
             $('#hidden').prop('disabled', true).prop('checked', false);
         } else {
             // otherwise enable
@@ -341,6 +371,7 @@ PropertiesForm.prototype.setForForeignKey = function () {
  */
 PropertiesForm.prototype.setForCtrl = function (ctrl) {
     //get control type
+    var timectl;
     var _type = $('#destination #' + ctrl.id).attr('type');
     this.reset();
 
@@ -352,27 +383,38 @@ PropertiesForm.prototype.setForCtrl = function (ctrl) {
     for (var ctl in show_ctls) {
         $('.ctrl.' + ctl).show();
         //set to default
-        if (ctl == 'time') {
-            var timectl = $('.time select', this.div);
+        if (ctl === 'time') {
+            timectl = $('.time select', this.div);
             timectl.val(timectl[0].options[0].value);
-        } else if (ctl == 'time') {
-            var timectl = $('.date select', this.div);
+        } else if (ctl === 'time') {
+            timectl = $('.date select', this.div);
             timectl.val(timectl[0].options[0].value);
         }
     }
 
     this.setValuesFor(ctrl);
 
-    if (show_ctls['options']) $('.accordian', this.div).accordion('option', 'active', 0);
+    if (show_ctls.options) {
+        $('.accordian', this.div).accordion('option', 'active', 0);
+    }
 };
 
 PropertiesForm.prototype.setValuesFor = function (ctrl) {
+
+    var i;
+    var j;
+    var ctrl_id;
+
     $('.label input', this.div).val(ctrl.text);
     $('.id input', this.div).val(ctrl.id);
     $('.required input', this.div).prop('checked', ctrl.required);
     $('.title input', this.div).prop('checked', ctrl.title);
-    if (ctrl.date || ctrl.setDate) $('.date select', this.div).val(ctrl.date || ctrl.setDate);
-    if (ctrl.time || ctrl.setTime) $('.time select', this.div).val(ctrl.time || ctrl.setTime);
+    if (ctrl.date || ctrl.setDate) {
+        $('.date select', this.div).val(ctrl.date || ctrl.setDate);
+    }
+    if (ctrl.time || ctrl.setTime) {
+        $('.time select', this.div).val(ctrl.time || ctrl.setTime);
+    }
     $('.set input', this.div).prop('checked', ctrl.setDate || ctrl.setTime);
     $('.default input', this.div).val(ctrl.defaultValue);
     $('.regex input', this.div).val(ctrl.regex);
@@ -386,32 +428,36 @@ PropertiesForm.prototype.setValuesFor = function (ctrl) {
     $('.min input', this.div).val(ctrl.min);
     $('.max input', this.div).val(ctrl.max);
 
-    if (ctrl.isKey) this.setForKey();
+    if (ctrl.isKey) {
+        this.setForKey();
+    }
 
-    for (var i = 0; i < ctrl.options.length; i++) {
+    for (i = 0; i < ctrl.options.length; i++) {
         this.addOption(ctrl.options[i].label, ctrl.options[i].value);
     }
 
     if (ctrl.jump) {
         var jump_def = ctrl.jump.split(',');
-        for (var i = 0; i < jump_def.length; i += 2) {
-            this.addJump(jump_def[i], jump_def[i + 1]);
+        for (j = 0; j < jump_def.length; j += 2) {
+            this.addJump(jump_def[j], jump_def[j + 1]);
         }
     }
 
+    ctrl_id = $('#' + ctrl.id);
+
     // add default option for checkboxes if none added
-    if (ctrl.options.length == 0 && $('#' + ctrl.id).attr('type') == 'select') {
+    if (ctrl.options.length == 0 && ctrl_id.attr('type') === 'select') {
         this.addOption('Default choice', 1);
     }
 
     // don't allow media fields to be required
     var notRequiredFields = ['location', 'photo', 'video', 'audio'];
 
-    if ($.inArray($('#' + ctrl.id).attr('type'), notRequiredFields) > -1) {
+    if ($.inArray(ctrl_id.attr('type'), notRequiredFields) > -1) {
         $('.required input', this.div).prop('disabled', true);
     }
 
-};
+};//PropertiesForm.prototype.setValuesFor
 
 PropertiesForm.prototype.reset = function () {
     $('input', this.div).prop('disabled', false);
@@ -452,11 +498,11 @@ PropertiesForm.prototype.setHandlers = function () {
         dirty = true;
     });
 
-    $("#options .removeOption", this.div).unbind('click').bind('click', this.removeOptionHandler);
-    $("#jumps .remove").unbind('click').bind('click', this.removeJumpHandler);
+    $('#options .removeOption', this.div).unbind('click').bind('click', this.removeOptionHandler);
+    $('#jumps .remove').unbind('click').bind('click', this.removeJumpHandler);
 
-    $("#options input", this.div).unbind();
-    $("#options input", this.div).change(function () {
+    $('#options input', this.div).unbind();
+    $('#options input', this.div).change(function () {
         updateSelected(true);
         updateJumps();
     });
@@ -482,10 +528,10 @@ PropertiesForm.prototype.setHandlers = function () {
  * Add an options to the options pane
  */
 PropertiesForm.prototype.addOption = function (label, value) {
-    if (!label){
+    if (!label) {
         label = '';
     }
-    if (!value){
+    if (!value) {
         value = '';
     }
 
@@ -518,8 +564,6 @@ PropertiesForm.prototype.addJump = function (destination, condition) {
         EpiCollect.dialog({content: 'You cannot have more jumps than options.'});
         return;
     }
-
-
 
     base_jump_html = '';
     base_jump_html += '<div class="jumpoption form-group">';
@@ -593,7 +637,7 @@ PropertiesForm.prototype.addJump = function (destination, condition) {
 /**
  * Remove option from the options pane
  *
- * @param idx {Integer} the index of the option to remove
+
  */
 PropertiesForm.prototype.removeOptionHandler = function (evt) {
     $(this).parents('.selectOption').remove();
@@ -602,7 +646,7 @@ PropertiesForm.prototype.removeOptionHandler = function (evt) {
 /**
  * Remove Jump from the Jumps Pane
  *
- * @param idx {Integer} the index of the jump to remove
+ *
  */
 PropertiesForm.prototype.removeJumpHandler = function (evt) {
     $(this).parents('.jumpoption').remove();
@@ -615,10 +659,11 @@ var propertiesForm;
 
 $(function () {
     var url = location.href;
+    var destination_element = $('#destination');
 
-    EpiCollect.loadProject(url.substr(0, url.lastIndexOf("/")) + ".xml", drawProject);
+    EpiCollect.loadProject(url.substr(0, url.lastIndexOf('/')) + '.xml', drawProject);
 
-    var details_top = $("#details").offset().top;
+    var details_top = $('#details').offset().top;
 
 
     $(document.body).unload(function () {
@@ -633,18 +678,18 @@ $(function () {
     propertiesForm = new PropertiesForm('details');
     propertiesForm.hide();
 
-    $('#destination').sortable({
+    destination_element.sortable({
         revert: 50,
         tolerance: 'pointer',
         items: '> .ecplus-form-element',
         start: function (evt, ui) {
-            ui.placeholder.css("visibility", "");
-            ui.placeholder.css("background-color", "#CCFFCC");
+            ui.placeholder.css('visibility', '');
+            ui.placeholder.css('background-color', '#CCFFCC');
         },
         stop: function (evt, ui) {
             if (!currentForm) {
-                EpiCollect.dialog({content: "You need to choose a form in order to change the controls on it."});
-                $("#destination div").remove();
+                EpiCollect.dialog({content: 'You need to choose a form in order to change the controls on it.'});
+                $('#destination div').remove();
             }
             else {
                 var jq = $('#destination .end').remove();
@@ -663,24 +708,24 @@ $(function () {
         }
     });
 
-    $(".ecplus-form-element").draggable({
-        connectToSortable: "#destination",
+    $('.ecplus-form-element').draggable({
+        connectToSortable: '#destination',
         helper: 'clone',
-        revert: "invalid",
+        revert: 'invalid',
         revertDuration: 100,
         appendTo: 'body',
         scroll: true
     });
 
-    $('#destination').click(function (evt) {
+    destination_element.click(function (evt) {
 
         var div = evt.target;
-        while (div.tagName !== "DIV") {
+        while (div.tagName !== 'DIV') {
             div = div.parentNode;
         }
 
         var jq = $(div);
-        if (jq.hasClass("ecplus-form-element")) {
+        if (jq.hasClass('ecplus-form-element')) {
             setSelected(jq);
         }
     });
@@ -692,7 +737,7 @@ function drawProject(prj) {
     project = prj;
     var temp_xml = localStorage.getItem(project.name + '_xml');
     if (temp_xml) {
-        if (confirm("There is an unsaved version of this project stored locally. Do you wish to load it?")) {
+        if (confirm('There is an unsaved version of this project stored locally. Do you wish to load it?')) {
             project = new EpiCollect.Project();
             project.parse($.parseXML(temp_xml));
         }
@@ -739,11 +784,11 @@ function drawProject(prj) {
  */
 function newForm(message, name, closeable) {
     if (!message) {
-        message = "Enter the new form name below. Form names must contain only letters, number and underscores.";
+        message = 'Enter the new form name below. Form names must contain only letters, number and underscores.';
     }
 
-    buttons = {
-        'OK': function () {
+    var buttons = {
+        OK: function () {
             var name = $('input', this).val();
 
             $(this).dialog('close');
@@ -772,10 +817,10 @@ function newForm(message, name, closeable) {
                 switchToForm(name);
             }
             else if (name) {
-                newForm("<p class=\"err\">" + valid_name + "</p>", name);
+                newForm('<p class="err">' + valid_name + '</p>', name);
             }
             else {
-                newForm(message + "<p class=\"err\">The form name cannot be blank</p>", name);
+                newForm(message + '<p class="err">The form name cannot be blank</p>', name);
             }
 
         }
@@ -790,13 +835,13 @@ function newForm(message, name, closeable) {
     EpiCollect.prompt({
         closeable: closeable,
         buttons: buttons,
-        content: "<p>" + message + "</p>"
+        content: '<p>' + message + '</p>'
     });
 
 }
 
 function addFormToList(name) {
-    $("#formList .control").before("<span id=\"" + name + "\" class=\"form\">" + name + "</span>");
+    $('#formList .control').before('<span id="' + name + '" class="form">' + name + '</span>');
 }
 
 /**
@@ -807,76 +852,84 @@ function addFormToList(name) {
  * @param type the css class of the template in the left bar
  */
 function addControlToForm(id, text, type, _jq) {
-    if (type.trimChars() === "") return;
+    if (type.trimChars() === '') {
+        return;
+    }
 
     if (!type.match(/\.?ecplus-[a-z0-9]+-element/)) {
         type = '.ecplus-' + type + '-element';
     }
 
-    if (type[0] !== ".") type = "." + type;
+    if (type[0] !== '.') {
+        type = '.' + type;
+    }
     var jq;
-    if (!_jq)
-        jq = $(type, $(".first")).clone();
-    else
+    if (!_jq) {
+        jq = $(type, $('.first')).clone();
+    }
+    else {
         jq = _jq;
+    }
 
 
-    $("p.title", jq).text(text.decodeXML());
-    jq.prop("id", id);
+    $('p.title', jq).text(text.decodeXML());
+    jq.prop('id', id);
 
-    $(".option", jq).remove();
+    $('.option', jq).remove();
 
     if (type.match(/select1?|radio/)) {
         var opts = currentForm.fields[id].options;
         var l = opts.length;
         for (var i = 0; i < l; i++) {
-            jq.append("<p class=\"option\">" + opts[i].label.decodeXML() + "</p>");
+            jq.append('<p class=\"option\">' + opts[i].label.decodeXML() + '</p>');
         }
     }
 
-    if (!_jq) $("#destination").append(jq);
-    if (currentForm.key == id) {
+    if (!_jq) {
+        $('#destination').append(jq);
+    }
+    if (currentForm.key === id) {
         jq.addClass('key');
     }
 }
 
 function drawFormControls(form) {
-    $("#destination div").remove();
+    $('#destination div').remove();
 
     var fields = form.fields;
 
     for (var f in fields) {
         var fld = fields[f];
-        var cls = undefined;
+        var cls;
         //var suffix = '';
 
-        if (fld.type === "input") {
+        if (fld.type === 'input') {
 
             if (fld.isinteger || fld.isdouble) {
-                cls = "ecplus-numeric-element";
+                cls = 'ecplus-numeric-element';
             }
             else if (fld.date || fld.setDate) {
-                cls = "ecplus-date-element";
+                cls = 'ecplus-date-element';
 
             }
             else if (fld.time || fld.setTime) {
-                cls = "ecplus-time-element";
+                cls = 'ecplus-time-element';
 
             }
             else {
-                cls = "ecplus-text-element";
+                cls = 'ecplus-text-element';
             }
 
             var forms = project.forms;
 
             for (var fm in forms) {
                 if (fm !== form.name && fld.id === forms[fm].key && fld.form.num > forms[fm].num) {
-                    cls = "ecplus-fk-element";
+                    cls = 'ecplus-fk-element';
                 }
             }
         }
         else {
-            cls = "ecplus-" + fld.type + "-element";
+            cls = 'ecplus-' + fld.type + '-element';
         }
 
         addControlToForm(fld.id, fld.text + fld.getSuffix(), cls);
@@ -905,7 +958,7 @@ function validateForm(v_form) {
 
     for (var fld in v_form.fields) {
         var jq = $('#destination #' + fld);
-        var _type = jq.attr("type");
+        var _type = jq.attr('type');
 
         validateControl(v_form.fields[fld], _type, function () {
         });
@@ -926,8 +979,10 @@ function validateForm(v_form) {
     if (titleFields.length === 0) {
         formList.setWarning(v_form.name);
         errorList.addWarning({
-            form: v_form.name, control: 'form', message: "There is no title field selected, it is advisable to set a field as a title " +
-            "to help users quickly distinguish between entries"
+            form: v_form.name,
+            control: 'form',
+            message: 'There is no title field selected, it is advisable to set a field as a title ' +
+            'to help users quickly distinguish between entries'
         });
     }
 }
@@ -942,12 +997,20 @@ function validateControl(ctrl, _type, callback) {
     //validate control name
     var nameValid = project.validateFieldName(ctrl.form, ctrl);
     var messages = [];
+    var success;
+    var validators;
+    var vali;
+    var res;
+    var min_index;
+    var max_index;
+    var option_index;
+    var j;
 
     ctrl.fb_voter = {};
 
     if (!ctrl.text) {
         console.debug('label fail');
-        messages.push({form: ctrl.form.name, control: ctrl.id, message: "Every field must have a label"});
+        messages.push({form: ctrl.form.name, control: ctrl.id, message: 'Every field must have a label'});
     }
 
     if (nameValid !== true) {
@@ -956,69 +1019,101 @@ function validateControl(ctrl, _type, callback) {
 
     if (_type === 'date') {
         if (!ctrl.date && !ctrl.setDate) {
-            messages.push({form: ctrl.form.name, control: ctrl.id, message: "You must select a date format."});
-            //throw "You must select a date format.";
+            messages.push({form: ctrl.form.name, control: ctrl.id, message: 'You must select a date format.'});
+            //throw 'You must select a date format.';
             success = false;
         }
 
     }
     else if (_type === 'time') {
         if (!ctrl.time && !ctrl.setTime) {
-            messages.push({form: ctrl.form.name, control: ctrl.id, message: "You must select a time format."});
-            success = false; //throw "You must select a time format.";
+            messages.push({form: ctrl.form.name, control: ctrl.id, message: 'You must select a time format.'});
+            success = false; //throw 'You must select a time format.';
         }
 
     }
     else if (_type === 'numeric') {
-        // if( isNaN(Number(ctrl.min)) ) messages.push({ control : ctrl.id, message : "Minimum value is not a number" });
-        // if( isNaN(Number(ctrl.max)) ) messages.push({ control : ctrl.id, message : "Maximum value is not a number" });
+        // if( isNaN(Number(ctrl.min)) ) messages.push({ control : ctrl.id, message : 'Minimum value is not a number' });
+        // if( isNaN(Number(ctrl.max)) ) messages.push({ control : ctrl.id, message : 'Maximum value is not a number' });
 
         if (ctrl.min !== '') {
-            var validators = ctrl.getValidators(['key', 'fk', 'min', 'max', 'required', 'verify']);
-            for (var v = 0; v < validators.length; v++) {
-                var vali = validators[v];
+            validators = ctrl.getValidators(['key', 'fk', 'min', 'max', 'required', 'verify']);
+            for (min_index = 0; min_index < validators.length; min_index++) {
+                vali = validators[min_index];
 
-                var res = EpiCollect.Validators[vali.name](ctrl.min, vali.params, null, ctrl.id);
+                res = EpiCollect.Validators[vali.name](ctrl.min, vali.params, null, ctrl.id);
 
                 if (!res.valid) {
-                    messages.push({form: ctrl.form.name, control: ctrl.id, message: '<em>Minimum</em> ' + res.messages[0]});
+                    messages.push({
+                        form: ctrl.form.name,
+                        control: ctrl.id,
+                        message: '<em>Minimum</em> ' + res.messages[0]
+                    });
                 }
             }
         }
         if (ctrl.max !== '') {
-            var validators = ctrl.getValidators(['key', 'fk', 'max', 'min', 'required', 'verify']);
-            for (var v = 0; v < validators.length; v++) {
-                var vali = validators[v];
+            validators = ctrl.getValidators(['key', 'fk', 'max', 'min', 'required', 'verify']);
+            for (max_index = 0; max_index < validators.length; max_index++) {
+                vali = validators[max_index];
 
-                var res = EpiCollect.Validators[vali.name](ctrl.max, vali.params, null, ctrl.id);
+                res = EpiCollect.Validators[vali.name](ctrl.max, vali.params, null, ctrl.id);
 
                 if (!res.valid) {
-                    messages.push({form: ctrl.form.name, control: ctrl.id, message: '<em>Maximum</em> ' + res.messages[0]});
+                    messages.push({
+                        form: ctrl.form.name,
+                        control: ctrl.id,
+                        message: '<em>Maximum</em> ' + res.messages[0]
+                    });
                 }
             }
         }
         if ((!!ctrl.min || ctrl.min === 0) && (!!ctrl.max || ctrl.max === 0) && Number(ctrl.min) >= Number(ctrl.max)) {
-            messages.push({form: ctrl.form.name, control: ctrl.id, message: "<em>Minimum</em> must be smaller than the <em>Maximum</em>"});
+            messages.push({
+                form: ctrl.form.name,
+                control: ctrl.id,
+                message: '<em>Minimum</em> must be smaller than the <em>Maximum</em>'
+            });
         }
     }
 
     if (_type && _type.match(/^select1?|radio$/)) {
         if (ctrl.options.lenghth == 0) {
-            messages.push({form: ctrl.form.name, control: ctrl.id, message: "Multiple choice question does not have any options"});
+            messages.push({
+                form: ctrl.form.name,
+                control: ctrl.id,
+                message: 'Multiple choice question does not have any options'
+            });
         }
 
         var optvals = [];
 
-        for (var i = 0; i < ctrl.options.length; i++) {
-            if (ctrl.options[i].label == '') messages.push({form: ctrl.form.name, control: ctrl.id, message: "Option " + i + " does not have a label"});
-            if (ctrl.options[i].value == '') messages.push({form: ctrl.form.name, control: ctrl.id, message: "Option " + i + " does not have a value"});
+        for (option_index = 0; option_index < ctrl.options.length; option_index++) {
+            if (ctrl.options[option_index].label == '') {
+                messages.push({
+                    form: ctrl.form.name,
+                    control: ctrl.id,
+                    message: 'Option ' + i + ' does not have a label'
+                });
+            }
+            if (ctrl.options[option_index].value === '') {
+                messages.push({
+                    form: ctrl.form.name,
+                    control: ctrl.id,
+                    message: 'Option ' + i + ' does not have a value'
+                });
+            }
 
-            for (var j = 0; j < optvals.length; j++) {
-                if (ctrl.options[i].value == optvals[j]) {
-                    messages.push({form: ctrl.form.name, control: ctrl.id, message: "More than one option with the value " + optvals[j] + " each value must be unique."});
+            for (j = 0; j < optvals.length; j++) {
+                if (ctrl.options[option_index].value === optvals[j]) {
+                    messages.push({
+                        form: ctrl.form.name,
+                        control: ctrl.id,
+                        message: 'More than one option with the value ' + optvals[j] + ' each value must be unique.'
+                    });
                 }
             }
-            optvals.push(ctrl.options[i].value);
+            optvals.push(ctrl.options[option_index].value);
         }
     }
 
@@ -1033,22 +1128,23 @@ function validateControl(ctrl, _type, callback) {
             var conditional = jump_def[i + 1].replace(/!/, '');
             //check that the condition is either between 1 and the number of options inclusive, the same with an exclamation mark
 
-            if (conditional !== 'ALL' && conditional !== 'NULL')//instant pass
-            {
+            if (conditional !== 'ALL' && conditional !== 'NULL') {
                 var n = Number(conditional);
-                if (ctrl.type == 'select') {
+                if (ctrl.type === 'select') {
                     var j_valid = false;
-                    for (var i = ctrl.options.length; i--;) {
-                        if (ctrl.options[i].value == conditional) {
+                    for (var ii = ctrl.options.length; ii--;) {
+                        if (ctrl.options[ii].value === conditional) {
                             j_valid = true;
                             break;
                         }
                     }
-                    if (!j_valid) messages.push({
-                        form: ctrl.form.name,
-                        control: ctrl.id,
-                        message: '<em>Jump ' + (i / 2) + '</em> Jump condition is not valid, please make sure you have set the value the jump works on to a valid option'
-                    });
+                    if (!j_valid) {
+                        messages.push({
+                            form: ctrl.form.name,
+                            control: ctrl.id,
+                            message: '<em>Jump ' + (i / 2) + '</em> Jump condition is not valid, please make sure you have set the value the jump works on to a valid option'
+                        });
+                    }
                 }
                 else {
                     if (isNaN(n) || n < 1 || n > opt_len) {
@@ -1067,7 +1163,11 @@ function validateControl(ctrl, _type, callback) {
 
             if (des !== 'END') {
                 if (!des || des === 'null') {
-                    messages.push({form: ctrl.form.name, control: ctrl.id, message: '<em>Jump ' + (i / 2) + '</em> Jump has no destination.'});
+                    messages.push({
+                        form: ctrl.form.name,
+                        control: ctrl.id,
+                        message: '<em>Jump ' + (i / 2) + '</em> Jump has no destination.'
+                    });
                 }
                 else {
                     var c_idx = ctrl.index;
@@ -1080,7 +1180,7 @@ function validateControl(ctrl, _type, callback) {
                             message: '<em>Jump ' + (i / 2) + '</em> Jump destination is earlier in the form then the field the jump is set on. You cannot jump backwards.'
                         });
                     }
-                    else if (j_idx == (c_idx + 1)) {
+                    else if (j_idx === (c_idx + 1)) {
                         errorList.addWarning({
                             form: ctrl.form.name,
                             control: ctrl.id,
@@ -1098,11 +1198,11 @@ function validateControl(ctrl, _type, callback) {
     var df_val = ctrl.defaultValue;
 
     if (!!df_val) {
-        var validators = ctrl.getValidators(['key', 'fk', 'verify', 'required']);
+        validators = ctrl.getValidators(['key', 'fk', 'verify', 'required']);
         for (var v = 0; v < validators.length; v++) {
-            var vali = validators[v];
+            vali = validators[v];
 
-            var res = EpiCollect.Validators[vali.name](df_val, vali.params, null, ctrl.id);
+            res = EpiCollect.Validators[vali.name](df_val, vali.params, null, ctrl.id);
 
             if (!res.valid) {
                 messages.push({form: ctrl.form.name, control: ctrl.id, message: '<em>Default</em> ' + res.messages[0]});
@@ -1128,7 +1228,7 @@ function validateCallback(info, wait) {
 
     // populate list
     for (var m = 0; info.messages && m < info.messages.length; m++) {
-        if (typeof info.messages[m] == 'object') {
+        if (typeof info.messages[m] === 'object') {
             errorList.addError(info.messages[m]);
             formList.setError(info.messages[m].form);
             if (currentForm.name === info.messages[m].form) {
@@ -1140,7 +1240,9 @@ function validateCallback(info, wait) {
         }
     }
 
-    if (wait) return;
+    if (wait) {
+        return;
+    }
 }
 
 /**
@@ -1151,25 +1253,27 @@ function updateSelected(is_silent) {
 
     //if(!dirty){ return true;}
 
-    var jq = $("#destination .selected");
+    var jq = $('#destination .selected');
     var cur = currentControl;
     var cfrm = currentForm;
     if (jq === undefined || jq.length === 0) return true;
 
     var name = cur.id;
-    var _type = jq.attr("type");
+    var _type = jq.attr('type');
+    var i;
+    var j;
+    var x;
 
     if (_type === 'fk') {
         //	cur.id = project.forms[$('#parent').val()].key;
-    }
-    else {
+    } else {
         cur.id = $('#inputId').val();
         cur.text = $('#inputLabel').val();
     }
 
     if (_type.match(/^(text|numeric|date|time|fk)$/)) {
-        cur.type = "input";
-        if (_type === "fk") {
+        cur.type = 'input';
+        if (_type === 'fk') {
             /*var f = cur.
              var frm = project.forms[f]
              cur.id = frm.key;
@@ -1180,67 +1284,72 @@ function updateSelected(is_silent) {
         cur.type = _type;
     }
 
-    var notset = !$("#set").prop("checked");
+    var notset = !$('#set').prop('checked');
 
-    cur.required = !!$("#required").prop("checked");
-    cur.title = !!$("#title").prop("checked");
-    cur.regex = $("#regex").val(); // Can't really validate regexes?!?
-    cur.verify = !!$("#verify").prop("checked");
+    cur.required = !!$('#required').prop('checked');
+    cur.title = !!$('#title').prop('checked');
+    cur.regex = $('#regex').val(); // Can't really validate regexes?!?
+    cur.verify = !!$('#verify').prop('checked');
 
     cur.date = false;
     cur.setDate = false;
     cur.time = false;
     cur.setTime = false;
 
-    if (_type === "time") {
-        cur[(notset ? "time" : "setTime")] = $("#time").val();
+    if (_type === 'time') {
+        cur[(notset ? 'time' : 'setTime')] = $('#time').val();
     }
-    if (_type === "date") {
-        cur[(notset ? "date" : "setDate")] = $("#date").val();
+    if (_type === 'date') {
+        cur[(notset ? 'date' : 'setDate')] = $('#date').val();
     }
 
     cur.min = $('#min').val();
     cur.max = $('#max').val();
-    cur.isinteger = !!$("#rdo_integer").prop("checked");
-    cur.isdouble = !!$("#rdo_decimal").prop("checked");
+    cur.isinteger = !!$('#rdo_integer').prop('checked');
+    cur.isdouble = !!$('#rdo_decimal').prop('checked');
 
-    cur.genkey = !!$("#genkey").prop("checked");
-    cur.hidden = !!$("#hidden").prop("checked");
+    cur.genkey = !!$('#genkey').prop('checked');
+    cur.hidden = !!$('#hidden').prop('checked');
 
-    cur.defaultValue = $("#default").val();
-    cur.search = !!$("#search").prop("checked");
+    cur.defaultValue = $('#default').val();
+    cur.search = !!$('#search').prop('checked');
 
-    var optCtrls = $(".selectOption");
+    var optCtrls = $('.selectOption');
     var options = [];
 
     var n = optCtrls.length;
-    for (var i = 0; i < n; i++) {
-        options[i] = {label: $("input[name=optLabel]", optCtrls[i]).val(), value: $("input[name=optValue]", optCtrls[i]).val()};
+    for (i = 0; i < n; i++) {
+        options[i] = {
+            label: $('input[name=optLabel]', optCtrls[i]).val(),
+            value: $('input[name=optValue]', optCtrls[i]).val()
+        };
     }
     cur.options = options;
 
-    var jump = "";
-    var jumpCtrls = $(".jumpoption");
+    var jump = '';
+    var jumpCtrls = $('.jumpoption');
     var jn = jumpCtrls.length;
 
-    for (var i = jn; i--;) {
-        var jumpType = $('.jumpType', jumpCtrls[i]).val();
-        var jval = (jumpType.length > 1 ? jumpType : (jumpType + $("select.jumpvalues", jumpCtrls[i]).val()));
 
-        jump = $(".jumpdestination", jumpCtrls[i]).val() + "," + jval + (jump === "" ? "" : "," + jump);
+    //how does this work?????
+    for (j = jn; j--;) {
+        var jumpType = $('.jumpType', jumpCtrls[i]).val();
+        var jval = (jumpType.length > 1 ? jumpType : (jumpType + $('select.jumpvalues', jumpCtrls[i]).val()));
+
+        jump = $('.jumpdestination', jumpCtrls[i]).val() + ',' + jval + (jump === '' ? '' : ',' + jump);
     }
 
-    cur.jump = jump.trimChars(",");
+    cur.jump = jump.trimChars(',');
 
-    jq.attr("id", cur.id);
-    $("p.title", jq).text(cur.text + cur.getSuffix());
-    $(".option", jq).remove();
+    jq.attr('id', cur.id);
+    $('p.title', jq).text(cur.text + cur.getSuffix());
+    $('.option', jq).remove();
 
     if (cur.type.match(/select1?|radio/)) {
         var opts = cur.options;
         var l = opts.length;
-        for (var i = 0; i < l; i++) {
-            jq.append("<p class=\"option\">" + opts[i].label + "</p>");
+        for (x = 0; x < l; x++) {
+            jq.append('<p class="option">' + opts[x].label + '</p>');
         }
     }
     else {
@@ -1267,9 +1376,6 @@ function updateSelected(is_silent) {
     if (!is_silent) {
         unselect();
     }
-    else {
-        //  updateEditMarker();
-    }
 
     currentControl = cur;
     currentForm = cfrm;
@@ -1285,11 +1391,15 @@ function updateSelectedCtl() {
 function updateForm() {
     var success = true;
 
-    if (!currentForm) return true;
-    if (!updateSelected()) success = false;
+    if (!currentForm) {
+        return true;
+    }
+    if (!updateSelected()) {
+        success = false;
+    }
     if (!currentForm.key) {
-        EpiCollect.dialog({content: "The form " + currentForm.name + " needs a key defined."});
-        //throw "The form " + currentForm.name + " needs a key defined.";
+        EpiCollect.dialog({content: 'The form ' + currentForm.name + ' needs a key defined.'});
+        //throw 'The form ' + currentForm.name + ' needs a key defined.';
         return false;
     }
 
@@ -1304,7 +1414,7 @@ function updateStructure() {
     var fields = {};
     var form = currentForm;
 
-    var elements = $("#destination div");
+    var elements = $('#destination div');
     for (var i = 0; i < elements.length && form; i++) {
         var id = elements[i].id;
 
@@ -1320,11 +1430,10 @@ function updateStructure() {
 
 function updateJumps() {
     try {
-        //updateForm();
 
         var opts = currentControl.options;
 
-        var fieldCtls = $("select.jumpvalues");
+        var fieldCtls = $('select.jumpvalues');
 
         var vals = [];
 
@@ -1339,7 +1448,7 @@ function updateJumps() {
             return i + 1;
         };
 
-        if (currentControl.type == 'select') {
+        if (currentControl.type === 'select') {
             get_val = function (i) {
                 return this.options[i].value;
             }.bind(currentControl);
@@ -1347,14 +1456,14 @@ function updateJumps() {
 
 
         for (var i = 0; i < opts.length; i++) {
-            fieldCtls.append("<option value=\"" + get_val(i) + "\" >" + opts[i].label + "</option>");
+            fieldCtls.append('<option value="' + get_val(i) + '">' + opts[i].label + '</option>');
         }
 
-        $("select.jumpvalues").each(function (idx, ele) {
+        $('select.jumpvalues').each(function (idx, ele) {
             $(ele).val(vals[idx]);
         });
 
-        fieldCtls = $(".jumpdestination");
+        fieldCtls = $('.jumpdestination');
 
         vals = [];
 
@@ -1371,13 +1480,17 @@ function updateJumps() {
             var fld = ele.id;
             var field = currentForm.fields[fld];
             var lbl = currentForm.fields[fld].text;
-            if (lbl.length > 25) lbl = lbl.substr(0, 22) + "...";
-            if (field.type && !field.hidden) fieldCtls.append("<option value=\"" + fld + "\">" + lbl + "</option>");
+            if (lbl.length > 25) {
+                lbl = lbl.substr(0, 22) + '...';
+            }
+            if (field.type && !field.hidden) {
+                fieldCtls.append('<option value="' + fld + '">' + lbl + '</option>');
+            }
         });
 
-        fieldCtls.append("<option value=\"END\">END OF FORM</option>");
+        fieldCtls.append('<option value="END"> END OF FORM </option>');
 
-        $(".jumpdestination").each(function (idx, ele) {
+        $('.jumpdestination').each(function (idx, ele) {
             var jq = $(ele);
             var opts = $('option', jq);
             var len = opts.length;
@@ -1390,7 +1503,9 @@ function updateJumps() {
                 $(opts[i]).prop('disabled', !show);
                 if (opts[i].value === cField) {
                     // hide the next + 1 element as there's no point jumping to the next question
-                    if (i < len - 2) $(opts[++i]).prop('disabled', true); // but don't disable the END OF FORM option
+                    if (i < len - 2) {
+                        $(opts[++i]).prop('disabled', true);
+                    } // but don't disable the END OF FORM option
                     show = true;
                 }
             }
@@ -1401,7 +1516,7 @@ function updateJumps() {
 
     } catch (err) {
         /*alert(err)*/
-        ;
+
     }
 }
 
@@ -1433,37 +1548,40 @@ function setSelected(jq) {
     var jqEle = jq;
     dirty = false;
 
-    if (jqEle.hasClass("ecplus-form-element")) {
-        if (window["currentControl"]) {
-            if (!updateSelected()) return;
-            // $(".last input[type=text]").val("");
-            //$(".last input[type=checkbox]").prop("checked", false);
+
+    if (jqEle.hasClass('ecplus-form-element')) {
+        if (currentControl) {
+            if (!updateSelected()) {
+                return;
+            }
+            // $('.last input[type=text]').val('');
+            //$('.last input[type=checkbox]').prop('checked', false);
         }
 
-        if (currentForm.fields[jqEle.prop("id")]) {
-            currentControl = currentForm.fields[jqEle.prop("id")];
+        if (currentForm.fields[jqEle.prop('id')]) {
+            currentControl = currentForm.fields[jqEle.prop('id')];
         }
         else {
             currentControl = new EpiCollect.Field(currentForm);
             currentControl.form = currentForm;
-            currentControl.id = jqEle.prop("id");
-            if (jqEle.attr('type') == 'numeric') {
+            currentControl.id = jqEle.prop('id');
+            if (jqEle.attr('type') === 'numeric') {
                 currentControl.isinteger = true;
             }
 
-            currentForm.fields[jqEle.prop("id")] = currentControl;
+            currentForm.fields[jqEle.prop('id')] = currentControl;
 
 
         }
 
-        $("#destination .ecplus-form-element").removeClass("selected");
-        jqEle.addClass("selected");
+        $('#destination .ecplus-form-element').removeClass('selected');
+        jqEle.addClass('selected');
 
         propertiesForm.show();
 
     }
     else {
-        throw "div is not a form Element!";
+        throw 'div is not a form Element!';
     }
 }
 
@@ -1473,18 +1591,20 @@ function previewForm(name) {
 
 function removeForm(name) {
     if (project.getNextForm(name)) {
-        EpiCollect.dialog({content: "You can only delete the last form in the project."});
+        EpiCollect.dialog({content: 'You can only delete the last form in the project.'});
         return;
     }
 
     if (confirm('Are you sure you want to remove the form ' + name + '?')) {
         currentForm = false;
-        $('#' + name, $("#formList")).remove();
+        $('#' + name, $('#formList')).remove();
         project.forms[name].num = -1;
 
 
         for (frm in project.forms) {
-            if (!currentForm) switchToForm(frm); // switch to the first form
+            if (!currentForm) {
+                switchToForm(frm);
+            } // switch to the first form
             break;
         }
 
@@ -1498,21 +1618,21 @@ function removeForm(name) {
  * Remove the currently selected form
  */
 function removeSelected() {
-    var jq = $("#destination .selected");
+    var jq = $('#destination .selected');
 
     if (currentControl.isKey) {
         currentForm.key = null;
         askForKey(true);
     }
 
-    delete currentForm.fields[jq.prop("id")];
+    delete currentForm.fields[jq.prop('id')];
     jq.remove();
     unselect();
 
-    //TODO : Neaten? MAybe have validate project attached to a "changed" event on the form?
+    //TODO : Neaten? MAybe have validate project attached to a 'changed' event on the form?
     validateProject();
-    if (formList.forms.length == 0) {
-        newForm("You have deleted all of your forms, please choose a name for your new first form.");
+    if (formList.forms.length === 0) {
+        newForm('You have deleted all of your forms, please choose a name for your new first form.');
     }
 }
 
@@ -1521,7 +1641,7 @@ function unselect() {
     propertiesForm.reset();
     propertiesForm.hide();
 
-    $('#destination .ecplus-form-element').removeClass("selected");
+    $('#destination .ecplus-form-element').removeClass('selected');
 }
 
 function renameForm(name) {
@@ -1536,7 +1656,7 @@ function renameForm(name) {
             if (valid === true) {
                 form.name = newName;
 
-                for (frm in forms) {
+                for (var frm in forms) {
                     if (frm === name) {
                         newForms[newName] = form;
                     }
@@ -1565,7 +1685,7 @@ function switchToBranch() {
     //var par_frm = currentForm.name;
 
     if (!frm || frm === '') {
-        frm = currentControl.id + "_form";
+        frm = currentControl.id + '_form';
         currentControl.connectedForm = frm;
     }
 
@@ -1608,16 +1728,23 @@ function switchToBranch() {
 
 function switchToForm(name) {
 
+    var frm;
+
     if (currentForm) {
         updateForm();
         project.forms[currentForm.name] = currentForm;
     }
 
-    $("#parent").empty();
-    for (frm in project.forms) {
-        if (frm === name) break;
+    $('#parent').empty();
 
-        if (project.forms[frm].main) $("#parent").append("<option value=\"" + frm + "\">" + frm + " (" + project.forms[frm].key + ")</option>");
+    for (frm in project.forms) {
+        if (frm === name) {
+            break;
+        }
+
+        if (project.forms[frm].main) {
+            $('#parent').append('<option value="' + frm + '">' + frm + ' (' + project.forms[frm].key + ')</option>');
+        }
     }
 
 
@@ -1806,8 +1933,8 @@ function saveProject() {
     loader.start();
     window.loader = loader;
 
-    $.ajax("./updateStructure", {
-        type: "POST",
+    $.ajax('./updateStructure', {
+        type: 'POST',
         data: {data: project.toXML(), skipdesc: true},
         success: saveProjectCallback,
         error: saveProjectError
@@ -1823,15 +1950,14 @@ function saveProjectCallback(data, status, xhr) {
     window.loader.stop();
 
     if (result.result) {
-
-        new EpiCollect.dialog({content: "Project Saved"});
+        new EpiCollect.dialog({content: 'Project Saved'});
         $('.unsaved').removeClass('unsaved');
     }
     else {
-        EpiCollect.dialog({content: "Project not saved : " + result.message});
+        EpiCollect.dialog({content: 'Project not saved : ' + result.message});
     }
 }
 
 function saveProjectError(xhr, status, err) {
-    EpiCollect.dialog({content: "Project not saved : " + status});
+    EpiCollect.dialog({content: 'Project not saved : ' + status});
 }
