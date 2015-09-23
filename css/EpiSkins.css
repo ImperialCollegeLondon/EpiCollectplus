@@ -277,11 +277,11 @@
 #formList
 {
 
-	width: 100%;
-	overflow:hidden;
-	border-top: 1px solid #EEEEEE;
-	border-bottom: 1px solid #EEEEEE;
-	margin: 10px 0px 10px 0px;
+	/*width: 100%;*/
+	/*overflow:hidden;*/
+	/*border-top: 1px solid #EEEEEE;*/
+	/*border-bottom: 1px solid #EEEEEE;*/
+	/*margin: 10px 0px 10px 0px;*/
 	
 }
 
@@ -302,10 +302,10 @@
 	vertical-align:middle;
 }
 
-#formList .over
-{
-	border-color: ccccff;
-}
+/*#formList .over*/
+/*{*/
+	/*border-color: ccccff;*/
+/*}*/
 
 #formList .table.selected
 {
