@@ -1966,7 +1966,10 @@ EpiCollect.Field = function () {
             }
         }
         else if (this.id === 'created' && value.match(/^\d+$/)) {
-            return new Date(EpiCollect.toJSTimestamp(value)).toLocaleString();
+            // format date to UTC
+            var d = new Date(EpiCollect.toJSTimestamp(value)).toUTCString();
+            // substring to remove day of the week and 'GMT'
+            return d.substring(5, d.length - 4);
         }
         else if (this.type === 'branch') {
             if (!value) {
