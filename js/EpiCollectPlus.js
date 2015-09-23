@@ -1907,23 +1907,18 @@ EpiCollect.Field = function () {
         else if (this.type === "select") {
             var sels = value.split(',');
             var opts = this.options;
-            var l = opts.length;
+
 
             var ret = '';
-            for (var i = 0; i < l; i++) {
-                var l_s = sels.length;
-                for (var j = 0; j < l_s; j++) {
-                    if (opts[i].value === sels[j] || opts[i].label === sels[j]) {
-                        ret = ret + (ret !== '' ? ', ' : '') + opts[i].label;
-                        sels.splice(j, 1);
-                        break;
-                    }
-                }
+            for (var i = 0; i < sels.length; i++) {
+
+                ret = ret + (ret !== '' ? ', ' : '') + opts[i].label;
+
             }
-            if (sels.length > 0) {
-                if (ret !== '') ret = ret + ', ';
-                ret = ret + sels.join(',');
-            }
+            //if (sels.length > 0) {
+                //if (ret !== '') ret = ret + ', ';
+                //ret = ret + sels.join(',');
+            //}
             return ret;
         }
         else if (this.type === "photo") {
