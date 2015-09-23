@@ -688,3 +688,6 @@ div#destination > div {
 .ecplus-columns .second {
     background-color: #D0E9DC!important;
 }
+.save-project-btn-wrapper {
+    margin-left: 14px;
+}

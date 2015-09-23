@@ -6,10 +6,10 @@
     background-color: #ffffff;
 }
 
-#errorList {
-    width: 30em !important;
-    margin-top: 35px;
-}
+/*#errorList {*/
+    /*/!*width: 30em !important;*!/*/
+    /*/!*margin-top: 35px;*!/*/
+/*}*/
 
 .ecplus-columns {
     margin-top: 2em !important;

@@ -21,12 +21,12 @@
         overflow-y: hidden;
     }
 
-    #formList {
-        display: block;
-        height: 10em;
-        margin-right: 12em;
+    /*#formList {*/
+        /*display: block;*/
+        /*height: 10em;*/
+        /*margin-right: 12em;*/
 
-    }
+    /*}*/
 
     #formList .form {
         position: relative;
@@ -126,10 +126,10 @@
     }
 
     #errorList {
-        width: 20em;
+        /*width: 20em;*/
         height: 10em;
-        float: right;
-        position: relative;
+        /*float: right;*/
+        /*position: relative;*/
         padding: 0.5em;
         border-radius: 0.5em;
         border: 1px solid black;
@@ -217,7 +217,7 @@
     }
 
     .toolbox {
-        height: 12em;
+        /*height: 12em;*/
     }
 
     .end {
@@ -281,24 +281,26 @@
 {{breadcrumbs}}
 &gt; <a href="../{#projectName#}">Project : {#projectName#}</a> &gt; Form Builder
 {{/breadcrumbs}}
+
 {{main}}
 <!--<h1>Form Builder</h1>-->
+
 <div class="toolbox row">
 
-    <div id="formList_wrapper">
-        <div id="formList" class="col-md-8">
+    <div class="save-project-btn-wrapper">
+        <a id="btn_save btn btn-default" href="javascript:saveProject()" class="button">
+            <i class="fa fa-check fa-fw fa-2x"></i>Save Project
+        </a>
+    </div>
+
+    <div id="formList_wrapper" class="col-md-8">
+        <div id="formList">
 
         </div>
     </div>
 
     <div id="errorList" class="col-md-4">
         Error list#errorList
-    </div>
-
-    <div>
-        <a id="btn_save btn btn-default" href="javascript:saveProject()" class="button">
-            <i class="fa fa-check fa-fw fa-2x"></i>Save Project
-        </a>
     </div>
 
 </div>
@@ -428,8 +430,7 @@
                     <input type="checkbox" id="required" name="required" value="true"/>
                     <label for="required">Required</label>
                 </div>
-                <div id="titleCtrl" class="title ctrl">
-                     allow="text,numeric,select1,radio,barcode">
+                <div id="titleCtrl" class="title ctrl" allow="text,numeric,select1,radio,barcode">
                     <input type="checkbox" id="title" name="title" value="true"/>
                     <button type="button" class="btn btn-default pull-right" data-toggle="popover" data-placement="left" data-trigger="focus" title="A title field can be set on any text field within a form. The title field will be displayed when listing entries on the mobile devices, and should be chosen as a convenient , simple way of referring to each entry of a form">
                         <i class="fa fa-question-circle"></i>
