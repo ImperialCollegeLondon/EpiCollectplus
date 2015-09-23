@@ -82,7 +82,7 @@
 			}
 			
 			if(!$this->key) $this->key = trim($this->values[$this->form->key]);
-			if(!$this->key || trim($this->key) == '')
+			if(!isset($this->key) || trim($this->key) == '')
 			{
 				throw new Exception('Message: The key field cannot be left blank.');
 			}
@@ -309,7 +309,7 @@
 			
 			
 			if(!$this->key) $this->key = trim($this->values[$this->form->key]);
-			if(!$this->key || trim($this->key) == '')
+			if(!isset($this->key) || trim($this->key) == '')
 			{
 				throw new Exception('Message: The key field cannot be left blank.');
 			}
