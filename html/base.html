@@ -171,7 +171,7 @@
         var url_parts = url.split('/');
 
         //resize only on home screen, it is for the featured projects and integrations containers
-        if(url_parts[url_parts.length - 1] === '') {
+        if(url_parts[url_parts.length - 1] === '' || url_parts[url_parts.length - 1] === '#') {
             console.log('resizing');
             $('.match-height').matchHeight();
             $.fn.matchHeight._update();
