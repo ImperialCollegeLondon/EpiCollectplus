@@ -15,6 +15,13 @@
     function disableNext(target, message) {
         var _parent = $(target).parent();
         $('.panelSwitcher.next', _parent).button("disable");
+
+        //disable button using bootstrap (bootstrap.js conflict with jquery ui)
+        $('.panelSwitcher.next').attr('disabled', true);
+        $('.panelSwitcher.next').on('click', function(){
+            return false;
+        });
+
         $(target).addClass('ecplus-invalid');
         if (message != '') {
             $('.msg', _parent)
@@ -31,6 +38,11 @@
     function enableNext(target, message) {
         var _parent = $(target).parent();
         $('.panelSwitcher.next', _parent).button("enable");
+
+        //enable button using bootstrap (bootstrap.js conflict with jquery ui)
+        $('.panelSwitcher.next').attr('disabled', false);
+        $('.panelSwitcher.next').off('click');
+
         $(target).removeClass('ecplus-invalid');
         if (message != '') {
             $('.msg', _parent)
