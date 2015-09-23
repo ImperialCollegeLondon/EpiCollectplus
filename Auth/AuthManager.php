@@ -52,7 +52,6 @@ class AuthManager {
     }
 
     function getProviderType() {
-
         return $_SESSION['provider'];
     }
 
