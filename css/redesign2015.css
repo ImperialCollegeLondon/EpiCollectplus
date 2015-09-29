@@ -691,3 +691,6 @@ div#destination > div {
 .save-project-btn-wrapper {
     margin-left: 14px;
 }
+form#props .label:hover {
+    background: none!important;
+}
