@@ -478,25 +478,29 @@
 			}
 			return $children;
 		}
-		
+
 		public function getBranchEntries()
 		{
 			$branchEntries = array();
-			for($i = 0; $i < count($this->form->branches); $i++)
-			{
-				$branches = array();
-                                $this->form->survey->tables[$this->form->branches[$i]]->ask(array($this->form->key => $this->key));
-                                while($res = $this->form->survey->tables[$this->form->branches[$i]]->recieve())
-                                {
-                                    array_push($branches, $res);
-                                }
-                                        
-				for($j = 0; $j < count($branches[$this->form->branches[$i]]); $j++)
-				{
-					array_push($branchEntries, $branches[$this->form->branches[$i]][$j]);
+
+			if (count($this->form->branches) > 0) {
+
+				for ($i = 0; $i < count($this->form->branches); $i++) {
+					$branches = array();
+					$this->form->survey->tables[$this->form->branches[$i]]->ask(array($this->form->key => $this->key));
+
+					while ($res = $this->form->survey->tables[$this->form->branches[$i]]->recieve()) {
+						array_push($branches, $res);
+					}
+					if (count($branches) > 0) {
+						for ($j = 0; $j < count($branches[$i]); $j++) {
+							array_push($branchEntries, $branches[$i][$j]);
+						}
+
+					}
 				}
+				return $branchEntries;
 			}
-			return $branchEntries;
 		}
 		
 	}
