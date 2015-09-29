@@ -1941,13 +1941,17 @@ EpiCollect.Field = function () {
                 var checkid = 'check' + (nchecks++);
                 var checkurl;
                 var valUrl;
+                var currentUrl;
+
                 if (value.match(/^http:/i)) {
                     valUrl = value;
                     checkurl = value;
                 }
                 else {
                     valUrl = "ec/uploads/" + project.name + "~" + value;
-                    checkurl = (location.href.trimChars('/').replace(new RegExp(project.name + '/' + formName + '', 'i'), '') + valUrl).trimChars('/');
+                    currentUrl = 'http://' + window.location.hostname + window.location.pathname;
+                    // remove project and form names from url path
+                    checkurl = (currentUrl.trimChars('/').replace(new RegExp(project.name + '/' + formName + '', 'i'), '') + valUrl).trimChars('/');
                 }
 
                 checking[checkurl] = checkid;
