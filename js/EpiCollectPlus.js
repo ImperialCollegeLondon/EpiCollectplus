@@ -1922,13 +1922,14 @@ EpiCollect.Field = function () {
             return ret;
         }
         else if (this.type === "photo") {
-            //console.debug(value);
+
             if (value && !value.match(/^null$/i) && value !== "-1") {
                 if (value.match(/^http:\/\//)) {
                     return "<a href=\"" + value + "\" target=\"__blank\"><img src=\"" + value + "&thumbnail=true\" alt=\"" + value + "\" height=\"125\"/></a>";
                 }
                 else {
-                    return "<a href=\"" + location.href.toString().trimChars('/') + "/__getImage?img=" + value + "\" target=\"__blank\"><img src=\"" + location.href.toString().trimChars('/') + "/__getImage?img=" + value + "&thumbnail=true\" alt=\"" + value + "\" height=\"125\"/></a>";
+                    // return link to url, including full path name from current url, minus additional parameters
+                    return '<a href="' + 'http://' + window.location.hostname + window.location.pathname + '/__getImage?img=' + value + '" target="_blank"><img src="' + 'http://' + window.location.hostname + window.location.pathname + '/__getImage?img=' + value + '&thumbnail=true" alt="' + value + '" height="125"/></a>';
                 }
 
             }
@@ -1952,7 +1953,7 @@ EpiCollect.Field = function () {
                 checking[checkurl] = checkid;
                 checker.startCheck(checkurl);
 
-                return "<a id=\"" + checkid + "\" href=\"" + checkurl + "\" target=\"__blank\"> View Media </a>";
+                return "<a id=\"" + checkid + "\" href=\"" + checkurl + "\" target=\"__blank\"> Download Media </a>";
             }
             else {
                 return "<i>No Media</i>";
