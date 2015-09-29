@@ -177,7 +177,7 @@ class AuthManager {
     }
 
     function callback($provider = "") {
-        global $cfg, $db, $SITE_ROOT, $url;
+        global $cfg, $db, $SITE_ROOT;
 
         if ($this->isLoggedIn() || !array_key_exists($provider, $this->providers)) {
             header("location: http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/");
