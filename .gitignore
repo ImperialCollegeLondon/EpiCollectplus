@@ -40,7 +40,8 @@ index-blah.html
 instructions*
 /nbproject/private/
 /nbproject/
-/ec/
+/ec
+/postdump
 
 .htaccess
 /node_modules

@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -37,23 +36,35 @@
 		
 		<div id="main">
 			<h1>Welcome to EpiCollect+</h1>
-			<h2>Setting up EpiCollect+ on Apache</h2>
-			<p>In order to use EpiCollect you need to add a couple of lines to your Apache httpd conf file. At the end of the Directory section relating to the home directory, please add the following if you are deploying epicollect in the root of the website (i.e. http://www.epicollect.net/)</p>
-			<p class="code">
-				RewriteEngine on<br/>
-				RewriteCond %{REQUEST_URI} !^/(ec\/uploads|images|js|css)<br/>
-				RewriteRule .* main.php	
+			EpiCollect makes nice, friendly URLS for all your projects by redirecting requests through a routing PHP script. This does mean we need to configure your webserver to send these requests to the correct place. If you're using Apache as your webserver then add a .htaccess file to your EpiCollect directory.
+
+			<p></p>Let's say you install epicollect on http://localhost/dev/epicollectplus</p>
+
+			<p class="well">
+				AddDefaultCharset utf-8<br/>
+			RewriteEngine On<br/>
+			RewriteCond %{REQUEST_URI} !^/dev/epicollectplus-dev/(ec\/uploads|images|js|css|png)<br/>
+			RewriteCond %{REQUEST_FILENAME} !\.(css|js|png|jpg)$<br/>
+			RewriteRule .* main.php<br/>
+				</p>
+			Or if you install in the server root:
+
+			<p class="well">
+			AddDefaultCharset utf-8<br/>
+			RewriteEngine on<br/>
+			RewriteCond %{REQUEST_URI} !^/(ec\/uploads|images|js|css|png)<br/>
+			RewriteRule .* main.php<br/>
 			</p>
-			<p>Or if you are deploying EpiCollect in a sub directory of a website (e.g. http://www.example.com/epicollectplus)</p>
-			<p class="code">
-				RewriteEngine on<br/>
-				RewriteCond %{REQUEST_URI} !^/epicollectplus/(ec\/uploads|images|js|css)<br/>
-				RewriteRule /epicollectplus/.* /epicollectplus/main.php	
+			If you're using IIS (tip: just don't) then you'll need to configure URLRewrite
+			<p class="well">
+			in Features View open URLRewrite
+			Add Rule(s)... (top of the right hand panel)<br/>
+			Choose Blank Rule and OK<br/>
+			Give it a sensible name like EpiCollect... this is so you know what it's for<br/>
+			Set the pattern to .* if using a whole site or the path to the EpiCollect folder followed by .* (e.g. for the url http://www.example.com/epicollect the rule would be epicollect/.*<br/>
+			Apply (top of the right panel again)<br/>
 			</p>
-			<h2>Setting up EpiCollect+ on IIS 7</h2>
-			<p>To use EpiCollect+ with IIS 7 you will need to install <a href="http://www.iis.net/download/urlrewrite">URL rewrite</a> on your IIS server. Then navigate through IIS manager to the website containing your EpiCollect instnace, open the URL Rewrite option, select 'Add rule...' from the right hand side and set up a rule to direct all requests to the root directory of EpiCollect+ to main.php.
-			The below example shows a URL Rewrite for an EpiCollect instance in a directory such as http://www.example.org/EpiCollect2/</p>
-			<img src="images/URLReWrite.png" alt="URL Rewrite Screenshot" style="border:1px solid #CCCCCC;margin:10px 10px 10px 10px;"/>
+
 			<h2>Other Web Servers</h2>
 			<p>If you wish to set up EpiCollect+ on a different web server or have any questions please <a href="mailto:daanensen@imperial.ac.uk">Contact Us</a></p>
 		</div>
