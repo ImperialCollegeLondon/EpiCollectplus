@@ -1075,15 +1075,22 @@ EpiCollect.Form = function () {
             }
         });
 
+        console.log('<div class="ecplus-form-pane"><form name="' + this.name + '"></form></div>');
+        console.log(project.forms);
+
+        var form_html = '';
+        form_html += '<a class="btn btn-default pull-left" href="#" onclick="project.forms.' + this.name + '.movePrevious();">Previous</a>';
+        form_html += '<a class="btn btn-default pull-right" href="#" onclick="project.forms.' + this.name + '.checkAndAdvance();">Next</a>';
+        form_html += '<div class="ecplus-form-pane"><form name="' + this.name + '"></form></div>';
+
         this.formElement
             .dialog("option", "title", "Add " + this.name)
             .empty()
             .attr("title", (editMode ? "Edit " : "Add ") + this.name)
             .addClass(vertical ? "ecplus-vertical-form" : "ecplus-form")
             .removeClass(vertical ? "ecplus-form" : "ecplus-vertical-form")
-            .append("<div class=\"ecplus-form-next\"><a href=\"#\" onclick=\"project.forms['" + this.name + "'].checkAndAdvance();\">Next</a></div>")
-            .append("<div class=\"ecplus-form-previous\"><a href=\"#\" onclick=\"project.forms['" + this.name + "'].movePrevious();\">Previous</a></div>")
-            .append("<div class=\"ecplus-form-pane\"><form name=\"" + this.name + "\"></form></div>");
+            .append(form_html);
+
 
         if (cnf.debug) {
             this.formElement.addClass('debug');
@@ -1095,8 +1102,7 @@ EpiCollect.Form = function () {
             this.formElement.removeClass('editing');
         }
 
-        var form_ele = $(".ecplus-form-pane form", this.formElement).css("width", ($(".ecplus-question", this.formElement).width() * $(".ecplus-question", this.formElement).length + 1) + "px");
-
+        var form_ele = $(".ecplus-form-pane form", this.formElement);
 
         for (var field in this.fields) {
             if (this.fields[field].type === "" || (this.fields[field].hidden && project.getPrevForm(this.name).key !== field)) {
@@ -1123,7 +1129,10 @@ EpiCollect.Form = function () {
             form_ele.append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /><a class=\"button\" href=\"javascript:project.forms['" + this.name + "'].addEntry();\">Save Entry</a></div>");
         }
 
-        $(".ecplus-question").width($(".ecplus-form-pane").width());
+        //set width for single question
+        $(".ecplus-question").width($(".ecplus-form-pane").width() - 1);
+
+        //set width for form container, full stripe with all the inputs
         form_ele.css("width", ($(".ecplus-question").width() * $(".ecplus-question").length + 1) + "px");
 
 
@@ -1843,7 +1852,7 @@ EpiCollect.Field = function () {
                 return pre + "</p>" + ret;
             }
             else if (this.type === "radio") {
-                ret = "<p id=\"" + this.id + "\" class=\"ecplus-radio-group ecplus-input\">";
+                ret = "<p id=\"" + this.id + "\" class=\"ecplus-radio-group ecplus-input radio\">";
                 for (var i = 0; i < this.options.length; i++) {
                     //console.debug();
                     if ((this.options[i].value === val) || (this.options[i].label === val)) {
@@ -1856,7 +1865,7 @@ EpiCollect.Field = function () {
                 return pre + "</p>" + ret;
             }
             else if (this.type === "textarea") {
-                return pre + "<textarea name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input\">" + val + "</textarea>";
+                return pre + "<textarea name=\"" + this.id + "\" id=\"" + this.id + "\" class=\"ecplus-input form-control\">" + val + "</textarea>";
             }
             else if (this.date || this.setDate) {
                 //Custom Date Picker
@@ -1868,7 +1877,7 @@ EpiCollect.Field = function () {
             else if (this.type === "input" || this.type === "barcode") {
 
                 var valstring = val && val !== 'NULL' ? "value=\"" + val + "\"" : "";
-                return pre + "<input type=\"text\" name=\"" + this.id + "\" " + valstring + " id=\"" + this.id + "\" class=\"ecplus-input\" />";
+                return pre + "<input type=\"text\" name=\"" + this.id + "\" " + valstring + " id=\"" + this.id + "\" class=\"ecplus-input form-control\" />";
             }
             else if (this.type === "video" || this.type === "audio" || this.type === "photo") {
                 return pre + "<iframe id=\"" + this.id + "_iframe\" src=\"" + this.form.name + "/uploadMedia\" class=\"ecplus-input ecplus-media-input\" ></iframe><input type=\"hidden\" id=\"" + this.id + "\" name=\"" + this.id + "\" value=\"" + val + "\" />";
