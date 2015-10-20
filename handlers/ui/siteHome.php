@@ -1,6 +1,7 @@
 <?php
 
-function siteHome() {
+function siteHome()
+{
     header("Cache-Control: no-cache, must-revalidate");
     global $SITE_ROOT, $db, $log, $auth;
 
@@ -129,17 +130,23 @@ function siteHome() {
             }
         }
 
-        $html .= '<a href="' . $href . '" class="project-list-item list-group-item">';
+        $html .= '<a href="' . $href . '" class="project-list-item list-group-item match-height">';
         //$html .= "<div class='project-thumbnail' style='background-image: url(" . $project_image . "');'>";
         //$html .= '</div>';
         $html .= '<div class="project-metadata">';
+
+        if (strlen($project_desc) > 80) {
+            $project_desc = substr($project_desc, 0, 80) . '...';
+            echo $project_desc;
+        }
+
         $html .= '<span class="project-name">' . $project_name . '</span>';
         $html .= '<em><span class="project-description">' . $project_desc . '</span></em>';
         $html .= '</div>';
         //$html .= '<div class="clearfix"></div>';
         $html .= '<div class="project-badge-counters">';
         $html .= '<span class="badge">' . $total_entries . ' total entries</span>';
-      //  $html .= '<span class="badge">' . $total_entries_24 . ' entries in the last 24 hours </span>';
+        //  $html .= '<span class="badge">' . $total_entries_24 . ' entries in the last 24 hours </span>';
         $html .= '</div>';
         $html .= '</a>';
 
