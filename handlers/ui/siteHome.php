@@ -125,8 +125,8 @@ function siteHome()
             $project_desc = 'Description not available yet';
         } else {
             //truncate description to 300 chars for display purposes on long text
-            if (strlen($project_desc) >= 200) {
-                $project_desc = substr($project_desc, 0, 200) . '...';
+            if (strlen($project_desc) >= 50) {
+                $project_desc = substr($project_desc, 0, 50) . '...';
             }
         }
 
