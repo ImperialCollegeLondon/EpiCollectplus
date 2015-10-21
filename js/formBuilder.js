@@ -1586,7 +1586,8 @@ function setSelected(jq) {
 }
 
 function previewForm(name) {
-    project.forms[name].displayForm({debug: true});
+    // set preview param as true to avoid id conflicts when previewing form
+    project.forms[name].displayForm({debug: true}, true);
 }
 
 function removeForm(name) {

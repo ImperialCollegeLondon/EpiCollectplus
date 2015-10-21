@@ -271,6 +271,7 @@ tr.alt {
     height: 400px;
     width: auto;
     overflow: hidden;
+    margin-left: 0;
 }
 
 .ecplus-form .ecplus-question {
