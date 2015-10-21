@@ -1330,13 +1330,13 @@ function updateSelected(is_silent) {
     var jumpCtrls = $('.jumpoption');
     var jn = jumpCtrls.length;
 
+    // update jump values
+    for (var j = jn; j > 0; j--) {
 
-    //how does this work?????
-    for (j = jn; j--;) {
-        var jumpType = $('.jumpType', jumpCtrls[i]).val();
-        var jval = (jumpType.length > 1 ? jumpType : (jumpType + $('select.jumpvalues', jumpCtrls[i]).val()));
+        var jumpType = $('.jumpType', jumpCtrls[j]).val();
+        var jval = (jumpType.length > 1 ? jumpType : (jumpType + $('select.jumpvalues', jumpCtrls[j]).val()));
+        jump = $('.jumpdestination', jumpCtrls[j]).val() + ',' + jval + (jump === '' ? '' : ',' + jump);
 
-        jump = $('.jumpdestination', jumpCtrls[i]).val() + ',' + jval + (jump === '' ? '' : ',' + jump);
     }
 
     cur.jump = jump.trimChars(',');
@@ -1586,7 +1586,8 @@ function setSelected(jq) {
 }
 
 function previewForm(name) {
-    project.forms[name].displayForm({debug: true});
+    // set preview param as true to avoid id conflicts when previewing form
+    project.forms[name].displayForm({debug: true}, true);
 }
 
 function removeForm(name) {
@@ -1601,7 +1602,7 @@ function removeForm(name) {
         project.forms[name].num = -1;
 
 
-        for (frm in project.forms) {
+        for (var frm in project.forms) {
             if (!currentForm) {
                 switchToForm(frm);
             } // switch to the first form

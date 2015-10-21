@@ -37,6 +37,7 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
 
                 if($type == 'LOCAL') {
                     $logged_in_tmpl .= '<li><a href="{#SITE_ROOT#}/updateUser.html">Update User</a></li>';
+                    $logged_in_tmpl .= '<li><a href="{#SITE_ROOT#}/admin">Manage Server</a></li>';
                 }
                 else {
                     $logged_in_tmpl .= '<li><a href="{#SITE_ROOT#}/admin">Manage Server</a></li>';
@@ -56,12 +57,10 @@ function applyTemplate($baseUri, $targetUri = false, $templateVars = array()) {
         // work out breadcrumbs
         //$template = str_replace("{#breadcrumbs#}", '', $template);
     } catch (Exception $err) {
-        print "<pre>";
-        print_r($err);
-        print "</pre>";
-        unset($db);
+        $auth->logout();
+        global $SITE_ROOT;
+        header("location: http://{$_SERVER["HTTP_HOST"]}{$SITE_ROOT}/login.php");
         exit();
-        siteTest();
     }
 
     $script = "";

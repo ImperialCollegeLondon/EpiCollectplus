@@ -20,11 +20,15 @@ function createFromXml() {
         $xmlFn = "ec/xml/{$_REQUEST["xml"]}";
 
         $prj->parse(file_get_contents($xmlFn));
-    } elseif (array_key_exists("name", $_POST)) {
+
+    } else if (array_key_exists("raw_xml", $_POST)) {
+        $prj->parse($_POST["raw_xml"]);
+    }
+
+    // use the project name submitted via post
+    if (array_key_exists("name", $_POST)) {
         $prj->name = $_POST["name"];
         $prj->submission_id = strtolower($prj->name);
-    } elseif (array_key_exists("raw_xml", $_POST)) {
-        $prj->parse($_POST["raw_xml"]);
     }
 
     if (!$prj->name || $prj->name == "") {
@@ -32,27 +36,33 @@ function createFromXml() {
         header("location: http://$server/$root/createProject.html");
     }
 
+    $error = false;
+
     $prj->isListed = $_REQUEST["listed"] == "true";
     $prj->isPublic = $_REQUEST["public"] == "true";
     $prj->publicSubmission = true;
     $res = $prj->post();
-    if ($res !== true)
-        die($res);
-
+    if ($res !== true) {
+        $error = true;
+    }
     $res = $prj->setManagers($_POST["managers"]);
-    if ($res !== true)
-        die($res);
+    if ($res !== true) {
+        $error = true;
+    }
     $res = $prj->setCurators($_POST["curators"]);
-    if ($res !== true)
-        die($res);
+    if ($res !== true) {
+        $error = true;
+    }
     // TODO : add submitter $prj->setProjectPermissions($submitters,1);
 
-    if ($res === true) {
+    // if no errors, continue
+    if (!$error) {
         $server = trim($_SERVER["HTTP_HOST"], "/");
         $root = trim($SITE_ROOT, "/");
         header("location: http://$server/$root/" . preg_replace("/create.*$/", $prj->name, $url));
     } else {
-        $vals = array("error" => $res);
+        // otherwise redirect to error page
+        $vals = array("error" => 'There was an error creating your Project. Please try again.');
         echo applyTemplate("base.html", "error.html", $vals);
     }
 }

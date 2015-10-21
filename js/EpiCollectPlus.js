@@ -1023,10 +1023,12 @@ EpiCollect.Form = function () {
      *  JQuery function to render the EpiCollect+ form
      *
      *  @param {Object} cnf [Optional] an object containing the entry data.
+     *  @param bool preview whether this is a preview form or not
      *
      */
-    this.displayForm = function (cnf)//(ele, data, vertical, index, editMode )
+    this.displayForm = function (cnf, preview)//(ele, data, vertical, index, editMode )
     {
+        preview = typeof preview !== 'undefined' ? preview : false;
         if (!cnf) cnf = {};
         var ele = cnf.element;
         var data = cnf.data;
@@ -1107,11 +1109,11 @@ EpiCollect.Form = function () {
         for (var field in this.fields) {
             if (this.fields[field].type === "" || (this.fields[field].hidden && project.getPrevForm(this.name).key !== field)) {
                 form_ele.append("<div class=\"ecplus-question-hidden\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
-                $("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined, cnf.debug));
+                $("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined, cnf.debug, preview));
             }
             else {
                 form_ele.append("<div class=\"ecplus-question\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
-                $("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined, cnf.debug));
+                $("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined, cnf.debug, preview));
                 $("#ecplus-question-" + field, this.formElement).append("<div  id=\"" + field + "-messages\" class=\"ecplus-messages\"></div>");
 
             }
@@ -1749,7 +1751,10 @@ EpiCollect.Field = function () {
         return suffix;
     };
 
-    this.getInput = function (val, debug) {
+    this.getInput = function (val, debug, preview) {
+
+        preview = typeof preview !== 'undefined' ? preview : false;
+
         try {
             pre = "";
 
@@ -1869,7 +1874,14 @@ EpiCollect.Field = function () {
             }
             else if (this.date || this.setDate) {
                 //Custom Date Picker
-                return pre + "<input type=\"text\" name=\"" + this.id + "\" value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input ecplus-datepicker\" />";
+
+                // to avoid errors with the date picker, if we have a preview,
+                // create a different id, so there are no conflicts
+                var dateId = this.id;
+                if (preview) {
+                    dateId += '-preview';
+                }
+                return pre + "<input type=\"text\" name=\"" + this.id + "\" value=\"" + val + "\" id=\"" + dateId + "\" class=\"ecplus-input ecplus-datepicker\" />";
             }
             else if (this.time || this.setTime) {
                 return pre + "<input type=\"text\" name=\"" + this.id + "\"  value=\"" + val + "\" id=\"" + this.id + "\" class=\"ecplus-input ecplus-timepicker\" />";
@@ -1916,33 +1928,29 @@ EpiCollect.Field = function () {
         else if (this.type === "select") {
             var sels = value.split(',');
             var opts = this.options;
-            var l = opts.length;
+
 
             var ret = '';
-            for (var i = 0; i < l; i++) {
-                var l_s = sels.length;
-                for (var j = 0; j < l_s; j++) {
-                    if (opts[i].value === sels[j] || opts[i].label === sels[j]) {
-                        ret = ret + (ret !== '' ? ', ' : '') + opts[i].label;
-                        sels.splice(j, 1);
-                        break;
-                    }
-                }
+            for (var i = 0; i < sels.length; i++) {
+
+                ret = ret + (ret !== '' ? ', ' : '') + opts[i].label;
+
             }
-            if (sels.length > 0) {
-                if (ret !== '') ret = ret + ', ';
-                ret = ret + sels.join(',');
-            }
+            //if (sels.length > 0) {
+                //if (ret !== '') ret = ret + ', ';
+                //ret = ret + sels.join(',');
+            //}
             return ret;
         }
         else if (this.type === "photo") {
-            //console.debug(value);
+
             if (value && !value.match(/^null$/i) && value !== "-1") {
                 if (value.match(/^http:\/\//)) {
                     return "<a href=\"" + value + "\" target=\"__blank\"><img src=\"" + value + "&thumbnail=true\" alt=\"" + value + "\" height=\"125\"/></a>";
                 }
                 else {
-                    return "<a href=\"" + location.href.toString().trimChars('/') + "/__getImage?img=" + value + "\" target=\"__blank\"><img src=\"" + location.href.toString().trimChars('/') + "/__getImage?img=" + value + "&thumbnail=true\" alt=\"" + value + "\" height=\"125\"/></a>";
+                    // return link to url, including full path name from current url, minus additional parameters
+                    return '<a href="' + 'http://' + window.location.hostname + window.location.pathname + '/__getImage?img=' + value + '" target="_blank"><img src="' + 'http://' + window.location.hostname + window.location.pathname + '/__getImage?img=' + value + '&thumbnail=true" alt="' + value + '" height="125"/></a>';
                 }
 
             }
@@ -1954,19 +1962,23 @@ EpiCollect.Field = function () {
                 var checkid = 'check' + (nchecks++);
                 var checkurl;
                 var valUrl;
+                var currentUrl;
+
                 if (value.match(/^http:/i)) {
                     valUrl = value;
                     checkurl = value;
                 }
                 else {
                     valUrl = "ec/uploads/" + project.name + "~" + value;
-                    checkurl = (location.href.trimChars('/').replace(new RegExp(project.name + '/' + formName + '', 'i'), '') + valUrl).trimChars('/');
+                    currentUrl = 'http://' + window.location.hostname + window.location.pathname;
+                    // remove project and form names from url path
+                    checkurl = (currentUrl.trimChars('/').replace(new RegExp(project.name + '/' + formName + '', 'i'), '') + valUrl).trimChars('/');
                 }
 
                 checking[checkurl] = checkid;
                 checker.startCheck(checkurl);
 
-                return "<a id=\"" + checkid + "\" href=\"" + checkurl + "\" target=\"__blank\"> View Media </a>";
+                return "<a id=\"" + checkid + "\" href=\"" + checkurl + "\" target=\"__blank\"> Download Media </a>";
             }
             else {
                 return "<i>No Media</i>";
@@ -1980,7 +1992,10 @@ EpiCollect.Field = function () {
             }
         }
         else if (this.id === 'created' && value.match(/^\d+$/)) {
-            return new Date(EpiCollect.toJSTimestamp(value)).toLocaleString();
+            // format date to UTC
+            var d = new Date(EpiCollect.toJSTimestamp(value)).toUTCString();
+            // substring to remove day of the week and 'GMT'
+            return d.substring(5, d.length - 4);
         }
         else if (this.type === 'branch') {
             if (!value) {
