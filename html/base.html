@@ -158,7 +158,7 @@
     })();
 
     //match containers height on first page load (only on home page)
-    if(url_parts[url_parts.length - 1] === '') {
+    if(url_parts[url_parts.length - 1] === '' || url_parts[url_parts.length - 1] === '#') {
         $('.match-height').matchHeight();
         $.fn.matchHeight._update();
     }
