@@ -128,12 +128,55 @@ function formHandler() {
                 if ($res !== true)
                     die($res);
 
-                $i = 0;
 
                 $recordSet = array();
 
                 while ($rec = $prj->tables[$frmName]->recieve(1, $full_urls)) {
                     $recordSet = array_merge($recordSet, $rec);
+                }
+
+
+                // check if we need to add branches
+                if (($prj->tables[$frmName]->branches) > 0) {
+
+                    // loop round each branch for this form
+                    foreach ($prj->tables[$frmName]->branches as $branchName) {
+
+                        // determine branch input name by removing last f characters ('_form')
+                        $branchInputName = substr($branchName, 0, -5);
+
+                        // loop round each record set we have, attempting to assign the branch entries to
+                        // the relevant branch input key in the json
+                        foreach ($recordSet as $key => $record) {
+
+                            // for some reason I need to call this ask() function every time while I'm looping,
+                            // even though it's not using any values within this loop, only the outer loop....
+                            $res2 = $prj->tables[$branchName]->ask($_GET, $offset, $limit, getValIfExists($_GET, "sort"), getValIfExists($_GET, "dir"), false, "object");
+                            if ($res2 !== true)
+                                break;
+
+                            $branchSet = array();
+
+                            while ($rec2 = $prj->tables[$branchName]->recieve(1, $full_urls)) {
+
+                                foreach ($rec2 as $r) {
+
+                                    // check if the key for this form entry matches that associated with the branch entries
+                                    if ($r[$frmName . '_key'] == $recordSet[$key][$frmName . '_key']) {
+
+                                        $branchSet = array_merge($branchSet, $rec2);
+                                    }
+
+                                }
+
+                            }
+
+                            // add the branch entries array to the branch input for this main entry
+                            $recordSet[$key][$branchInputName] = $branchSet;
+
+                        }
+                    }
+
                 }
 
 
@@ -545,6 +588,11 @@ function formHandler() {
         }
     }
 
+    $addEntry = true;
+    // not currently allowing add entries via branch form table pages
+    if (empty($prj->tables[$frmName]->isMain)) {
+        $addEntry = false;
+    }
     $mapScript = $prj->tables[$frmName]->hasGps() ? "<script type=\"text/javascript\" src=\"" . (getValIfExists($_SERVER, 'HTTPS') ? 'https' : 'http') . "://maps.google.com/maps/api/js?sensor=false\"></script>
 	<script type=\"text/javascript\" src=\"{$SITE_ROOT}/js/markerclusterer.js\"></script>" : "";
     $vars = array(
@@ -553,7 +601,7 @@ function formHandler() {
         "formName" => $frmName,
         "curate" => $permissionLevel > 1 ? "true" : "false",
         "mapScript" => $mapScript,
-        "curationbuttons" => $permissionLevel > 1 ? sprintf('<span class="button-set"><a class="btn btn-default" href="javascript:project.forms[formName].displayForm({ vertical : false });"><i class="fa fa-plus fa-2x"></i></a>
+        "curationbuttons" => $permissionLevel > 1 && $addEntry? sprintf('<span class="button-set"><a class="btn btn-default" href="javascript:project.forms[formName].displayForm({ vertical : false });"><i class="fa fa-plus fa-2x"></i></a>
 				<a class="btn btn-default" href="javascript:editSelected();"><i class="fa fa-pencil fa-2x"></i></a>
 				<a class="btn btn-default" href="javascript:project.forms[formName].deleteEntry(window.ecplus_entries[$(\'.ecplus-data tbody tr.selected\').index()][project.forms[formName].key]);"><i class="fa fa-trash-o fa-2x"></i></a></span>',
             $SITE_ROOT, $SITE_ROOT, $SITE_ROOT) : '',

@@ -39,6 +39,7 @@ function generateUUID() {
         d = Math.floor(d / 16);
         return (c == 'x' ? r : (r & 0x7 | 0x8)).toString(16);
     });
+
     return uuid;
 };
 
@@ -1028,6 +1029,7 @@ EpiCollect.Form = function () {
      */
     this.displayForm = function (cnf, preview)//(ele, data, vertical, index, editMode )
     {
+
         preview = typeof preview !== 'undefined' ? preview : false;
         if (!cnf) cnf = {};
         var ele = cnf.element;
@@ -1106,18 +1108,23 @@ EpiCollect.Form = function () {
 
         var form_ele = $(".ecplus-form-pane form", this.formElement);
 
+
         for (var field in this.fields) {
+
             if (this.fields[field].type === "" || (this.fields[field].hidden && project.getPrevForm(this.name).key !== field)) {
                 form_ele.append("<div class=\"ecplus-question-hidden\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
                 $("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined, cnf.debug, preview));
-            }
-            else {
+            } else {
+
                 form_ele.append("<div class=\"ecplus-question\" id=\"ecplus-question-" + field + "\"><label>" + this.fields[field].text + "</label></div>");
                 $("#ecplus-question-" + field, this.formElement).append(this.fields[field].getInput(data ? data[field] : undefined, cnf.debug, preview));
                 $("#ecplus-question-" + field, this.formElement).append("<div  id=\"" + field + "-messages\" class=\"ecplus-messages\"></div>");
 
             }
+
         }
+
+
 
 
         //$("form", this.formElement).append("<div class=\"ecplus-question\" id=\"ecplus-save-button\"><label></label><br /></div>");
@@ -1487,11 +1494,12 @@ EpiCollect.Form = function () {
     };
 
     this.addEntry = function () {
-        if (this.branchOf) {
-            this.saveBranch();
-            this.closeForm();
-            return;
-        }
+
+        //if (this.branchOf) {
+        //    this.saveBranch();
+        //    this.closeForm();
+        //    return;
+        //}
 
         var frm = this;
         $.ajax(this.name, {
@@ -1570,6 +1578,7 @@ EpiCollect.Form = function () {
                 }
             }
         }
+
 
         localStorage[project.name + "_" + formName] = JSON.stringify(ent);
     };
@@ -1998,15 +2007,19 @@ EpiCollect.Field = function () {
             return d.substring(5, d.length - 4);
         }
         else if (this.type === 'branch') {
+
             if (!value) {
                 return '0 <a href="javascript:project.forms[\'' + this.connectedForm + '\'].displayForm({ vertical : false, data : { \'' + this.form.key + '\': \'' + data[this.form.key] + '\'} });">Add ' + this.connectedForm + '</a>';
             }
             else {
+
                 if (data) {
-                    return value + ' <a href="' + this.connectedForm + '?' + this.form.key + '=' + data[this.form.key] + '&trail=' + this.form.name + '">View entries</a> | <a href="javascript:project.forms[\'' + this.connectedForm + '\'].displayForm({ vertical : false, data : { \'' + this.form.key + '\': \'' + data[this.form.key] + '\'} });">Add ' + this.connectedForm + '</a>';
+                    // value is an array of js objects, so return the length
+                    return value.length + ' <a href="' + this.connectedForm + '?' + this.form.key + '=' + data[this.form.key] + '&trail=' + this.form.name + '">View entries</a> | <a href="javascript:project.forms[\'' + this.connectedForm + '\'].displayForm({ vertical : false, data : { \'' + this.form.key + '\': \'' + data[this.form.key] + '\'} });">Add ' + this.connectedForm + '</a>';
                 }
                 else {
-                    return value;
+                    // value is an array of js objects, so return the length
+                    return value.length;
                 }
             }
         }
@@ -2148,6 +2161,7 @@ EpiCollect.Field = function () {
         var control = $('#' + result.control_id, form.formElement);
 
         var voter = control.prop('voter');
+        console.log(control);
         voter[result.name] = result.valid;
         control.prop('voter', voter);
 
