@@ -17,7 +17,7 @@ function uploadData() {
             parse_str(file_get_contents("php://input"), $_POST);
         }
         
-        file_put_contents('/log.txt', print_r($_POST, true));
+        //file_put_contents('/log.txt', print_r($_POST, true));
         if (count($_FILES) > 0) {
             foreach ($_FILES as $file) {
 

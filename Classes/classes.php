@@ -907,8 +907,8 @@ class EcProject{
 			
 			$db = new dbConnection();
 			
-			$sql = "SELECT DISTINCT entry FROM entryValue WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}' ORDER BY Entry";
-			$sql2 = "SELECT count(DISTINCT entry) as ttl FROM entryValue WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
+			$sql = "SELECT DISTINCT entry FROM entryvalue WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}' ORDER BY Entry";
+			$sql2 = "SELECT count(DISTINCT entry) as ttl FROM entryvalue WHERE projectName = '{$this->survey->name}' AND formName = '{$this->name}'";
 			if($limit > 0)
 			{
 				if($offset > 0)
