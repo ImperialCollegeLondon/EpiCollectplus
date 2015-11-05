@@ -158,15 +158,23 @@ function formHandler() {
 
                             while ($rec2 = $prj->tables[$branchName]->recieve(1, $full_urls)) {
 
+                                $branches = array();
+
                                 foreach ($rec2 as $r) {
 
                                     // check if the key for this form entry matches that associated with the branch entries
                                     if ($r[$prj->tables[$frmName]->keyField] == $recordSet[$key][$prj->tables[$frmName]->keyField]) {
 
-                                        $branchSet = array_merge($branchSet, $rec2);
+                                        // remove the parent key from the branch arrays to
+                                        // avoid duplicates
+                                        unset($r[$prj->tables[$frmName]->keyField]);
+                                        $branches[] = $r;
+
                                     }
 
                                 }
+                                // add branches array to the parent entry
+                                $branchSet = array_merge($branchSet, $branches);
 
                             }
 
