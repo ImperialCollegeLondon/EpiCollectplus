@@ -135,14 +135,13 @@ function formHandler() {
                     $recordSet = array_merge($recordSet, $rec);
                 }
 
-
                 // check if we need to add branches
                 if (($prj->tables[$frmName]->branches) > 0) {
 
                     // loop round each branch for this form
                     foreach ($prj->tables[$frmName]->branches as $branchName) {
 
-                        // determine branch input name by removing last f characters ('_form')
+                        // determine branch input name by removing last 5 characters ('_form')
                         $branchInputName = substr($branchName, 0, -5);
 
                         // loop round each record set we have, attempting to assign the branch entries to
@@ -159,15 +158,23 @@ function formHandler() {
 
                             while ($rec2 = $prj->tables[$branchName]->recieve(1, $full_urls)) {
 
+                                $branches = array();
+
                                 foreach ($rec2 as $r) {
 
                                     // check if the key for this form entry matches that associated with the branch entries
-                                    if ($r[$frmName . '_key'] == $recordSet[$key][$frmName . '_key']) {
+                                    if ($r[$prj->tables[$frmName]->keyField] == $recordSet[$key][$prj->tables[$frmName]->keyField]) {
 
-                                        $branchSet = array_merge($branchSet, $rec2);
+                                        // remove the parent key from the branch arrays to
+                                        // avoid duplicates
+                                        unset($r[$prj->tables[$frmName]->keyField]);
+                                        $branches[] = $r;
+
                                     }
 
                                 }
+                                // add branches array to the parent entry
+                                $branchSet = array_merge($branchSet, $branches);
 
                             }
 
