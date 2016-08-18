@@ -1,3 +1,8 @@
+#Notice
+##This repo is deprecated and not maintained anymore. We are working on a new version version of Epicollect which will be released soon.
+###Any issue or bug on this repository will not be fixed. Install at your own risk. The most stable branch is `development`. 
+###You have been warned
+
 #License
 
 EpiCollect+ is licenced under a [AGPLv3 Licence](http://opensource.org/licenses/AGPL-3.0). If you want to use a custom version of the server code, please fork this repository and upload your changes to GitHub to help the EpiCollect Community.
