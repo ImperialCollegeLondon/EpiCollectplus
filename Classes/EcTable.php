@@ -175,7 +175,7 @@
 				$qry = "$qry f.projectName = '{$this->survey->name}' AND f.formname = '{$this->name}' ORDER BY f.position";
 			}
 
-			var_dump($qry);
+
 			
 			$res = $db->do_query($qry);
 			if($res === true)

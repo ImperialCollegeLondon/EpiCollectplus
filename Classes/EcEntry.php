@@ -31,6 +31,9 @@
 			
 			//$db = new dbConnection();
 			$sql = "SELECT * from entry e LEFT JOIN entryvalue v on e.idEntry = v.entry where e.projectName = '{$this->projectName}' AND e.formName = '{$this->formName}' AND v.fieldName = '{$this->form->key}' AND v.value = '{$this->key}'";
+			var_dump($sql);
+
+
 			$res = $db->do_query($sql);
 			if($res !== true) return $res;
 			while($arr = $db->get_row_array())
@@ -45,6 +48,9 @@
 			}
 			
 			$sql = "SELECT * from entryvalue where entry = {$this->id}";
+
+			var_dump($sql);
+
 			$res = $db->do_query($sql);
 			if($res !== true) return $res;
 			$this->values = array();
