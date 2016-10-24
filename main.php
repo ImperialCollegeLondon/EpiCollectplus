@@ -961,7 +961,7 @@ function siteHome() {
         return;
     }
 
-    $res = $db->do_query("SELECT name, ttl, ttl24 FROM (SELECT name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name) a order by ttl desc LIMIT 5");
+    $res = $db->do_query("SELECT name FROM project Where project.isListed = 1 group by project.name) ORDER BY id desc LIMIT 10");
     if ($res !== true) {
 
         //$vals["projects"] = "<p class=\"error\">Database is not set up correctly, go to the <a href=\"test\">test page</a> to establish the problem.</p>";
@@ -970,7 +970,7 @@ function siteHome() {
         header("location: $rurl");
         return;
     }
-    $vals["projects"] = "<div class=\"ecplus-projectlist\"><h1>Most popular projects on this server</h1>";
+    $vals["projects"] = "<div class=\"ecplus-projectlist\"><h1>Most recents projects on this server</h1>";
 
     $i = 0;
 
@@ -992,7 +992,7 @@ function siteHome() {
         $count = count($prjs);
 
         for ($i = 0; $i < $count; $i++) {
-            $vals['userprojects'] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$prjs[$i]["name"]}\">{$prjs[$i]["name"]}</a><div class=\"total\">{$prjs[$i]["ttl"]} entries with <b>" . ($prjs[$i]["ttl24"] ? $prjs[$i]["ttl24"] : "0") . "</b> in the last 24 hours </div></div>";
+            $vals['userprojects'] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$prjs[$i]["name"]}\">{$prjs[$i]["name"]}</a></div>";
         }
 
         $vals['userprojects'] .= '</div>';
