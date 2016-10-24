@@ -550,7 +550,7 @@
 					$join .= sprintf(' LEFT JOIN entryvalue `ev%s` on `ev%s`.entry = e.idEntry and `ev%s`.fieldName = \'%s\'', $this->key,$this->key,$this->key,$this->key);
 				}
 				
-				$join .= sprintf(' LEFT JOIN entryValue `%s`  ON `ev%s`.value = `%s`.value  AND `%s`.projectName = \'%s\' AND `%s`.formName = \'%s\' AND `%s`.fieldName = \'%s\'',
+				$join .= sprintf(' LEFT JOIN entryvalue `%s`  ON `ev%s`.value = `%s`.value  AND `%s`.projectName = \'%s\' AND `%s`.formName = \'%s\' AND `%s`.fieldName = \'%s\'',
 						$this->branchfields[$i],
 						$this->key,
 						$this->branchfields[$i],
@@ -1092,7 +1092,7 @@
 			$fld = "";
 			if(array_key_exists($field, $this->fields))
 			{
-				$qry = "SELECT DISTINCT value FROM entryValue WHERE projectName = '{$this->projectName}' AND formName = '{$this->name}' AND fieldName = '$field' AND Value LIKE '$val%'";
+				$qry = "SELECT DISTINCT value FROM entryvalue WHERE projectName = '{$this->projectName}' AND formName = '{$this->name}' AND fieldName = '$field' AND Value LIKE '$val%'";
 				$fld = "value";
 			}
 			else
@@ -1130,7 +1130,7 @@
 			
 			if($secondaryField && $secondaryValue)
 			{
-				$select = sprintf('SELECT entry from entryValue WHERE projectname = \'%s\' AND formName = \'%s\' AND fieldName=\'%s\' AND value=\'%s\' ', $this->projectName, $this->name, $secondaryField, $secondaryValue);
+				$select = sprintf('SELECT entry from entryvalue WHERE projectname = \'%s\' AND formName = \'%s\' AND fieldName=\'%s\' AND value=\'%s\' ', $this->projectName, $this->name, $secondaryField, $secondaryValue);
 				$res = $db->do_query($select);
 				if($res !== true) die($res);
 				
@@ -1146,11 +1146,11 @@
 			
 			if($ents == '')
 			{
-				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $val );
+				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryvalue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $val );
 			}
 			else
 			{
-				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $val );
+				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryvalue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title like \'%s%%\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $val );
 			}
 			$res = $db->do_query($select);
 			if($res === true)
@@ -1190,7 +1190,7 @@
 			
 			/*if($secondaryField && $secondaryValue)
 			{
-				$select = sprintf('SELECT entry from entryValue WHERE projectname = \'%s\' AND formName = \'%s\' AND fieldName=\'%s\' AND value=\'%s\' ', $this->projectName, $this->name, $secondaryField, $secondaryValue);
+				$select = sprintf('SELECT entry from entryvalue WHERE projectname = \'%s\' AND formName = \'%s\' AND fieldName=\'%s\' AND value=\'%s\' ', $this->projectName, $this->name, $secondaryField, $secondaryValue);
 				$res = $db->do_query($select);
 				if($res !== true) die($res);
 				
@@ -1206,11 +1206,11 @@
 			
 			if($ents == '')
 			{*/
-				$select = sprintf('SELECT value FROM entryValue WHERE projectname = \'%s\' AND formName = \'%s\' and fieldName = \'%s\' and value = \'%s\'' , $this->projectName, $this->name, $this->key, $db->escapeArg($val) );
+				$select = sprintf('SELECT value FROM entryvalue WHERE projectname = \'%s\' AND formName = \'%s\' and fieldName = \'%s\' and value = \'%s\'' , $this->projectName, $this->name, $this->key, $db->escapeArg($val) );
 			/*}
 			else
 			{
-				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryValue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title = \'%s\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $db->escapeArg($val) );
+				$select = sprintf('SELECT title FROM (SELECT entry, GROUP_CONCAT(IFNULL(value,\'\') ORDER BY field  SEPARATOR \' - \') as title FROM entryvalue where projectname = \'%s\' AND formName = \'%s\' and fieldName IN (\'%s\') and entry in(%s) GROUP BY entry) a where title = \'%s\'' , $this->projectName, $this->name, implode('\',\'', $this->titleFields), $ents, $db->escapeArg($val) );
 			}*/
 
 			$res = $db->do_query($select);
