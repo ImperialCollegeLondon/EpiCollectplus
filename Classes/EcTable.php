@@ -518,9 +518,10 @@
 			{
 				$k = $this->key;
 				$s_k = str_replace('.', '_', $k);
-					
-//				$join = sprintf('%s LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $join, $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
-				
+
+				if($this->projectName != 'ConservationAgric') {
+					$join = sprintf('%s LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $join, $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
+				}
 			}
 
 			for($i = count($this->branchfields); $i-- && $includeChildCount;)
