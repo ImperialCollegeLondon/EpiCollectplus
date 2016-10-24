@@ -3,6 +3,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+ini_set('max_execution_time', 5000);
+ini_set('memory_limit', '512M');
+
 if (isset($_REQUEST['_SESSION']))
     throw new Exception('Bad client request');
 
@@ -960,7 +963,7 @@ function siteHome() {
         header("location: $rurl");
         return;
     }
-    
+
 //get most recents projects
    // $res = $db->do_query("SELECT name FROM project Where project.isListed = 1 ORDER BY id desc LIMIT 10");
 
