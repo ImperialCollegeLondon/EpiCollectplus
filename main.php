@@ -961,7 +961,7 @@ function siteHome() {
         return;
     }
 
-    $res = $db->do_query("SELECT name FROM project Where project.isListed = 1 group by project.name) ORDER BY id desc LIMIT 10");
+    $res = $db->do_query("SELECT name FROM project Where project.isListed = 1 ORDER BY id desc LIMIT 10");
     if ($res !== true) {
 
         //$vals["projects"] = "<p class=\"error\">Database is not set up correctly, go to the <a href=\"test\">test page</a> to establish the problem.</p>";
