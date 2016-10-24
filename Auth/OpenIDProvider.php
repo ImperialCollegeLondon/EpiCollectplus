@@ -5,9 +5,6 @@ require_once "ProviderTemplate.php";
 require_once 'GooglePHPLibrary/Google_Client.php';
 require_once 'GooglePHPLibrary/contrib/Google_Oauth2Service.php';
 
-//log tool, Chrome Logger for PHP
-require_once __DIR__ . "/../utils/ChromePhp.php";
-
 class OpenIDProvider extends AuthProvider {
 
     public $data = array();
