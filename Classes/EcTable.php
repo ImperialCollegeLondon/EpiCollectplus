@@ -175,8 +175,6 @@
 				$qry = "$qry f.projectName = '{$this->survey->name}' AND f.formname = '{$this->name}' ORDER BY f.position";
 			}
 
-
-			
 			$res = $db->do_query($qry);
 			if($res === true)
 			{
@@ -521,7 +519,7 @@
 				$k = $this->key;
 				$s_k = str_replace('.', '_', $k);
 					
-				$join = sprintf('%s LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $join, $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
+//				$join = sprintf('%s LEFT JOIN entryvalue `ev%s` on e.idEntry = `ev%s`.entry AND `ev%s`.projectName = \'%s\' AND `ev%s`.formName = \'%s\' AND `ev%s`.fieldName = \'%s\'', $join, $s_k, $s_k, $s_k, $this->projectName, $s_k, $this->name, $s_k, $k);
 				
 			}
 
@@ -553,13 +551,13 @@
 				
 				$join .= sprintf(' LEFT JOIN entryValue `%s`  ON `ev%s`.value = `%s`.value  AND `%s`.projectName = \'%s\' AND `%s`.formName = \'%s\' AND `%s`.fieldName = \'%s\'',
 						$this->branchfields[$i],
-						$this->key, 
+						$this->key,
 						$this->branchfields[$i],
 						$this->branchfields[$i],
 						$this->survey->name,
-						$this->branchfields[$i], 
-						$this->branches[$i], 
-						$this->branchfields[$i], 
+						$this->branchfields[$i],
+						$this->branches[$i],
+						$this->branchfields[$i],
 						$this->key);
                         
                 

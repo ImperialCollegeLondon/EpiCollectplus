@@ -29,10 +29,13 @@
 			global $db;
 			if(!$this->key && $this->values[$this->form->key]) $this->key = $this->values[$this->form->key]; 
 			
-			//$db = new dbConnection();
+			//get most recents (by ID ans there is not timestamp on this table loooool....)
 			$sql = "SELECT * from entry e LEFT JOIN entryvalue v on e.idEntry = v.entry where e.projectName = '{$this->projectName}' AND e.formName = '{$this->formName}' AND v.fieldName = '{$this->form->key}' AND v.value = '{$this->key}'";
-			var_dump($sql);
 
+			//get most popular
+//			$res = $db->do_query("SELECT name, ttl, ttl24 FROM (SELECT name, count(entry.idEntry) as ttl, x.ttl as ttl24 FROM project left join entry on project.name = entry.projectName left join (select count(idEntry) as ttl, projectName from entry where created > ((UNIX_TIMESTAMP() - 86400)*1000) group by projectName) x on project.name = x.projectName Where project.isListed = 1 group by project.name) a order by ttl desc LIMIT 10");
+
+			var_dump($sql);
 
 			$res = $db->do_query($sql);
 			if($res !== true) return $res;
