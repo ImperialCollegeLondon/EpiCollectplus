@@ -975,7 +975,7 @@ function siteHome() {
     $i = 0;
 
     while ($row = $db->get_row_array()) {
-        $vals["projects"] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$row["name"]}\">{$row["name"]}</a><div class=\"total\">{$row["ttl"]} entries with <b>" . ($row["ttl24"] ? $row["ttl24"] : "0") . "</b> in the last 24 hours </div></div>";
+        $vals["projects"] .= "<div class=\"project\"><a href=\"{#SITE_ROOT#}/{$row["name"]}\">{$row["name"]}</a></div>";
         $i++;
     }
 
