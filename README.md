@@ -1,9 +1,9 @@
-#Notice
-##This repo is deprecated and not maintained anymore. 
+# Notice
+## This repo is deprecated and not maintained anymore. 
 We are working on a new version called Epicollect5 which is currently available as a public beta at https://five.epicollect.net.
 
-###Any issue or bug on this repository will not be fixed. Install at your own risk. The most stable branch is `development`. 
-###You have been warned
+### Any issue or bug on this repository will not be fixed. Install at your own risk. The most stable branch is `development`. 
+### You have been warned
 
 #License
 
